@@ -41,7 +41,7 @@ function BookedUserSessions({ daoName }: { daoName: string }) {
       const requestOptions: any = {
         method: "POST",
         headers: myHeaders,
-        // body: raw,
+        body: raw,
         redirect: "follow",
       };
       const response = await fetchApi(
