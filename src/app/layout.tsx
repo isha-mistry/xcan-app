@@ -5,7 +5,7 @@ import "./globals.css";
 // import { NextUIProvider } from "@nextui-org/react";
 import SidebarMain from "@/components/MainSidebar/SidebarMain";
 import RootProviders from "./providers/root-providers";
-import HuddleContextProvider from "@/context/HuddleContextProvider";
+// import HuddleContextProvider from "@/context/HuddleContextProvider";
 import { Suspense, useEffect } from "react";
 import FeedbackTile from "@/components/ComponentUtils/FeedbackTile";
 import Script from "next/script";
@@ -111,7 +111,7 @@ export default function RootLayout({
         <ProgressBarProvider>
           <Suspense>
             <RootProviders>
-              <HuddleContextProvider>
+              {/* <HuddleContextProvider> */}
                 <div className="flex">
                   <div className="hidden lg:block fixed w-[6%] bg-blue-shade-100 h-screen z-10">
                     <SidebarMain />
@@ -124,7 +124,7 @@ export default function RootLayout({
                     <div>{children}</div>
                   </div>
                 </div>
-              </HuddleContextProvider>
+              {/* </HuddleContextProvider> */}
             </RootProviders>
           </Suspense>
         </ProgressBarProvider>
