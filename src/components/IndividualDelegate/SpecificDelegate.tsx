@@ -1,6 +1,6 @@
 "use client";
 import Image from "next/image";
-import React, { use, useEffect, useState } from "react";
+import React, { use, useEffect, useRef, useState } from "react";
 import user from "@/assets/images/daos/profile.png";
 import {
   FaXTwitter,
@@ -60,6 +60,8 @@ import { getChainAddress, getDaoName } from "@/utils/chainUtils";
 import { optimism, arbitrum } from "viem/chains";
 import RewardButton from "../ClaimReward/RewardButton";
 import MobileResponsiveMessage from "../MobileResponsiveMessage/MobileResponsiveMessage";
+import { ChevronDownIcon } from "lucide-react";
+import Heading from "../ComponentUtils/Heading";
 
 interface Type {
   daoDelegates: string;
@@ -107,6 +109,71 @@ function SpecificDelegate({ props }: { props: Type }) {
   const [confettiVisible, setConfettiVisible] = useState(false);
   const network = useAccount().chain;
   const { publicClient, walletClient } = WalletAndPublicClient();
+  const dropdownRef = useRef<HTMLDivElement | null>(null);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [selectedTab, setSelectedTab] = useState("Info");
+
+  const tabs = [
+    { name: "Info", value: "info" },
+    { name: "Past Votes", value: "pastVotes" },
+    { name: "Sessions", value: "delegatesSession" },
+    { name: "Office Hours", value: "officeHours" },
+  ];
+
+  const handleTabChange = (tabValue: string) => {
+    console.log(tabValue);
+    const selected = tabs.find((tab) => tab.value === tabValue);
+    console.log(selected);
+    if (selected) {
+      setSelectedTab(selected.name);
+      setIsDropdownOpen(false);
+      if (tabValue === "pastVotes") {
+        router.push(path + "?active=pastVotes");
+      } else if (tabValue === "sessions") {
+        router.push(path + "?active=delegatesSession&session=book");
+      } else if (tabValue === "officeHours") {
+        router.push(path + `?active=${tabValue}&hours=ongoing`);
+      } else {
+        router.push(path + `?active=${tabValue}`);
+      }
+    }
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  const handleMouseEnter = () => {
+    setIsDropdownOpen(true);
+  };
+
+  const handleMouseLeave = () => {
+    setTimeout(() => {
+      if (!dropdownRef.current?.matches(":hover")) {
+        setIsDropdownOpen(false);
+      }
+    }, 100);
+  };
+
+  useEffect(() => {
+    const activeTab = searchParams.get("active");
+    if (activeTab) {
+      const tab = tabs.find((t) => t.value === activeTab);
+      setSelectedTab(tab?.name || "Info");
+    }
+  }, [searchParams, tabs]);
 
   const handleDelegateModal = async () => {
     if (!isConnected) {
@@ -758,25 +825,30 @@ function SpecificDelegate({ props }: { props: Type }) {
   return (
     <>
       {/* For Mobile Screen */}
-      <MobileResponsiveMessage />
+      {/* <MobileResponsiveMessage /> */}
 
       {/* For Desktop Screen  */}
-      <div className="hidden md:block">
+      <div className="">
+      <div className="lg:hidden pt-2 xs:pt-4 sm:pt-6 px-4 md:px-6 lg:px-14">
+        <Heading />
+      </div>
         {isPageLoading && <MainProfileSkeletonLoader />}
         {!isPageLoading && (isDelegate || selfDelegate) ? (
           <div className="font-poppins">
             {/* {followed && <Confetti recycle={false} numberOfPieces={550} />} */}
-            <div className="flex ps-14 py-5 justify-between">
-              <div className="flex items-center">
+            <div className="flex flex-col md:flex-row pb-5 lg:py-5 px-4 md:px-6 lg:px-14 justify-between items-start">
+            <div className="flex flex-col xs:flex-row xs:items-start xs:justify-start items-center lg:items-start justify-center lg:justify-start w-full lg:w-auto">
                 <div
-                  className="relative object-cover rounded-3xl w-40 h-40 "
+                  className={`${
+                    displayImage ? "h-full" : "h-[80vw] xs:h-auto"
+                } relative object-cover rounded-3xl w-full xs:w-auto my-4 xs:my-0`}
                   style={{
                     backgroundColor: "#fcfcfc",
                     border: "2px solid #E9E9E9 ",
                   }}
                 >
-                  <div className="w-40 h-40 flex items-center justify-content ">
-                    <div className="flex justify-center items-center w-40 h-40">
+                <div className="w-full h-full xs:w-28 xs:h-28 sm:w-36 sm:h-36 lg:w-40 lg:h-40 flex items-center justify-center ">
+                    {/* <div className="flex justify-center items-center w-40 h-40"> */}
                       <Image
                         src={
                           displayImage
@@ -789,15 +861,15 @@ function SpecificDelegate({ props }: { props: Type }) {
                                 : ccLogo)
                         }
                         alt="user"
-                        width={300}
-                        height={300}
+                        width={256}
+                        height={256}
                         className={
                           displayImage || delegateInfo?.profilePicture
-                            ? "w-40 h-40 rounded-3xl"
-                            : "w-20 h-20 rounded-3xl"
+                            ? "w-full xs:w-28 xs:h-28 sm:w-36 sm:h-36 lg:w-40 lg:h-40 rounded-3xl"
+                        : "w-14 h-14 sm:w-20 sm:h-20 lg:w-20 lg:h-20 rounded-3xl"
                         }
                       />
-                    </div>
+                    {/* </div> */}
 
                     <Image
                       src={ccLogo}
@@ -812,9 +884,9 @@ function SpecificDelegate({ props }: { props: Type }) {
                     />
                   </div>
                 </div>
-                <div className="px-4">
+                <div className="px-4 mt-4 xs:mt-0 md:mt-2 lg:mt-4 w-full xs:w-auto">
                   <div className=" flex items-center py-1">
-                    <div className="font-bold text-lg pr-4">
+                  <div className="font-bold text-[22px] xs:text-xl sm:text-xl lg:text-[22px] pr-4">
                       {delegateInfo?.ensName ||
                         displayEnsName ||
                         displayName || (
@@ -824,7 +896,7 @@ function SpecificDelegate({ props }: { props: Type }) {
                           </>
                         )}
                     </div>
-                    <div className="flex gap-3">
+                    <div className="flex gap-2 sm:gap-3">
                       {/* {socials.discord + socials.discourse + socials.github + socials.twitter} */}
                       <Link
                         href={
@@ -939,7 +1011,7 @@ function SpecificDelegate({ props }: { props: Type }) {
                         showArrow
                       >
                         <Button
-                          className="bg-gray-200 hover:bg-gray-300"
+                          className="bg-gray-200 hover:bg-gray-300 text-xs sm:text-sm "
                           onClick={() => {
                             if (typeof window === "undefined") return;
                             navigator.clipboard.writeText(
@@ -959,8 +1031,8 @@ function SpecificDelegate({ props }: { props: Type }) {
                     <div style={{ zIndex: "21474836462" }}></div>
                   </div>
 
-                  <div className="flex gap-4 py-1">
-                    <div className="text-[#4F4F4F] border-[0.5px] border-[#D9D9D9] rounded-md px-3 py-1 flex justify-center items-center w-[109px]">
+                  <div className="flex flex-wrap gap-2 py-1 w-auto lg:w-[310px] xl:w-auto text-sm xl:text-base">
+                    <div className="text-[#4F4F4F] border-[0.5px] border-[#D9D9D9] rounded-md px-3 lg:px-2 xl:px-3 py-1 flex justify-center items-center w-[109px]">
                       {followerCountLoading ? (
                         <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-blue-shade-100"></div>
                       ) : (
@@ -975,7 +1047,7 @@ function SpecificDelegate({ props }: { props: Type }) {
                         </>
                       )}
                     </div>
-                    <div className="text-[#4F4F4F] border-[0.5px] border-[#D9D9D9] rounded-md px-3 py-1">
+                    <div className="text-[#4F4F4F] border-[0.5px] border-[#D9D9D9] rounded-md px-3 lg:px-2 xl:px-3 py-1">
                       <span className="text-blue-shade-200 font-semibold">
                         {props.daoDelegates === "arbitrum"
                           ? votesCount
@@ -988,7 +1060,7 @@ function SpecificDelegate({ props }: { props: Type }) {
                       </span>
                       delegated tokens
                     </div>
-                    <div className="text-[#4F4F4F] border-[0.5px] border-[#D9D9D9] rounded-md px-3 py-1">
+                    <div className="text-[#4F4F4F] border-[0.5px] border-[#D9D9D9] rounded-md px-3 lg:px-2 xl:px-3 py-1">
                       Delegated from
                       <span className="text-blue-shade-200 font-semibold">
                         &nbsp;
@@ -999,9 +1071,9 @@ function SpecificDelegate({ props }: { props: Type }) {
                     </div>
                   </div>
 
-                  <div className="pt-2 flex space-x-4 items-center">
+                  <div className="pt-2 flex flex-col xs:flex-row gap-2 w-full">
                     <button
-                      className="bg-blue-shade-200 font-bold text-white rounded-full px-8 py-[10px]"
+                      className="bg-blue-shade-200 font-bold text-white rounded-full py-[10px] px-6 xs:py-2 xs:px-4 sm:px-6 xs:text-xs sm:text-sm text-sm lg:px-8 lg:py-[10px] w-full xs:w-[112px] md:w-auto"
                       // onClick={() =>
                       //   handleDelegateVotes(`${props.individualDelegate}`)
                       // }
@@ -1011,16 +1083,18 @@ function SpecificDelegate({ props }: { props: Type }) {
                       Delegate
                     </button>
 
+                    <div className="flex gap-2 w-full">
+
                     <button
-                      className={`font-bold text-white rounded-full w-[138.5px] h-[44px] py-[10px] flex justify-center items-center ${
+                      className={`font-bold xs:text-xs sm:text-sm text-sm text-white rounded-full w-full xs:w-[112px] md:w-[128px] h-[40px] lg:py-[10px] py-[10px] xs:py-2 flex justify-center items-center ${
                         isFollowing ? "bg-blue-shade-200" : "bg-black"
                       }`}
                       onClick={handleFollow}
                     >
                       {isFollowStatusLoading ? (
-                        <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white"></div>
+                        <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white"></div>
                       ) : loading ? (
-                        <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white"></div>
+                        <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white"></div>
                       ) : isFollowing ? (
                         "Following"
                       ) : (
@@ -1039,7 +1113,7 @@ function SpecificDelegate({ props }: { props: Type }) {
                       showArrow
                     >
                       <div
-                        className={`border  rounded-full flex items-center justify-center size-10  ${
+                        className={`border  rounded-full flex items-center justify-center p-[7px] xs:p-0 size-10  ${
                           isFollowing
                             ? "cursor-pointer border-blue-shade-200"
                             : "cursor-not-allowed border-gray-200"
@@ -1063,6 +1137,8 @@ function SpecificDelegate({ props }: { props: Type }) {
                         )}
                       </div>
                     </Tooltip>
+
+                    </div>
 
                     {isOpenunfollow && (
                       <div className="font-poppins z-[70] fixed inset-0 flex items-center justify-center backdrop-blur-md">
@@ -1113,15 +1189,53 @@ function SpecificDelegate({ props }: { props: Type }) {
                   </div>
                 </div>
               </div>
-              <div className="pr-[2.2rem]">
-                <div className="flex gap-1 xs:gap-2 items-center">
+                <div className="hidden lg:flex gap-1 xs:gap-2 items-center">
                   <RewardButton />
                   <ConnectWalletWithENS />
+                </div>
+            </div>
+
+            <div
+              className="md:hidden mt-4 px-8 xs:px-4 sm:px-8 py-2 sm:py-[10px] bg-[#D9D9D945]"
+              ref={dropdownRef}
+              onMouseLeave={handleMouseLeave}
+            >
+              <div
+                className="w-full flex justify-between items-center text-left font-normal rounded-full capitalize text-lg text-blue-shade-100 bg-white px-4 py-2 cursor-pointer"
+                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                onMouseEnter={handleMouseEnter}
+              >
+                <span>{selectedTab}</span>
+                <ChevronDownIcon
+                  className={`w-4 h-4 transition-transform duration-700 ${
+                    isDropdownOpen ? "rotate-180" : ""
+                  }`}
+                />
+              </div>
+              <div
+                className={`w-[calc(100vw-3rem)] mt-1 overflow-hidden transition-all duration-700 ease-in-out ${
+                  isDropdownOpen
+                    ? "max-h-[500px] opacity-100"
+                    : "max-h-0 opacity-0"
+                }`}
+              >
+                <div className="p-2 border border-white-shade-100 rounded-xl bg-white shadow-md">
+                  {tabs.map((tab, index) => (
+                    <React.Fragment key={tab.value}>
+                      <div
+                        onClick={() => handleTabChange(tab.value)}
+                        className="px-3 py-2 rounded-lg transition duration-300 ease-in-out hover:bg-gray-100 capitalize text-base cursor-pointer"
+                      >
+                        {tab.name}
+                      </div>
+                      {index !== tabs.length - 1 && <hr className="my-1" />}
+                    </React.Fragment>
+                  ))}
                 </div>
               </div>
             </div>
 
-            <div className="flex gap-12 bg-[#D9D9D945] pl-16">
+            <div className="hidden md:flex gap-12 bg-[#D9D9D945] pl-16">
               <button
                 className={`border-b-2 py-4 px-2  ${
                   searchParams.get("active") === "info"
@@ -1168,7 +1282,7 @@ function SpecificDelegate({ props }: { props: Type }) {
               </button>
             </div>
 
-            <div className="py-6 ps-16">
+            <div className="pt-2 xs:pt-4 sm:pt-6 px-4 md:px-6 lg:px-14">
               {searchParams.get("active") === "info" && (
                 <DelegateInfo props={props} desc={description} />
               )}

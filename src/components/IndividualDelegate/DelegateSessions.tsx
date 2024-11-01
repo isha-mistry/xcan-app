@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import BookSession from "./AllSessions/BookSession";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useRouter } from "next-nprogress-bar";
@@ -26,6 +26,32 @@ function DelegateSessions({ props }: { props: Type }) {
   const dao_name = props.daoDelegates;
   const [error, setError] = useState<string | null>(null);
   const { address } = useAccount();
+  const scrollContainerRef = useRef<HTMLDivElement | null>(null);
+  const [showLeftShadow, setShowLeftShadow] = useState(false);
+  const [showRightShadow, setShowRightShadow] = useState(false);
+  
+  useEffect(() => {
+    const checkForOverflow = () => {
+      const container = scrollContainerRef.current;
+      if (container) {
+        setShowRightShadow(container.scrollWidth > container.clientWidth);
+      }
+    };
+
+    checkForOverflow();
+    window.addEventListener('resize', checkForOverflow);
+    return () => window.removeEventListener('resize', checkForOverflow);
+  }, []);
+
+  const handleScroll = () => {
+    const container = scrollContainerRef.current;
+    if (container) {
+      setShowLeftShadow(container.scrollLeft > 0);
+      setShowRightShadow(
+        container.scrollLeft < container.scrollWidth - container.clientWidth
+      );
+    }
+  };
 
   // const dao_name = daoName.charAt(0).toUpperCase() + daoName.slice(1);
 
@@ -117,8 +143,9 @@ function DelegateSessions({ props }: { props: Type }) {
 
   return (
     <div>
-      <div className="pr-36 pt-3">
-        <div className="flex gap-16 border-1 border-[#7C7C7C] pl-6 rounded-xl text-sm">
+      <div className=" pt-4 relative">
+      <div className={`flex gap-10 sm:gap-16 border-1 border-[#7C7C7C] px-6 rounded-xl text-sm overflow-x-auto whitespace-nowrap relative`} ref={scrollContainerRef}
+        onScroll={handleScroll}>
           <button
             className={`py-2  ${
               searchParams.get("session") === "book"

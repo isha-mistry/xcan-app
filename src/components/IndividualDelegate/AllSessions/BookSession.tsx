@@ -29,11 +29,7 @@ interface Type {
   daoDelegates: string;
   individualDelegate: string;
 }
-const StyledTimePickerContainer = styled.div`
-  div > ul {
-    height: 400px;
-  }
-`;
+
 
 function BookSession({ props }: { props: Type }) {
   const router = useRouter();
@@ -71,6 +67,29 @@ function BookSession({ props }: { props: Type }) {
   const [continueAPICalling, setContinueAPICalling] = useState<Boolean>(false);
   const [userRejected, setUserRejected] = useState<Boolean>();
   const [addingEmail, setAddingEmail] = useState<boolean>();
+
+  const styles = `
+  .calendar-container > div > ul {
+    height: auto;
+    min-height: 300px;
+    max-height: 400px;
+    overflow-y: auto;
+  }
+
+  @media (max-width: 640px) {
+    .calendar-container > div > ul {
+      min-height: 250px;
+      max-height: 350px;
+    }
+  }
+
+  @media (max-width: 380px) {
+    .calendar-container > div > ul {
+      min-height: 200px;
+      max-height: 300px;
+    }
+  }
+`;
 
   useEffect(() => {
     if (isOpen) {
@@ -526,31 +545,23 @@ function BookSession({ props }: { props: Type }) {
           />
         </div>
       ) : (
-        <div className="flex justify-center">
-          <div
-            className="rounded-2xl"
-            style={{
-              margin: "0 auto",
-              marginTop: "2rem",
-              boxShadow: "0px 4px 50.8px 0px rgba(0, 0, 0, 0.11)",
-              width: "fit-content",
-            }}
-          >
-            <StyledTimePickerContainer>
-              <DayTimeScheduler
-                allowedDates={allowedDates}
-                timeSlotSizeMinutes={timeSlotSizeMinutes}
-                isLoading={isScheduling}
-                isDone={isScheduled}
-                err={scheduleErr}
-                onConfirm={handleScheduled}
-                timeSlotValidator={(slotTime: any) =>
-                  timeSlotValidator(slotTime, dateAndRanges, bookedSlots)
-                }
-              />
-            </StyledTimePickerContainer>
-          </div>
+        <div className="flex justify-center w-full px-4 sm:px-6 md:px-8">
+      <div className="w-full max-w-md mx-auto mt-8 rounded-2xl shadow-lg bg-white">
+        <div className="calendar-container">
+          <DayTimeScheduler
+            allowedDates={allowedDates}
+            timeSlotSizeMinutes={timeSlotSizeMinutes}
+            isLoading={isScheduling}
+            isDone={isScheduled}
+            err={scheduleErr}
+            onConfirm={handleScheduled}
+            timeSlotValidator={(slotTime:any) =>
+              timeSlotValidator(slotTime, dateAndRanges, bookedSlots)
+            }
+          />
         </div>
+      </div>
+    </div>
       )}
 
       {isOpen && (

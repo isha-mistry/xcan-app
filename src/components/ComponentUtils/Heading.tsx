@@ -16,6 +16,8 @@ const titles: TitlesMap = {
   "/profile": "Profile",
   "/invite": "",
   "/claim-rewards": "Claim Rewards",
+  "/optimism": "",
+  "/arbitrum": "",
   // Add more URL mappings here as needed
 };
 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useRouter } from "next-nprogress-bar";
 import text1 from "@/assets/images/daos/texture1.png";
@@ -33,7 +33,33 @@ function DelegateOfficeHrs({ props }: { props: Type }) {
   const [sessionDetails, setSessionDetails] = useState([]);
   const [dataLoading, setDataLoading] = useState(true);
   const dao_name = props.daoDelegates;
+  const scrollContainerRef = useRef<HTMLDivElement | null>(null);
+  const [showLeftShadow, setShowLeftShadow] = useState(false);
+  const [showRightShadow, setShowRightShadow] = useState(false);
   // props.daoDelegates.charAt(0).toUpperCase() + props.daoDelegates.slice(1);
+
+  useEffect(() => {
+    const checkForOverflow = () => {
+      const container = scrollContainerRef.current;
+      if (container) {
+        setShowRightShadow(container.scrollWidth > container.clientWidth);
+      }
+    };
+
+    checkForOverflow();
+    window.addEventListener('resize', checkForOverflow);
+    return () => window.removeEventListener('resize', checkForOverflow);
+  }, []);
+
+  const handleScroll = () => {
+    const container = scrollContainerRef.current;
+    if (container) {
+      setShowLeftShadow(container.scrollLeft > 0);
+      setShowRightShadow(
+        container.scrollLeft < container.scrollWidth - container.clientWidth
+      );
+    }
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -122,8 +148,9 @@ function DelegateOfficeHrs({ props }: { props: Type }) {
 
   return (
     <div>
-      <div className="pr-36 pt-3">
-        <div className="flex gap-16 border-1 border-[#7C7C7C] pl-6 rounded-xl text-sm">
+      <div className="pt-3">
+        <div className="flex gap-10 sm:gap-16 border-1 border-[#7C7C7C] px-6 rounded-xl text-sm overflow-x-auto whitespace-nowrap relative" ref={scrollContainerRef}
+        onScroll={handleScroll}>
           <button
             className={`py-2  ${
               searchParams.get("hours") === "ongoing"

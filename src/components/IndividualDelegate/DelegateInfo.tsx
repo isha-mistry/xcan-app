@@ -331,8 +331,8 @@ function DelegateInfo({ props, desc }: { props: Type; desc: string }) {
   console.log("desc from db: ", desc);
 
   return (
-    <div>
-      <div className="flex w-fit gap-16 border-1 border-[#7C7C7C] px-6 rounded-xl text-sm mb-6">
+    <div className="pt-4">
+      <div className="flex w-fit gap-16 border-1 border-[#7C7C7C] px-6 rounded-xl text-sm mb-6 mx-4 xs:mx-0 sm:mx-4 md:mx-16 lg:mx-0">
         <button
           className={`py-2 ${
             activeButton === "onchain"
@@ -354,12 +354,12 @@ function DelegateInfo({ props, desc }: { props: Type; desc: string }) {
           Offchain
         </button>
       </div>
-      <div className="grid grid-cols-4 pe-32 gap-10">
+      <div className="grid xs:grid-cols-2 lg:grid-cols-4 gap-2 md:gap-5 mx-4 xs:mx-0 sm:mx-4 md:mx-16 lg:mx-0">
         {details.length > 0 ? (
           details.map((key, index) => (
             <div
               key={index}
-              className="bg-[#3E3D3D] text-white rounded-2xl px-3 py-5 cursor-pointer"
+              className="bg-[#3E3D3D] text-white rounded-2xl px-3 py-7 cursor-pointer"
               onClick={() => router.push(`${key.ref}`)}
             >
               <div className="font-semibold text-3xl text-center pb-2">
@@ -389,7 +389,7 @@ function DelegateInfo({ props, desc }: { props: Type; desc: string }) {
 
       <div
         style={{ boxShadow: "0px 4px 30.9px 0px rgba(0, 0, 0, 0.12)" }}
-        className={`rounded-xl my-7 me-32 py-6 px-7 text-sm ${
+        className={`rounded-xl my-7 py-6 px-7 text-sm ${
           desc && loadingKarma && loadingOpAgora ? "" : "min-h-52"
         }`}
       >
@@ -413,7 +413,7 @@ function DelegateInfo({ props, desc }: { props: Type; desc: string }) {
         ) : convertedDescription ? (
           <div
             dangerouslySetInnerHTML={{ __html: convertedDescription }}
-            className={`${styles.delegateStatement} rounded-xl me-32 py-6 px-7 text-sm`}
+            className={`${styles.delegateStatement} rounded-xl py-6 text-sm`}
           />
         ) : (
           <div className="font-semibold text-base flex justify-center items-center mt-7">
