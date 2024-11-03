@@ -85,7 +85,7 @@ function MainProfile() {
   const [isOpentoaster, settoaster] = useState(false);
   const [userFollowings, setUserFollowings] = useState<Following[]>([]);
   const [isModalLoading, setIsModalLoading] = useState(false);
-  const { ready, authenticated, login, logout } = usePrivy();
+  const { ready, authenticated, login, logout,getAccessToken } = usePrivy();
   // const [dbResponse, setDbResponse] = useState<any>(null);
   const [modalData, setModalData] = useState({
     displayImage: "",
@@ -313,9 +313,11 @@ function MainProfile() {
     setLoading(true);
     setIsModalLoading(true);
     const myHeaders = new Headers();
+    const token=await getAccessToken();
     myHeaders.append("Content-Type", "application/json");
     if (address) {
       myHeaders.append("x-wallet-address", address);
+      myHeaders.append("Authorization",`Bearer ${token}`);
     }
 
     const raw = JSON.stringify({
@@ -380,9 +382,11 @@ function MainProfile() {
     if (!userupdate.isFollowing) {
       setFollowings(followings + 1);
       const myHeaders = new Headers();
+      const token=await getAccessToken();
       myHeaders.append("Content-Type", "application/json");
       if (address) {
         myHeaders.append("x-wallet-address", address);
+        myHeaders.append("Authorization",`Bearer ${token}`);
       }
 
       try {
@@ -415,9 +419,11 @@ function MainProfile() {
       // settoaster(true);
       try {
         const myHeaders = new Headers();
+        const token=await getAccessToken();
         myHeaders.append("Content-Type", "application/json");
         if (address) {
           myHeaders.append("x-wallet-address", address);
+          myHeaders.append("Authorization",`Bearer ${token}`);
         }
         const response = await fetch("/api/delegate-follow/updatefollower", {
           method: "PUT",
@@ -460,9 +466,11 @@ function MainProfile() {
 
     try {
       const myHeaders = new Headers();
+      const token=await getAccessToken();
       myHeaders.append("Content-Type", "application/json");
       if (address) {
         myHeaders.append("x-wallet-address", address);
+        myHeaders.append("Authorization",`Bearer ${token}`);
       }
       const response = await fetch("/api/delegate-follow/updatefollower", {
         method: "PUT",
@@ -541,9 +549,11 @@ function MainProfile() {
     const isEmailVisible = !isToggled;
     try {
       const myHeaders = new Headers();
+      const token=await getAccessToken();
       myHeaders.append("Content-Type", "application/json");
       if (address) {
         myHeaders.append("x-wallet-address", address);
+        myHeaders.append("Authorization",`Bearer ${token}`);
       }
       const raw = JSON.stringify({
         address: address,
@@ -729,9 +739,11 @@ function MainProfile() {
       // console.log("Checking");
 
       const myHeaders = new Headers();
+      const token=await getAccessToken();
       myHeaders.append("Content-Type", "application/json");
       if (address) {
         myHeaders.append("x-wallet-address", address);
+        myHeaders.append("Authorization",`Bearer ${token}`);
       }
 
       const raw = JSON.stringify({
@@ -773,9 +785,11 @@ function MainProfile() {
       console.log("Adding the delegate..");
 
       const myHeaders = new Headers();
+      const token=await getAccessToken();
       myHeaders.append("Content-Type", "application/json");
       if (address) {
         myHeaders.append("x-wallet-address", address);
+        myHeaders.append("Authorization",`Bearer ${token}`);
       }
 
       const raw = JSON.stringify({

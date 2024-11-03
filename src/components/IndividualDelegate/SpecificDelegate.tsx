@@ -108,7 +108,7 @@ function SpecificDelegate({ props }: { props: Type }) {
   const [confettiVisible, setConfettiVisible] = useState(false);
   const network = useAccount().chain;
   const { publicClient, walletClient } = WalletAndPublicClient();
-  const { ready, authenticated, login, logout } = usePrivy();
+  const { ready, authenticated, login, logout,getAccessToken } = usePrivy();
 
 
   const handleDelegateModal = async () => {
@@ -358,9 +358,11 @@ function SpecificDelegate({ props }: { props: Type }) {
     setIsFollowStatusLoading(true);
 
     const myHeaders = new Headers();
+    const token = await getAccessToken();
     myHeaders.append("Content-Type", "application/json");
     if (address) {
       myHeaders.append("x-wallet-address", address);
+      myHeaders.append("Authorization",`Bearer ${token}`);
     }
     const raw = JSON.stringify({
       address: props.individualDelegate,
@@ -448,9 +450,11 @@ function SpecificDelegate({ props }: { props: Type }) {
     if (action == 1) {
       setLoading(true);
       const myHeaders = new Headers();
+      const token=await getAccessToken();
       myHeaders.append("Content-Type", "application/json");
       if (address) {
         myHeaders.append("x-wallet-address", address);
+        myHeaders.append("Authorization",`Bearer ${token}`);
       }
       try {
         const response = await fetch("/api/delegate-follow/updatefollower", {
@@ -493,9 +497,11 @@ function SpecificDelegate({ props }: { props: Type }) {
         updatenotification = !notification;
         setNotificationLoading(true);
         const myHeaders = new Headers();
+        const token=await getAccessToken();
         myHeaders.append("Content-Type", "application/json");
         if (address) {
           myHeaders.append("x-wallet-address", address);
+          myHeaders.append("Authorization",`Bearer ${token}`);
         }
         try {
           const response = await fetch("/api/delegate-follow/updatefollower", {
@@ -549,12 +555,14 @@ function SpecificDelegate({ props }: { props: Type }) {
         // let address = await walletClient.getAddresses();
         follower_address = address;
         delegate_address = props.individualDelegate;
+        const token=await getAccessToken();
         try {
           const response = await fetch("/api/delegate-follow/savefollower", {
             method: "PUT",
             headers: {
               "Content-Type": "application/json",
               "x-wallet-address": follower_address,
+              "Authorization": `Bearer ${token}`
             },
             body: JSON.stringify({
               // Add any necessary data

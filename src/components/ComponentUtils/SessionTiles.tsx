@@ -27,6 +27,7 @@ import copy from "copy-to-clipboard";
 import UpdateHostedSessionModal from "./UpdateHostedSessionModal";
 import { SessionInterface } from "@/types/MeetingTypes";
 import { LIGHTHOUSE_BASE_API_KEY } from "@/config/constants";
+import { usePrivy } from "@privy-io/react-auth";
 
 type Attendee = {
   attendee_address: string;
@@ -103,6 +104,7 @@ SessionTileProps) {
     description: "",
     image: "",
   });
+  const { user, ready, getAccessToken } = usePrivy();
 
   const handleEditModal = (index: number) => {
     setSelectedTileIndex(index);
@@ -189,9 +191,11 @@ SessionTileProps) {
     };
 
     const myHeaders = new Headers();
+    const Clienttoken = await getAccessToken();
     myHeaders.append("Content-Type", "application/json");
     if (address) {
       myHeaders.append("x-wallet-address", address);
+      myHeaders.append("Authorization",`Bearer ${Clienttoken}`);
     }
 
     // Configure the request options
@@ -243,9 +247,11 @@ SessionTileProps) {
       if (newAttestationUID) {
         try {
           const myHeaders = new Headers();
+          const token=await getAccessToken();
           myHeaders.append("Content-Type", "application/json");
           if (address) {
             myHeaders.append("x-wallet-address", address);
+            myHeaders.append("Authorization",`Bearer ${token}`);
           }
 
           const raw = JSON.stringify({
@@ -344,9 +350,11 @@ SessionTileProps) {
         imageCid = sessionData.thumbnail_image;
       }
       const myHeaders = new Headers();
+      const token=await getAccessToken();
       myHeaders.append("Content-Type", "application/json");
       if (address) {
         myHeaders.append("x-wallet-address", address);
+        myHeaders.append("Authorization",`Bearer ${token}`);
       }
 
       const raw = JSON.stringify({

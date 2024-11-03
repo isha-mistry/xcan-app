@@ -13,6 +13,7 @@ import { Oval } from "react-loader-spinner";
 import SessionTileSkeletonLoader from "@/components/SkeletonLoader/SessionTileSkeletonLoader";
 import ErrorDisplay from "@/components/ComponentUtils/ErrorDisplay";
 import RecordedSessionsSkeletonLoader from "@/components/SkeletonLoader/RecordedSessionsSkeletonLoader";
+import { usePrivy } from "@privy-io/react-auth";
 
 function AttendingUserSessions({ daoName }: { daoName: string }) {
   const router = useRouter();
@@ -22,6 +23,7 @@ function AttendingUserSessions({ daoName }: { daoName: string }) {
   const [sessionDetails, setSessionDetails] = useState<any[]>([]);
   const [pageLoading, setPageLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { user, ready, getAccessToken } = usePrivy();
 
   const handleRetry = () => {
     setError(null);
@@ -33,9 +35,11 @@ function AttendingUserSessions({ daoName }: { daoName: string }) {
     try {
       setPageLoading(true);
       const myHeaders = new Headers();
+      const token=await getAccessToken();
       myHeaders.append("Content-Type", "application/json");
       if (address) {
         myHeaders.append("x-wallet-address", address);
+        myHeaders.append("Authorization",`Bearer ${token}`);
       }
       const response = await fetch(`/api/get-session-data/${address}`, {
         method: "POST",

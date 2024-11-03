@@ -13,6 +13,7 @@ import Image from "next/image";
 import PageNotFound from "../PageNotFound/PageNotFound";
 import { IoClose } from "react-icons/io5";
 import SessionHostedModal from "../ComponentUtils/SessionHostedModal";
+import { usePrivy } from "@privy-io/react-auth";
 
 function UpdateSessionDetails({ roomId }: { roomId: string }) {
   // useEffect(() => {
@@ -40,6 +41,7 @@ function UpdateSessionDetails({ roomId }: { roomId: string }) {
   const router = useRouter();
   const [showPopup, setShowPopup] = useState(true);
   const [showHostPopup, setShowHostPopup] = useState(false);
+  const { user, ready, getAccessToken } = usePrivy();
 
   useEffect(() => {
     async function fetchData() {
@@ -91,9 +93,11 @@ function UpdateSessionDetails({ roomId }: { roomId: string }) {
       if (address?.toLowerCase() === data.host_address.toLowerCase()) {
         setLoading(true);
         const myHeaders = new Headers();
+        const token=await getAccessToken();
         myHeaders.append("Content-Type", "application/json");
         if (address) {
           myHeaders.append("x-wallet-address", address);
+          myHeaders.append("Authorization",`Bearer ${token}`);
         }
 
         const raw = JSON.stringify({

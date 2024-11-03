@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useAccount } from "wagmi";
 import toast, { Toaster } from "react-hot-toast";
+import { usePrivy } from "@privy-io/react-auth";
 
 const UserScheduledHours = ({ daoName }: { daoName: string }) => {
   const [selectedDate, setSelectedDate] = useState<string>("");
@@ -9,6 +10,7 @@ const UserScheduledHours = ({ daoName }: { daoName: string }) => {
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const { address } = useAccount();
+  const { user, ready, getAccessToken } = usePrivy();
 
   const [selectedTime, setSelectedTime] = useState<string>("");
 
@@ -42,9 +44,11 @@ const UserScheduledHours = ({ daoName }: { daoName: string }) => {
       const utcFormattedDate = selectedDateUTC.toISOString();
 
       const myHeaders = new Headers();
+      const token=await getAccessToken();
       myHeaders.append("Content-Type", "application/json");
       if (address) {
         myHeaders.append("x-wallet-address", address);
+        myHeaders.append("Authorization",`Bearer ${token}`);
       }
 
       const response = await fetch("/api/office-hours", {

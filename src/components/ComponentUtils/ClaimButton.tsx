@@ -7,6 +7,7 @@ import { ethers } from "ethers";
 import { EAS } from "@ethereum-attestation-service/eas-sdk";
 import toast from "react-hot-toast";
 import confetti from "canvas-confetti";
+import { usePrivy } from "@privy-io/react-auth";
 
 interface ClaimButtonProps {
   meetingId: string;
@@ -35,6 +36,7 @@ const ClaimButton: React.FC<ClaimButtonProps> = ({
 }) => {
   const [isClaiming, setIsClaiming] = useState(false);
   const [isClaimed, setIsClaimed] = useState(!!onChainId);
+  const { user, ready, getAccessToken } = usePrivy();
 
   useEffect(() => {
     setIsClaimed(!!onChainId);
@@ -93,9 +95,11 @@ const ClaimButton: React.FC<ClaimButtonProps> = ({
 
     try {
       const myHeaders = new Headers();
+      const token = await getAccessToken();
       myHeaders.append("Content-Type", "application/json");
       if (address) {
         myHeaders.append("x-wallet-address", address);
+        myHeaders.append("Authorization",`Bearer ${token}`);
       }
 
       // Configure the request options

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { getToken } from "next-auth/jwt";
+// import { getToken } from "next-auth/jwt";
 import { PrivyClient } from "@privy-io/server-auth";
 
 const normalizeOrigin = (url: string) => url.replace(/\/$/, "");
@@ -16,62 +16,132 @@ const privyClient = new PrivyClient(
   process.env.NEXT_PUBLIC_PRIVY_SECRET!
 );
 
-export async function middleware(request: NextRequest) {
-  // console.log("Request Body :- ", request);
+// export async function middleware(request: NextRequest) {
+//   // console.log("Request Body :- ", request);
 
-  // const origin = request.nextUrl.origin;
-  const origin = normalizeOrigin(request.nextUrl.origin);
+//   // const origin = request.nextUrl.origin;
+//   const origin = normalizeOrigin(request.nextUrl.origin);
 
-  // console.log("allowed Origin", allowedOrigins);
-  // console.log("Origin from request", origin);
+//   // console.log("allowed Origin", allowedOrigins);
+//   // console.log("Origin from request", origin);
 
-  // if (!allowedOrigins?.includes(origin)) {
-  //   return new NextResponse(
-  //     JSON.stringify({ error: "Unknown origin request come Forbidden" }),
-  //     {
-  //       status: 403,
-  //       headers: { "Content-Type": "application/json" },
-  //     }
-  //   );
-  // }
+//   if (!allowedOrigins?.includes(origin)) {
+//     return new NextResponse(
+//       JSON.stringify({ error: "Unknown origin request come Forbidden" }),
+//       {
+//         status: 403,
+//         headers: { "Content-Type": "application/json" },
+//       }
+//     );
+//   }
 
-  const authHeader = request.headers.get('authorization');
-  const privyToken = authHeader?.replace('Bearer ', '');
+//   const authHeader = request.headers.get('authorization');
+//   const privyToken = authHeader?.replace('Bearer ', '');
 
-  console.log("Line number 41:",authHeader);
-  console.log("Line number 42:",privyToken);
+//   console.log("Line number 41:",authHeader);
+//   console.log("Line number 42:",privyToken);
 
   
 
-  if (!["POST", "PUT", "DELETE"].includes(request.method)) {
-    // For other methods, allow the request to proceed without additional checks
-    return NextResponse.next();
-  }
+//   if (!["POST", "PUT", "DELETE"].includes(request.method)) {
+//     // For other methods, allow the request to proceed without additional checks
+//     return NextResponse.next();
+//   }
 
-  if (!privyToken) {
-    return new NextResponse(JSON.stringify({ error: "Unauthorized" }), {
-      status: 401,
-      headers: { "Content-Type": "application/json" },
-    });
-  }
+//   if (!privyToken) {
+//     return new NextResponse(JSON.stringify({ error: "Unauthorized" }), {
+//       status: 401,
+//       headers: { "Content-Type": "application/json" },
+//     });
+//   }
 
-  const verifiedUser = await privyClient.verifyAuthToken(privyToken);
-  const verifiedUserId = verifiedUser.userId;
-  console.log(verifiedUserId);
+//   const verifiedUser = await privyClient.verifyAuthToken(privyToken);
+//   const verifiedUserId = verifiedUser.userId;
+//   console.log(verifiedUserId);
 
-  const userDetails = await privyClient.getUser(verifiedUserId);
+//   const userDetails = await privyClient.getUser(verifiedUserId);
 
-    // Check all linked wallets for a match
-    const linkedWallets = userDetails.linkedAccounts.filter(
-      account => account.type === 'wallet'
-    );
+//     // Check all linked wallets for a match
+//     const linkedWallets = userDetails.linkedAccounts.filter(
+//       account => account.type === 'wallet'
+//     );
 
-    const verifiedWallet = linkedWallets.find(
-      wallet => wallet.address?.toLowerCase() 
-    );
+//     const verifiedWallet = linkedWallets.find(
+//       wallet => wallet.address?.toLowerCase() 
+//     );
     
 
-  if (!allowedOrigins.includes(origin)) {
+//   if (!allowedOrigins.includes(origin)) {
+//     return new NextResponse(
+//       JSON.stringify({ error: "Unknown origin request. Forbidden" }),
+//       {
+//         status: 403,
+//         headers: { "Content-Type": "application/json" },
+//       }
+//     );
+//   }
+
+//   const walletAddress = request.headers.get("x-wallet-address");
+//   console.log("Line number 78 front-end wallet:",walletAddress);
+//   console.log("Line number 79 token extrac address",verifiedWallet?.address);
+    
+
+//   // console.log("Append headers wallet address:-", walletAddress);
+
+
+
+//   // // console.log("Upcoming request method:-", request.method);
+
+//   // const token = await getToken({
+//   //   req: request,
+//   //   secret: process.env.NEXTAUTH_SECRET,
+//   // });
+
+//   // console.log("Token generated using nextauth:-", token);
+
+//   // if (!token) {
+//   //   // If there's no token, the user is not authenticated
+//   //   return new NextResponse(JSON.stringify({ error: "Unauthorized" }), {
+//   //     status: 401,
+//   //     headers: { "Content-Type": "application/json" },
+//   //   });
+//   // }
+
+//   // Extract the user address from the token
+//   // const UserAddress = token.sub;
+
+//   // console.log("Exracted user address from token:- ", UserAddress);
+
+//   // console.log("Requested Address:", walletAddress);
+
+//   if (verifiedWallet?.address !== walletAddress) {
+//     // If the user's address doesn't match the requested profile address
+//     console.log(
+//       `Forbidden access attempt: By user with address :- ${verifiedWallet?.address}`
+//     );
+//     return new NextResponse(JSON.stringify({ error: "Forbidden" }), {
+//       status: 403,
+//       headers: { "Content-Type": "application/json" },
+//     });
+//   }
+//   //  else {
+//   //   console.log(
+//   //     `Processed further to calling API to user with wallet address :- ${walletAddress} `
+//   //   );
+//   //   return new NextResponse(JSON.stringify({ message: "Accepted" }), {
+//   //     status: 202,
+//   //     headers: { "Content-Type": "application/json" },
+//   //   });
+//   // }
+
+//   // If everything is okay, continue to the API route
+//   return NextResponse.next();
+// }
+
+export async function middleware(request: NextRequest) {
+  // Origin validation
+  const origin = normalizeOrigin(request.nextUrl.origin);
+  if (!allowedOrigins?.includes(origin)) {
     return new NextResponse(
       JSON.stringify({ error: "Unknown origin request. Forbidden" }),
       {
@@ -81,62 +151,158 @@ export async function middleware(request: NextRequest) {
     );
   }
 
-  const walletAddress = request.headers.get("x-wallet-address");
-  console.log("Line number 78 front-end wallet:",walletAddress);
-  console.log("Line number 79 token extrac address",verifiedWallet?.address);
-    
+  // Skip auth check for non-mutation methods
+  if (!["POST", "PUT", "DELETE"].includes(request.method)) {
+    return NextResponse.next();
+  }
 
-  // console.log("Append headers wallet address:-", walletAddress);
+  // Token validation
+  const authHeader = request.headers.get('authorization');
+  const privyToken = authHeader?.replace('Bearer ', '');
 
+  // console.log("163:",authHeader);
+  // console.log("164",privyToken);
 
-
-  // // console.log("Upcoming request method:-", request.method);
-
-  // const token = await getToken({
-  //   req: request,
-  //   secret: process.env.NEXTAUTH_SECRET,
-  // });
-
-  // console.log("Token generated using nextauth:-", token);
-
-  // if (!token) {
-  //   // If there's no token, the user is not authenticated
-  //   return new NextResponse(JSON.stringify({ error: "Unauthorized" }), {
-  //     status: 401,
-  //     headers: { "Content-Type": "application/json" },
-  //   });
-  // }
-
-  // Extract the user address from the token
-  // const UserAddress = token.sub;
-
-  // console.log("Exracted user address from token:- ", UserAddress);
-
-  // console.log("Requested Address:", walletAddress);
-
-  if (verifiedWallet?.address !== walletAddress) {
-    // If the user's address doesn't match the requested profile address
-    console.log(
-      `Forbidden access attempt: By user with address :- ${verifiedWallet?.address}`
-    );
-    return new NextResponse(JSON.stringify({ error: "Forbidden" }), {
-      status: 403,
+  if (!privyToken) {
+    return new NextResponse(JSON.stringify({ error: "Unauthorized" }), {
+      status: 401,
       headers: { "Content-Type": "application/json" },
     });
   }
-  //  else {
-  //   console.log(
-  //     `Processed further to calling API to user with wallet address :- ${walletAddress} `
-  //   );
-  //   return new NextResponse(JSON.stringify({ message: "Accepted" }), {
-  //     status: 202,
-  //     headers: { "Content-Type": "application/json" },
-  //   });
-  // }
 
-  // If everything is okay, continue to the API route
-  return NextResponse.next();
+  try {
+    // Verify token and get user details
+    const verifiedUser = await privyClient.verifyAuthToken(privyToken);
+    // console.log("Line number 176:",verifiedUser)
+    
+    // const userDetails = await privyClient.getUser(verifiedUser.userId)
+    const user=await privyClient.getUserById(verifiedUser.userId);
+    // console.log("Line 182",user);
+    
+
+    // Get wallet address from headers
+    const walletAddress = request.headers.get("x-wallet-address")?.toLowerCase();
+    
+    if (!walletAddress) {
+      return new NextResponse(
+        JSON.stringify({ error: "Wallet address not provided" }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    // Find linked wallet that matches the provided address
+    const linkedWallet = user.linkedAccounts
+      .filter(account => account.type === 'wallet')
+      .find(wallet => wallet.address?.toLowerCase() === walletAddress);
+
+    if (!linkedWallet) {
+      console.log(
+        `Forbidden access attempt: Wallet address ${walletAddress} not linked to user ${verifiedUser.userId}`
+      );
+      return new NextResponse(JSON.stringify({ error: "Forbidden" }), {
+        status: 403,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    return NextResponse.next();
+  } catch (error) {
+    console.error('Authentication error:', error);
+    return new NextResponse(
+      JSON.stringify({ error: "Authentication failed" }),
+      {
+        status: 401,
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+  }
 }
+
+// export async function middleware(request: NextRequest) {
+//   // Origin validation
+//   const origin = normalizeOrigin(request.nextUrl.origin);
+//   if (!allowedOrigins?.includes(origin)) {
+//     return new NextResponse(
+//       JSON.stringify({ error: "Unknown origin request. Forbidden" }),
+//       {
+//         status: 403,
+//         headers: { "Content-Type": "application/json" },
+//       }
+//     );
+//   }
+
+//   // Skip auth check for non-mutation methods
+//   if (!["POST", "PUT", "DELETE"].includes(request.method)) {
+//     return NextResponse.next();
+//   }
+
+//   // Token validation
+//   const authHeader = request.headers.get('authorization');
+//   const privyToken = authHeader?.replace('Bearer ', '');
+
+//   if (!privyToken) {
+//     return new NextResponse(JSON.stringify({ error: "Unauthorized" }), {
+//       status: 401,
+//       headers: { "Content-Type": "application/json" },
+//     });
+//   }
+
+//   try {
+//     // Verify token and get user details
+//     const verifiedUser = await privyClient.verifyAuthToken(privyToken);
+    
+//     // Use the non-deprecated method to get user details
+//     const userDetails = await privyClient.getUser({
+//       idToken: privyToken // Using the token directly instead of userId
+//     });
+
+//     console.log('user details',userDetails);
+
+//     // Get wallet address from headers
+//     const walletAddress = request.headers.get("x-wallet-address")?.toLowerCase();
+//     console.log("Front-end address",walletAddress);
+    
+//     if (!walletAddress) {
+//       return new NextResponse(
+//         JSON.stringify({ error: "Wallet address not provided" }),
+//         {
+//           status: 400,
+//           headers: { "Content-Type": "application/json" },
+//         }
+//       );
+//     }
+
+//     // Find linked wallet that matches the provided address
+//     const linkedWallet = userDetails.linkedAccounts
+//       .filter(account => account.type === 'wallet')
+//       .find(wallet => wallet.address?.toLowerCase() === walletAddress);
+
+//     if (!linkedWallet) {
+//       console.log(
+//         `Forbidden access attempt: Wallet address ${walletAddress} not linked to user ${verifiedUser.userId}`
+//       );
+//       return new NextResponse(JSON.stringify({ error: "Forbidden" }), {
+//         status: 403,
+//         headers: { "Content-Type": "application/json" },
+//       });
+//     }
+
+//     return NextResponse.next();
+//   } catch (error) {
+//     console.error('Authentication error:', error);
+//     return new NextResponse(
+//       JSON.stringify({ error: "Authentication failed" }),
+//       {
+//         status: 401,
+//         headers: { "Content-Type": "application/json" },
+//       }
+//     );
+//   }
+// }
+
 
 // See "Matching Paths" below to learn more
 export const config = {

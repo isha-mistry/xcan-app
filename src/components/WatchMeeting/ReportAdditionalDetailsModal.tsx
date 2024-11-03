@@ -22,7 +22,7 @@ function ReportAdditionalDetailsModal({
   const { address, isConnected } = useAccount();
   const [details, setDetails] = useState("");
   const [isLoading, setIsLoading] = useState<boolean>();
-  const { ready, authenticated, login, logout } = usePrivy();
+  const { ready, authenticated, login, logout,getAccessToken } = usePrivy();
   const toggleModal = () => {
     onClose();
   };
@@ -43,9 +43,11 @@ function ReportAdditionalDetailsModal({
   ) => {
     setIsLoading(true);
     const myHeaders = new Headers();
+    const token=await getAccessToken();
     myHeaders.append("Content-Type", "application/json");
     if (address) {
       myHeaders.append("x-wallet-address", address);
+      myHeaders.append("Authorization",`Bearer ${token}`);
     }
     const requestOptions = {
       method: "POST",

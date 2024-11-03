@@ -31,6 +31,7 @@ import {
 import { IoCopy } from "react-icons/io5";
 import { useAccount } from "wagmi";
 import { SessionInterface } from "@/types/MeetingTypes";
+import { usePrivy } from "@privy-io/react-auth";
 
 type Attendee = {
   attendee_address: string;
@@ -82,6 +83,7 @@ function EventTile({ tileIndex, data: initialData, isEvent }: TileProps) {
   const [ensGuestAvatar, setEnsGuestAvatar] = useState("");
   const [loadingEnsData, setLoadingEnsData] = useState(true);
   const { address } = useAccount();
+  const { user, ready, getAccessToken } = usePrivy();
   // const address = "0xB351a70dD6E5282A8c84edCbCd5A955469b9b032";
 
   const handleCopy = (addr: string) => {
@@ -157,9 +159,11 @@ function EventTile({ tileIndex, data: initialData, isEvent }: TileProps) {
       }
 
       const myHeaders = new Headers();
+      const token = await getAccessToken();
       myHeaders.append("Content-Type", "application/json");
       if (address) {
         myHeaders.append("x-wallet-address", address);
+        myHeaders.append("Authorization", `Bearer ${token}`);
       }
 
       const raw = await JSON.stringify({

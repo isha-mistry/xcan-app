@@ -27,6 +27,7 @@ import screenImghover from "@/assets/images/instant-meet/screenImghover.svg";
 import chatImg from "@/assets/images/instant-meet/chat.png";
 import chatImghover from "@/assets/images/instant-meet/chatImghover.svg";
 import heroImg from "@/assets/images/instant-meet/instant-meet-hero.svg";
+import { usePrivy } from "@privy-io/react-auth";
 
 interface instantMeetProps {
   isDelegate: boolean;
@@ -44,6 +45,7 @@ function InstantMeet({ isDelegate, selfDelegate, daoName }: instantMeetProps) {
   const { address } = useAccount();
   const { chain } = useAccount();
   const [isScheduling, setIsScheduling] = useState(false);
+  const { user, ready, getAccessToken } = usePrivy();
   // const [daoName, setDaoName] = useState<string>();
   const router = useRouter();
 
@@ -100,9 +102,11 @@ function InstantMeet({ isDelegate, selfDelegate, daoName }: instantMeetProps) {
     console.log("requestData", requestData);
 
     const myHeaders = new Headers();
+    const token = await getAccessToken();
     myHeaders.append("Content-Type", "application/json");
     if (address) {
       myHeaders.append("x-wallet-address", address);
+      myHeaders.append("Authorization", `Bearer ${token}`);
     }
 
     const requestOptions: any = {

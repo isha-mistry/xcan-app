@@ -11,6 +11,7 @@ import {
 import styles from "./DelegateInfo.module.css";
 import { marked } from "marked";
 import { useAccount } from "wagmi";
+import { usePrivy } from "@privy-io/react-auth";
 
 interface Type {
   daoDelegates: string;
@@ -38,6 +39,7 @@ function DelegateInfo({ props, desc }: { props: Type; desc: string }) {
   const [loadingKarma, setLoadingKarma] = useState(false);
   const [convertedDescription, setConvertedDescription] = useState<string>("");
   const { address } = useAccount();
+  const { user, ready, getAccessToken } = usePrivy();
 
   useEffect(() => {
     if (activeButton === "onchain") {
@@ -100,9 +102,11 @@ function DelegateInfo({ props, desc }: { props: Type; desc: string }) {
     const sessionAttended = async () => {
       try {
         const myHeaders = new Headers();
+        const token=await getAccessToken();
         myHeaders.append("Content-Type", "application/json");
         if (address) {
           myHeaders.append("x-wallet-address", address);
+          myHeaders.append("Authorization",`Bearer ${token}`);
         }
         const response = await fetch(
           `/api/get-session-data/${props.individualDelegate}`,
@@ -138,9 +142,11 @@ function DelegateInfo({ props, desc }: { props: Type; desc: string }) {
     const officeHoursHosted = async () => {
       try {
         const myHeaders = new Headers();
+        const token=await getAccessToken();
         myHeaders.append("Content-Type", "application/json");
         if (address) {
           myHeaders.append("x-wallet-address", address);
+          myHeaders.append("Authorization",`Bearer ${token}`);
         }
         const response = await fetch(`/api/get-officehours-address`, {
           method: "POST",
@@ -175,9 +181,11 @@ function DelegateInfo({ props, desc }: { props: Type; desc: string }) {
     const officeHoursAttended = async () => {
       try {
         const myHeaders = new Headers();
+        const token=await getAccessToken();
         myHeaders.append("Content-Type", "application/json");
         if (address) {
           myHeaders.append("x-wallet-address", address);
+          myHeaders.append("Authorization",`Bearer ${token}`);
         }
         const response = await fetch(`/api/get-attendee-individual`, {
           method: "POST",

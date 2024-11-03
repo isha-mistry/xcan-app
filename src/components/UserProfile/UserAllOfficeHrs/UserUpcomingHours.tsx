@@ -20,6 +20,7 @@ import { Oval } from "react-loader-spinner";
 import toast, { Toaster } from "react-hot-toast";
 import SessionTileSkeletonLoader from "@/components/SkeletonLoader/SessionTileSkeletonLoader";
 import { headers } from "next/headers";
+import { usePrivy } from "@privy-io/react-auth";
 
 interface SessionDetail {
   img: any;
@@ -44,10 +45,12 @@ function UserUpcomingHours() {
   const [pageLoading, setPageLoading] = useState(true);
 
   const { address } = useAccount();
+  const { getAccessToken } = usePrivy();
 
   const [selectedDate, setSelectedDate] = useState<string>("");
   const [selectedTime, setSelectedTime] = useState<string>("");
   const [startLoading, setStartLoading] = useState(false);
+
 
   const handleTimeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setSelectedTime(e.target.value);
@@ -132,11 +135,13 @@ function UserUpcomingHours() {
     onOpenChange();
   };
 
-  const updateOfficeHours = (data: any) => {
+  const updateOfficeHours = async(data: any) => {
     const myHeaders = new Headers();
+    const token=await getAccessToken();
     myHeaders.append("Content-Type", "application/json");
     if (address) {
       myHeaders.append("x-wallet-address", address);
+      myHeaders.append("Authorization",`Bearer ${token}`);
     }
 
     const raw = JSON.stringify({
@@ -156,12 +161,14 @@ function UserUpcomingHours() {
       .catch((error) => console.log("error", error));
   };
 
-  const handleDelete = (index: number) => {
+  const handleDelete = async(index: number) => {
     const session = sessionDetails[index];
     const myHeaders = new Headers();
+    const token=await getAccessToken();
     myHeaders.append("Content-Type", "application/json");
     if (address) {
       myHeaders.append("x-wallet-address", address);
+      myHeaders.append("Authorization",`Bearer ${token}`);
     }
     const requestOptions = {
       method: "DELETE",

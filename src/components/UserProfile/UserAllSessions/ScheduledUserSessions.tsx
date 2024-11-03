@@ -19,6 +19,7 @@ import { AbiEncodingLengthMismatchError } from "viem";
 import { all } from "axios";
 import { fetchEnsNameAndAvatar } from "@/utils/ENSUtils";
 import { headers } from "next/headers";
+import { usePrivy } from "@privy-io/react-auth";
 
 interface dataToStore {
   userAddress: `0x${string}` | undefined | null;
@@ -49,6 +50,7 @@ function ScheduledUserSessions({ daoName }: { daoName: string }) {
   const [selectedEndTime, setSelectedEndTime] = useState("");
   const [successModalOpen, setSuccessModalOpen] = useState(false);
   const [finalData, setFinalData] = useState<dataToStore>();
+  const { ready, authenticated, login, logout,getAccessToken } = usePrivy();
 
   const [mailId, setMailId] = useState<string>();
   const [hasEmailID, setHasEmailID] = useState<Boolean>();
@@ -163,9 +165,11 @@ function ScheduledUserSessions({ daoName }: { daoName: string }) {
   const checkUser = async () => {
     try {
       const myHeaders = new Headers();
+      const token=await getAccessToken();
       myHeaders.append("Content-Type", "application/json");
       if (address) {
         myHeaders.append("x-wallet-address", address);
+        myHeaders.append("Authorization",`Bearer ${token}`);
       }
 
       const raw = JSON.stringify({
@@ -298,9 +302,11 @@ function ScheduledUserSessions({ daoName }: { daoName: string }) {
 
     console.log("dataToStore", dataToStore);
     const myHeaders = new Headers();
+    const token=await getAccessToken();
     myHeaders.append("Content-Type", "application/json");
     if (address) {
       myHeaders.append("x-wallet-address", address);
+      myHeaders.append("Authorization",`Bearer ${token}`);
     }
     const requestOptions: any = {
       method: "POST",
@@ -325,9 +331,11 @@ function ScheduledUserSessions({ daoName }: { daoName: string }) {
         //calling api endpoint for sending mail to user who follow this delegate
         try {
           const myHeaders = new Headers();
+          const token=await getAccessToken();
           myHeaders.append("Content-Type", "application/json");
           if (address) {
             myHeaders.append("x-wallet-address", address);
+            myHeaders.append("Authorization",`Bearer ${token}`);
           }
           const response = await fetch("/api/delegate-follow/send-mails", {
             method: "PUT",

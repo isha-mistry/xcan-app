@@ -10,6 +10,7 @@ import text1 from "@/assets/images/daos/texture1.png";
 import { Oval } from "react-loader-spinner";
 import { RxCross2 } from "react-icons/rx";
 import SessionTileSkeletonLoader from "../SkeletonLoader/SessionTileSkeletonLoader";
+import { usePrivy } from "@privy-io/react-auth";
 
 interface UserOfficeHoursProps {
   isDelegate: boolean | undefined;
@@ -41,15 +42,18 @@ function UserOfficeHours({
   const [sessionDetails, setSessionDetails] = useState([]);
   const [dataLoading, setDataLoading] = useState(true);
   const [showComingSoon, setShowComingSoon] = useState(true);
+  const { user, ready, getAccessToken } = usePrivy();
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         setDataLoading(true);
         const myHeaders = new Headers();
+        const token=await getAccessToken(); 
         myHeaders.append("Content-Type", "application/json");
         if (address) {
           myHeaders.append("x-wallet-address", address);
+          myHeaders.append("Authorization",`Bearer ${token}`);
         }
 
         const raw = JSON.stringify({

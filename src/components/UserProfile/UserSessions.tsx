@@ -10,6 +10,7 @@ import RecordedSessionsSkeletonLoader from "../SkeletonLoader/RecordedSessionsSk
 import ErrorDisplay from "../ComponentUtils/ErrorDisplay";
 import style from "./MainProfile.module.css";
 import { ChevronRight } from 'lucide-react';
+import { usePrivy } from "@privy-io/react-auth";
 
 interface UserSessionsProps {
   isDelegate: boolean | undefined;
@@ -36,6 +37,7 @@ function UserSessions({
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
   const [showLeftShadow, setShowLeftShadow] = useState(false);
   const [showRightShadow, setShowRightShadow] = useState(false);
+  const { user, ready, getAccessToken } = usePrivy();
 
   const handleRetry = () => {
     setError(null);
@@ -71,9 +73,11 @@ function UserSessions({
     try {
       // setDataLoading(true);
       const myHeaders = new Headers();
+      const token=await getAccessToken();
       myHeaders.append("Content-Type", "application/json");
       if (address) {
         myHeaders.append("x-wallet-address", address);
+        myHeaders.append("Authorization",`Bearer ${token}`);
       }
       const response = await fetch(`/api/get-sessions`, {
         method: "POST",

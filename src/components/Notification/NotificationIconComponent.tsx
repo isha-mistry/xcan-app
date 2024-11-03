@@ -16,6 +16,7 @@ import {
 } from "./NotificationActions";
 import { useNotificationStudioState } from "@/store/notificationStudioState";
 import { useSession } from "next-auth/react";
+import { usePrivy } from "@privy-io/react-auth";
 
 function NotificationIconComponent() {
   const router = useRouter();
@@ -24,6 +25,7 @@ function NotificationIconComponent() {
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const socket = useSocket();
   const { address } = useAccount();
+  const { user, ready, getAccessToken } = usePrivy();
   const [socketId, setSocketId] = useState<string | null>(null);
   const [isAPILoading, setIsAPILoading] = useState<boolean>();
   const { data: session } = useSession();
@@ -65,9 +67,11 @@ function NotificationIconComponent() {
       setIsAPILoading(true);
       try {
         const myHeaders = new Headers();
+        const token=await getAccessToken();
         myHeaders.append("Content-Type", "application/json");
         if (address) {
           myHeaders.append("x-wallet-address", address);
+          myHeaders.append("Authorization",`Bearer ${token}`);
         }
 
         const raw = JSON.stringify({ address });

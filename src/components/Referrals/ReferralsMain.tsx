@@ -52,7 +52,7 @@ function ReferralsMain() {
       return <ConnectYourWallet />;
     }
 
-    if (isReady) {
+    if (ready && authenticated) {
       return <InviteCreators userAddress={address} />;
     }
 

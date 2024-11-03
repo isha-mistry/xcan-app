@@ -72,7 +72,7 @@ function BookSession({ props }: { props: Type }) {
   const [continueAPICalling, setContinueAPICalling] = useState<Boolean>(false);
   const [userRejected, setUserRejected] = useState<Boolean>();
   const [addingEmail, setAddingEmail] = useState<boolean>();
-  const { ready, authenticated, login, logout } = usePrivy();
+  const { ready, authenticated, login, logout,getAccessToken } = usePrivy();
 
   useEffect(() => {
     if (isOpen) {
@@ -211,9 +211,11 @@ function BookSession({ props }: { props: Type }) {
   const checkUser = async () => {
     try {
       const myHeaders = new Headers();
+      const token=await getAccessToken();
       myHeaders.append("Content-Type", "application/json");
       if (address) {
         myHeaders.append("x-wallet-address", address);
+        myHeaders.append("Authorization",`Bearer ${token}`);
       }
 
       const raw = JSON.stringify({
@@ -312,9 +314,11 @@ function BookSession({ props }: { props: Type }) {
     };
 
     const myHeaders = new Headers();
+    const token = await getAccessToken();
     myHeaders.append("Content-Type", "application/json");
     if (address) {
       myHeaders.append("x-wallet-address", address);
+      myHeaders.append("Authorization", `Bearer ${token}`);
     }
 
     const requestOptions: any = {

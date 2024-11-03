@@ -12,6 +12,7 @@ import { GiChaingun } from "react-icons/gi";
 import { BASE_URL } from "@/config/constants";
 import { useAccount } from "wagmi";
 import { useNotificationStudioState } from "@/store/notificationStudioState";
+import { getAccessToken } from "@privy-io/react-auth";
 
 export const getBackgroundColor = (data: any) => {
   if (data?.notification_type === "newBooking") {
@@ -74,9 +75,11 @@ export const markAsRead = async (data: any): Promise<void> => {
     useNotificationStudioState.getState();
   try {
     const myHeaders = new Headers();
+    const token=await getAccessToken();
     myHeaders.append("Content-Type", "application/json");
     if (data.receiver_address) {
       myHeaders.append("x-wallet-address", data.receiver_address);
+      myHeaders.append("Authorization",`Bearer ${token}`);
     }
 
     const raw = JSON.stringify({

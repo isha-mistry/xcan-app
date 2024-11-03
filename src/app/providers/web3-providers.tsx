@@ -40,8 +40,7 @@
   import { SessionProvider, signIn } from "next-auth/react";
   import { http } from 'viem';
   import { mainnet,optimism, arbitrum,arbitrumSepolia } from 'viem/chains';
-  import { useSearchParams } from "next/navigation";
-  import { SiweMessage } from 'siwe';
+  // import { SiweMessage } from 'siwe';
   import { getCsrfToken } from "next-auth/react";
   import { useWalletClient } from "wagmi";
   import { PrivyAuthHandler } from "./PrivyAuthHandler";

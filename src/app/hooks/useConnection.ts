@@ -1,20 +1,23 @@
 "use client";
+import { usePrivy } from "@privy-io/react-auth";
 import { useEffect, useState, useCallback } from "react";
-import { useSession } from "next-auth/react";
+// import { useSession } from "next-auth/react";
+
 import { useAccount, useAccountEffect } from "wagmi";
 
 export const useConnection = () => {
-  const { data: session, status: sessionStatus } = useSession();
+  // const { data: session, status: sessionStatus } = useSession();
+  const { ready, authenticated, login, logout, user } = usePrivy();  
   const { address, isConnected } = useAccount();
   const [connection, setConnection] = useState(false);
   const [isSessionLoading, setIsSessionLoading] = useState(true);
   const [isPageLoading, setIsPageLoading] = useState(true);
 
   const checkConnection = useCallback(() => {
-    const isFullyConnected = Boolean(address && session && isConnected);
+    const isFullyConnected = Boolean(address && authenticated && isConnected);
     setConnection(isFullyConnected);
-    setIsSessionLoading(sessionStatus === "loading");
-  }, [address, session, isConnected, sessionStatus]);
+    // setIsSessionLoading(sessionStatus === "loading");
+  }, [address, ready, isConnected, authenticated]);
 
   useEffect(() => {
     checkConnection();

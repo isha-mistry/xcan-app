@@ -105,18 +105,18 @@ export default function ChainSwitcherHeader({
       <div className="flex items-center justify-between w-full bg-gray-100 p-3 rounded-full shadow-sm">
         {/* Address Display with Copy Button */}
         <div className="flex items-center space-x-3">
-          {/* {ensAvatar && (
+          {ensAvatar && (
             <img
               alt="ENS Avatar"
               src={ensAvatar}
               className="w-6 h-6 rounded-full"
             />
-          )} */}
-           <img
+          )}
+           {/* <img
               alt="ENS Avatar"
               src={"https://avatars.jakerunzer.com/test"}
               className="w-6 h-6 rounded-full"
-            />
+            /> */}
           <span className="text-gray-800 font-semibold">
             {getSlicedAddress(address)}
           </span>

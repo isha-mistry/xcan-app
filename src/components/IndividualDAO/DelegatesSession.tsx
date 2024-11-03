@@ -25,6 +25,7 @@ import { RiErrorWarningLine } from "react-icons/ri";
 import { TimeoutError } from "viem";
 import { SessionInterface } from "@/types/MeetingTypes";
 import { CiSearch } from "react-icons/ci";
+import { usePrivy } from "@privy-io/react-auth";
 
 function DelegatesSession({ props }: { props: string }) {
   const [searchQuery, setSearchQuery] = useState("");
@@ -38,6 +39,7 @@ function DelegatesSession({ props }: { props: string }) {
   const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure();
   const [error, setError] = useState<string | null>(null);
   const { address } = useAccount();
+  const { user, ready, getAccessToken } = usePrivy();
 
   const fetchData = async () => {
     try {
@@ -119,9 +121,11 @@ function DelegatesSession({ props }: { props: string }) {
         });
 
         const myHeaders = new Headers();
+        const token=await getAccessToken();
         myHeaders.append("Content-Type", "application/json");
         if (address) {
           myHeaders.append("x-wallet-address", address);
+          myHeaders.append("Authorization",`Bearer ${token}`);
         }
 
         const requestOptions: any = {

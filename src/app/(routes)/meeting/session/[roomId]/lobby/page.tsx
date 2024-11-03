@@ -37,6 +37,7 @@ import { fetchEnsName } from "@/utils/ENSUtils";
 import { truncateAddress } from "@/utils/text";
 import { useSession } from "next-auth/react";
 import { useConnection } from "@/app/hooks/useConnection";
+import { usePrivy } from "@privy-io/react-auth";
 
 type lobbyProps = {};
 
@@ -74,6 +75,7 @@ const Lobby = ({ params }: { params: { roomId: string } }) => {
   const [attendeeJoinedStatus, setAttendeeJoinedStatus] = useState<any>();
   const [meetingData, setMeetingData] = useState<any>();
   const { data: session } = useSession();
+  const { user, ready, getAccessToken } = usePrivy();
   const { isConnected, isPageLoading, isSessionLoading, isReady } =
     useConnection();
 
@@ -135,9 +137,11 @@ const Lobby = ({ params }: { params: { roomId: string } }) => {
         };
         try {
           const myHeaders = new Headers();
+          const token=await getAccessToken();
           myHeaders.append("Content-Type", "application/json");
           if (address) {
             myHeaders.append("x-wallet-address", address);
+            myHeaders.append("Authorization",`Bearer ${token}`);
           }
           const response = await fetch("/api/new-token", {
             method: "POST",
@@ -181,9 +185,11 @@ const Lobby = ({ params }: { params: { roomId: string } }) => {
       ) => {
         console.log("inside put api");
         const myHeaders = new Headers();
+        const token=await getAccessToken();
         myHeaders.append("Content-Type", "application/json");
         if (address) {
           myHeaders.append("x-wallet-address", address);
+          myHeaders.append("Authorization",`Bearer ${token}`);
         }
 
         const raw = JSON.stringify({
@@ -245,9 +251,11 @@ const Lobby = ({ params }: { params: { roomId: string } }) => {
         const attendee_address = role === "guest" ? address : peerId;
 
         const myHeaders = new Headers();
+        const token=await getAccessToken();
         myHeaders.append("Content-Type", "application/json");
         if (address) {
           myHeaders.append("x-wallet-address", address);
+          myHeaders.append("Authorization",`Bearer ${token}`);
         }
 
         const raw = JSON.stringify({
@@ -357,9 +365,11 @@ const Lobby = ({ params }: { params: { roomId: string } }) => {
     const fetchData = async () => {
       try {
         const myHeaders = new Headers();
+        const token=await getAccessToken();
         myHeaders.append("Content-Type", "application/json");
         if (address) {
           myHeaders.append("x-wallet-address", address);
+          myHeaders.append("Authorization",`Bearer ${token}`);
         }
 
         const raw = JSON.stringify({

@@ -20,10 +20,12 @@ import { useNotificationStudioState } from "@/store/notificationStudioState";
 import MobileResponsiveMessage from "../MobileResponsiveMessage/MobileResponsiveMessage";
 import Heading from "../ComponentUtils/Heading";
 import NotificationSkeletonLoader from '../SkeletonLoader/NotificationSkeletonLoader';
+import { usePrivy } from "@privy-io/react-auth";
 
 function NotificationMain() {
   const { data: session } = useSession();
   const { address } = useAccount();
+  const { user, ready, getAccessToken } = usePrivy();
   const searchParams = useSearchParams();
   const router = useRouter();
   const path = usePathname();
@@ -75,9 +77,11 @@ function NotificationMain() {
     setIsLoading(true);
     try {
       const myHeaders = new Headers();
+      const token=await getAccessToken();
       myHeaders.append("Content-Type", "application/json");
       if (address) {
         myHeaders.append("x-wallet-address", address);
+        myHeaders.append("Authorization",`Bearer ${token}`);
       }
 
       const raw = JSON.stringify({ address });
@@ -173,9 +177,11 @@ function NotificationMain() {
     setMarkAllReadCalling(true);
     try {
       const myHeaders = new Headers();
+      const token=await getAccessToken();
       myHeaders.append("Content-Type", "application/json");
       if (address) {
         myHeaders.append("x-wallet-address", address);
+        myHeaders.append("Authorization",`Bearer ${token}`);
       }
 
       const raw = JSON.stringify({

@@ -11,9 +11,11 @@ import { useAccount } from "wagmi";
 import ErrorDisplay from "@/components/ComponentUtils/ErrorDisplay";
 import RecordedSessionsSkeletonLoader from "@/components/SkeletonLoader/RecordedSessionsSkeletonLoader";
 import { SessionInterface } from "@/types/MeetingTypes";
+import { usePrivy } from "@privy-io/react-auth";
 
 function BookedUserSessions({ daoName }: { daoName: string }) {
   const { address } = useAccount();
+  const { user, ready, getAccessToken } = usePrivy();
   // const address = "0xB351a70dD6E5282A8c84edCbCd5A955469b9b032";
   const [sessionDetails, setSessionDetails] = useState([]);
   const [pageLoading, setPageLoading] = useState(true);
@@ -28,9 +30,11 @@ function BookedUserSessions({ daoName }: { daoName: string }) {
   const getMeetingData = async () => {
     try {
       const myHeaders = new Headers();
+      const token=await getAccessToken();
       myHeaders.append("Content-Type", "application/json");
       if (address) {
         myHeaders.append("x-wallet-address", address);
+        myHeaders.append("Authorization",`Bearer ${token}`);
       }
 
       const raw = JSON.stringify({

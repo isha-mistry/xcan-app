@@ -38,7 +38,7 @@ import {
   ChevronUp,
   ChevronDown,
 } from "lucide-react";
-import { usePrivy } from "@privy-io/react-auth";
+import { getAccessToken, usePrivy } from "@privy-io/react-auth";
 
 interface Attendee extends DynamicAttendeeInterface {
   profileInfo: UserProfileInterface;
@@ -224,8 +224,12 @@ const WatchFreeCollect = ({
 
   const handleContractSubmit = async (contractAddress: string) => {
     const myHeaders = new Headers();
+    const token=await getAccessToken();
     myHeaders.append("Content-Type", "application/json");
-    if (address) myHeaders.append("x-wallet-address", address);
+    if (address) {
+      myHeaders.append("x-wallet-address", address);
+      myHeaders.append("Authorization",`Bearer ${token}`);
+    }
 
     const raw = JSON.stringify({
       meetingId: data.meetingId,

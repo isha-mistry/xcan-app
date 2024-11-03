@@ -6,6 +6,7 @@ import Tile from "../ComponentUtils/Tile";
 import { Oval } from "react-loader-spinner";
 import SessionTileSkeletonLoader from "../SkeletonLoader/SessionTileSkeletonLoader";
 import {useAccount} from "wagmi";
+import { usePrivy } from "@privy-io/react-auth";
 
 interface Type {
   daoDelegates: string;
@@ -29,6 +30,7 @@ function DelegateOfficeHrs({ props }: { props: Type }) {
   const path = usePathname();
   const searchParams = useSearchParams();
   const {address}=useAccount();
+  const { user, ready, getAccessToken } = usePrivy();
 
   const [sessionDetails, setSessionDetails] = useState([]);
   const [dataLoading, setDataLoading] = useState(true);
@@ -40,9 +42,11 @@ function DelegateOfficeHrs({ props }: { props: Type }) {
       try {
         setDataLoading(true);
         const myHeaders = new Headers();
+        const token=await getAccessToken();
         myHeaders.append("Content-Type", "application/json");
         if (address) {
           myHeaders.append("x-wallet-address", address);
+          myHeaders.append("Authorization",`Bearer ${token}`);
         }
 
         const raw = JSON.stringify({

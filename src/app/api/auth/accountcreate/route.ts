@@ -1,5 +1,5 @@
 import { connectDB } from "@/config/connectDB";
-import { NextApiResponse } from "next";
+// import { NextApiResponse } from "next";
 import { NextRequest, NextResponse } from "next/server";
 import { AuthTokenClaims, PrivyClient } from "@privy-io/server-auth";
 
@@ -15,7 +15,7 @@ interface DelegateRequestBody {
   referrer: string;
 }
 
-export async function POST(req: NextRequest, res: NextApiResponse) {
+export async function POST(req: NextRequest, res: NextResponse) {
   let client;
   try {
     // Privy token verification

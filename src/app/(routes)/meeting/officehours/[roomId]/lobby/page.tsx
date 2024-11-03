@@ -32,6 +32,7 @@ import { Oval, TailSpin } from "react-loader-spinner";
 import Link from "next/link";
 import ConnectWalletWithENS from "@/components/ConnectWallet/ConnectWalletWithENS";
 import { useStudioState } from "@/store/studioState";
+import { usePrivy } from "@privy-io/react-auth";
 
 type lobbyProps = {};
 
@@ -43,6 +44,7 @@ const Lobby = ({ params }: { params: { roomId: string } }) => {
   // const setUserDisplayName = useStore((state) => state.setUserDisplayName);
   // const userDisplayName = useStore((state) => state.userDisplayName);
   const [token, setToken] = useState<string>("");
+  const { user, ready, getAccessToken } = usePrivy();
   const [isJoining, setIsJoining] = useState<boolean>(false);
   const { updateMetadata, metadata, peerId, role } = useLocalPeer<{
     displayName: string;
@@ -86,9 +88,11 @@ const Lobby = ({ params }: { params: { roomId: string } }) => {
           };
           try {
             const myHeaders = new Headers();
+            const token=await getAccessToken();
             myHeaders.append("Content-Type", "application/json");
             if (address) {
               myHeaders.append("x-wallet-address", address);
+              myHeaders.append("Authorization",`Bearer ${token}`);
             }
             const response = await fetch("/api/new-token", {
               method: "POST",
@@ -128,9 +132,11 @@ const Lobby = ({ params }: { params: { roomId: string } }) => {
         if (Role.HOST) {
           console.log("inside put api");
           const myHeaders = new Headers();
+          const token=await getAccessToken();
           myHeaders.append("Content-Type", "application/json");
           if (address) {
             myHeaders.append("x-wallet-address", address);
+            myHeaders.append("Authorization",`Bearer ${token}`);
           }
 
           const raw = JSON.stringify({

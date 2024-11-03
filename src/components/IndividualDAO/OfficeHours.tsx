@@ -10,6 +10,7 @@ import ErrorDisplay from "../ComponentUtils/ErrorDisplay";
 import { headers } from "next/headers";
 import { useAccount } from "wagmi";
 import { CiSearch } from "react-icons/ci";
+import { usePrivy } from "@privy-io/react-auth";
 
 interface Session {
   _id: string;
@@ -29,6 +30,7 @@ function OfficeHours({ props }: { props: string }) {
   const searchParams = useSearchParams();
   const dao_name = props;
   const { address } = useAccount();
+  const { user, ready, getAccessToken } = usePrivy();
   // const dao_name = props.charAt(0).toUpperCase() + props.slice(1);
 
   const [sessionDetails, setSessionDetails] = useState([]);
@@ -41,9 +43,11 @@ function OfficeHours({ props }: { props: string }) {
     try {
       setDataLoading(true);
       const myHeaders = new Headers();
+      const token=await getAccessToken();
       myHeaders.append("Content-Type", "application/json");
       if (address) {
         myHeaders.append("x-wallet-address", address);
+        myHeaders.append("Authorization",`Bearer ${token}`);
       }
 
       const raw = JSON.stringify({
@@ -121,9 +125,11 @@ function OfficeHours({ props }: { props: string }) {
         });
 
         const myHeaders = new Headers();
+        const token=await getAccessToken();
         myHeaders.append("Content-Type", "application/json");
         if (address) {
           myHeaders.append("x-wallet-address", address);
+          myHeaders.append("Authorization",`Bearer ${token}`);
         }
 
         const requestOptions: any = {

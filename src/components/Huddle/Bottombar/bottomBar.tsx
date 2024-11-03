@@ -35,6 +35,7 @@ import QuickLinks from "./QuickLinks";
 import { handleRecording, handleStopRecording } from "../HuddleUtils";
 import { BASE_URL } from "@/config/constants";
 import { uploadFile } from "@/actions/uploadFile";
+import { usePrivy } from "@privy-io/react-auth";
 
 const BottomBar = ({
   daoName,
@@ -63,6 +64,7 @@ const BottomBar = ({
   const { chain } = useAccount();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const { address } = useAccount();
+  const { user, ready, getAccessToken } = usePrivy();
   const {
     role,
     metadata,
@@ -107,9 +109,11 @@ const BottomBar = ({
         setS3URL(videoUri);
 
         const myHeaders = new Headers();
+        const token=await getAccessToken();
         myHeaders.append("Content-Type", "application/json");
         if (address) {
           myHeaders.append("x-wallet-address", address);
+          myHeaders.append("Authorization",`Bearer ${token}`);
         }
 
         const raw = JSON.stringify({
@@ -191,9 +195,11 @@ const BottomBar = ({
         }
         try {
           const myHeaders = new Headers();
+          const token=await getAccessToken();
           myHeaders.append("Content-Type", "application/json");
           if (address) {
             myHeaders.append("x-wallet-address", address);
+            myHeaders.append("Authorization",`Bearer ${token}`);
           }
           const requestOptions = {
             method: "PUT",
@@ -225,9 +231,11 @@ const BottomBar = ({
 
     if (meetingCategory === "officehours") {
       const myHeaders = new Headers();
+      const token = await getAccessToken();
       myHeaders.append("Content-Type", "application/json");
       if (address) {
         myHeaders.append("x-wallet-address", address);
+        myHeaders.append("Authorization",`Bearer ${token}`);
       }
       try {
         const res = await fetch(`/api/update-office-hours/${hostAddress}`, {

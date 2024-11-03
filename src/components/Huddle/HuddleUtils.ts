@@ -1,5 +1,6 @@
 import { SessionInterface } from "@/types/MeetingTypes";
 import toast from "react-hot-toast";
+import { getAccessToken } from "@privy-io/react-auth";
 
 export const startRecording = async (
   roomId: string | undefined,
@@ -47,9 +48,11 @@ export const handleStopRecording = async (
 
   try {
     const myHeaders = new Headers();
+    const token=await getAccessToken();
     myHeaders.append("Content-Type", "application/json");
     if (address) {
       myHeaders.append("x-wallet-address", address);
+      myHeaders.append("Authorization",`Bearer ${token}`);
     }
     const requestOptions = {
       method: "POST",
@@ -104,9 +107,11 @@ export const handleCloseMeeting = async (
 
   try {
     const myHeaders = new Headers();
+    const token=await getAccessToken();
     myHeaders.append("Content-Type", "application/json");
     if (address) {
       myHeaders.append("x-wallet-address", address);
+      myHeaders.append("Authorization",`Bearer ${token}`);
     }
     const requestOptions = {
       method: "POST",
@@ -141,9 +146,11 @@ export const handleCloseMeeting = async (
       try {
         toast.success("Giving Attestations");
         const myHeaders = new Headers();
+        const token=await getAccessToken();
         myHeaders.append("Content-Type", "application/json");
         if (address) {
           myHeaders.append("x-wallet-address", address);
+          myHeaders.append("Authorization",`Bearer ${token}`);
         }
         const response = await fetch(`/api/get-attest-data`, {
           method: "POST",

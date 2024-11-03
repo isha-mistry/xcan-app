@@ -47,6 +47,7 @@ import ProposalMainDescriptionSkeletonLoader from "../SkeletonLoader/ProposalMai
 import DOMPurify from "dompurify";
 import MobileResponsiveMessage from "../MobileResponsiveMessage/MobileResponsiveMessage";
 import { Transaction } from "ethers";
+import { usePrivy } from "@privy-io/react-auth";
 
 // Create a client
 const client = createPublicClient({
@@ -113,6 +114,7 @@ function ProposalMain({ props }: { props: Props }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [hasVoted, setHasVoted] = useState(false);
   const chartContainerRef = useRef<HTMLDivElement | null>(null);
+  const { user, ready, getAccessToken } = usePrivy();
 
   interface VoteData {
     address: string;
@@ -144,9 +146,11 @@ function ProposalMain({ props }: { props: Props }) {
     // Make the API call to submit the vote
 
     const myHeaders = new Headers();
+    const token=await getAccessToken();
     myHeaders.append("Content-Type", "application/json");
     if (address) {
       myHeaders.append("x-wallet-address", address);
+      myHeaders.append("Authorization",`Bearer ${token}`);
     }
 
     const response = await fetch("/api/submit-vote", {

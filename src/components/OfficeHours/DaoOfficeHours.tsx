@@ -20,6 +20,7 @@ import SidebarMainMobile from "../MainSidebar/SidebarMainMobile";
 import MobileResponsiveMessage from "../MobileResponsiveMessage/MobileResponsiveMessage";
 import Heading from "../ComponentUtils/Heading";
 import { CiSearch } from "react-icons/ci";
+import { usePrivy } from "@privy-io/react-auth";
 interface Type {
   img: StaticImageData;
   title: string;
@@ -51,6 +52,7 @@ function DaoOfficeHours() {
   const [sessionDetails, setSessionDetails] = useState<Type[]>([]);
   const [dataLoading, setDataLoading] = useState(true);
   const [showComingSoon, setShowComingSoon] = useState(true);
+  const { user, ready, getAccessToken } = usePrivy();
 
   const {address}=useAccount();
 
@@ -107,9 +109,11 @@ function DaoOfficeHours() {
       setDataLoading(true);
 
       const myHeaders = new Headers();
+      const token=await getAccessToken();
       myHeaders.append("Content-Type", "application/json");
       if (address) {
         myHeaders.append("x-wallet-address", address);
+        myHeaders.append("Authorization",`Bearer ${token}`);
       }
 
       const requestOptions: any = {

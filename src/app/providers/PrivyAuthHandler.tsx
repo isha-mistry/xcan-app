@@ -38,32 +38,32 @@ export function PrivyAuthHandler() {
       try {
         // Get Privy access token
         const token = await getAccessToken();
-        console.log("19 Front-end token:", token);
+        // console.log("19 Front-end token:", token);
 
         // Get referrer from URL params
         const referrer = searchParams.get("referrer");
 
         // First, try to find an external wallet (metamask, etc.)
         const externalWallet = wallets.find(
-          (wallet) =>
+          (wallet: { address: any; connectedAt: any; walletClientType: string; }) =>
             wallet.address &&
             wallet.connectedAt &&
             wallet.walletClientType !== "privy"
         );
 
-        console.log("32 Externalwallet:", externalWallet);
+        // console.log("32 Externalwallet:", externalWallet);
 
         // If no external wallet, fall back to Privy wallet
         const activeWallet =
           externalWallet ||
           wallets.find(
-            (wallet) =>
+            (wallet: { address: any; connectedAt: any; walletClientType: string; }) =>
               wallet.address &&
               wallet.connectedAt &&
               wallet.walletClientType === "privy"
           );
 
-        console.log("42 active wallet:", activeWallet);
+        // console.log("42 active wallet:", activeWallet);
 
         if (!activeWallet) {
           console.error("No active wallet found");
@@ -76,8 +76,8 @@ export function PrivyAuthHandler() {
           return;
         }
 
-        console.log("Selected wallet type:", activeWallet.walletClientType);
-        console.log("Selected wallet address:", activeWallet.address);
+        // console.log("Selected wallet type:", activeWallet.walletClientType);
+        // console.log("Selected wallet address:", activeWallet.address);
 
         // Store the processed wallet address
         processedWalletRef.current = activeWallet.address;
