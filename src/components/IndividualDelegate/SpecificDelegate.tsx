@@ -1141,34 +1141,35 @@ function SpecificDelegate({ props }: { props: Type }) {
                     </div>
 
                     {isOpenunfollow && (
-                      <div className="font-poppins z-[70] fixed inset-0 flex items-center justify-center backdrop-blur-md">
-                        <div className="bg-white rounded-[41px] overflow-hidden shadow-lg w-1/2">
+                      <div className="font-poppins z-[70] fixed inset-0 flex items-center justify-center backdrop-blur-md p-4">
+                        <div className="bg-white rounded-3xl overflow-hidden shadow-lg w-full max-w-lg mx-4 md:mx-auto md:w-2/3 lg:w-1/2">
                           <div className="relative">
-                            <div className="flex flex-col gap-1 text-white bg-[#292929] p-4 py-7">
-                              <h2 className="text-lg font-semibold mx-4">
+                            <div className="flex flex-col gap-1 text-white bg-[#292929] p-3 sm:p-4 md:py-7">
+                              <h2 className="text-base sm:text-lg font-semibold mx-2 sm:mx-4 text-center md:text-left">
                                 Are you sure you want to unfollow this delegate?
                               </h2>
                             </div>
-                            <div className="px-8 py-4">
-                              <p className="mt-4 text-center">
+                            <div className="px-4 sm:px-6 md:px-8 py-3 sm:py-4">
+                              <p className="mt-2 sm:mt-4 text-center text-sm sm:text-base">
                                 By unfollowing, you will miss out on important
                                 updates, exclusive alerts of delegate. Stay
                                 connected to keep up with all the latest
                                 activities!
                               </p>
                             </div>
-                            <div className="flex justify-center px-8 py-4">
+                            <div className="flex justify-center gap-2 xs:gap-3 px-4 sm:px-6 md:px-8 py-3 sm:py-4">
                               <button
-                                className="bg-gray-300 text-gray-700 px-8 py-3 font-semibold rounded-full mr-4"
+                                className="bg-gray-300 text-gray-700 px-6 xs:px-8 py-3 text-sm xs:text-base font-semibold rounded-full order-2 xs:order-1"
                                 onClick={() => setUnfollowmodel(false)}
                               >
                                 Cancel
                               </button>
                               <button
-                                className="bg-red-500 text-white px-8 py-3 font-semibold rounded-full"
+                                className="bg-red-500 text-white px-6 xs:px-8 py-3 text-sm xs:text-base font-semibold rounded-full order-1 sm:order-2"
                                 onClick={() => handleConfirm(1)}
                               >
                                 {loading ? (
+                                  <div className="flex justify-center">
                                   <Oval
                                     visible={true}
                                     height="20"
@@ -1177,6 +1178,7 @@ function SpecificDelegate({ props }: { props: Type }) {
                                     secondaryColor="#cdccff"
                                     ariaLabel="oval-loading"
                                   />
+                                  </div>
                                 ) : (
                                   "Unfollow"
                                 )}
