@@ -60,6 +60,7 @@ import { getChainAddress, getDaoName } from "@/utils/chainUtils";
 import { optimism, arbitrum } from "viem/chains";
 import RewardButton from "../ClaimReward/RewardButton";
 import MobileResponsiveMessage from "../MobileResponsiveMessage/MobileResponsiveMessage";
+import { fetchApi } from "@/utils/api";
 import { ChevronDownIcon } from "lucide-react";
 import Heading from "../ComponentUtils/Heading";
 
@@ -436,8 +437,8 @@ function SpecificDelegate({ props }: { props: Type }) {
     };
 
     try {
-      const resp = await fetch(
-        `/api/delegate-follow/savefollower`,
+      const resp = await fetchApi(
+        `/delegate-follow/savefollower`,
         requestOptions
       );
 
@@ -515,7 +516,7 @@ function SpecificDelegate({ props }: { props: Type }) {
         myHeaders.append("x-wallet-address", address);
       }
       try {
-        const response = await fetch("/api/delegate-follow/updatefollower", {
+        const response = await fetchApi("/delegate-follow/updatefollower", {
           method: "PUT",
           headers: myHeaders,
           body: JSON.stringify({
@@ -560,7 +561,7 @@ function SpecificDelegate({ props }: { props: Type }) {
           myHeaders.append("x-wallet-address", address);
         }
         try {
-          const response = await fetch("/api/delegate-follow/updatefollower", {
+          const response = await fetchApi("/delegate-follow/updatefollower", {
             method: "PUT",
             headers: myHeaders,
             body: JSON.stringify({
@@ -611,7 +612,7 @@ function SpecificDelegate({ props }: { props: Type }) {
         follower_address = address;
         delegate_address = props.individualDelegate;
         try {
-          const response = await fetch("/api/delegate-follow/savefollower", {
+          const response = await fetchApi("/delegate-follow/savefollower", {
             method: "PUT",
             headers: {
               "Content-Type": "application/json",
@@ -737,8 +738,8 @@ function SpecificDelegate({ props }: { props: Type }) {
           // body: raw,
           redirect: "follow",
         };
-        const res = await fetch(
-          `/api/profile/${props.individualDelegate}`,
+        const res = await fetchApi(
+          `/profile/${props.individualDelegate}`,
           requestOptions
         );
 
