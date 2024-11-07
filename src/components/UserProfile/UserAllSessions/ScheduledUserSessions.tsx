@@ -20,6 +20,7 @@ import { all } from "axios";
 import { fetchEnsNameAndAvatar } from "@/utils/ENSUtils";
 import { headers } from "next/headers";
 import { usePrivy } from "@privy-io/react-auth";
+import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 
 interface dataToStore {
   userAddress: `0x${string}` | undefined | null;
@@ -30,7 +31,7 @@ interface dataToStore {
 }
 
 function ScheduledUserSessions({ daoName }: { daoName: string }) {
-  const { address } = useAccount();
+  const { address,isConnected } = useAccount();
   const [timeSlotSizeMinutes, setTimeSlotSizeMinutes] = useState(30);
   const [selectedDate, setSelectedDate] = useState<any>("");
   const [dateAndRanges, setDateAndRanges] = useState<any>([]);
@@ -50,7 +51,8 @@ function ScheduledUserSessions({ daoName }: { daoName: string }) {
   const [selectedEndTime, setSelectedEndTime] = useState("");
   const [successModalOpen, setSuccessModalOpen] = useState(false);
   const [finalData, setFinalData] = useState<dataToStore>();
-  const { ready, authenticated, login, logout,getAccessToken } = usePrivy();
+  const { ready, authenticated, login, logout,getAccessToken,user } = usePrivy();
+  const {walletAddress}=useWalletAddress();
 
   const [mailId, setMailId] = useState<string>();
   const [hasEmailID, setHasEmailID] = useState<Boolean>();
@@ -167,13 +169,13 @@ function ScheduledUserSessions({ daoName }: { daoName: string }) {
       const myHeaders = new Headers();
       const token=await getAccessToken();
       myHeaders.append("Content-Type", "application/json");
-      if (address) {
-        myHeaders.append("x-wallet-address", address);
+      if (walletAddress) {
+        myHeaders.append("x-wallet-address", walletAddress);
         myHeaders.append("Authorization",`Bearer ${token}`);
       }
 
       const raw = JSON.stringify({
-        address: address,
+        address: walletAddress,
         // daoName: daoName,
       });
 
@@ -183,7 +185,7 @@ function ScheduledUserSessions({ daoName }: { daoName: string }) {
         body: raw,
         redirect: "follow",
       };
-      const response = await fetch(`/api/profile/${address}`, requestOptions);
+      const response = await fetch(`/api/profile/${walletAddress}`, requestOptions);
       const result = await response.json();
       console.log("result", result);
       if (Array.isArray(result.data) && result.data.length > 0) {
@@ -192,7 +194,7 @@ function ScheduledUserSessions({ daoName }: { daoName: string }) {
         for (const item of result.data) {
           console.log("item::", item);
           // Check if address and daoName match
-          if (item.address === address) {
+          if (item.address === walletAddress) {
             if (item.emailId === null || item.emailId === "") {
               console.log("NO emailId found");
               setHasEmailID(false);
@@ -229,7 +231,7 @@ function ScheduledUserSessions({ daoName }: { daoName: string }) {
 
   useEffect(() => {
     const fetchEnsName = async () => {
-      const ensName = await fetchEnsNameAndAvatar(address ? address : "");
+      const ensName = await fetchEnsNameAndAvatar(walletAddress ? walletAddress : "");
       if (ensName) {
         setDisplayEnsName(ensName?.ensName);
       } else {
@@ -237,7 +239,7 @@ function ScheduledUserSessions({ daoName }: { daoName: string }) {
       }
     };
     fetchEnsName();
-  }, [chain, address]);
+  }, [chain, walletAddress,address]);
 
   useEffect(() => {
     console.log("userRejected in useEffect", userRejected);
@@ -292,7 +294,7 @@ function ScheduledUserSessions({ daoName }: { daoName: string }) {
     console.log("handleApplyButton call");
 
     const dataToStore: dataToStore = {
-      userAddress: address,
+      userAddress: walletAddress as `0x${string}`,
       timeSlotSizeMinutes: timeSlotSizeMinutes,
       allowedDates: allowedDates,
       dateAndRanges: dateAndRanges,
@@ -304,8 +306,8 @@ function ScheduledUserSessions({ daoName }: { daoName: string }) {
     const myHeaders = new Headers();
     const token=await getAccessToken();
     myHeaders.append("Content-Type", "application/json");
-    if (address) {
-      myHeaders.append("x-wallet-address", address);
+    if (walletAddress) {
+      myHeaders.append("x-wallet-address", walletAddress);
       myHeaders.append("Authorization",`Bearer ${token}`);
     }
     const requestOptions: any = {
@@ -333,8 +335,8 @@ function ScheduledUserSessions({ daoName }: { daoName: string }) {
           const myHeaders = new Headers();
           const token=await getAccessToken();
           myHeaders.append("Content-Type", "application/json");
-          if (address) {
-            myHeaders.append("x-wallet-address", address);
+          if (walletAddress) {
+            myHeaders.append("x-wallet-address", walletAddress);
             myHeaders.append("Authorization",`Bearer ${token}`);
           }
           const response = await fetch("/api/delegate-follow/send-mails", {
@@ -342,7 +344,7 @@ function ScheduledUserSessions({ daoName }: { daoName: string }) {
             headers: myHeaders,
             body: JSON.stringify({
               // Add any necessary data
-              address: address,
+              address: walletAddress,
               daoName: daoName,
               ensName: displayEnsName,
             }),
@@ -564,19 +566,19 @@ function ScheduledUserSessions({ daoName }: { daoName: string }) {
   };
 
   const handleSubmit = async () => {
-    if (address) {
+    if (walletAddress) {
       if (mailId && (mailId !== "" || mailId !== undefined)) {
         if (isValidEmail) {
           try {
             setAddingEmail(true);
             const myHeaders = new Headers();
             myHeaders.append("Content-Type", "application/json");
-            if (address) {
-              myHeaders.append("x-wallet-address", address);
+            if (walletAddress) {
+              myHeaders.append("x-wallet-address", walletAddress);
             }
 
             const raw = JSON.stringify({
-              address: address,
+              address: walletAddress,
               emailId: mailId,
               // daoName: daoName,
             });

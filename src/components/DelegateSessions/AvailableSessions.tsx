@@ -25,6 +25,7 @@ import { CiSearch } from "react-icons/ci";
 import { FaChevronDown } from "react-icons/fa";
 import { MdOutlineHourglassDisabled } from "react-icons/md";
 import { usePrivy } from "@privy-io/react-auth";
+import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 // import { useConnectModal } from "@rainbow-me/rainbowkit";
 
 interface Type {
@@ -69,6 +70,8 @@ function AvailableSessions() {
   const [showFilterOptions, setShowFilterOptions] = useState(false);
   // const { openConnectModal } = useConnectModal();
   const { ready, authenticated, login, logout, user } = usePrivy();
+  const {walletAddress}=useWalletAddress();
+
 
   const handleBookSession = (daoName: string, userAddress: string) => {
     if (isConnected) {
@@ -116,8 +119,8 @@ function AvailableSessions() {
     try {
       const myHeaders = new Headers();
       myHeaders.append("Content-Type", "application/json");
-      if (address) {
-        myHeaders.append("x-wallet-address", address);
+      if (walletAddress) {
+        myHeaders.append("x-wallet-address", walletAddress);
       }
 
       const currentDate = new Date();

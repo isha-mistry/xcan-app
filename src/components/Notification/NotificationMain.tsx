@@ -21,11 +21,15 @@ import MobileResponsiveMessage from "../MobileResponsiveMessage/MobileResponsive
 import Heading from "../ComponentUtils/Heading";
 import NotificationSkeletonLoader from '../SkeletonLoader/NotificationSkeletonLoader';
 import { usePrivy } from "@privy-io/react-auth";
+import { useConnection } from "@/app/hooks/useConnection";
+import { useWalletAddress } from "@/app/hooks/useWalletAddress";
+
 
 function NotificationMain() {
+  const {isConnected} =useConnection()
   const { data: session } = useSession();
   const { address } = useAccount();
-  const { user, ready, getAccessToken } = usePrivy();
+  const { user, ready, getAccessToken,authenticated } = usePrivy();
   const searchParams = useSearchParams();
   const router = useRouter();
   const path = usePathname();
@@ -50,10 +54,13 @@ function NotificationMain() {
   const [buttonText, setButtonText] = useState("Mark all as read");
   const [markAllReadCalling, setMarkAllReadCalling] = useState<boolean>(false);
   const [isPageLoading, setIsPageLoading] = useState<boolean>(true);
+  const {walletAddress}=useWalletAddress();
+
 
   useEffect(() => {
     setIsPageLoading(false);
   }, [isPageLoading]);
+
 
   useEffect(() => {
     if (socket) {
@@ -69,8 +76,8 @@ function NotificationMain() {
 
   useEffect(() => {
     // Set canFetch based on address and session
-    setCanFetch(!!address && !!session);
-  }, [address, session, setCanFetch]);
+    setCanFetch(!!walletAddress && !!authenticated);
+  }, [address,walletAddress, session, setCanFetch]);
 
   const fetchNotifications = useCallback(async () => {
     if (!canFetch) return;
@@ -79,12 +86,12 @@ function NotificationMain() {
       const myHeaders = new Headers();
       const token=await getAccessToken();
       myHeaders.append("Content-Type", "application/json");
-      if (address) {
-        myHeaders.append("x-wallet-address", address);
+      if (walletAddress) {
+        myHeaders.append("x-wallet-address", walletAddress);
         myHeaders.append("Authorization",`Bearer ${token}`);
       }
 
-      const raw = JSON.stringify({ address });
+      const raw = JSON.stringify({ walletAddress });
 
       const requestOptions: RequestInit = {
         method: "POST",
@@ -104,17 +111,17 @@ function NotificationMain() {
     } finally {
       setIsLoading(false);
     }
-  }, [address, canFetch, setNotifications, updateCombinedNotifications]);
+  }, [walletAddress,address, canFetch, setNotifications, updateCombinedNotifications]);
 
   useEffect(() => {
-    if (canFetch) {
+    // if (canFetch) {
       fetchNotifications();
-    }
+    // }
   }, [fetchNotifications, canFetch]);
 
   useEffect(() => {
-    if (socket && address && socketId) {
-      socket.emit("register_host", { hostAddress: address, socketId });
+    if (socket && walletAddress && socketId) {
+      socket.emit("register_host", { hostAddress: walletAddress, socketId });
 
       socket.on("new_notification", (message: Notification) => {
         const notificationData: Notification = {
@@ -140,7 +147,7 @@ function NotificationMain() {
     };
   }, [
     socket,
-    address,
+    walletAddress,
     socketId,
     addNotification,
     hasAnyUnreadNotification,
@@ -162,7 +169,7 @@ function NotificationMain() {
   }, [combinedNotifications, searchParams]);
 
   const handleMarkAllAsRead = async () => {
-    if (!address || !session) return;
+    if (!walletAddress || !session) return;
 
     const hasUnreadNotifications = combinedNotifications.some(
       (notification) => notification.read_status === false
@@ -179,14 +186,14 @@ function NotificationMain() {
       const myHeaders = new Headers();
       const token=await getAccessToken();
       myHeaders.append("Content-Type", "application/json");
-      if (address) {
-        myHeaders.append("x-wallet-address", address);
+      if (walletAddress) {
+        myHeaders.append("x-wallet-address", walletAddress);
         myHeaders.append("Authorization",`Bearer ${token}`);
       }
 
       const raw = JSON.stringify({
         markAll: true,
-        receiver_address: address,
+        receiver_address: walletAddress,
       });
 
       const requestOptions: RequestInit = {

@@ -8,6 +8,8 @@ import Confetti from "react-confetti";
 import { BsTwitterX } from "react-icons/bs";
 import { useAccount } from "wagmi";
 import StarRating from "../FeedbackPopup/RatingTypes/StarRating";
+import { usePrivy } from "@privy-io/react-auth";
+import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 
 function AttestationModal({
   isOpen,
@@ -28,7 +30,9 @@ function AttestationModal({
   const [submitted, setSubmitted] = useState(false);
   const [feedbackStored, setFeedbackStored] = useState(false);
   const [hoverRating, setHoverRating] = useState<number>(0);
-  const { address } = useAccount();
+  const { address ,isConnected} = useAccount();
+  const { ready, authenticated, login, logout, user } = usePrivy();
+  const {walletAddress}=useWalletAddress();
 
   useEffect(() => {
     const storedStatus = sessionStorage.getItem("meetingData");
@@ -39,6 +43,9 @@ function AttestationModal({
       }
     }
   }, []);
+
+
+
 
   const toggleModal = () => {
     if (rating !== null && !feedbackStored) {
@@ -88,8 +95,8 @@ function AttestationModal({
         },
       });
 
-      if (address) {
-        myHeaders.append("x-wallet-address", address);
+      if (walletAddress) {
+        myHeaders.append("x-wallet-address", walletAddress);
       }
 
       const requestOptions: any = {

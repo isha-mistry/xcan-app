@@ -17,6 +17,7 @@ import {
 import { useNotificationStudioState } from "@/store/notificationStudioState";
 import { useSession } from "next-auth/react";
 import { usePrivy } from "@privy-io/react-auth";
+import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 
 function NotificationIconComponent() {
   const router = useRouter();
@@ -24,11 +25,12 @@ function NotificationIconComponent() {
   const hoverRef = useRef<HTMLDivElement>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const socket = useSocket();
-  const { address } = useAccount();
-  const { user, ready, getAccessToken } = usePrivy();
+  const { address,isConnected } = useAccount();
+  const { user, ready, getAccessToken,authenticated } = usePrivy();
   const [socketId, setSocketId] = useState<string | null>(null);
   const [isAPILoading, setIsAPILoading] = useState<boolean>();
   const { data: session } = useSession();
+  const {walletAddress}=useWalletAddress();
   const {
     notifications,
     newNotifications,
@@ -45,9 +47,11 @@ function NotificationIconComponent() {
   const lastFetchTime = useRef<number>(0);
   const cacheDuration = 60000; // 1 minute cache
 
+ 
+
   useEffect(() => {
-    setCanFetch(!!address && !!session);
-  }, [address, session, setCanFetch]);
+    setCanFetch(!!walletAddress);
+  }, [address,walletAddress,setCanFetch]);
 
   useEffect(() => {
     return () => {
@@ -69,12 +73,12 @@ function NotificationIconComponent() {
         const myHeaders = new Headers();
         const token=await getAccessToken();
         myHeaders.append("Content-Type", "application/json");
-        if (address) {
-          myHeaders.append("x-wallet-address", address);
+        if (walletAddress) {
+          myHeaders.append("x-wallet-address", walletAddress);
           myHeaders.append("Authorization",`Bearer ${token}`);
         }
 
-        const raw = JSON.stringify({ address });
+        const raw = JSON.stringify({ walletAddress });
 
         const requestOptions: RequestInit = {
           method: "POST",
@@ -113,7 +117,7 @@ function NotificationIconComponent() {
         setIsAPILoading(false);
       }
     }
-  }, [address, setNotifications, setHasAnyUnreadNotification]);
+  }, [address,walletAddress, setNotifications, setHasAnyUnreadNotification]);
 
   const handleMouseEnter = useCallback(() => {
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
@@ -134,8 +138,8 @@ function NotificationIconComponent() {
   }, [socket]);
 
   useEffect(() => {
-    if (socket && address && socketId) {
-      socket.emit("register_host", { hostAddress: address, socketId });
+    if (socket && walletAddress && socketId) {
+      socket.emit("register_host", { hostAddress: walletAddress, socketId });
 
       socket.on("new_notification", (message: Notification) => {
         const notificationData: Notification = {
@@ -161,7 +165,7 @@ function NotificationIconComponent() {
     };
   }, [
     socket,
-    address,
+    walletAddress,
     socketId,
     addNotification,
     hasAnyUnreadNotification,

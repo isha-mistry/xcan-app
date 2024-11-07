@@ -36,6 +36,7 @@ import { handleRecording, handleStopRecording } from "../HuddleUtils";
 import { BASE_URL } from "@/config/constants";
 import { uploadFile } from "@/actions/uploadFile";
 import { usePrivy } from "@privy-io/react-auth";
+import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 
 const BottomBar = ({
   daoName,
@@ -63,8 +64,11 @@ const BottomBar = ({
   const [s3URL, setS3URL] = useState<string>("");
   const { chain } = useAccount();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const { address } = useAccount();
-  const { user, ready, getAccessToken } = usePrivy();
+  const { address,isConnected } = useAccount();
+  const { user, ready, getAccessToken,authenticated } = usePrivy();
+  const {walletAddress}=useWalletAddress();
+
+
   const {
     role,
     metadata,
@@ -111,8 +115,8 @@ const BottomBar = ({
         const myHeaders = new Headers();
         const token=await getAccessToken();
         myHeaders.append("Content-Type", "application/json");
-        if (address) {
-          myHeaders.append("x-wallet-address", address);
+        if (walletAddress) {
+          myHeaders.append("x-wallet-address", walletAddress);
           myHeaders.append("Authorization",`Bearer ${token}`);
         }
 
@@ -152,12 +156,14 @@ const BottomBar = ({
       window.removeEventListener("beforeunload", handleBeforeUnload);
     };
   }, [role]);
+  
+  
 
   const handleEndCall = async (endMeet: string) => {
     setIsLoading(true);
 
     if (role === "host" && meetingRecordingStatus === true) {
-      await handleStopRecording(roomId, address, setIsRecording);
+      await handleStopRecording(roomId, walletAddress?walletAddress:address, setIsRecording);
     }
 
     console.log("s3URL in handleEndCall", s3URL);
@@ -197,8 +203,8 @@ const BottomBar = ({
           const myHeaders = new Headers();
           const token=await getAccessToken();
           myHeaders.append("Content-Type", "application/json");
-          if (address) {
-            myHeaders.append("x-wallet-address", address);
+          if (walletAddress) {
+            myHeaders.append("x-wallet-address", walletAddress);
             myHeaders.append("Authorization",`Bearer ${token}`);
           }
           const requestOptions = {
@@ -233,8 +239,8 @@ const BottomBar = ({
       const myHeaders = new Headers();
       const token = await getAccessToken();
       myHeaders.append("Content-Type", "application/json");
-      if (address) {
-        myHeaders.append("x-wallet-address", address);
+      if (walletAddress) {
+        myHeaders.append("x-wallet-address", walletAddress);
         myHeaders.append("Authorization",`Bearer ${token}`);
       }
       try {
@@ -329,7 +335,7 @@ const BottomBar = ({
                 displayName: metadata?.displayName || "",
                 avatarUrl: metadata?.avatarUrl || "",
                 isHandRaised: !metadata?.isHandRaised,
-                walletAddress: metadata?.walletAddress || address || "",
+                walletAddress: metadata?.walletAddress || walletAddress || "",
               });
             }}
             className={clsx(
@@ -378,7 +384,7 @@ const BottomBar = ({
               onClick={() =>
                 handleRecording(
                   roomId,
-                  address,
+                  walletAddress?walletAddress:address,
                   isRecording,
                   setIsRecording,
                   setMeetingRecordingStatus

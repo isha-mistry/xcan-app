@@ -26,6 +26,7 @@ import { RxCross2 } from "react-icons/rx";
 import { MdCancel } from "react-icons/md";
 import { useRouter } from "next-nprogress-bar";
 import { usePrivy } from "@privy-io/react-auth";
+import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 interface Type {
   daoDelegates: string;
   individualDelegate: string;
@@ -72,8 +73,8 @@ function BookSession({ props }: { props: Type }) {
   const [continueAPICalling, setContinueAPICalling] = useState<Boolean>(false);
   const [userRejected, setUserRejected] = useState<Boolean>();
   const [addingEmail, setAddingEmail] = useState<boolean>();
-  const { ready, authenticated, login, logout,getAccessToken } = usePrivy();
-
+  const { ready, authenticated, login, logout,getAccessToken,user } = usePrivy();
+  const {walletAddress}=useWalletAddress();
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = "hidden";
@@ -179,7 +180,7 @@ function BookSession({ props }: { props: Type }) {
 
   const handleScheduled = async (data: any) => {
     if (isConnected) {
-      if (host_address === address) {
+      if (host_address === walletAddress) {
         toast("Delegates can not book their own sessions!");
       } else {
         setIsScheduling(true);
@@ -213,13 +214,13 @@ function BookSession({ props }: { props: Type }) {
       const myHeaders = new Headers();
       const token=await getAccessToken();
       myHeaders.append("Content-Type", "application/json");
-      if (address) {
-        myHeaders.append("x-wallet-address", address);
+      if (walletAddress) {
+        myHeaders.append("x-wallet-address", walletAddress);
         myHeaders.append("Authorization",`Bearer ${token}`);
       }
 
       const raw = JSON.stringify({
-        address: address,
+        address: walletAddress,
       });
 
       const requestOptions: any = {
@@ -228,11 +229,11 @@ function BookSession({ props }: { props: Type }) {
         body: raw,
         redirect: "follow",
       };
-      const response = await fetch(`/api/profile/${address}`, requestOptions);
+      const response = await fetch(`/api/profile/${walletAddress}`, requestOptions);
       const result = await response.json();
       if (Array.isArray(result.data) && result.data.length > 0) {
         for (const item of result.data) {
-          if (item.address === address) {
+          if (item.address === walletAddress) {
             if (item.emailId === null || item.emailId === "") {
               setHasEmailID(false);
               return false;
@@ -304,7 +305,7 @@ function BookSession({ props }: { props: Type }) {
       description: modalData.description,
       host_address: host_address,
       attendees: [
-        { attendee_address: address, attendee_joined_status: "Pending" },
+        { attendee_address: walletAddress, attendee_joined_status: "Pending" },
       ],
       meeting_status: "Upcoming",
       booking_status: "Approved",
@@ -316,8 +317,8 @@ function BookSession({ props }: { props: Type }) {
     const myHeaders = new Headers();
     const token = await getAccessToken();
     myHeaders.append("Content-Type", "application/json");
-    if (address) {
-      myHeaders.append("x-wallet-address", address);
+    if (walletAddress) {
+      myHeaders.append("x-wallet-address", walletAddress);
       myHeaders.append("Authorization", `Bearer ${token}`);
     }
 
@@ -448,7 +449,7 @@ function BookSession({ props }: { props: Type }) {
 
   const handleModalClose = () => {
     setModalOpen(false);
-    router.push(`/profile/${address}?active=sessions&session=attending`);
+    router.push(`/profile/${walletAddress}?active=sessions&session=attending`);
   };
 
   const handleEmailChange = (email: string) => {
@@ -466,19 +467,19 @@ function BookSession({ props }: { props: Type }) {
   }, [mailId]);
 
   const handleSubmit = async () => {
-    if (address) {
+    if (walletAddress) {
       if (mailId && (mailId !== "" || mailId !== undefined)) {
         if (isValidEmail) {
           try {
             setAddingEmail(true);
             const myHeaders = new Headers();
             myHeaders.append("Content-Type", "application/json");
-            if (address) {
-              myHeaders.append("x-wallet-address", address);
+            if (walletAddress) {
+              myHeaders.append("x-wallet-address", walletAddress);
             }
 
             const raw = JSON.stringify({
-              address: address,
+              address: walletAddress,
               emailId: mailId,
             });
 

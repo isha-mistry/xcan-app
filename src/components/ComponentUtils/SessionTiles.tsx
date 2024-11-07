@@ -28,6 +28,7 @@ import UpdateHostedSessionModal from "./UpdateHostedSessionModal";
 import { SessionInterface } from "@/types/MeetingTypes";
 import { LIGHTHOUSE_BASE_API_KEY } from "@/config/constants";
 import { usePrivy } from "@privy-io/react-auth";
+import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 
 type Attendee = {
   attendee_address: string;
@@ -87,7 +88,7 @@ function SessionTile({
   isSession,
 }: // query,
 SessionTileProps) {
-  const { address } = useAccount();
+  const { address,isConnected } = useAccount();
   const router = useRouter();
   const path = usePathname();
   const [selectedTileIndex, setSelectedTileIndex] = useState<number | null>(
@@ -104,7 +105,8 @@ SessionTileProps) {
     description: "",
     image: "",
   });
-  const { user, ready, getAccessToken } = usePrivy();
+  const { user, ready, getAccessToken,authenticated } = usePrivy();
+  const {walletAddress}=useWalletAddress();
 
   const handleEditModal = (index: number) => {
     setSelectedTileIndex(index);
@@ -113,6 +115,8 @@ SessionTileProps) {
   const handleCloseEdit = () => {
     setEditOpen(false);
   };
+ 
+
   // const provider = new ethers.BrowserProvider(window?.ethereum);
   // const provider =
   //   window.ethereum != null
@@ -193,8 +197,8 @@ SessionTileProps) {
     const myHeaders = new Headers();
     const Clienttoken = await getAccessToken();
     myHeaders.append("Content-Type", "application/json");
-    if (address) {
-      myHeaders.append("x-wallet-address", address);
+    if (walletAddress) {
+      myHeaders.append("x-wallet-address", walletAddress);
       myHeaders.append("Authorization",`Bearer ${Clienttoken}`);
     }
 
@@ -249,8 +253,8 @@ SessionTileProps) {
           const myHeaders = new Headers();
           const token=await getAccessToken();
           myHeaders.append("Content-Type", "application/json");
-          if (address) {
-            myHeaders.append("x-wallet-address", address);
+          if (walletAddress) {
+            myHeaders.append("x-wallet-address", walletAddress);
             myHeaders.append("Authorization",`Bearer ${token}`);
           }
 
@@ -258,7 +262,7 @@ SessionTileProps) {
             meetingId: meetingId,
             meetingType: meetingType,
             uidOnchain: newAttestationUID,
-            address: address,
+            address: walletAddress,
           });
           const requestOptions: any = {
             method: "PUT",
@@ -352,8 +356,8 @@ SessionTileProps) {
       const myHeaders = new Headers();
       const token=await getAccessToken();
       myHeaders.append("Content-Type", "application/json");
-      if (address) {
-        myHeaders.append("x-wallet-address", address);
+      if (walletAddress) {
+        myHeaders.append("x-wallet-address", walletAddress);
         myHeaders.append("Authorization",`Bearer ${token}`);
       }
 

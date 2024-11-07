@@ -11,6 +11,8 @@ import { Oval } from "react-loader-spinner";
 import SessionTileSkeletonLoader from "../SkeletonLoader/SessionTileSkeletonLoader";
 import { useAccount } from "wagmi";
 import { SessionInterface } from "@/types/MeetingTypes";
+import { usePrivy } from "@privy-io/react-auth";
+import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 
 interface Type {
   daoDelegates: string;
@@ -25,8 +27,9 @@ function DelegateSessions({ props }: { props: Type }) {
   const [sessionDetails, setSessionDetails] = useState([]);
   const dao_name = props.daoDelegates;
   const [error, setError] = useState<string | null>(null);
-  const { address } = useAccount();
-
+  const { address,isConnected } = useAccount();
+  const { ready, authenticated, login, logout, user } = usePrivy();
+  const {walletAddress}=useWalletAddress();
   // const dao_name = daoName.charAt(0).toUpperCase() + daoName.slice(1);
 
   const getMeetingData = async () => {
@@ -34,8 +37,8 @@ function DelegateSessions({ props }: { props: Type }) {
     try {
       const myHeaders = new Headers();
       myHeaders.append("Content-Type", "application/json");
-      if (address) {
-        myHeaders.append("x-wallet-address", address);
+      if (walletAddress) {
+        myHeaders.append("x-wallet-address", walletAddress);
       }
 
       const raw = JSON.stringify({

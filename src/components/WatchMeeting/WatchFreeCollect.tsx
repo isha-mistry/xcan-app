@@ -39,6 +39,7 @@ import {
   ChevronDown,
 } from "lucide-react";
 import { getAccessToken, usePrivy } from "@privy-io/react-auth";
+import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 
 interface Attendee extends DynamicAttendeeInterface {
   profileInfo: UserProfileInterface;
@@ -63,10 +64,11 @@ const WatchFreeCollect = ({
 }) => {
   const chainId = useChainId();
   // const { openConnectModal } = useConnectModal();
-  const { ready, authenticated, login, logout } = usePrivy();
+  const { ready, authenticated, login, logout,user } = usePrivy();
   const { switchChain } = useSwitchChain();
   const publicClient = usePublicClient()!;
-  const { address, chain } = useAccount();
+  const { address, chain,isConnected } = useAccount();
+  const {walletAddress}=useWalletAddress();
   const { data: session } = useSession();
   const searchParams = useSearchParams();
   const { writeContractAsync, writeContract } = useWriteContract();
@@ -95,6 +97,8 @@ const WatchFreeCollect = ({
   let contractMetadataURI: any;
   let tokenDataURI: any;
 
+
+
   useEffect(() => {
     setMeetingInfo(data);
     if (data?.deployedContractAddress) {
@@ -102,7 +106,8 @@ const WatchFreeCollect = ({
       setHasDeployedContractAddress(true);
     }
     setMintReferral(searchParams.get("referrer") || "");
-  }, [data, searchParams, address, session]);
+  }, [data, searchParams, address,walletAddress, session]);
+  
 
   useEffect(() => {
     const fetchEthToUsdRate = async () => {
@@ -185,7 +190,7 @@ const WatchFreeCollect = ({
   };
 
   const handleMint = async () => {
-    if (!address && !authenticated) {
+    if (!walletAddress && !authenticated) {
       toast("Wallet not connected");
       // openConnectModal?.();
       login()
@@ -211,7 +216,7 @@ const WatchFreeCollect = ({
         quantityToMint: BigInt(number),
         mintComment,
         mintReferral: mintReferralAddress,
-        minterAccount: address!,
+        minterAccount: walletAddress as `0x${string}`,
       });
 
       const txHash = await writeContractAsync(parameters);
@@ -226,8 +231,8 @@ const WatchFreeCollect = ({
     const myHeaders = new Headers();
     const token=await getAccessToken();
     myHeaders.append("Content-Type", "application/json");
-    if (address) {
-      myHeaders.append("x-wallet-address", address);
+    if (walletAddress) {
+      myHeaders.append("x-wallet-address", walletAddress);
       myHeaders.append("Authorization",`Bearer ${token}`);
     }
 
@@ -257,6 +262,7 @@ const WatchFreeCollect = ({
         description: data.description,
         imageCid: data?.nft_image,
       };
+
 
       const tokenMetadata = {
         name: data.title,
@@ -336,7 +342,7 @@ const WatchFreeCollect = ({
   };
 
   const handleFirstMinter = async () => {
-    if (!address && !authenticated) {
+    if (!walletAddress && !authenticated) {
       toast("Wallet not connected");
       console.log("Not connected");
       // openConnectModal?.();
@@ -359,7 +365,7 @@ const WatchFreeCollect = ({
         token: {
           tokenMetadataURI: tokenMetadataURI || tokenDataURI,
         },
-        account: address!,
+        account: walletAddress as `0x${string}`,
       });
 
       const txHash: `0x${string}` = await writeContractAsync(parameters);
@@ -368,6 +374,7 @@ const WatchFreeCollect = ({
         hash: txHash,
       });
       const newContractAddress = transactionReceipt.logs[0].address;
+      console.log("Contract Address",newContractAddress);
       setDeployedContractAddress(newContractAddress);
       await handleContractSubmit(newContractAddress);
     } catch (error) {

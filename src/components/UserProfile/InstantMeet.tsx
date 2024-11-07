@@ -28,6 +28,7 @@ import chatImg from "@/assets/images/instant-meet/chat.png";
 import chatImghover from "@/assets/images/instant-meet/chatImghover.svg";
 import heroImg from "@/assets/images/instant-meet/instant-meet-hero.svg";
 import { usePrivy } from "@privy-io/react-auth";
+import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 
 interface instantMeetProps {
   isDelegate: boolean;
@@ -42,13 +43,15 @@ function InstantMeet({ isDelegate, selfDelegate, daoName }: instantMeetProps) {
   });
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [confirmSave, setConfirmSave] = useState(false);
-  const { address } = useAccount();
+  const { address,isConnected } = useAccount();
+  const {walletAddress}=useWalletAddress();
   const { chain } = useAccount();
   const [isScheduling, setIsScheduling] = useState(false);
-  const { user, ready, getAccessToken } = usePrivy();
+  const { user, ready, getAccessToken,authenticated } = usePrivy();
   // const [daoName, setDaoName] = useState<string>();
   const router = useRouter();
 
+ 
   const handleModalInputChange = (
     e:
       | React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -68,8 +71,8 @@ function InstantMeet({ isDelegate, selfDelegate, daoName }: instantMeetProps) {
 
     let getHeaders = new Headers();
     getHeaders.append("Content-Type", "application/json");
-    if (address) {
-      getHeaders.append("x-wallet-address", address);
+    if (walletAddress) {
+      getHeaders.append("x-wallet-address", walletAddress);
     }
 
     const res = await fetch(`/api/create-room`, {
@@ -92,7 +95,7 @@ function InstantMeet({ isDelegate, selfDelegate, daoName }: instantMeetProps) {
       slot_time: dateInfo,
       title: modalData.title,
       description: modalData.description,
-      host_address: address,
+      host_address: walletAddress,
       session_type: "instant-meet",
       meetingId: roomId,
       meeting_status: "Ongoing",
@@ -104,8 +107,8 @@ function InstantMeet({ isDelegate, selfDelegate, daoName }: instantMeetProps) {
     const myHeaders = new Headers();
     const token = await getAccessToken();
     myHeaders.append("Content-Type", "application/json");
-    if (address) {
-      myHeaders.append("x-wallet-address", address);
+    if (walletAddress) {
+      myHeaders.append("x-wallet-address", walletAddress);
       myHeaders.append("Authorization", `Bearer ${token}`);
     }
 

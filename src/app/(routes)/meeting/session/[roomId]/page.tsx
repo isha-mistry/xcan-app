@@ -52,6 +52,7 @@ import {
   handleCloseMeeting,
   startRecording,
 } from "@/components/Huddle/HuddleUtils";
+import { usePrivy } from "@privy-io/react-auth";
 
 export default function Component({ params }: { params: { roomId: string } }) {
   const { isVideoOn, enableVideo, disableVideo, stream } = useLocalVideo();
@@ -97,7 +98,8 @@ export default function Component({ params }: { params: { roomId: string } }) {
   const [hostModalOpen, setHostModalOpen] = useState(false);
   const [hostAddress, setHostAddress] = useState<any>();
   const [daoName, setDaoName] = useState<any>();
-  const { address } = useAccount();
+  const { address,isConnected } = useAccount();
+  const { ready, authenticated, login, logout, user } = usePrivy();
   const { push } = useRouter();
   const path = usePathname();
   const [isAllowToEnter, setIsAllowToEnter] = useState<boolean>();
@@ -108,6 +110,7 @@ export default function Component({ params }: { params: { roomId: string } }) {
   const [meetingData, setMeetingData] = useState<any>();
   const { sendData } = useDataMessage();
   const meetingCategory = usePathname().split("/")[2];
+  const [walletAddressuser, setWalletAddress] = useState<string | null>(null);
 
   let meetingType;
 
@@ -119,6 +122,17 @@ export default function Component({ params }: { params: { roomId: string } }) {
     meetingType = 0;
   }
 
+  useEffect(() => {
+    // If external wallet (wagmi) is connected, use its address
+    if (isConnected && address) {
+      setWalletAddress(address);  // External wallet address
+    } else if (authenticated && user?.wallet?.address) {
+      // If authenticated with Privy and no external wallet, use embedded wallet address
+      setWalletAddress(user.wallet.address);  // Embedded wallet address
+    }
+  }, [authenticated, user, isConnected, address]);
+  
+
   const { state } = useRoom({
     onLeave: async ({ reason }) => {
       try {
@@ -126,12 +140,12 @@ export default function Component({ params }: { params: { roomId: string } }) {
           const myHeaders = new Headers();
           myHeaders.append("Content-Type", "application/json");
 
-          if (address) {
-            myHeaders.append("x-wallet-address", address);
+          if (walletAddressuser) {
+            myHeaders.append("x-wallet-address", walletAddressuser);
           }
 
           const raw = JSON.stringify({
-            address: address,
+            address: walletAddressuser,
             role: role,
           });
 
@@ -161,7 +175,7 @@ export default function Component({ params }: { params: { roomId: string } }) {
           if (role === "host") {
             setTimeout(async () => {
               await handleCloseMeeting(
-                address,
+                walletAddressuser?walletAddressuser:'',
                 meetingCategory,
                 params.roomId,
                 daoName,
@@ -300,10 +314,10 @@ export default function Component({ params }: { params: { roomId: string } }) {
 
   const handleModalClose = () => {
     setModalOpen(false);
-    if (address === hostAddress) {
-      push(`/profile/${address}?active=sessions&session=hosted`);
+    if (walletAddressuser === hostAddress) {
+      push(`/profile/${walletAddressuser}?active=sessions&session=hosted`);
     } else {
-      push(`/profile/${address}?active=sessions&session=attended`);
+      push(`/profile/${walletAddressuser}?active=sessions&session=attended`);
     }
   };
 
@@ -313,8 +327,8 @@ export default function Component({ params }: { params: { roomId: string } }) {
         const myHeaders = new Headers();
         myHeaders.append("Content-Type", "application/json");
 
-        if (address) {
-          myHeaders.append("x-wallet-address", address);
+        if (walletAddressuser) {
+          myHeaders.append("x-wallet-address", walletAddressuser);
         }
         const raw = JSON.stringify({
           roomId: params.roomId,
@@ -369,7 +383,7 @@ export default function Component({ params }: { params: { roomId: string } }) {
     }
 
     verifyMeetingId();
-  }, [params.roomId, isAllowToEnter, notAllowedMessage, address]);
+  }, [params.roomId, isAllowToEnter, notAllowedMessage, address,walletAddressuser]);
 
   useEffect(() => {
     if (state === "idle" && isAllowToEnter) {
@@ -381,7 +395,7 @@ export default function Component({ params }: { params: { roomId: string } }) {
         displayName: name,
         avatarUrl: avatarUrl,
         isHandRaised: metadata?.isHandRaised || false,
-        walletAddress: address || "",
+        walletAddress: walletAddressuser || "",
       });
     }
   }, [isAllowToEnter, state]);
@@ -669,7 +683,7 @@ export default function Component({ params }: { params: { roomId: string } }) {
                 </div>
                 <Link
                   // onClick={() => push(`/profile/${address}?active=info`)}
-                  href={`/profile/${address}?active=info`}
+                  href={`/profile/${walletAddressuser}?active=info`}
                   className="px-6 py-3 bg-white text-blue-shade-200 rounded-full shadow-lg hover:bg-blue-shade-200 hover:text-white transition duration-300 ease-in-out"
                 >
                   Back to Profile
@@ -705,10 +719,10 @@ export default function Component({ params }: { params: { roomId: string } }) {
         </>
       )}
 
-      {role !== null && address !== undefined && showFeedbackPopups && (
+      {role !== null && walletAddressuser !== undefined && showFeedbackPopups && (
         <PopupSlider
           role={role}
-          address={address}
+          address={walletAddressuser?walletAddressuser:''}
           daoName={daoName}
           meetingId={params.roomId}
           onClose={handleFeedbackPopupsClose}

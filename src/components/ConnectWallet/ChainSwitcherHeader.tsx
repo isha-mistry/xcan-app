@@ -29,7 +29,7 @@ interface ChainSwitcherHeaderProps {
   authenticated?: boolean;
 }
 
-export default function ChainSwitcherHeader({
+export default function   ({
   address = '',
   currentChainId,
   switchChain,
@@ -73,7 +73,7 @@ export default function ChainSwitcherHeader({
       icon: ArbLogo, // Add the path for Arbitrum logo
     },
     {
-      id: 421611, // Arbitrum Sepolia
+      id: 421614 , // Arbitrum Sepolia
       name: 'Arbitrum Sepolia',
       icon: ArbLogo, // Add the path for Arbitrum Sepolia logo
     },

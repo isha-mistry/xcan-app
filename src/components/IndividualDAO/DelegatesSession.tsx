@@ -26,6 +26,7 @@ import { TimeoutError } from "viem";
 import { SessionInterface } from "@/types/MeetingTypes";
 import { CiSearch } from "react-icons/ci";
 import { usePrivy } from "@privy-io/react-auth";
+import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 
 function DelegatesSession({ props }: { props: string }) {
   const [searchQuery, setSearchQuery] = useState("");
@@ -38,16 +39,18 @@ function DelegatesSession({ props }: { props: string }) {
   const [dataLoading, setDataLoading] = useState(true);
   const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure();
   const [error, setError] = useState<string | null>(null);
-  const { address } = useAccount();
-  const { user, ready, getAccessToken } = usePrivy();
+  const { address,isConnected } = useAccount();
+  const { user, ready, getAccessToken,authenticated } = usePrivy();
+  const {walletAddress}=useWalletAddress();
+
 
   const fetchData = async () => {
     try {
       setDataLoading(true);
       const myHeaders = new Headers();
       myHeaders.append("Content-Type", "application/json");
-      if (address) {
-        myHeaders.append("x-wallet-address", address);
+      if (walletAddress) {
+        myHeaders.append("x-wallet-address", walletAddress);
       }
       const requestOptions: any = {
         method: "POST",
@@ -123,8 +126,8 @@ function DelegatesSession({ props }: { props: string }) {
         const myHeaders = new Headers();
         const token=await getAccessToken();
         myHeaders.append("Content-Type", "application/json");
-        if (address) {
-          myHeaders.append("x-wallet-address", address);
+        if (walletAddress) {
+          myHeaders.append("x-wallet-address", walletAddress);
           myHeaders.append("Authorization",`Bearer ${token}`);
         }
 

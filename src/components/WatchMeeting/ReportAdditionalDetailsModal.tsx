@@ -1,11 +1,12 @@
 import { ReportRequestBody, VideoReport } from "@/app/api/report-session/route";
 // import { useConnectModal } from "@rainbow-me/rainbowkit";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { RxCross2 } from "react-icons/rx";
 import { v4 as uuidv4 } from "uuid";
 import { useAccount } from "wagmi";
 import { Toaster, toast } from "react-hot-toast";
 import { usePrivy } from "@privy-io/react-auth";
+import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 
 function ReportAdditionalDetailsModal({
   data,
@@ -22,10 +23,13 @@ function ReportAdditionalDetailsModal({
   const { address, isConnected } = useAccount();
   const [details, setDetails] = useState("");
   const [isLoading, setIsLoading] = useState<boolean>();
-  const { ready, authenticated, login, logout,getAccessToken } = usePrivy();
+  const { ready, authenticated, login, logout,getAccessToken,user } = usePrivy();
+  const {walletAddress}=useWalletAddress();
   const toggleModal = () => {
     onClose();
   };
+
+
 
   function dateToUnixEpoch(date: Date) {
     // Get the timestamp in milliseconds
@@ -45,8 +49,8 @@ function ReportAdditionalDetailsModal({
     const myHeaders = new Headers();
     const token=await getAccessToken();
     myHeaders.append("Content-Type", "application/json");
-    if (address) {
-      myHeaders.append("x-wallet-address", address);
+    if (walletAddress) {
+      myHeaders.append("x-wallet-address", walletAddress);
       myHeaders.append("Authorization",`Bearer ${token}`);
     }
     const requestOptions = {
@@ -80,7 +84,7 @@ function ReportAdditionalDetailsModal({
       reports: [
         {
           report_id: unique_id,
-          user_wallet_address: address,
+          user_wallet_address: walletAddress,
           report_type: category,
           description: details,
           timestamp: unixEpochTime,
@@ -90,7 +94,7 @@ function ReportAdditionalDetailsModal({
       ],
     };
 
-    if (address && isConnected) {
+    if (walletAddress && isConnected) {
       try {
         const result = await submitReport(
           meetingId,

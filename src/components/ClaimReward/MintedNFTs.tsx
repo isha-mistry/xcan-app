@@ -9,6 +9,8 @@ import { useAccount } from "wagmi";
 import { useConnection } from "@/app/hooks/useConnection";
 import { CustomDropdown } from "./CustomDropdown";
 import toast from "react-hot-toast";
+import { usePrivy } from "@privy-io/react-auth";
+import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 
 const MINTED_NFTS = gql`
   query MyQuery($address: String!) {
@@ -36,21 +38,25 @@ const MINTED_NFTS = gql`
 `;
 
 function MintedNFTs() {
-  const { address } = useAccount();
+  const { address,isConnected } = useAccount();
   const [mintedNFTs, setMintedNFTs] = useState<any[]>([]);
   const [dataLoading, setDataLoading] = useState<boolean>(false);
+  const { ready, authenticated, login, logout, user } = usePrivy();
+  const {walletAddress}=useWalletAddress();
+
+
 
   useEffect(() => {
-    if (address) {
+    if (walletAddress) {
       fetchNFTs();
     }
-  }, [address]);
+  }, [address,walletAddress]);
 
   const fetchNFTs = async () => {
     try {
       setDataLoading(true);
       const result = await nft_client
-        .query(MINTED_NFTS, { address: address })
+        .query(MINTED_NFTS, { address: walletAddress })
         .toPromise();
 
       const nfts = await Promise.all(

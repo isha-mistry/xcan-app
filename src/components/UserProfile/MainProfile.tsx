@@ -56,6 +56,7 @@ import RewardButton from "../ClaimReward/RewardButton";
 import Heading from "../ComponentUtils/Heading";
 import { ChevronDownIcon } from "lucide-react";
 import { getAccessToken, usePrivy } from "@privy-io/react-auth";
+import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 
 function MainProfile() {
   const { isConnected, address, chain } = useAccount();
@@ -85,7 +86,9 @@ function MainProfile() {
   const [isOpentoaster, settoaster] = useState(false);
   const [userFollowings, setUserFollowings] = useState<Following[]>([]);
   const [isModalLoading, setIsModalLoading] = useState(false);
-  const { ready, authenticated, login, logout,getAccessToken } = usePrivy();
+  const { ready, authenticated, login, logout,getAccessToken,user } = usePrivy();
+  // const [walletAddress, setWalletAddress] = useState<string | null>(null);
+  const {walletAddress}=useWalletAddress();
   // const [dbResponse, setDbResponse] = useState<any>(null);
   const [modalData, setModalData] = useState({
     displayImage: "",
@@ -208,7 +211,7 @@ function MainProfile() {
     }
   }, [
     isConnected,
-    address,
+    walletAddress,
     router,
     session,
     path.includes("profile/undefined"),
@@ -247,12 +250,12 @@ function MainProfile() {
       try {
         const contractAddress = getChainAddress(chain?.name);
         // console.log(walletClient);
-        if (address) {
+        if (walletAddress) {
           const delegateTx = await publicClient.readContract({
             address: contractAddress,
             abi: dao_abi.abi,
             functionName: "delegates",
-            args: [address],
+            args: [walletAddress],
             // account: address1,
           });
           // console.log("Delegate tx", delegateTx);
@@ -271,7 +274,7 @@ function MainProfile() {
       }
     };
     checkDelegateStatus();
-  }, [address, daoName, selfDelegate]);
+  }, [address,walletAddress, daoName, selfDelegate]);
 
   // Pass the address of whom you want to delegate the voting power to
   const handleDelegateVotes = async (to: string) => {
@@ -291,7 +294,7 @@ function MainProfile() {
         abi: dao_abi.abi,
         functionName: "delegate",
         args: [to],
-        account: address,
+        account: walletAddress,
       });
 
       console.log(delegateTx);
@@ -315,13 +318,13 @@ function MainProfile() {
     const myHeaders = new Headers();
     const token=await getAccessToken();
     myHeaders.append("Content-Type", "application/json");
-    if (address) {
-      myHeaders.append("x-wallet-address", address);
+    if (walletAddress) {
+      myHeaders.append("x-wallet-address", walletAddress);
       myHeaders.append("Authorization",`Bearer ${token}`);
     }
 
     const raw = JSON.stringify({
-      address: address,
+      address: walletAddress,
       // daoName: dao,
     });
 
@@ -357,7 +360,7 @@ function MainProfile() {
           }
           setUserFollowings(activeFollowings);
         } else {
-          setFollowings(0);
+          // setFollowings(0);
           setUserFollowings([]);
         }
       }
@@ -384,8 +387,8 @@ function MainProfile() {
       const myHeaders = new Headers();
       const token=await getAccessToken();
       myHeaders.append("Content-Type", "application/json");
-      if (address) {
-        myHeaders.append("x-wallet-address", address);
+      if (walletAddress) {
+        myHeaders.append("x-wallet-address", walletAddress);
         myHeaders.append("Authorization",`Bearer ${token}`);
       }
 
@@ -396,7 +399,7 @@ function MainProfile() {
           body: JSON.stringify({
             // Add any necessary data
             delegate_address: userupdate.follower_address,
-            follower_address: address,
+            follower_address: walletAddress,
             dao: unfollowDao,
           }),
         });
@@ -421,8 +424,8 @@ function MainProfile() {
         const myHeaders = new Headers();
         const token=await getAccessToken();
         myHeaders.append("Content-Type", "application/json");
-        if (address) {
-          myHeaders.append("x-wallet-address", address);
+        if (walletAddress) {
+          myHeaders.append("x-wallet-address", walletAddress);
           myHeaders.append("Authorization",`Bearer ${token}`);
         }
         const response = await fetch("/api/delegate-follow/updatefollower", {
@@ -431,7 +434,7 @@ function MainProfile() {
           body: JSON.stringify({
             // Add any necessary data
             delegate_address: userupdate.follower_address,
-            follower_address: address,
+            follower_address: walletAddress,
             action: 1,
             dao: unfollowDao,
           }),
@@ -468,8 +471,8 @@ function MainProfile() {
       const myHeaders = new Headers();
       const token=await getAccessToken();
       myHeaders.append("Content-Type", "application/json");
-      if (address) {
-        myHeaders.append("x-wallet-address", address);
+      if (walletAddress) {
+        myHeaders.append("x-wallet-address", walletAddress);
         myHeaders.append("Authorization",`Bearer ${token}`);
       }
       const response = await fetch("/api/delegate-follow/updatefollower", {
@@ -478,7 +481,7 @@ function MainProfile() {
         body: JSON.stringify({
           // Add any necessary data
           delegate_address: userupdate.follower_address,
-          follower_address: address,
+          follower_address: walletAddress,
           action: 2,
           dao: notificationdao,
           updatenotification: !userupdate.isNotification,
@@ -551,12 +554,12 @@ function MainProfile() {
       const myHeaders = new Headers();
       const token=await getAccessToken();
       myHeaders.append("Content-Type", "application/json");
-      if (address) {
-        myHeaders.append("x-wallet-address", address);
+      if (walletAddress) {
+        myHeaders.append("x-wallet-address", walletAddress);
         myHeaders.append("Authorization",`Bearer ${token}`);
       }
       const raw = JSON.stringify({
-        address: address,
+        address: walletAddress,
         isEmailVisible: isEmailVisible,
       });
 
@@ -583,6 +586,7 @@ function MainProfile() {
   };
 
   useEffect(() => {
+    // if (!walletAddress) return;
     const fetchData = async () => {
       try {
         // console.log("Fetching from DB");
@@ -594,12 +598,12 @@ function MainProfile() {
         const myHeaders = new Headers();
         myHeaders.append("Content-Type", "application/json");
         myHeaders.append("Authorization", `Bearer ${token}`);
-        if (address) {
-          myHeaders.append("x-wallet-address", address);
+        if (walletAddress) {
+          myHeaders.append("x-wallet-address", walletAddress);
         }
 
         const raw = JSON.stringify({
-          address: address,
+          address: walletAddress,
           // daoName: dao,
         });
 
@@ -609,7 +613,7 @@ function MainProfile() {
           body: raw,
           redirect: "follow",
         };
-        const res = await fetch(`/api/profile/${address}`, requestOptions);
+        const res = await fetch(`/api/profile/${walletAddress}`, requestOptions);
 
         const dbResponse = await res.json();
 
@@ -617,7 +621,7 @@ function MainProfile() {
 
         try {
           const karmaRes = await fetch(
-            `https://api.karmahq.xyz/api/dao/find-delegate?dao=${dao}&user=${address}`
+            `https://api.karmahq.xyz/api/dao/find-delegate?dao=${dao}&user=${walletAddress}`
           );
           karmaDetails = await karmaRes.json();
 
@@ -636,11 +640,15 @@ function MainProfile() {
         }
 
         if (dbResponse.data.length > 0) {
-          // console.log("db Response", dbResponse.data[0]);
+          console.log("db Response", dbResponse.data[0]);
+          console.log(`Length ${dbResponse.data.length}`);
+          const profileData = dbResponse.data[0];
+          console.log(profileData);
           // console.log(
           //   "dbResponse.data[0]?.networks:",
           //   dbResponse.data[0]?.networks
           // );
+          // alert(dbResponse.data[0]);
           setUserData({
             displayName: dbResponse.data[0]?.displayName,
             discord: dbResponse.data[0]?.socialHandles?.discord,
@@ -698,18 +706,22 @@ function MainProfile() {
       }
     };
 
-    fetchData();
-  }, [chain, address]);
+    if(walletAddress!=null){
+      fetchData();
+    }
+
+  }, [chain,walletAddress]);
 
   const handleSave = async (newDescription?: string) => {
     try {
       // Check if the delegate already exists in the database
       if (newDescription) {
         setDescription(newDescription);
-        // console.log("New Description", description);
+        console.log("New Description", description);
       }
       setIsLoading(true);
-      const isExisting = await checkDelegateExists(address);
+      const isExisting = await checkDelegateExists(walletAddress);
+      // console.log("Line number 737:",isExisting);
 
       if (isExisting) {
         // If delegate exists, update the delegate
@@ -736,7 +748,7 @@ function MainProfile() {
   const checkDelegateExists = async (address: any) => {
     try {
       // Make a request to your backend API to check if the address exists
-      // console.log("Checking");
+      console.log("Line number 764:Checking",address.toLowerCase());
 
       const myHeaders = new Headers();
       const token=await getAccessToken();
@@ -765,7 +777,7 @@ function MainProfile() {
         // Iterate over each item in the response data array
         for (const item of response.data) {
           // Check if address and daoName match
-          if (item.address === address) {
+          if (item.address === address.toLowerCase()) {
             return true; // Return true if match found
           }
         }
@@ -787,13 +799,13 @@ function MainProfile() {
       const myHeaders = new Headers();
       const token=await getAccessToken();
       myHeaders.append("Content-Type", "application/json");
-      if (address) {
-        myHeaders.append("x-wallet-address", address);
+      if (walletAddress) {
+        myHeaders.append("x-wallet-address", walletAddress);
         myHeaders.append("Authorization",`Bearer ${token}`);
       }
 
       const raw = JSON.stringify({
-        address: address,
+        address: walletAddress,
         image: modalData.displayImage,
         isDelegate: true,
         displayName: modalData.displayName,
@@ -849,7 +861,8 @@ function MainProfile() {
   // Function to handle updating an existing delegate
   const handleUpdate = async (newDescription?: string) => {
     try {
-      // console.log("Updating");
+      const token = await getAccessToken();
+      console.log("Updating");
       // console.log("Inside Updating Description", newDescription);
       // console.log("Updating");
       // console.log("Inside Updating Description", newDescription);
@@ -861,7 +874,7 @@ function MainProfile() {
       const response: any = await axios.put(
         "/api/profile",
         {
-          address: address,
+          address: walletAddress?.toLowerCase(),
           image: modalData.displayImage,
           isDelegate: true,
           displayName: modalData.displayName,
@@ -883,7 +896,8 @@ function MainProfile() {
         {
           headers: {
             "Content-Type": "application/json",
-            ...(address && { "x-wallet-address": address }),
+            ...(walletAddress && { "x-wallet-address": walletAddress.toLowerCase() }),
+            ...(token && { "Authorization": `Bearer ${token}` }),
           },
         }
       );
@@ -891,7 +905,7 @@ function MainProfile() {
       // Handle response from the PUT API function
       if (response.data.success) {
         // Delegate updated successfully
-        // console.log("Delegate updated successfully");
+        console.log("Delegate updated successfully");
         setIsLoading(false);
         setUserData({
           displayImage: modalData.displayImage,
@@ -981,8 +995,8 @@ function MainProfile() {
                       userData.displayName
                     ) : (
                       <>
-                        {`${address}`.substring(0, 6)} ...{" "}
-                        {`${address}`.substring(`${address}`.length - 4)}
+                        {`${walletAddress}`.substring(0, 6)} ...{" "}
+                        {`${walletAddress}`.substring(`${walletAddress}`.length - 4)}
                       </>
                     )}
                   </div>
@@ -1073,8 +1087,8 @@ function MainProfile() {
 
                 <div className="flex items-center py-1">
                   <div>
-                    {`${address}`.substring(0, 6)} ...{" "}
-                    {`${address}`.substring(`${address}`.length - 4)}
+                    {`${walletAddress}`.substring(0, 6)} ...{" "}
+                    {`${walletAddress}`.substring(`${walletAddress}`.length - 4)}
                   </div>
 
                   <Tooltip
@@ -1084,7 +1098,7 @@ function MainProfile() {
                     showArrow
                   >
                     <span className="px-2 cursor-pointer" color="#3E3D3D">
-                      <IoCopy onClick={() => handleCopy(`${address}`)} />
+                      <IoCopy onClick={() => handleCopy(`${walletAddress}`)} />
                     </span>
                   </Tooltip>
                   <div className="flex space-x-2">
@@ -1101,7 +1115,7 @@ function MainProfile() {
                           navigator.clipboard.writeText(
                             `${BASE_URL}/${getDaoName(
                               chain?.name
-                            )}/${address}?active=info`
+                            )}/${walletAddress}?active=info`
                           );
                           setIsCopied(true);
                           setTimeout(() => {
@@ -1133,7 +1147,7 @@ function MainProfile() {
                     {/* pass address of whom you want to delegate the voting power to */}
                     <button
                       className="bg-blue-shade-200 font-bold text-white rounded-full py-[10px] px-6 xs:py-2 xs:px-4 sm:px-6 xs:text-xs sm:text-sm text-sm lg:px-8 lg:py-[10px] w-full xs:w-auto"
-                      onClick={() => handleDelegateVotes(`${address}`)}
+                      onClick={() => handleDelegateVotes(`${walletAddress}`)}
                     >
                       Become Delegate
                     </button>

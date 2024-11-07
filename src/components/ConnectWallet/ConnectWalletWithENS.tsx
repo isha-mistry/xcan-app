@@ -11,6 +11,9 @@ import { Button } from "@nextui-org/react";
 import OPLogo from "@/assets/images/daos/op.png";
 import ArbLogo from "@/assets/images/daos/arb.png";
 import ChainSwitcherHeader from "./ChainSwitcherHeader";
+import MobileChainSwitcher from "./MobileChainSwitcher";
+import { Dialog, DialogContent, DialogTitle } from "@radix-ui/react-dialog";
+import { DialogHeader } from "../ui/dialog";
 
 
 function ConnectWalletWithENS() {
@@ -18,11 +21,13 @@ function ConnectWalletWithENS() {
   const [userProfileImage, setUserProfileImage] = useState<string | null>(null);
   const [ensAvatar, setEnsAvatar] = useState<string | null>(null);
   const [chainIcon, setChainIcon] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const { address, isConnected, isConnecting, isDisconnected, chain } =
     useAccount();
   const chainId = useChainId();
   const { chains, error: switchNetworkError, switchChain } = useSwitchChain();
   const [walletAddress2, setWalletAddress] = useState<string | null>(null);
+  const [currentChainId, setCurrentChainId] = useState(null);
 
   const { ready, authenticated, login, logout, user } = usePrivy();
 
@@ -69,7 +74,7 @@ function ConnectWalletWithENS() {
 
           const res = await fetch(`/api/profile/${walletAddress2}`, requestOptions);
           const dbResponse = await res.json();
-          console.log("line number 48:", dbResponse);
+          // console.log("line number 48:", dbResponse);
 
           if (dbResponse.data.length > 0) {
             const profileImage = dbResponse.data[0]?.image;
@@ -87,9 +92,9 @@ function ConnectWalletWithENS() {
 
           // Get ENS name
           const displayName = await fetchEnsName(walletAddress2);
-          console.log("Line number 64:", displayName);
+          // console.log("Line number 64:", displayName);
           setDisplayAddress(displayName?.ensNameOrAddress || walletAddress2);
-          console.log("Line number 66:", displayAddress);
+          // console.log("Line number 66:", displayAddress);
         } catch (error) {
           console.error("Error fetching user profile:", error);
         }
@@ -125,45 +130,90 @@ function ConnectWalletWithENS() {
   }
 
   return (
-    <div className="wallet">
-      {!authenticated && !address ? (
-        <button
-          onClick={login}
-          type="button"
-          className="flex items-center justify-center text-white bg-blue-shade-200 hover:bg-blue-shade-100 border border-white rounded-full p-2 md:px-5 md:py-4 text-xs md:text-sm font-bold transition-transform transform hover:scale-105"
-        >
-          <BiSolidWallet className="block md:hidden size-5" />
-          <span className="hidden md:block">Connect Wallet</span>
-        </button>
-      ) : (
-        <>
-          <ChainSwitcherHeader
-            address={walletAddress2?walletAddress2:''}
-            currentChainId={chain?.id}
-            switchChain={switchChain}
-            // disconnect={logout}
-            ensAvatar={ensAvatar}
-          />
+    // <div className="wallet">
+    //   {!authenticated && !address ? (
+    //     <button
+    //       onClick={login}
+    //       type="button"
+    //       className="flex items-center justify-center text-white bg-blue-shade-200 hover:bg-blue-shade-100 border border-white rounded-full p-2 md:px-5 md:py-4 text-xs md:text-sm font-bold transition-transform transform hover:scale-105"
+    //     >
+    //       <BiSolidWallet className="block md:hidden size-5" />
+    //       <span className="hidden md:block">Connect Wallet</span>
+    //     </button>
+    //   ) : (
+    //     <>
+    //       <ChainSwitcherHeader
+    //         address={walletAddress2?walletAddress2:''}
+    //         currentChainId={chain?.id}
+    //         switchChain={switchChain}
+    //         // disconnect={logout}
+    //         ensAvatar={ensAvatar}
+    //       />
 
-          {/* Mobile View */}
-          <div className="lg:hidden flex items-center">
-            <button
-              onClick={login}
-              type="button"
-              className="flex items-center size-[30px] rounded-full justify-center border-2 border-black font-bold text-black shadow-sm transition-transform transform hover:scale-105 text-xs"
-            >
-              <Image
-                src={getDisplayImage()}
-                alt="User Avatar"
-                width={30}
-                height={30}
-                className="rounded-full"
-              />
-            </button>
-          </div>
-        </>
-      )}
-    </div>
+    //       {/* Mobile View */}
+    //       {/* <div className="lg:hidden flex items-center">
+    //         <button
+    //           onClick={login}
+    //           type="button"
+    //           className="flex items-center size-[30px] rounded-full justify-center border-2 border-black font-bold text-black shadow-sm transition-transform transform hover:scale-105 text-xs"
+    //         >
+    //           <Image
+    //             src={getDisplayImage()}
+    //             alt="User Avatar"
+    //             width={30}
+    //             height={30}
+    //             className="rounded-full"
+    //           />
+    //         </button>
+    //       </div> */}
+    //       <MobileChainSwitcher
+    //         login={login}
+    //         getDisplayImage={getDisplayImage}
+    //         address={walletAddress2 ?? ''}
+    //         currentChainId={chain?.id}
+    //         switchChain={switchChain}
+    //         ensAvatar={ensAvatar}
+    //         authenticated={authenticated}
+    //       />
+    //     </>
+    //   )}
+    // </div>
+
+<div className="wallet">
+  {!authenticated && !address ? (
+    <button
+      onClick={login}
+      type="button"
+      className="flex items-center justify-center text-white bg-blue-shade-200 hover:bg-blue-shade-100 border border-white rounded-full p-2 md:px-5 md:py-4 text-xs md:text-sm font-bold transition-transform transform hover:scale-105"
+    >
+      <BiSolidWallet className="block md:hidden size-5" />
+      <span className="hidden md:block">Connect Wallet</span>
+    </button>
+  ) : (
+    <>
+      {/* Desktop View */}
+      <div className="hidden lg:block">
+        <ChainSwitcherHeader
+          address={walletAddress2 ? walletAddress2 : ''}
+          currentChainId={chainId}
+          switchChain={switchChain}
+          ensAvatar={ensAvatar}
+        />
+      </div>
+
+      {/* Mobile View */}
+      <MobileChainSwitcher
+        login={login}
+        getDisplayImage={getDisplayImage}
+        address={walletAddress2 ?? ''}
+        currentChainId={chain?.id}
+        switchChain={switchChain}
+        ensAvatar={ensAvatar}
+        authenticated={authenticated}
+      />
+    </>
+  )}
+</div>
   );
 }
 

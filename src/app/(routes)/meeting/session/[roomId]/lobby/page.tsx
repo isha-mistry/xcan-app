@@ -38,6 +38,7 @@ import { truncateAddress } from "@/utils/text";
 import { useSession } from "next-auth/react";
 import { useConnection } from "@/app/hooks/useConnection";
 import { usePrivy } from "@privy-io/react-auth";
+import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 
 type lobbyProps = {};
 
@@ -75,13 +76,17 @@ const Lobby = ({ params }: { params: { roomId: string } }) => {
   const [attendeeJoinedStatus, setAttendeeJoinedStatus] = useState<any>();
   const [meetingData, setMeetingData] = useState<any>();
   const { data: session } = useSession();
-  const { user, ready, getAccessToken } = usePrivy();
-  const { isConnected, isPageLoading, isSessionLoading, isReady } =
+  const { user, ready, getAccessToken,authenticated } = usePrivy();
+  const { isConnected, isPageLoading, isReady } =
     useConnection();
-
+    const {walletAddress}=useWalletAddress();
+    
   useEffect(() => {
     console.log("meetingStatus", meetingStatus);
   }, [meetingStatus]);
+
+
+
 
   const handleStartSpaces = async () => {
     console.log("in start spaces");
@@ -121,7 +126,7 @@ const Lobby = ({ params }: { params: { roomId: string } }) => {
       setIsJoining(true);
 
       let role;
-      if (address === hostAddress) {
+      if (walletAddress === hostAddress) {
         role = "host";
       } else {
         role = "guest";
@@ -133,14 +138,14 @@ const Lobby = ({ params }: { params: { roomId: string } }) => {
           roomId: params.roomId,
           role: role,
           displayName: name,
-          address: address, // assuming you have userAddress defined somewhere
+          address: walletAddress, // assuming you have userAddress defined somewhere
         };
         try {
           const myHeaders = new Headers();
-          const token=await getAccessToken();
+          let token=await getAccessToken();
           myHeaders.append("Content-Type", "application/json");
-          if (address) {
-            myHeaders.append("x-wallet-address", address);
+          if (walletAddress) {
+            myHeaders.append("x-wallet-address", walletAddress);
             myHeaders.append("Authorization",`Bearer ${token}`);
           }
           const response = await fetch("/api/new-token", {
@@ -187,8 +192,8 @@ const Lobby = ({ params }: { params: { roomId: string } }) => {
         const myHeaders = new Headers();
         const token=await getAccessToken();
         myHeaders.append("Content-Type", "application/json");
-        if (address) {
-          myHeaders.append("x-wallet-address", address);
+        if (walletAddress) {
+          myHeaders.append("x-wallet-address", walletAddress);
           myHeaders.append("Authorization",`Bearer ${token}`);
         }
 
@@ -215,7 +220,7 @@ const Lobby = ({ params }: { params: { roomId: string } }) => {
 
       if (Role.HOST) {
         const commonData = {
-          callerAddress: address,
+          callerAddress: walletAddress,
           daoName: daoName,
           sessionType: sessionType,
           hostAddress: hostAddress,
@@ -226,15 +231,15 @@ const Lobby = ({ params }: { params: { roomId: string } }) => {
         };
 
         if (sessionType === "instant-meet") {
-          await updateMeetingStatus(params, commonData, address);
+          await updateMeetingStatus(params, commonData, walletAddress?walletAddress:'');
         } else if (sessionType === "session") {
-          if (address === attendeeAddress) {
+          if (walletAddress === attendeeAddress) {
             if (attendeeJoinedStatus === "Pending") {
-              await updateMeetingStatus(params, commonData, address);
+              await updateMeetingStatus(params, commonData, walletAddress?walletAddress:'');
             }
-          } else if (address === hostAddress) {
+          } else if (walletAddress === hostAddress) {
             if (hostJoinedStatus === "Pending") {
-              await updateMeetingStatus(params, commonData, address);
+              await updateMeetingStatus(params, commonData, walletAddress);
             }
           }
         }
@@ -253,8 +258,8 @@ const Lobby = ({ params }: { params: { roomId: string } }) => {
         const myHeaders = new Headers();
         const token=await getAccessToken();
         myHeaders.append("Content-Type", "application/json");
-        if (address) {
-          myHeaders.append("x-wallet-address", address);
+        if (walletAddress) {
+          myHeaders.append("x-wallet-address", walletAddress);
           myHeaders.append("Authorization",`Bearer ${token}`);
         }
 
@@ -287,8 +292,8 @@ const Lobby = ({ params }: { params: { roomId: string } }) => {
   useEffect(() => {
     const myHeaders = new Headers();
     myHeaders.append("Content-Type", "application/json");
-    if (address) {
-      myHeaders.append("x-wallet-address", address);
+    if (walletAddress) {
+      myHeaders.append("x-wallet-address", walletAddress);
     }
 
     const raw = JSON.stringify({
@@ -367,13 +372,13 @@ const Lobby = ({ params }: { params: { roomId: string } }) => {
         const myHeaders = new Headers();
         const token=await getAccessToken();
         myHeaders.append("Content-Type", "application/json");
-        if (address) {
-          myHeaders.append("x-wallet-address", address);
+        if (walletAddress) {
+          myHeaders.append("x-wallet-address", walletAddress);
           myHeaders.append("Authorization",`Bearer ${token}`);
         }
 
         const raw = JSON.stringify({
-          address: address,
+          address: walletAddress,
           // daoName: dao,
         });
 
@@ -384,7 +389,7 @@ const Lobby = ({ params }: { params: { roomId: string } }) => {
           redirect: "follow",
         };
         console.log("Req OPTIONS", requestOptions);
-        const response = await fetch(`/api/profile/${address}`, requestOptions);
+        const response = await fetch(`/api/profile/${walletAddress}`, requestOptions);
         const result = await response.json();
         const resultData = await result.data;
         console.log("result data: ", resultData);
@@ -400,14 +405,14 @@ const Lobby = ({ params }: { params: { roomId: string } }) => {
             setAvatarUrl(`https://gateway.lighthouse.storage/ipfs/${imageCid}`);
           }
 
-          if (address) {
-            const getName = await fetchEnsName(address?.toString());
+          if (walletAddress) {
+            const getName = await fetchEnsName(walletAddress?.toString());
             const getEnsNameOfAddress = await getName?.ensName;
             console.log("formattedAddress ", getEnsNameOfAddress);
             if (getEnsNameOfAddress) {
               setName(getEnsNameOfAddress);
             } else {
-              const formattedAddress = await truncateAddress(address);
+              const formattedAddress = await truncateAddress(walletAddress);
               setName(formattedAddress);
             }
           }
@@ -436,7 +441,7 @@ const Lobby = ({ params }: { params: { roomId: string } }) => {
       }
     };
     fetchData();
-  }, [address]);
+  }, [address,walletAddress]);
 
   return (
     <>
@@ -650,7 +655,7 @@ const Lobby = ({ params }: { params: { roomId: string } }) => {
                 </div>
                 <Link
                   // onClick={() => push(`/profile/${address}?active=info`)}
-                  href={`/profile/${address}?active=info`}
+                  href={`/profile/${walletAddress}?active=info`}
                   className="px-6 py-3 bg-white text-blue-shade-200 rounded-full shadow-lg hover:bg-blue-shade-200 hover:text-white transition duration-300 ease-in-out"
                 >
                   Back to Profile

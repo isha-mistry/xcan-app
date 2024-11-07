@@ -22,6 +22,8 @@ import { truncateAddress } from "@/utils/text";
 import { useConnection } from "@/app/hooks/useConnection";
 import Link from "next/link";
 import { Gift, Loader2 } from "lucide-react";
+import { usePrivy } from "@privy-io/react-auth";
+import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 
 interface Reward {
   platform: string;
@@ -44,7 +46,7 @@ const REWARD_QUERY = gql`
 function TotalRewards() {
   const {
     isConnected: isUserConnected,
-    isSessionLoading,
+    // isSessionLoading,
     isPageLoading,
     isReady,
   } = useConnection();
@@ -52,7 +54,7 @@ function TotalRewards() {
     amount: "0.0",
     value: "$0.0",
   });
-  const { address } = useAccount();
+  const { address,isConnected } = useAccount();
   const chainId = useChainId();
   const [claimableRewards, setClaimableRewards] = useState<Reward[]>([]);
   const [ethToUsdConversionRate, setEthToUsdConversionRate] = useState(0);
@@ -66,16 +68,21 @@ function TotalRewards() {
   } = useWriteContract();
   const [claimingReward, setClaimingReward] = useState<boolean>(false);
   const [fetchingReward, setFetchingReward] = useState<boolean>(false);
+  const { ready, authenticated, login, logout, user } = usePrivy();
+  const {walletAddress}=useWalletAddress();
 
   const nonZeroRewards = claimableRewards.filter(
     (reward) => parseFloat(reward.amount) > 0
   );
 
+ 
+
+
   const fetchReward = useCallback(async () => {
     try {
       setFetchingReward(true);
       const data = await nft_client
-        .query(REWARD_QUERY, { address: address })
+        .query(REWARD_QUERY, { address: walletAddress })
         .toPromise();
       const response = await fetch(
         "https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd"
@@ -117,29 +124,29 @@ function TotalRewards() {
   }, [chainId]);
 
   useEffect(() => {
-    if (address) {
+    if (walletAddress) {
       fetchReward();
 
       const fetchEnsName = async () => {
-        const ensName = await fetchEnsNameAndAvatar(address);
-        const truncatedAddress = truncateAddress(address);
+        const ensName = await fetchEnsNameAndAvatar(walletAddress);
+        const truncatedAddress = truncateAddress(walletAddress);
         setDisplayEnsName(
           ensName?.ensName ? ensName.ensName : truncatedAddress
         );
       };
       fetchEnsName();
     }
-  }, [address]);
+  }, [address,walletAddress]);
 
   const { data: accountBalance, isLoading } = useReadContract({
     abi: protocolRewardsABI,
     address:
       protocolRewardsAddress[chainId as keyof typeof protocolRewardsAddress],
     functionName: "balanceOf",
-    args: [address as Address],
+    args: [walletAddress as Address],
   });
 
-  const recipient = address;
+  const recipient = walletAddress;
   const withdrawAmount = BigInt(accountBalance || 0) / BigInt(2);
 
   // withdraw amount is half of the balance
@@ -180,7 +187,7 @@ function TotalRewards() {
             chainId as keyof typeof protocolRewardsAddress
           ],
         functionName: "withdraw",
-        args: [recipient!, withdrawAmount],
+        args: [recipient as `0x${string}`, withdrawAmount],
       });
       console.log("result:::", result);
 

@@ -41,7 +41,7 @@ const ExploreDAOs = () => {
   const [openSearch, setOpenSearch] = useState(false);
   const searchParams = useSearchParams();
   // const { openConnectModal } = useConnectModal();
-  const { isConnected, isLoading, isSessionLoading, isPageLoading, isReady } =
+  const { isConnected, isLoading, isPageLoading, isReady } =
     useConnection();
   const { ready, authenticated, login, logout } = usePrivy();
 
@@ -63,6 +63,8 @@ const ExploreDAOs = () => {
     );
     setDaoInfo(filtered);
   };
+
+  
 
   const handleClick = (name: string, img: StaticImageData) => {
     const formatted = name.toLowerCase();

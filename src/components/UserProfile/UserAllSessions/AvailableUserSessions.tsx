@@ -6,6 +6,8 @@ import toast, { Toaster } from "react-hot-toast";
 import { useAccount } from "wagmi";
 import { Grid } from "react-loader-spinner";
 import { motion, AnimatePresence } from "framer-motion";
+import { usePrivy } from "@privy-io/react-auth";
+import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 
 interface AvailableUserSessionsProps {
   daoName: string;
@@ -25,10 +27,15 @@ function AvailableUserSessions({
   setSessionCreated,
 }: AvailableUserSessionsProps) {
   const { address, isConnected } = useAccount();
+  const {walletAddress}=useWalletAddress();
+  const { ready, authenticated, login, logout, user } = usePrivy();
   const { chain } = useAccount();
   const [data, setData] = useState([]);
   const [dataLoading, setDataLoading] = useState<Boolean>(false);
   const [updateTrigger, setUpdateTrigger] = useState(0);
+
+
+
 
   useEffect(() => {
     const fetchData = async () => {
@@ -37,13 +44,13 @@ function AvailableUserSessions({
       try {
         const myHeaders = new Headers();
         myHeaders.append("Content-Type", "application/json");
-        if (address) {
-          myHeaders.append("x-wallet-address", address);
+        if (walletAddress) {
+          myHeaders.append("x-wallet-address", walletAddress);
         }
 
         const raw = JSON.stringify({
           dao_name: daoName,
-          userAddress: address,
+          userAddress: walletAddress,
         });
 
         const requestOptions = {
@@ -69,7 +76,7 @@ function AvailableUserSessions({
     fetchData();
   }, [
     daoName,
-    address,
+    walletAddress,
     scheduledSuccess === true,
     sessionCreated,
     updateTrigger,
@@ -98,7 +105,7 @@ function AvailableUserSessions({
             <TimeSlotTable
               title="15 Minutes"
               slotSize={15}
-              address={address}
+              address={walletAddress}
               dao_name={daoName}
               data={data.filter((item: any) => item.timeSlotSizeMinutes === 15)}
               setData={setData}
@@ -109,7 +116,7 @@ function AvailableUserSessions({
             <TimeSlotTable
               title="30 Minutes"
               slotSize={30}
-              address={address}
+              address={walletAddress}
               dao_name={daoName}
               data={data.filter((item: any) => item.timeSlotSizeMinutes === 30)}
               setData={setData}
@@ -120,7 +127,7 @@ function AvailableUserSessions({
             <TimeSlotTable
               title="45 Minutes"
               slotSize={45}
-              address={address}
+              address={walletAddress}
               dao_name={daoName}
               data={data.filter((item: any) => item.timeSlotSizeMinutes === 45)}
               setData={setData}
@@ -155,7 +162,7 @@ function TimeSlotTable({
   title,
   data,
   slotSize,
-  address,
+  walletAddress,
   dao_name,
   setData,
   triggerUpdate,
@@ -175,13 +182,13 @@ function TimeSlotTable({
     try {
       const myHeaders = new Headers();
       myHeaders.append("Content-Type", "application/json");
-      if (address) {
-        myHeaders.append("x-wallet-address", address);
+      if (walletAddress) {
+        myHeaders.append("x-wallet-address", walletAddress);
       }
 
       const raw = JSON.stringify({
         dao_name: dao_name,
-        userAddress: address,
+        userAddress: walletAddress,
         timeSlotSizeMinutes: slotSize,
         date: date,
         startTime: startTime,

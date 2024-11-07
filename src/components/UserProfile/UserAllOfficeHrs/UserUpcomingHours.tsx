@@ -21,6 +21,7 @@ import toast, { Toaster } from "react-hot-toast";
 import SessionTileSkeletonLoader from "@/components/SkeletonLoader/SessionTileSkeletonLoader";
 import { headers } from "next/headers";
 import { usePrivy } from "@privy-io/react-auth";
+import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 
 interface SessionDetail {
   img: any;
@@ -44,8 +45,11 @@ function UserUpcomingHours() {
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
   const [pageLoading, setPageLoading] = useState(true);
 
-  const { address } = useAccount();
-  const { getAccessToken } = usePrivy();
+  const { address,isConnected } = useAccount();
+  const {walletAddress}=useWalletAddress();
+  const { getAccessToken,authenticated,user } = usePrivy();
+
+
 
   const [selectedDate, setSelectedDate] = useState<string>("");
   const [selectedTime, setSelectedTime] = useState<string>("");
@@ -57,7 +61,7 @@ function UserUpcomingHours() {
   };
 
   useEffect(() => {
-    fetch(`/api/update-office-hours/${address}`)
+    fetch(`/api/update-office-hours/${walletAddress}`)
       .then((response) => response.json()) // Parse response JSON
       .then((data: any[]) => {
         const mappedData: SessionDetail[] = data.map((item) => ({
@@ -103,7 +107,7 @@ function UserUpcomingHours() {
     updateOfficeHours(updatedFormData)
       .then(() => {
         // Update frontend data
-        fetch(`/api/update-office-hours/${address}`)
+        fetch(`/api/update-office-hours/${walletAddress}`)
           .then((response) => response.json())
           .then((data: any[]) => {
             const mappedData: SessionDetail[] = data.map((item) => ({
@@ -139,8 +143,8 @@ function UserUpcomingHours() {
     const myHeaders = new Headers();
     const token=await getAccessToken();
     myHeaders.append("Content-Type", "application/json");
-    if (address) {
-      myHeaders.append("x-wallet-address", address);
+    if (walletAddress) {
+      myHeaders.append("x-wallet-address", walletAddress);
       myHeaders.append("Authorization",`Bearer ${token}`);
     }
 
@@ -155,7 +159,7 @@ function UserUpcomingHours() {
       headers: myHeaders,
       body: raw,
     };
-    return fetch(`/api/edit-office-hours/${address}`, requestOptions)
+    return fetch(`/api/edit-office-hours/${walletAddress}`, requestOptions)
       .then((response) => response.text())
       .then((result) => console.log(result))
       .catch((error) => console.log("error", error));
@@ -166,15 +170,15 @@ function UserUpcomingHours() {
     const myHeaders = new Headers();
     const token=await getAccessToken();
     myHeaders.append("Content-Type", "application/json");
-    if (address) {
-      myHeaders.append("x-wallet-address", address);
+    if (walletAddress) {
+      myHeaders.append("x-wallet-address", walletAddress);
       myHeaders.append("Authorization",`Bearer ${token}`);
     }
     const requestOptions = {
       method: "DELETE",
       headers: myHeaders,
     };
-    fetch(`/api/edit-office-hours/${address}`, requestOptions)
+    fetch(`/api/edit-office-hours/${walletAddress}`, requestOptions)
       .then((response) => response.text())
       .then((result) => {
         console.log(result);

@@ -32,6 +32,7 @@ import { IoCopy } from "react-icons/io5";
 import { useAccount } from "wagmi";
 import { SessionInterface } from "@/types/MeetingTypes";
 import { usePrivy } from "@privy-io/react-auth";
+import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 
 type Attendee = {
   attendee_address: string;
@@ -82,14 +83,16 @@ function EventTile({ tileIndex, data: initialData, isEvent }: TileProps) {
   const [ensHostAvatar, setEnsHostAvatar] = useState("");
   const [ensGuestAvatar, setEnsGuestAvatar] = useState("");
   const [loadingEnsData, setLoadingEnsData] = useState(true);
-  const { address } = useAccount();
-  const { user, ready, getAccessToken } = usePrivy();
+  const { address,isConnected } = useAccount();
+  const { user, ready, getAccessToken,authenticated} = usePrivy();
+  const {walletAddress}=useWalletAddress();
   // const address = "0xB351a70dD6E5282A8c84edCbCd5A955469b9b032";
 
   const handleCopy = (addr: string) => {
     copy(addr);
     toast("Address Copied");
   };
+
 
   useEffect(() => {
     const fetchEnsData = async () => {
@@ -161,8 +164,8 @@ function EventTile({ tileIndex, data: initialData, isEvent }: TileProps) {
       const myHeaders = new Headers();
       const token = await getAccessToken();
       myHeaders.append("Content-Type", "application/json");
-      if (address) {
-        myHeaders.append("x-wallet-address", address);
+      if (walletAddress) {
+        myHeaders.append("x-wallet-address", walletAddress);
         myHeaders.append("Authorization", `Bearer ${token}`);
       }
 

@@ -7,6 +7,7 @@ import { Oval } from "react-loader-spinner";
 import SessionTileSkeletonLoader from "../SkeletonLoader/SessionTileSkeletonLoader";
 import {useAccount} from "wagmi";
 import { usePrivy } from "@privy-io/react-auth";
+import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 
 interface Type {
   daoDelegates: string;
@@ -29,8 +30,10 @@ function DelegateOfficeHrs({ props }: { props: Type }) {
   const router = useRouter();
   const path = usePathname();
   const searchParams = useSearchParams();
-  const {address}=useAccount();
-  const { user, ready, getAccessToken } = usePrivy();
+  const {address,isConnected}=useAccount();
+  const { user, ready, getAccessToken,authenticated } = usePrivy();
+  const {walletAddress}=useWalletAddress();
+
 
   const [sessionDetails, setSessionDetails] = useState([]);
   const [dataLoading, setDataLoading] = useState(true);
@@ -44,8 +47,8 @@ function DelegateOfficeHrs({ props }: { props: Type }) {
         const myHeaders = new Headers();
         const token=await getAccessToken();
         myHeaders.append("Content-Type", "application/json");
-        if (address) {
-          myHeaders.append("x-wallet-address", address);
+        if (walletAddress) {
+          myHeaders.append("x-wallet-address", walletAddress);
           myHeaders.append("Authorization",`Bearer ${token}`);
         }
 

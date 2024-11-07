@@ -10,7 +10,8 @@ import styled from "styled-components";
 import rehypeSanitize from "rehype-sanitize";
 import { getDaoName } from "@/utils/chainUtils";
 import { ICommand, commands } from "@uiw/react-md-editor";
-import { getAccessToken } from "@privy-io/react-auth";
+import { getAccessToken, usePrivy } from "@privy-io/react-auth";
+import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 
 const StyledMDEditorWrapper = styled.div`
   .w-md-editor {
@@ -130,7 +131,7 @@ function UserInfo({
   // descAvailable,
   daoName,
 }: userInfoProps) {
-  const { address } = useAccount();
+  const { address,isConnected } = useAccount();
   // const address = "0x5e349eca2dc61abcd9dd99ce94d04136151a09ee";
   const { chain } = useAccount();
   // const [description, setDescription] = useState(
@@ -156,11 +157,16 @@ function UserInfo({
 
   const [originalDesc, setOriginalDesc] = useState(description || karmaDesc);
   const [isMobile, setIsMobile] = useState(false);
+  const {walletAddress}=useWalletAddress();
+  const { ready, authenticated, login, logout, user } = usePrivy();
+
+
+ 
 
   useEffect(() => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth <= 900);
-    };
+    }
 
     checkMobile();
     window.addEventListener("resize", checkMobile);
@@ -244,7 +250,7 @@ function UserInfo({
     const sessionHosted = async () => {
       try {
         const response = await fetch(
-          `/api/get-meeting/${address}?dao_name=${dao_name}`,
+          `/api/get-meeting/${walletAddress}?dao_name=${dao_name}`,
           {
             method: "GET",
             headers: {
@@ -281,10 +287,10 @@ function UserInfo({
         const myHeaders = new Headers();
         myHeaders.append("Content-Type", "application/json");
         myHeaders.append("Authorization", `Bearer ${token}`);
-        if (address) {
-          myHeaders.append("x-wallet-address", address);
+        if (walletAddress) {
+          myHeaders.append("x-wallet-address", walletAddress);
         }
-        const response = await fetch(`/api/get-session-data/${address}`, {
+        const response = await fetch(`/api/get-session-data/${walletAddress}`, {
           method: "POST",
           headers: myHeaders,
           body: JSON.stringify({
@@ -318,14 +324,14 @@ function UserInfo({
         const myHeaders = new Headers();
         myHeaders.append("Content-Type", "application/json");
         myHeaders.append("Authorization", `Bearer ${token}`);
-        if (address) {
-          myHeaders.append("x-wallet-address", address);
+        if (walletAddress) {
+          myHeaders.append("x-wallet-address", walletAddress);
         }
         const response = await fetch(`/api/get-officehours-address`, {
           method: "POST",
           headers: myHeaders,
           body: JSON.stringify({
-            address: address,
+            address: walletAddress,
           }),
         });
         const result = await response.json();
@@ -356,14 +362,14 @@ function UserInfo({
         const myHeaders = new Headers();
         myHeaders.append("Content-Type", "application/json");
         myHeaders.append("Authorization", `Bearer ${token}`);
-        if (address) {
-          myHeaders.append("x-wallet-address", address);
+        if (walletAddress) {
+          myHeaders.append("x-wallet-address", walletAddress);
         }
         const response = await fetch(`/api/get-attendee-individual`, {
           method: "POST",
           headers: myHeaders,
           body: JSON.stringify({
-            attendee_address: address,
+            attendee_address: walletAddress,
           }),
         });
         const result = await response.json();
@@ -389,10 +395,14 @@ function UserInfo({
       }
     };
 
-    sessionHosted();
-    sessionAttended();
-    officeHoursHosted();
-    officeHoursAttended();
+    if(walletAddress!=null){
+      sessionHosted();
+      sessionAttended();
+      officeHoursHosted();
+      officeHoursAttended();
+    }
+
+  
   };
 
   useEffect(() => {
@@ -401,18 +411,18 @@ function UserInfo({
     } else if (activeButton === "offchain") {
       fetchAttestation("offchain");
     }
-  }, [activeButton, address, chain]);
+  }, [activeButton, walletAddress,address, chain]);
 
   const blocks = [
     {
       number: sessionAttendCount,
       desc: "Sessions attended",
-      ref: `/profile/${address}}?active=sessions&session=attended`,
+      ref: `/profile/${walletAddress}}?active=sessions&session=attended`,
     },
     {
       number: officehoursAttendCount,
       desc: "Office Hours attended",
-      ref: `/profile/${address}}?active=officeHours&hours=attended`,
+      ref: `/profile/${walletAddress}}?active=officeHours&hours=attended`,
     },
   ];
 
@@ -421,12 +431,12 @@ function UserInfo({
       {
         number: sessionHostCount,
         desc: "Sessions hosted",
-        ref: `/profile/${address}}?active=sessions&session=hosted`,
+        ref: `/profile/${walletAddress}}?active=sessions&session=hosted`,
       },
       {
         number: officehoursHostCount,
         desc: "Office Hours hosted",
-        ref: `/profile/${address}}?active=officeHours&hours=attended`,
+        ref: `/profile/${walletAddress}}?active=officeHours&hours=attended`,
       }
     );
   }

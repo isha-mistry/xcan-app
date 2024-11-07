@@ -29,6 +29,7 @@ import DelegateListSkeletonLoader from "../SkeletonLoader/DelegateListSkeletonLo
 import { ChevronDown } from "lucide-react";
 import debounce from "lodash/debounce";
 import { usePrivy } from "@privy-io/react-auth";
+import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 
 const DELEGATES_PER_PAGE = 20;
 const DEBOUNCE_DELAY = 500;
@@ -36,7 +37,6 @@ const DEBOUNCE_DELAY = 500;
 function DelegatesList({ props }: { props: string }) {
   const {
     isConnected: isUserConnected,
-    isSessionLoading,
     isLoading,
     isPageLoading,
     isReady,
@@ -59,7 +59,8 @@ function DelegatesList({ props }: { props: string }) {
   // const { openConnectModal } = useConnectModal();
   const { isConnected, address, chain } = useAccount();
   const { publicClient, walletClient } = WalletAndPublicClient();
-  const { ready, authenticated, login, logout } = usePrivy();
+  const { ready, authenticated, login, logout,user } = usePrivy();
+  const {walletAddress}=useWalletAddress();
 
   const fetchDelegates = useCallback(async () => {
     setIsAPICalling(true);
@@ -165,7 +166,7 @@ function DelegatesList({ props }: { props: string }) {
       const data = await (props === "optimism" ? op_client : arb_client).query(
         DELEGATE_CHANGED_QUERY,
         {
-          delegator: address,
+          delegator: walletAddress,
         }
       );
       const delegate = data.data.delegateChangeds[0]?.toDelegate;
@@ -178,7 +179,7 @@ function DelegatesList({ props }: { props: string }) {
     }
   };
   const handleDelegateVotes = async (to: string) => {
-    if (!address) {
+    if (!walletAddress) {
       toast.error("Please connect your wallet!");
       return;
     }
@@ -200,7 +201,7 @@ function DelegatesList({ props }: { props: string }) {
         abi: dao_abi.abi,
         functionName: "delegate",
         args: [to],
-        account: address,
+        account: walletAddress,
       });
 
       setConfettiVisible(true);

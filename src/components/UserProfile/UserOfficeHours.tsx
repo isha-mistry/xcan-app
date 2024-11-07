@@ -11,6 +11,7 @@ import { Oval } from "react-loader-spinner";
 import { RxCross2 } from "react-icons/rx";
 import SessionTileSkeletonLoader from "../SkeletonLoader/SessionTileSkeletonLoader";
 import { usePrivy } from "@privy-io/react-auth";
+import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 
 interface UserOfficeHoursProps {
   isDelegate: boolean | undefined;
@@ -34,7 +35,7 @@ function UserOfficeHours({
   selfDelegate,
   daoName,
 }: UserOfficeHoursProps) {
-  const { address } = useAccount();
+  const { address,isConnected } = useAccount();
   const router = useRouter();
   const path = usePathname();
   const searchParams = useSearchParams();
@@ -42,8 +43,9 @@ function UserOfficeHours({
   const [sessionDetails, setSessionDetails] = useState([]);
   const [dataLoading, setDataLoading] = useState(true);
   const [showComingSoon, setShowComingSoon] = useState(true);
-  const { user, ready, getAccessToken } = usePrivy();
-
+  const { user, ready, getAccessToken,authenticated } = usePrivy();
+  const {walletAddress}=useWalletAddress();
+  
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -51,13 +53,13 @@ function UserOfficeHours({
         const myHeaders = new Headers();
         const token=await getAccessToken(); 
         myHeaders.append("Content-Type", "application/json");
-        if (address) {
-          myHeaders.append("x-wallet-address", address);
+        if (walletAddress) {
+          myHeaders.append("x-wallet-address", walletAddress);
           myHeaders.append("Authorization",`Bearer ${token}`);
         }
 
         const raw = JSON.stringify({
-          address: address,
+          address: walletAddress,
         });
 
         const requestOptions: RequestInit = {
@@ -75,7 +77,7 @@ function UserOfficeHours({
 
         //api for individual attendees
         const rawData = JSON.stringify({
-          attendee_address: address,
+          attendee_address: walletAddress,
         });
 
         const requestOption: RequestInit = {
@@ -119,7 +121,7 @@ function UserOfficeHours({
           const filteredSessions = resultData.filter((session: Session) => {
             return (
               session.attendees.some(
-                (attendee: any) => attendee.attendee_address === address
+                (attendee: any) => attendee.attendee_address === walletAddress
               ) && session.dao_name === daoName
             );
           });
@@ -140,7 +142,7 @@ function UserOfficeHours({
     // Set initial session details
     setSessionDetails([]);
     setDataLoading(true);
-  }, [address]);
+  }, [address,walletAddress]);
 
   useEffect(() => {
     if (!selfDelegate && searchParams.get("hours") === "schedule") {

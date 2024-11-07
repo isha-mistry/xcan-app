@@ -61,6 +61,7 @@ import { optimism, arbitrum } from "viem/chains";
 import RewardButton from "../ClaimReward/RewardButton";
 import MobileResponsiveMessage from "../MobileResponsiveMessage/MobileResponsiveMessage";
 import { usePrivy } from "@privy-io/react-auth";
+import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 
 interface Type {
   daoDelegates: string;
@@ -108,8 +109,8 @@ function SpecificDelegate({ props }: { props: Type }) {
   const [confettiVisible, setConfettiVisible] = useState(false);
   const network = useAccount().chain;
   const { publicClient, walletClient } = WalletAndPublicClient();
-  const { ready, authenticated, login, logout,getAccessToken } = usePrivy();
-
+  const { ready, authenticated, login, logout,getAccessToken,user } = usePrivy();
+  const {walletAddress}=useWalletAddress();
 
   const handleDelegateModal = async () => {
     if (!isConnected) {
@@ -125,11 +126,11 @@ function SpecificDelegate({ props }: { props: Type }) {
         let data: any;
         if (props.daoDelegates === "optimism") {
           data = await op_client.query(DELEGATE_CHANGED_QUERY, {
-            delegator: address,
+            delegator: walletAddress,
           });
         } else {
           data = await arb_client.query(DELEGATE_CHANGED_QUERY, {
-            delegator: address,
+            delegator: walletAddress,
           });
         }
 
@@ -290,7 +291,14 @@ function SpecificDelegate({ props }: { props: Type }) {
         });
         // await updateFollowerState();
         // await setFollowerscount();
-        await fetchDelegateData();
+
+        // Only fetch delegate data if we have a wallet address
+        if (walletAddress) {
+          await fetchDelegateData();
+        }
+      
+          // await fetchDelegateData();
+         
 
         setIsPageLoading(false);
       } catch (error) {
@@ -300,7 +308,7 @@ function SpecificDelegate({ props }: { props: Type }) {
     };
 
     fetchData();
-  }, []);
+  }, [props.daoDelegates, props.individualDelegate, walletAddress]);
 
   useEffect(() => {
     const checkDelegateStatus = async () => {
@@ -355,13 +363,17 @@ function SpecificDelegate({ props }: { props: Type }) {
   };
 
   const fetchDelegateData = async () => {
+    if (!walletAddress) {
+      console.log("No wallet address available");
+      return;
+    }
     setIsFollowStatusLoading(true);
 
     const myHeaders = new Headers();
     const token = await getAccessToken();
     myHeaders.append("Content-Type", "application/json");
-    if (address) {
-      myHeaders.append("x-wallet-address", address);
+    if (walletAddress) {
+      myHeaders.append("x-wallet-address", walletAddress);
       myHeaders.append("Authorization",`Bearer ${token}`);
     }
     const raw = JSON.stringify({
@@ -398,11 +410,13 @@ function SpecificDelegate({ props }: { props: Type }) {
         (dao: any) => dao.dao_name.toLowerCase() === currentDaoName
       );
 
+
       if (daoFollowers) {
         // Update follower count
         const followerCount = daoFollowers.follower.filter(
           (f: any) => f.isFollowing
         ).length;
+        // console.log("Follower count:",followerCount);
         setFollowers(followerCount);
         setFollowerCountLoading(false);
 
@@ -410,7 +424,7 @@ function SpecificDelegate({ props }: { props: Type }) {
         // const address = await walletClient.getAddresses();
         // const address_user = address[0].toLowerCase();
         const userFollow = daoFollowers.follower.find(
-          (f: any) => f.address.toLowerCase() === address?.toLowerCase()
+          (f: any) => f.address.toLowerCase() === walletAddress?.toLowerCase()
         );
 
         if (userFollow) {
@@ -452,8 +466,8 @@ function SpecificDelegate({ props }: { props: Type }) {
       const myHeaders = new Headers();
       const token=await getAccessToken();
       myHeaders.append("Content-Type", "application/json");
-      if (address) {
-        myHeaders.append("x-wallet-address", address);
+      if (walletAddress) {
+        myHeaders.append("x-wallet-address", walletAddress);
         myHeaders.append("Authorization",`Bearer ${token}`);
       }
       try {
@@ -463,7 +477,7 @@ function SpecificDelegate({ props }: { props: Type }) {
           body: JSON.stringify({
             // Add any necessary data
             delegate_address: delegate_address,
-            follower_address: address,
+            follower_address: walletAddress,
             action: action,
             dao: dao,
           }),
@@ -499,8 +513,8 @@ function SpecificDelegate({ props }: { props: Type }) {
         const myHeaders = new Headers();
         const token=await getAccessToken();
         myHeaders.append("Content-Type", "application/json");
-        if (address) {
-          myHeaders.append("x-wallet-address", address);
+        if (walletAddress) {
+          myHeaders.append("x-wallet-address", walletAddress);
           myHeaders.append("Authorization",`Bearer ${token}`);
         }
         try {
@@ -510,7 +524,7 @@ function SpecificDelegate({ props }: { props: Type }) {
             body: JSON.stringify({
               // Add any necessary data
               delegate_address: delegate_address,
-              follower_address: address,
+              follower_address: walletAddress,
               action: action,
               dao: dao,
               updatenotification: updatenotification,
@@ -543,7 +557,7 @@ function SpecificDelegate({ props }: { props: Type }) {
       setUnfollowmodel(true);
     } else {
       // let address = await walletClient.getAddresses();
-      if (address === props.individualDelegate) {
+      if (walletAddress === props.individualDelegate) {
         toast.error("You can't follow your own profile!");
       } else {
         setLoading(true);
@@ -553,7 +567,7 @@ function SpecificDelegate({ props }: { props: Type }) {
         // alert(props.daoDelegates);
         dao = props.daoDelegates;
         // let address = await walletClient.getAddresses();
-        follower_address = address;
+        follower_address = walletAddress;
         delegate_address = props.individualDelegate;
         const token=await getAccessToken();
         try {
@@ -609,7 +623,7 @@ function SpecificDelegate({ props }: { props: Type }) {
     //   return;
     // }
 
-    if (!address) {
+    if (!address || !walletAddress) {
       toast.error("Please connect your MetaMask wallet!");
       return;
     }
@@ -643,7 +657,7 @@ function SpecificDelegate({ props }: { props: Type }) {
             abi: dao_abi.abi,
             functionName: "delegate",
             args: [to],
-            account: address,
+            account: walletAddress,
           });
 
           setDelegatingToAddr(false);

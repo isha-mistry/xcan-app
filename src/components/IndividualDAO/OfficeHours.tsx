@@ -11,6 +11,7 @@ import { headers } from "next/headers";
 import { useAccount } from "wagmi";
 import { CiSearch } from "react-icons/ci";
 import { usePrivy } from "@privy-io/react-auth";
+import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 
 interface Session {
   _id: string;
@@ -29,8 +30,8 @@ function OfficeHours({ props }: { props: string }) {
   const path = usePathname();
   const searchParams = useSearchParams();
   const dao_name = props;
-  const { address } = useAccount();
-  const { user, ready, getAccessToken } = usePrivy();
+  const { address,isConnected } = useAccount();
+  const { user, ready, getAccessToken,authenticated } = usePrivy();
   // const dao_name = props.charAt(0).toUpperCase() + props.slice(1);
 
   const [sessionDetails, setSessionDetails] = useState([]);
@@ -38,6 +39,7 @@ function OfficeHours({ props }: { props: string }) {
   const [dataLoading, setDataLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [noResults, setNoResults] = useState(false);
+  const {walletAddress}=useWalletAddress();
 
   const fetchData = async () => {
     try {
@@ -45,8 +47,8 @@ function OfficeHours({ props }: { props: string }) {
       const myHeaders = new Headers();
       const token=await getAccessToken();
       myHeaders.append("Content-Type", "application/json");
-      if (address) {
-        myHeaders.append("x-wallet-address", address);
+      if (walletAddress) {
+        myHeaders.append("x-wallet-address", walletAddress);
         myHeaders.append("Authorization",`Bearer ${token}`);
       }
 
@@ -127,8 +129,8 @@ function OfficeHours({ props }: { props: string }) {
         const myHeaders = new Headers();
         const token=await getAccessToken();
         myHeaders.append("Content-Type", "application/json");
-        if (address) {
-          myHeaders.append("x-wallet-address", address);
+        if (walletAddress) {
+          myHeaders.append("x-wallet-address", walletAddress);
           myHeaders.append("Authorization",`Bearer ${token}`);
         }
 

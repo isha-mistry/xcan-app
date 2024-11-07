@@ -60,6 +60,8 @@ function FollowingModal({
     setChainName(chain);
   };
 
+  
+
   const handleCopy = (addr: string) => {
     copy(addr);
     toast("Address Copied");

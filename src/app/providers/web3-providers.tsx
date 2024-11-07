@@ -142,82 +142,6 @@
 
   const queryClient = new QueryClient();
 
-  // const SiweHandler = () => {
-  //   const { ready, authenticated,user } = usePrivy();
-  //   const { wallets } = useWallets();
-  //   const searchParameter = useSearchParams();
-  //   const [referrer, setReferrer] = useState<string | null>(null);
-  //   const {data: walletClient} = useWalletClient();
-
-  //   useEffect(() => {
-  //     const referrerAddress = searchParameter.get("referrer");
-  //     setReferrer(referrerAddress);
-  //   }, [searchParameter]);
-
-  //   console.log('Line number 153:',referrer);
-
-  //   useEffect(() => {
-  //     const handleSiweAuth = async () => {
-  //       if (ready && authenticated && user?.wallet?.address) {
-  //         const activeWallet = wallets[0]; // Get the first connected wallet
-  //         console.log("ACTIVE WALLET",activeWallet);
-  //         const address = user.wallet.address;
-  //         console.log("Line number 158",address);
-  //         console.log("Line number 166:",walletClient);
-
-          
-
-          
-
-  //         const csrfToken = await getCsrfToken();
-  //         if (!csrfToken) {
-  //           console.error('Failed to get CSRF token');
-  //           return;
-  //         }
-  //         console.log("WEB3 TOKEN:",csrfToken)
-
-  //         // Create SIWE message
-  //         const message = new SiweMessage({
-  //           domain: window.location.host,
-  //           address: address,
-  //           statement: `Sign in to The App${referrer ? ` (Referrer: ${referrer})` : ""}`,
-  //           uri: window.location.origin,
-  //           version: "1",
-  //           chainId: 10, // Optimism chain ID
-  //           nonce: csrfToken
-  //         });
-
-  //         console.log("Line number 171",message);
-
-  //         const preparedMessage = message.prepareMessage();
-
-  //         console.log("Line number 175",preparedMessage);
-
-  //         // Sign the message
-  //         const signature = await activeWallet.sign(preparedMessage);
-
-  //         console.log("Line number 180",signature);
-
-  //          // Verify signature with NextAuth
-  //          const response = await signIn("credentials", {
-  //           message: JSON.stringify(message),
-  //           signature,
-  //           redirect: false,
-  //         });
-
-  //         if (response?.error) {
-  //           console.error('SIWE authentication failed:', response.error);
-  //         }
-  //       }
-  //     };
-
-  //     handleSiweAuth();
-  //   }, [authenticated, user, referrer]);
-
-  //   return null;
-  // };
-
-
   export default function Web3Provider({ children }: Web3ProviderProps) {
   
     // const [referrer, setReferrer] = useState<string | null>(null);
@@ -249,7 +173,6 @@
         <PrivyAuthHandler/>
         <SessionProvider>
           <WagmiProvider config={wagmiConfig} reconnectOnMount={true}>
-            {/* <SiweHandler/> */}
             {children}
           </WagmiProvider>
         </SessionProvider>

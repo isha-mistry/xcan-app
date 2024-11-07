@@ -17,92 +17,108 @@ export function PrivyAuthHandler() {
   const processedWalletRef = useRef<string | null>(null);
   const [referrer, setReferrer] = useState<string | null>(null);
 
-     // Handle referrer on mount and when searchParams change
-     useEffect(() => {
-      const referrerFromURL = searchParams.get("referrer");
-      const storedReferrer = sessionStorage.getItem("referrer");
-
-      // Prioritize URL referrer over stored referrer
-      const finalReferrer = referrerFromURL || storedReferrer;
-
-      if (finalReferrer) {
-        setReferrer(finalReferrer);
-        handleReferrerStorage(finalReferrer);
-      }
-    }, [searchParams,referrer]);
+  // Handle referrer on mount and when searchParams change
+  useEffect(() => {
+    const referrerFromURL = searchParams.get("referrer");
+    const storedReferrer = sessionStorage.getItem("referrer");
+    
+    const finalReferrer = referrerFromURL || storedReferrer;
+    if (finalReferrer) {
+      setReferrer(finalReferrer);
+      handleReferrerStorage(finalReferrer);
+    }
+  }, [searchParams, referrer]);
 
   useEffect(() => {
     const handleUserLogin = async () => {
       if (!ready || !user) return;
 
       try {
-        // Get Privy access token
         const token = await getAccessToken();
-        // console.log("19 Front-end token:", token);
-
-        // Get referrer from URL params
         const referrer = searchParams.get("referrer");
 
-        // First, try to find an external wallet (metamask, etc.)
-        const externalWallet = wallets.find(
-          (wallet: { address: any; connectedAt: any; walletClientType: string; }) =>
-            wallet.address &&
-            wallet.connectedAt &&
-            wallet.walletClientType !== "privy"
+        // Wait for wallets to be properly initialized
+        if (!wallets || wallets.length === 0) {
+          console.log("Waiting for wallets to initialize...");
+          return;
+        }
+
+        // Log available wallets for debugging
+        console.log("Available wallets:", wallets.map(w => ({
+          address: w.address?.toLowerCase(),
+          type: w.walletClientType
+        })));
+
+        // Get verified wallets from user object
+        const verifiedWallets = user.linkedAccounts
+          .filter(account => account.type === 'wallet')
+          .map(account => account.address.toLowerCase());
+
+        // console.log("Verified wallets:", verifiedWallets);
+
+        // Find a wallet that is both connected and verified
+        const selectedWallet = wallets.find(wallet => 
+          wallet.address && 
+          verifiedWallets.includes(wallet.address.toLowerCase())
         );
 
-        // console.log("32 Externalwallet:", externalWallet);
-
-        // If no external wallet, fall back to Privy wallet
-        const activeWallet =
-          externalWallet ||
-          wallets.find(
-            (wallet: { address: any; connectedAt: any; walletClientType: string; }) =>
-              wallet.address &&
-              wallet.connectedAt &&
-              wallet.walletClientType === "privy"
-          );
-
-        // console.log("42 active wallet:", activeWallet);
-
-        if (!activeWallet) {
-          console.error("No active wallet found");
+        if (!selectedWallet) {
+          console.log("No verified wallet found. Available wallets:", 
+            wallets.map(w => w.address?.toLowerCase()));
+          // console.log("Verified addresses:", verifiedWallets);
           return;
         }
 
-        // Check if we've already processed this wallet address
-        if (processedWalletRef.current === activeWallet.address) {
-          console.log("Wallet already processed:", activeWallet.address);
+        // Ensure we have a valid address
+        if (!selectedWallet.address) {
+          console.error("Selected wallet has no address");
           return;
         }
 
-        // console.log("Selected wallet type:", activeWallet.walletClientType);
-        // console.log("Selected wallet address:", activeWallet.address);
+        // Check if we've already processed this wallet
+        const walletAddress = selectedWallet.address.toLowerCase();
+        if (processedWalletRef.current === walletAddress) {
+          console.log("Wallet already processed:", walletAddress);
+          return;
+        }
+
+        // Log selected wallet for debugging
+        console.log("Selected wallet:", {
+          address: walletAddress,
+          type: selectedWallet.walletClientType
+        });
 
         // Store the processed wallet address
-        processedWalletRef.current = activeWallet.address;
+        processedWalletRef.current = walletAddress;
 
-        // Use the active wallet's address
-        await createOrVerifyAccount(activeWallet.address, token, referrer);
+        // Small delay to ensure everything is synchronized
+        await new Promise(resolve => setTimeout(resolve, 1000));
+
+        // Create or verify account
+        await createOrVerifyAccount(walletAddress, token, referrer);
+
       } catch (error) {
         console.error("Error handling user login:", error);
       }
     };
 
     handleUserLogin();
-  }, [user, ready, wallets]); // Dependencies remain the same
+  }, [user, ready, wallets]);
 
   return null;
 }
 
+// Updated createOrVerifyAccount function
 async function createOrVerifyAccount(
   walletAddress: string,
   token: string | null,
   referrer: string | null
 ) {
   try {
-    // Ensure wallet address is checksummed
+    // Ensure wallet address is lowercase
     const normalizedAddress = walletAddress.toLowerCase();
+    
+    // console.log("Creating/verifying account for address:", normalizedAddress);
 
     const response = await fetch(`${BASE_URL}/api/auth/accountcreate`, {
       method: "POST",
@@ -119,17 +135,15 @@ async function createOrVerifyAccount(
       }),
     });
 
+    const responseText = await response.text();
+    // console.log("Server response:", response.status, responseText);
+
     if (response.status === 200) {
-      console.log(
-        "Account created successfully with address:",
-        normalizedAddress
-      );
+      console.log("Account created successfully");
     } else if (response.status === 409) {
-      console.log("Account already exists for address:", normalizedAddress);
+      console.log("Account already exists");
     } else {
-      const errorText = await response.text();
-      console.error("Unexpected response:", errorText);
-      throw new Error(`Failed to create/verify account: ${errorText}`);
+      throw new Error(`Failed to create/verify account: ${responseText}`);
     }
   } catch (error) {
     console.error("Error creating/verifying account:", error);

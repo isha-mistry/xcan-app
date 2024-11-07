@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Image, { StaticImageData } from "next/image";
 import { Oval } from "react-loader-spinner";
 import IndividualTileModal from "./IndividualTileModal";
@@ -19,6 +19,8 @@ import {
 import styles from "./Tile.module.css";
 import { usePathname } from "next/navigation";
 import { useRouter } from "next-nprogress-bar";
+import { usePrivy } from "@privy-io/react-auth";
+import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 
 interface Type {
   img: StaticImageData;
@@ -51,7 +53,9 @@ function Tile({
 }: TileProps) {
   const router = useRouter();
   const path = usePathname();
-  const { address } = useAccount();
+  const { address,isConnected } = useAccount();
+  const { ready, authenticated, login, logout, user } = usePrivy();
+  const {walletAddress}=useWalletAddress();
   const [selectedTileIndex, setSelectedTileIndex] = useState<number | null>(
     null
   );
@@ -59,6 +63,7 @@ function Tile({
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
   const [applyStyles, setApplyStyles] = useState(true);
   const [startLoading, setStartLoading] = useState(false);
+
 
   const openModal = (index: number) => {
     setSelectedTileIndex(index);

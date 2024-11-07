@@ -11,6 +11,7 @@ import ErrorDisplay from "../ComponentUtils/ErrorDisplay";
 import style from "./MainProfile.module.css";
 import { ChevronRight } from 'lucide-react';
 import { usePrivy } from "@privy-io/react-auth";
+import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 
 interface UserSessionsProps {
   isDelegate: boolean | undefined;
@@ -23,7 +24,7 @@ function UserSessions({
   selfDelegate,
   daoName,
 }: UserSessionsProps) {
-  const { address } = useAccount();
+  const { address,isConnected } = useAccount();
   // const address = "0xc622420AD9dE8E595694413F24731Dd877eb84E1";
   const router = useRouter();
   const path = usePathname();
@@ -37,7 +38,8 @@ function UserSessions({
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
   const [showLeftShadow, setShowLeftShadow] = useState(false);
   const [showRightShadow, setShowRightShadow] = useState(false);
-  const { user, ready, getAccessToken } = usePrivy();
+  const { user, ready, getAccessToken,authenticated } = usePrivy();
+  const {walletAddress}=useWalletAddress();
 
   const handleRetry = () => {
     setError(null);
@@ -75,15 +77,15 @@ function UserSessions({
       const myHeaders = new Headers();
       const token=await getAccessToken();
       myHeaders.append("Content-Type", "application/json");
-      if (address) {
-        myHeaders.append("x-wallet-address", address);
+      if (walletAddress) {
+        myHeaders.append("x-wallet-address", walletAddress);
         myHeaders.append("Authorization",`Bearer ${token}`);
       }
       const response = await fetch(`/api/get-sessions`, {
         method: "POST",
         headers: myHeaders,
         body: JSON.stringify({
-          address: address,
+          address: walletAddress,
           dao_name: daoName,
         }),
       });
@@ -108,7 +110,7 @@ function UserSessions({
   useEffect(() => {
     getUserMeetingData();
   }, [
-    address,
+    walletAddress,
     // sessionDetails,
     searchParams.get("session"),
     // dataLoading,

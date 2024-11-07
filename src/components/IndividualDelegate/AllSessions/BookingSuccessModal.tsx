@@ -1,9 +1,11 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useAccount } from "wagmi";
 import Confetti from "react-confetti";
 import { RxCross2 } from "react-icons/rx";
 import { BsTwitterX } from "react-icons/bs";
 import { useRouter } from "next-nprogress-bar";
+import { usePrivy } from "@privy-io/react-auth";
+import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 
 function BookingSuccessModal({
   isOpen,
@@ -13,7 +15,10 @@ function BookingSuccessModal({
   onClose: () => void;
 }) {
   const { isConnected, address } = useAccount();
+  const { ready, authenticated, login, logout, user } = usePrivy();
+  const {walletAddress}=useWalletAddress();
   const router = useRouter();
+
 
   const shareOnTwitter = () => {
     const url = encodeURIComponent(
@@ -89,7 +94,7 @@ function BookingSuccessModal({
                     className="bg-blue-shade-200 text-white rounded-full px-4 py-2 flex items-center space-x-1"
                     onClick={() =>
                       router.push(
-                        `/profile/${address}?active=sessions&session=attending`
+                        `/profile/${walletAddress}?active=sessions&session=attending`
                       )
                     }>
                     🚀 Let&apos;s Go!

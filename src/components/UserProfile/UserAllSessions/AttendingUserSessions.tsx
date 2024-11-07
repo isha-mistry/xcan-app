@@ -14,16 +14,18 @@ import SessionTileSkeletonLoader from "@/components/SkeletonLoader/SessionTileSk
 import ErrorDisplay from "@/components/ComponentUtils/ErrorDisplay";
 import RecordedSessionsSkeletonLoader from "@/components/SkeletonLoader/RecordedSessionsSkeletonLoader";
 import { usePrivy } from "@privy-io/react-auth";
+import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 
 function AttendingUserSessions({ daoName }: { daoName: string }) {
   const router = useRouter();
   const path = usePathname();
   const searchParams = useSearchParams();
-  const { address } = useAccount();
+  const { address,isConnected } = useAccount();
   const [sessionDetails, setSessionDetails] = useState<any[]>([]);
   const [pageLoading, setPageLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { user, ready, getAccessToken } = usePrivy();
+  const { user, ready, getAccessToken,authenticated } = usePrivy();
+  const {walletAddress}=useWalletAddress();
 
   const handleRetry = () => {
     setError(null);
@@ -37,11 +39,11 @@ function AttendingUserSessions({ daoName }: { daoName: string }) {
       const myHeaders = new Headers();
       const token=await getAccessToken();
       myHeaders.append("Content-Type", "application/json");
-      if (address) {
-        myHeaders.append("x-wallet-address", address);
+      if (walletAddress) {
+        myHeaders.append("x-wallet-address", walletAddress);
         myHeaders.append("Authorization",`Bearer ${token}`);
       }
-      const response = await fetch(`/api/get-session-data/${address}`, {
+      const response = await fetch(`/api/get-session-data/${walletAddress}`, {
         method: "POST",
         headers: myHeaders,
         body: JSON.stringify({

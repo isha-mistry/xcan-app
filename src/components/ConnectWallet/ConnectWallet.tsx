@@ -40,7 +40,7 @@ export const ConnectWallet = () => {
           </div>
         </>
       ) : (
-       <div>connected</div>
+       <div></div>
       )}
     </div>
   );

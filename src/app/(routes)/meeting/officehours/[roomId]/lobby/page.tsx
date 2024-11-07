@@ -33,6 +33,7 @@ import Link from "next/link";
 import ConnectWalletWithENS from "@/components/ConnectWallet/ConnectWalletWithENS";
 import { useStudioState } from "@/store/studioState";
 import { usePrivy } from "@privy-io/react-auth";
+import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 
 type lobbyProps = {};
 
@@ -44,17 +45,23 @@ const Lobby = ({ params }: { params: { roomId: string } }) => {
   // const setUserDisplayName = useStore((state) => state.setUserDisplayName);
   // const userDisplayName = useStore((state) => state.userDisplayName);
   const [token, setToken] = useState<string>("");
-  const { user, ready, getAccessToken } = usePrivy();
+  const { user, ready, getAccessToken,authenticated } = usePrivy();
   const [isJoining, setIsJoining] = useState<boolean>(false);
   const { updateMetadata, metadata, peerId, role } = useLocalPeer<{
     displayName: string;
     avatarUrl: string;
     isHandRaised: boolean;
   }>();
+  const {walletAddress}=useWalletAddress();
+
 
   const { name, setName, avatarUrl, setAvatarUrl } = useStudioState();
+  
 
-  const { address, isDisconnected } = useAccount();
+  const { address, isDisconnected,isConnected } = useAccount();
+
+  
+  
 
   const { push } = useRouter();
 
@@ -84,14 +91,14 @@ const Lobby = ({ params }: { params: { roomId: string } }) => {
             roomId: params.roomId,
             role: "host",
             displayName: name,
-            address: address, // assuming you have userAddress defined somewhere
+            address: walletAddress, // assuming you have userAddress defined somewhere
           };
           try {
             const myHeaders = new Headers();
-            const token=await getAccessToken();
+            let token=await getAccessToken();
             myHeaders.append("Content-Type", "application/json");
-            if (address) {
-              myHeaders.append("x-wallet-address", address);
+            if (walletAddress) {
+              myHeaders.append("x-wallet-address", walletAddress);
               myHeaders.append("Authorization",`Bearer ${token}`);
             }
             const response = await fetch("/api/new-token", {
@@ -130,12 +137,12 @@ const Lobby = ({ params }: { params: { roomId: string } }) => {
 
         console.log("Role.HOST", Role.HOST);
         if (Role.HOST) {
-          console.log("inside put api");
+          // console.log("inside put api");
           const myHeaders = new Headers();
           const token=await getAccessToken();
           myHeaders.append("Content-Type", "application/json");
-          if (address) {
-            myHeaders.append("x-wallet-address", address);
+          if (walletAddress) {
+            myHeaders.append("x-wallet-address", walletAddress);
             myHeaders.append("Authorization",`Bearer ${token}`);
           }
 
@@ -172,8 +179,8 @@ const Lobby = ({ params }: { params: { roomId: string } }) => {
   useEffect(() => {
     const myHeaders = new Headers();
     myHeaders.append("Content-Type", "application/json");
-    if (address) {
-      myHeaders.append("x-wallet-address", address);
+    if (walletAddress) {
+      myHeaders.append("x-wallet-address", walletAddress);
     }
 
     const raw = JSON.stringify({
@@ -358,7 +365,7 @@ const Lobby = ({ params }: { params: { roomId: string } }) => {
                 </div>
                 <Link
                   // onClick={() => push(`/profile/${address}?active=info`)}
-                  href={`/profile/${address}?active=info`}
+                  href={`/profile/${walletAddress}?active=info`}
                   className="px-6 py-3 bg-white text-blue-shade-200 rounded-full shadow-lg hover:bg-blue-shade-200 hover:text-white transition duration-300 ease-in-out">
                   Back to Profile
                 </Link>

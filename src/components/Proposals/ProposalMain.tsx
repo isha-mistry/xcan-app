@@ -48,6 +48,7 @@ import DOMPurify from "dompurify";
 import MobileResponsiveMessage from "../MobileResponsiveMessage/MobileResponsiveMessage";
 import { Transaction } from "ethers";
 import { usePrivy } from "@privy-io/react-auth";
+import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 
 // Create a client
 const client = createPublicClient({
@@ -109,12 +110,13 @@ function ProposalMain({ props }: { props: Props }) {
   const { chain } = useAccount();
   // const { openChainModal } = useChainModal();
   const [isVotingOpen, setIsVotingOpen] = useState(false);
-  const { address } = useAccount();
+  const { address,isConnected } = useAccount();
   const contentRef = useRef<HTMLDivElement>(null);
   const [isExpanded, setIsExpanded] = useState(false);
   const [hasVoted, setHasVoted] = useState(false);
   const chartContainerRef = useRef<HTMLDivElement | null>(null);
-  const { user, ready, getAccessToken } = usePrivy();
+  const { user, ready, getAccessToken,authenticated } = usePrivy();
+  const {walletAddress}=useWalletAddress();
 
   interface VoteData {
     address: string;
@@ -123,6 +125,8 @@ function ProposalMain({ props }: { props: Props }) {
     votingPower?: number;
     network: string;
   }
+
+
 
   const getContractAddress = async (txHash: `0x${string}`) => {
     try {
@@ -148,8 +152,8 @@ function ProposalMain({ props }: { props: Props }) {
     const myHeaders = new Headers();
     const token=await getAccessToken();
     myHeaders.append("Content-Type", "application/json");
-    if (address) {
-      myHeaders.append("x-wallet-address", address);
+    if (walletAddress) {
+      myHeaders.append("x-wallet-address", walletAddress);
       myHeaders.append("Authorization",`Bearer ${token}`);
     }
 
@@ -200,7 +204,7 @@ function ProposalMain({ props }: { props: Props }) {
     //   return;
     // }
 
-    if (!address) {
+    if (!walletAddress) {
       toast.error("Please connect your MetaMask wallet!");
       return;
     }
@@ -231,7 +235,7 @@ function ProposalMain({ props }: { props: Props }) {
                 : op_proposals_abi,
             functionName: "castVoteWithReason",
             args: [proposalId, vote, comment],
-            account: address,
+            account: walletAddress,
           });
           StoreData(voteData);
         } catch (e) {
@@ -250,7 +254,7 @@ function ProposalMain({ props }: { props: Props }) {
                 : op_proposals_abi,
             functionName: "castVote",
             args: [proposalId, vote],
-            account: address,
+            account: walletAddress,
           });
           StoreData(voteData);
         } catch (e) {
@@ -264,7 +268,7 @@ function ProposalMain({ props }: { props: Props }) {
     const queryParams = new URLSearchParams({
       proposalId: props.id,
       network: props.daoDelegates,
-      voterAddress: address,
+      voterAddress: walletAddress,
     } as any);
 
     try {
@@ -292,7 +296,7 @@ function ProposalMain({ props }: { props: Props }) {
 
   useEffect(() => {
     checkVoteStatus();
-  }, [props, address]);
+  }, [props, walletAddress]);
   const loadMore = () => {
     const newDisplayCount = displayCount + 20;
     setDisplayCount(newDisplayCount);
@@ -1018,7 +1022,7 @@ function ProposalMain({ props }: { props: Props }) {
           onSubmit={handleVoteSubmit}
           proposalId={props.id}
           proposalTitle={truncateText(data?.description, 50)}
-          address={address || ""}
+          address={walletAddress || ""}
           dao={props.daoDelegates}
         />
 

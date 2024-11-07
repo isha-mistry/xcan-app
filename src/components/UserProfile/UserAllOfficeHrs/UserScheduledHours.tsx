@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useAccount } from "wagmi";
 import toast, { Toaster } from "react-hot-toast";
 import { usePrivy } from "@privy-io/react-auth";
+import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 
 const UserScheduledHours = ({ daoName }: { daoName: string }) => {
   const [selectedDate, setSelectedDate] = useState<string>("");
@@ -9,8 +10,9 @@ const UserScheduledHours = ({ daoName }: { daoName: string }) => {
   const [description, setDescription] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
-  const { address } = useAccount();
-  const { user, ready, getAccessToken } = usePrivy();
+  const { address,isConnected } = useAccount();
+  const { user, ready, getAccessToken,authenticated } = usePrivy();
+  const {walletAddress}=useWalletAddress();
 
   const [selectedTime, setSelectedTime] = useState<string>("");
 
@@ -46,8 +48,8 @@ const UserScheduledHours = ({ daoName }: { daoName: string }) => {
       const myHeaders = new Headers();
       const token=await getAccessToken();
       myHeaders.append("Content-Type", "application/json");
-      if (address) {
-        myHeaders.append("x-wallet-address", address);
+      if (walletAddress) {
+        myHeaders.append("x-wallet-address", walletAddress);
         myHeaders.append("Authorization",`Bearer ${token}`);
       }
 
@@ -55,7 +57,7 @@ const UserScheduledHours = ({ daoName }: { daoName: string }) => {
         method: "POST",
         headers: myHeaders,
         body: JSON.stringify({
-          host_address: address,
+          host_address: walletAddress,
           office_hours_slot: utcFormattedDate,
           title,
           description,
