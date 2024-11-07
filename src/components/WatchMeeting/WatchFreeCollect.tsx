@@ -386,7 +386,7 @@ const WatchFreeCollect = ({
           </div>
         </div>
 
-        <div className="flex justify-between p-4 1.5xl:px-6 py-4 bg-gradient-to-r from-blue-100 to-purple-100">
+        <div className="flex justify-between p-3 0.5xs:p-4 1.5xl:px-6 py-4 bg-gradient-to-r from-blue-100 to-purple-100">
           <div className="flex items-center space-x-2 1.5xl:space-x-4">
             <button
               onClick={() => setNumber((prev) => Math.max(prev - 1, 1))}

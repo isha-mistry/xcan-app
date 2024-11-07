@@ -48,19 +48,19 @@ function NFTTile({ nft }: NFTProps) {
   };
 
   return (
-    <div className="border border-[#D9D9D9] sm:rounded-3xl ">
-      <div className="w-full h-56 sm:rounded-t-3xl bg-black object-cover object-center relative">
+    <div className="border border-[#D9D9D9] rounded-3xl ">
+      <div className="w-full h-[180px] sm:h-56 rounded-t-3xl bg-black object-cover object-center relative">
         {cid && !imageLoadError ? (
           <Image
             src={sources[currentSrcIndex]}
             alt={`NFT ${nft.id}`}
             height={800}
             width={1000}
-            className="sm:rounded-t-3xl object-cover w-full h-56"
+            className="rounded-t-3xl object-cover w-full h-[180px] sm:h-56"
             onError={handleError}
           />
         ) : (
-          <div className="w-full h-56 flex items-center justify-center text-white">
+          <div className="w-full h-[180px] sm:h-56 flex items-center justify-center text-white">
             NFT image not available
           </div>
         )}
@@ -78,7 +78,7 @@ function NFTTile({ nft }: NFTProps) {
           }}
         >
           <div className="flex items-center">
-            <span className="flex-1 min-w-0">
+            <span className="flex-1 min-w-0 truncate">
               {nft.id.length > 20
                 ? `NFT ${nft.id.slice(0, 20)}...`
                 : `NFT ${nft.id}`}
@@ -93,13 +93,13 @@ function NFTTile({ nft }: NFTProps) {
               </Link>
             </span>
           </div>
-          <div className="flex item-center justify-items-center	 text-sm">
+          <div className="flex items-center  text-sm">
             <Image
               src={getDaoLogo(nft.network)}
               alt="image"
               width={20}
               height={20}
-              className="rounded-full size-3 sm:size-5"
+              className="rounded-full size-4 sm:size-5"
             />
             <span className="mx-2">•</span>
             <span>{nft.time}</span>

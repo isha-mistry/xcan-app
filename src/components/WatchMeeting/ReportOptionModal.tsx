@@ -86,7 +86,7 @@ function ReportOptionModal({
             className="absolute inset-0 backdrop-blur-md"
             onClick={toggleModal}
           ></div>
-          <div className="z-50 bg-white rounded-3xl min-w-96 border-2 overflow-hidden">
+          <div className="z-50 bg-white rounded-3xl w-full max-w-md xm:mx-auto border-2 overflow-hidden shadow-lg mx-2">
             <div className="flex justify-between items-center p-4 border-b">
               <div className="text-xl font-bold text-gray-900">
                 Report video
@@ -106,7 +106,10 @@ function ReportOptionModal({
                 }}
               >
                 {categories.map((category) => (
-                  <label key={category} className="block mb-2">
+                  <label
+                    key={category}
+                    className="block mb-2 text-sm xm:text-base"
+                  >
                     <input
                       type="radio"
                       name="reportCategory"

@@ -261,7 +261,7 @@ const WatchLeaderBoard = ({
             className="absolute inset-0 backdrop-blur-md"
             onClick={handleClosePopup}
           />
-          <div className="relative bg-white rounded-2xl w-full max-w-[95vw] sm:max-w-[80vw] md:max-w-[60vw] lg:max-w-[50vw] xl:max-w-[35vw] h-[80vh] flex flex-col">
+          <div className="relative bg-white rounded-2xl w-full max-w-[95vw] sm:max-w-[80vw] md:max-w-[60vw] lg:max-w-[50vw] xl:max-w-[35vw] h-fit flex flex-col">
             {/* Popup Header */}
             <div className="flex justify-between items-center p-4 sm:p-6">
               <p className="text-base sm:text-lg font-medium text-blue-shade-100">
@@ -276,7 +276,7 @@ const WatchLeaderBoard = ({
             </div>
 
             {/* Popup Content */}
-            <div className="flex-grow overflow-y-auto p-2 sm:p-4">
+            <div className="flex-grow overflow-y-auto p-2 sm:p-4 pb-6 sm:pb-8">
               <div className="space-y-2">
                 {allEntries.map((entry, index) => (
                   <div key={`all-${index}`}>

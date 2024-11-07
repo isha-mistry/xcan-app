@@ -74,9 +74,9 @@ function RewardsMain() {
       return (
         <>
           <div className="min-h-screen h-fit bg-gradient-to-b from-blue-50 to-blue-100">
-            <div className="relative container mx-auto px-4 py-8">
+            <div className="relative mx-auto px-4 md:px-6 lg:px-16 py-8">
               <Heading />
-              <div className="max-w-6xl mx-auto p-6 space-y-8 font-poppins">
+              <div className="max-w-6xl mx-auto p-4 0.5xs:p-6 space-y-8 font-poppins">
                 <TotalRewards />
                 <MintedNFTs />
               </div>

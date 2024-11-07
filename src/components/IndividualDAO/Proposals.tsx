@@ -45,12 +45,12 @@ function Proposals({ props }: { props: string }) {
   const currentCache = isOptimism ? optimismCache : arbitrumCache;
 
   const VoteLoader = () => (
-    <div className=" flex justify-center items-center w-32">
+    <div className=" flex justify-center items-center w-28 xs:w-32">
       <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-black-shade-900"></div>
     </div>
   );
   const StatusLoader = () => (
-    <div className="flex items-center justify-center w-24">
+    <div className="flex items-center justify-center w-[84px] xs:w-24">
       <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-black-shade-900"></div>
     </div>
   );
@@ -435,7 +435,7 @@ function Proposals({ props }: { props: string }) {
         {displayedProposals.map((proposal: Proposal, index: number) => (
           <div
             key={index}
-            className="flex flex-col 1.5md:flex-row p-4 text-lg mb-2 gap-2 1.5md:gap-5 bg-gray-100 hover:bg-gray-50 rounded-3xl transition-shadow duration-300 ease-in-out shadow-lg cursor-pointer 1.5md:items-center"
+            className="flex flex-col 1.5md:flex-row px-2 py-4 0.5xs:p-4 text-lg mb-2 gap-2 1.5md:gap-5 bg-gray-100 hover:bg-gray-50 rounded-3xl transition-shadow duration-300 ease-in-out shadow-lg cursor-pointer 1.5md:items-center"
             onClick={() => handleClick(proposal)}
           >
             <div className="flex items-center 1.5md:w-[60%]">
@@ -444,7 +444,7 @@ function Proposals({ props }: { props: string }) {
                 alt={`${
                   dao_details[props as keyof typeof dao_details].title
                 } logo`}
-                className="size-10 mx-5 rounded-full flex-shrink-0"
+                className="size-10 ml-0 mr-[2px] 0.2xs:mr-2 xs:mx-5 rounded-full flex-shrink-0"
               />
 
               <div>
@@ -459,7 +459,7 @@ function Proposals({ props }: { props: string }) {
                 </p>
                 <div className="flex gap-1">
                   {/* <Image src={user} alt="" className="size-4" /> */}
-                  <p className="flex text-[10px] xs:text-xs font-normal items-center">
+                  <p className="flex text-[9px] xs:text-[11px] font-normal items-center">
                     <span className="text-[#004DFF]"> Created at </span>&nbsp;
                     {formatDate(proposal.blockTimestamp)}
                     <span>
@@ -473,7 +473,7 @@ function Proposals({ props }: { props: string }) {
               </div>
             </div>
 
-            <div className="flex flex-wrap justify-between items-center 1.5md:w-[40%] mt-2 1.5md:mt-0 gap-2 1.5md:gap-1 2md:gap-2 mx-auto 1.5md:mx-0">
+            <div className="flex flex-wrap justify-between items-center 1.5md:w-[40%] mt-2 1.5md:mt-0 gap-1 2md:gap-2 mx-auto 1.5md:mx-0">
               {/* <Tooltip
                 showArrow
                 content={<div className="font-poppins">OnChain</div>}
@@ -486,8 +486,7 @@ function Proposals({ props }: { props: string }) {
                 </div>
               </Tooltip> */}
               {proposal.votesLoaded ? (
-                <div
-                  className={`rounded-full flex items-center justify-center text-[10px] xs:text-xs h-fit py-[1px] xs:py-0.5 border font-medium w-[84px] xs:w-24 ${
+                <div className={`rounded-full flex items-center justify-center text-[10px] xs:text-xs h-[22px] xs:h-fit py-[1px] xs:py-0.5 border font-medium w-[84px] xs:w-24 ${
                     getProposalStatus(proposal) === "SUCCEEDED"
                       ? "bg-green-200 border-green-600 text-green-600"
                       : getProposalStatus(proposal) === "DEFEATED" ||
@@ -540,8 +539,8 @@ function Proposals({ props }: { props: string }) {
               ) : (
                 <VoteLoader />
               )}
-              <div className="flex items-center justify-center w-[15%]">
-                <div className="rounded-full bg-[#f4d3f9] border border-[#77367a] flex text-[#77367a] text-[10px] xs:text-xs h-fit py-[1px] xs:py-0.5 font-medium px-2 ">
+              {/* <div className="flex items-center justify-center w-[15%]"> */}
+                <div className="rounded-full bg-[#f4d3f9] border border-[#77367a] flex text-[#77367a] text-[10px] xs:text-xs h-[22px] items-center justify-center w-[19%] xs:h-fit py-[1px] xs:py-0.5 font-medium px-2 ">
                   {(() => {
                     if (
                       canceledProposals.some(
@@ -578,7 +577,7 @@ function Proposals({ props }: { props: string }) {
                       }
                     }
                   })()}
-                </div>
+                {/* </div> */}
               </div>
             </div>
           </div>

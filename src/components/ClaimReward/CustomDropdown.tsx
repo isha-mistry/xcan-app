@@ -38,7 +38,7 @@ export function CustomDropdown({ options, onChange }: CustomDropdownProps) {
   return (
     <div className="relative" ref={dropdownRef}>
       <div
-        className="rounded-full w-52 py-2 px-4 outline-none cursor-pointer bg-white shadow-md flex justify-between items-center transition-all duration-300 hover:bg-gray-100 focus:ring-2 focus:ring-blue-500"
+        className="rounded-full w-[175px] xm:w-52 py-2 px-4 outline-none cursor-pointer bg-white shadow-md flex justify-between items-center transition-all duration-300 hover:bg-gray-100 focus:ring-2 focus:ring-blue-500 text-sm xm:text-base"
         onClick={() => setIsOpen(!isOpen)}
         tabIndex={0} // Makes the div focusable for better accessibility
         onKeyDown={(e) => {
