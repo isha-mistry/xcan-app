@@ -129,7 +129,7 @@ const AboutDao = ({ props }: any) => {
         className="text-4xl font-bold mb-8 text-center text-blue-600"
         {...fadeInUp}
       >
-        About {props === "arbitrum" ? "Arbitrum" : "Optimism"} DAO
+        About {props === "arbitrum" ? "Arbitrum DAO" : "Optimism Collective"} 
       </motion.h1>
 
       <motion.section className="mb-16" {...fadeInUp}>
