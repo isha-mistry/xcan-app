@@ -1,11 +1,11 @@
 import op_logo from "@/assets/images/daos/op.png";
 
 export const optimism = {
-  title: "Optimism",
+  title: "Optimism Collective",
   dao_name: "optimism",
   chain_name: "Optimism",
   description:
-    "Optimism DAO is the heart of the Optimism network, an innovative layer 2 solution for faster, cheaper transactions on Ethereum. Think of it as a community-driven engine, where token holders govern upgrades, fees, and the overall direction of the Optimism ecosystem. With a focus on scaling Ethereum effectively and sustainably, Optimism DAO is building a brighter future for blockchain technology.",
+    "Optimism Collective is the heart of the Optimism network, an innovative layer 2 solution for faster, cheaper transactions on Ethereum. Think of it as a community-driven engine, where token holders govern upgrades, fees, and the overall direction of the Optimism ecosystem. With a focus on scaling Ethereum effectively and sustainably, Optimism Collective is building a brighter future for blockchain technology.",
   contract_address: "",
   number_of_delegates: "201k",
   token_name: "OP",

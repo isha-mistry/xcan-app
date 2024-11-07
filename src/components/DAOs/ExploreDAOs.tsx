@@ -28,6 +28,7 @@ const ExploreDAOs = () => {
       name: dao.title,
       value: dao.number_of_delegates,
       img: dao.logo,
+      redirection: dao.dao_name,
     };
   });
 
@@ -145,7 +146,7 @@ const ExploreDAOs = () => {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   className="bg-white rounded-xl shadow-lg overflow-hidden cursor-pointer"
-                  onClick={() => handleClick(dao.name, dao.img)}
+                  onClick={() => handleClick(dao.redirection, dao.img)}
                 >
                   <div className="p-6">
                     <div className="flex justify-center mb-4">
