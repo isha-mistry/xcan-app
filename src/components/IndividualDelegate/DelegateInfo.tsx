@@ -95,6 +95,7 @@ function DelegateInfo({ props, desc }: { props: Type; desc: string }) {
         }
       } catch (e) {
         console.log("Error: ", e);
+        setSessionHostedLoading(false);
       }
     };
 
@@ -133,6 +134,7 @@ function DelegateInfo({ props, desc }: { props: Type; desc: string }) {
         }
       } catch (e) {
         console.log("Error: ", e);
+        setSessionAttendedLoading(false);
       }
     };
 
@@ -170,6 +172,7 @@ function DelegateInfo({ props, desc }: { props: Type; desc: string }) {
         }
       } catch (e) {
         console.log("Error: ", e);
+        setOfficeHoursHostedLoading(false);
       }
     };
 
@@ -207,6 +210,7 @@ function DelegateInfo({ props, desc }: { props: Type; desc: string }) {
         }
       } catch (e) {
         console.log("Error: ", e);
+        setOfficeHoursAttendedLoading(false);
       }
     };
 
