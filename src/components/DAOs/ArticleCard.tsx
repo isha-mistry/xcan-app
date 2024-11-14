@@ -16,7 +16,7 @@ interface ArticleCardProps {
 
 const ArticleCard: React.FC<ArticleCardProps> = ({ article, index }) => {
   return (
-    <Link href={article.link || ""} passHref target="_blank">
+    <Link href={article.link || ""} passHref target="_blank" className="z-10">
       <motion.div
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
