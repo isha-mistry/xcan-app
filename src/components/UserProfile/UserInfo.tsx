@@ -12,6 +12,8 @@ import { getDaoName } from "@/utils/chainUtils";
 import { ICommand, commands } from "@uiw/react-md-editor";
 import { getAccessToken, usePrivy } from "@privy-io/react-auth";
 import { useWalletAddress } from "@/app/hooks/useWalletAddress";
+import { fetchApi } from "@/utils/api";
+import { BASE_URL } from "@/config/constants";
 
 const StyledMDEditorWrapper = styled.div`
   .w-md-editor {
@@ -250,11 +252,12 @@ function UserInfo({
     const sessionHosted = async () => {
       try {
         const response = await fetch(
-          `/api/get-meeting/${walletAddress}?dao_name=${dao_name}`,
+          `${BASE_URL}/api/get-meeting/${walletAddress}?dao_name=${dao_name}`,
           {
             method: "GET",
             headers: {
               "Content-Type": "application/json",
+              "x-api-key":process.env.NEXT_PUBLIC_API_KEY??''
             },
           }
         );
@@ -290,7 +293,7 @@ function UserInfo({
         if (walletAddress) {
           myHeaders.append("x-wallet-address", walletAddress);
         }
-        const response = await fetch(`/api/get-session-data/${walletAddress}`, {
+        const response = await fetchApi(`/get-session-data/${walletAddress}`, {
           method: "POST",
           headers: myHeaders,
           body: JSON.stringify({
@@ -327,7 +330,7 @@ function UserInfo({
         if (walletAddress) {
           myHeaders.append("x-wallet-address", walletAddress);
         }
-        const response = await fetch(`/api/get-officehours-address`, {
+        const response = await fetchApi(`/get-officehours-address`, {
           method: "POST",
           headers: myHeaders,
           body: JSON.stringify({
@@ -365,7 +368,7 @@ function UserInfo({
         if (walletAddress) {
           myHeaders.append("x-wallet-address", walletAddress);
         }
-        const response = await fetch(`/api/get-attendee-individual`, {
+        const response = await fetchApi(`/get-attendee-individual`, {
           method: "POST",
           headers: myHeaders,
           body: JSON.stringify({

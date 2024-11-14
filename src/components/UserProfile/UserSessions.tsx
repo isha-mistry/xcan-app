@@ -12,6 +12,7 @@ import style from "./MainProfile.module.css";
 import { ChevronRight } from 'lucide-react';
 import { usePrivy } from "@privy-io/react-auth";
 import { useWalletAddress } from "@/app/hooks/useWalletAddress";
+import { fetchApi } from "@/utils/api";
 
 interface UserSessionsProps {
   isDelegate: boolean | undefined;
@@ -81,7 +82,7 @@ function UserSessions({
         myHeaders.append("x-wallet-address", walletAddress);
         myHeaders.append("Authorization",`Bearer ${token}`);
       }
-      const response = await fetch(`/api/get-sessions`, {
+      const response = await fetchApi(`/get-sessions`, {
         method: "POST",
         headers: myHeaders,
         body: JSON.stringify({
@@ -122,7 +123,7 @@ function UserSessions({
   ]);
 
   useEffect(() => {
-    if (selfDelegate === true && searchParams.get("session") === "schedule") {
+    if (selfDelegate === false && searchParams.get("session") === "schedule") {
       router.replace(path + "?active=sessions&session=attending");
     }
   }, [selfDelegate]);

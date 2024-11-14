@@ -54,7 +54,7 @@ export const useSidebar = () => {
     setStoredDao((prevState) => prevState.filter((item) => item[0] !== name));
     setBadgeVisibility(new Array(storedDao.length).fill(false));
 
-    window.location.href = '/';
+    // window.location.href = '/';
   };
 
   const handleMouseOver = (index: number) => {

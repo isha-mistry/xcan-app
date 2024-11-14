@@ -7,6 +7,7 @@ import { ethers } from "ethers";
 import { EAS } from "@ethereum-attestation-service/eas-sdk";
 import toast from "react-hot-toast";
 import confetti from "canvas-confetti";
+import { fetchApi } from "@/utils/api";
 import { usePrivy } from "@privy-io/react-auth";
 
 interface ClaimButtonProps {
@@ -109,7 +110,7 @@ const ClaimButton: React.FC<ClaimButtonProps> = ({
         body: JSON.stringify(data),
       };
 
-      const res = await fetch("/api/attest-onchain", requestOptions);
+      const res = await fetchApi("/attest-onchain", requestOptions);
 
       // if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
       if (!res.ok) {
@@ -144,7 +145,7 @@ const ClaimButton: React.FC<ClaimButtonProps> = ({
       console.log("New attestation UID: ", newAttestationUID);
 
       if (newAttestationUID) {
-        const updateResponse = await fetch(`/api/update-attestation-uid`, {
+        const updateResponse = await fetchApi(`/update-attestation-uid`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({

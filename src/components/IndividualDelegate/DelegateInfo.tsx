@@ -13,6 +13,8 @@ import { marked } from "marked";
 import { useAccount } from "wagmi";
 import { usePrivy } from "@privy-io/react-auth";
 import { useWalletAddress } from "@/app/hooks/useWalletAddress";
+import { fetchApi } from "@/utils/api";
+import { BASE_URL } from "@/config/constants";
 
 interface Type {
   daoDelegates: string;
@@ -49,7 +51,7 @@ function DelegateInfo({ props, desc }: { props: Type; desc: string }) {
     } else if (activeButton === "offchain") {
       fetchAttestation("offchain");
     }
-  }, [activeButton, props.individualDelegate, props.daoDelegates]);
+  }, [walletAddress,activeButton, props.individualDelegate, props.daoDelegates]);
 
 
 
@@ -74,11 +76,12 @@ function DelegateInfo({ props, desc }: { props: Type; desc: string }) {
     const sessionHosted = async () => {
       try {
         const response = await fetch(
-          `/api/get-meeting/${props.individualDelegate}?dao_name=${props.daoDelegates}`,
+          `${BASE_URL}/api/get-meeting/${props.individualDelegate}?dao_name=${props.daoDelegates}`,
           {
             method: "GET",
             headers: {
               "Content-Type": "application/json",
+              "x-api-key":process.env.NEXT_PUBLIC_API_KEY??''
             },
           }
         );
@@ -107,13 +110,15 @@ function DelegateInfo({ props, desc }: { props: Type; desc: string }) {
       try {
         const myHeaders = new Headers();
         const token=await getAccessToken();
+        // console.log("Line 111:",walletAddress);
         myHeaders.append("Content-Type", "application/json");
-        if (walletAddress) {
+        if (walletAddress!=null) {
           myHeaders.append("x-wallet-address", walletAddress);
           myHeaders.append("Authorization",`Bearer ${token}`);
         }
+        // console.log("Headers before fetch:", Array.from(myHeaders.entries())); 
         const response = await fetch(
-          `/api/get-session-data/${props.individualDelegate}`,
+          `${BASE_URL}/api/get-session-data/${props.individualDelegate}`,
           {
             method: "POST",
             headers: myHeaders,
@@ -152,7 +157,7 @@ function DelegateInfo({ props, desc }: { props: Type; desc: string }) {
           myHeaders.append("x-wallet-address", walletAddress);
           myHeaders.append("Authorization",`Bearer ${token}`);
         }
-        const response = await fetch(`/api/get-officehours-address`, {
+        const response = await fetch(`${BASE_URL}/api/get-officehours-address`, {
           method: "POST",
           headers: myHeaders,
           body: JSON.stringify({
@@ -191,7 +196,7 @@ function DelegateInfo({ props, desc }: { props: Type; desc: string }) {
           myHeaders.append("x-wallet-address", walletAddress);
           myHeaders.append("Authorization",`Bearer ${token}`);
         }
-        const response = await fetch(`/api/get-attendee-individual`, {
+        const response = await fetch(`${BASE_URL}/api/get-attendee-individual`, {
           method: "POST",
           headers: myHeaders,
           body: JSON.stringify({
@@ -225,6 +230,7 @@ function DelegateInfo({ props, desc }: { props: Type; desc: string }) {
     sessionAttended();
     officeHoursHosted();
     officeHoursAttended();
+    
   };
 
   const details = [

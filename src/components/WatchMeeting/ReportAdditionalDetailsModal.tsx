@@ -7,6 +7,7 @@ import { useAccount } from "wagmi";
 import { Toaster, toast } from "react-hot-toast";
 import { usePrivy } from "@privy-io/react-auth";
 import { useWalletAddress } from "@/app/hooks/useWalletAddress";
+import { fetchApi } from "@/utils/api";
 
 function ReportAdditionalDetailsModal({
   data,
@@ -64,7 +65,7 @@ function ReportAdditionalDetailsModal({
     };
 
     try {
-      const response = await fetch("/api/report-session", requestOptions);
+      const response = await fetchApi("/report-session", requestOptions);
       const data = await response.json();
 
       return data;

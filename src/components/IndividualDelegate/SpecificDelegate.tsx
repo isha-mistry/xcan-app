@@ -60,8 +60,10 @@ import { getChainAddress, getDaoName } from "@/utils/chainUtils";
 import { optimism, arbitrum } from "viem/chains";
 import RewardButton from "../ClaimReward/RewardButton";
 import MobileResponsiveMessage from "../MobileResponsiveMessage/MobileResponsiveMessage";
-import { usePrivy } from "@privy-io/react-auth";
+import { usePrivy,useWallets } from "@privy-io/react-auth";
 import { useWalletAddress } from "@/app/hooks/useWalletAddress";
+import { fetchApi } from "@/utils/api";
+import { BrowserProvider, Contract, JsonRpcSigner } from 'ethers';
 
 interface Type {
   daoDelegates: string;
@@ -111,6 +113,7 @@ function SpecificDelegate({ props }: { props: Type }) {
   const { publicClient, walletClient } = WalletAndPublicClient();
   const { ready, authenticated, login, logout,getAccessToken,user } = usePrivy();
   const {walletAddress}=useWalletAddress();
+  const { wallets } = useWallets();
 
   const handleDelegateModal = async () => {
     if (!isConnected) {
@@ -293,11 +296,11 @@ function SpecificDelegate({ props }: { props: Type }) {
         // await setFollowerscount();
 
         // Only fetch delegate data if we have a wallet address
-        if (walletAddress) {
-          await fetchDelegateData();
-        }
+        // if (walletAddress) {
+        //   await fetchDelegateData();
+        // }
       
-          // await fetchDelegateData();
+          await fetchDelegateData();
          
 
         setIsPageLoading(false);
@@ -362,95 +365,171 @@ function SpecificDelegate({ props }: { props: Type }) {
     toast("Address Copied");
   };
 
-  const fetchDelegateData = async () => {
-    if (!walletAddress) {
-      console.log("No wallet address available");
-      return;
-    }
-    setIsFollowStatusLoading(true);
+  // const fetchDelegateData = async () => {
+  //   if (!walletAddress) {
+  //     console.log("No wallet address available");
+  //     return;
+  //   }
+  //   setIsFollowStatusLoading(true);
 
-    const myHeaders = new Headers();
-    const token = await getAccessToken();
-    myHeaders.append("Content-Type", "application/json");
-    if (walletAddress) {
-      myHeaders.append("x-wallet-address", walletAddress);
-      myHeaders.append("Authorization",`Bearer ${token}`);
-    }
-    const raw = JSON.stringify({
-      address: props.individualDelegate,
-    });
+  //   const myHeaders = new Headers();
+  //   const token = await getAccessToken();
+  //   myHeaders.append("Content-Type", "application/json");
+  //   if (walletAddress) {
+  //     myHeaders.append("x-wallet-address", walletAddress);
+  //     myHeaders.append("Authorization",`Bearer ${token}`);
+  //   }
+  //   const raw = JSON.stringify({
+  //     address: props.individualDelegate,
+  //   });
 
-    const requestOptions: any = {
-      method: "POST",
-      headers: myHeaders,
-      body: raw,
-      redirect: "follow",
-    };
+  //   const requestOptions: any = {
+  //     method: "POST",
+  //     headers: myHeaders,
+  //     body: raw,
+  //     redirect: "follow",
+  //   };
 
-    try {
-      const resp = await fetch(
-        `/api/delegate-follow/savefollower`,
-        requestOptions
-      );
+  //   try {
+  //     const resp = await fetchApi(
+  //       `/delegate-follow/savefollower`,
+  //       requestOptions
+  //     );
 
-      if (!resp.ok) {
-        throw new Error("Failed to fetch delegate data");
-      }
+  //     if (!resp.ok) {
+  //       throw new Error("Failed to fetch delegate data");
+  //     }
 
-      const data = await resp.json();
+  //     const data = await resp.json();
 
-      if (!data.success || !data.data || data.data.length === 0) {
-        console.log("No data returned from API");
-        return;
-      }
+  //     if (!data.success || !data.data || data.data.length === 0) {
+  //       console.log("No data returned from API");
+  //       return;
+  //     }
 
-      const followerData = data.data[0];
-      const currentDaoName = props.daoDelegates.toLowerCase();
-      const daoFollowers = followerData.followers.find(
-        (dao: any) => dao.dao_name.toLowerCase() === currentDaoName
-      );
+  //     const followerData = data.data[0];
+  //     const currentDaoName = props.daoDelegates.toLowerCase();
+  //     const daoFollowers = followerData.followers.find(
+  //       (dao: any) => dao.dao_name.toLowerCase() === currentDaoName
+  //     );
 
 
-      if (daoFollowers) {
-        // Update follower count
-        const followerCount = daoFollowers.follower.filter(
-          (f: any) => f.isFollowing
-        ).length;
-        // console.log("Follower count:",followerCount);
-        setFollowers(followerCount);
-        setFollowerCountLoading(false);
+  //     if (daoFollowers) {
+  //       // Update follower count
+  //       const followerCount = daoFollowers.follower.filter(
+  //         (f: any) => f.isFollowing
+  //       ).length;
+  //       // console.log("Follower count:",followerCount);
+  //       setFollowers(followerCount);
+  //       setFollowerCountLoading(false);
 
-        // Update follow and notification status
-        // const address = await walletClient.getAddresses();
-        // const address_user = address[0].toLowerCase();
-        const userFollow = daoFollowers.follower.find(
-          (f: any) => f.address.toLowerCase() === walletAddress?.toLowerCase()
+  //       // Update follow and notification status
+  //       // const address = await walletClient.getAddresses();
+  //       // const address_user = address[0].toLowerCase();
+  //       const userFollow = daoFollowers.follower.find(
+  //         (f: any) => f.address.toLowerCase() === walletAddress?.toLowerCase()
+  //       );
+
+  //       if (userFollow) {
+  //         setIsFollowing(userFollow.isFollowing);
+  //         isNotification(userFollow.isNotification);
+  //       } else {
+  //         setIsFollowing(false);
+  //         isNotification(false);
+  //       }
+  //     } else {
+  //       setFollowers(0);
+  //       setIsFollowing(false);
+  //       isNotification(false);
+  //       setFollowerCountLoading(false);
+  //     }
+  //   } catch (error) {
+  //     console.error("Error in fetchDelegateData:", error);
+  //     setFollowers(0);
+  //     setIsFollowing(false);
+  //     isNotification(false);
+  //     setFollowerCountLoading(false);
+  //   } finally {
+  //     setFollowerCountLoading(false);
+  //     setIsFollowStatusLoading(false);
+  //   }
+  // };
+
+
+    const fetchDelegateData = async () => {
+      console.log("458...");
+      setIsFollowStatusLoading(true);
+    
+      const headers = new Headers({
+        "Content-Type": "application/json",
+        "x-api-key":process.env.NEXT_PUBLIC_API_KEY??''
+      });
+      const requestOptions: any = {
+        method: "GET",
+        headers,
+      };
+    
+      try {
+        // Add delegate address as query parameter
+        const resp = await fetch(
+          `${BASE_URL}/api/delegate-follow/savefollower?address=${props.individualDelegate}`,
+          requestOptions
         );
-
-        if (userFollow) {
-          setIsFollowing(userFollow.isFollowing);
-          isNotification(userFollow.isNotification);
+    
+        if (!resp.ok) {
+          throw new Error("Failed to fetch delegate data");
+        }
+    
+        const data = await resp.json();
+    
+        if (!data.success || !data.data || data.data.length === 0) {
+          console.log("No data returned from API");
+          setFollowers(0);  // Show 0 if no data
+          return;
+        }
+    
+        const followerData = data.data[0];
+        const currentDaoName = props.daoDelegates.toLowerCase();
+        const daoFollowers = followerData.followers.find(
+          (dao: any) => dao.dao_name.toLowerCase() === currentDaoName
+        );
+    
+        if (daoFollowers) {
+          const followerCount = daoFollowers.follower.filter(
+            (f: any) => f.isFollowing
+          ).length;
+    
+          setFollowers(followerCount);
+          setFollowerCountLoading(false);
+    
+          if (walletAddress) {
+            const userFollow = daoFollowers.follower.find(
+              (f: any) => f.address.toLowerCase() === walletAddress.toLowerCase()
+            );
+    
+            setIsFollowing(userFollow?.isFollowing ?? false);
+            isNotification(userFollow?.isNotification ?? false);
+          } else {
+            setIsFollowing(false);
+            isNotification(false);
+          }
         } else {
+          setFollowers(0);
           setIsFollowing(false);
           isNotification(false);
         }
-      } else {
+      } catch (error) {
+        console.error("Error in fetchDelegateData:", error);
         setFollowers(0);
         setIsFollowing(false);
         isNotification(false);
+      } finally {
         setFollowerCountLoading(false);
+        setIsFollowStatusLoading(false);
       }
-    } catch (error) {
-      console.error("Error in fetchDelegateData:", error);
-      setFollowers(0);
-      setIsFollowing(false);
-      isNotification(false);
-      setFollowerCountLoading(false);
-    } finally {
-      setFollowerCountLoading(false);
-      setIsFollowStatusLoading(false);
-    }
-  };
+    };
+    
+
 
   const handleConfirm = async (action: number) => {
     let delegate_address: string;
@@ -471,7 +550,7 @@ function SpecificDelegate({ props }: { props: Type }) {
         myHeaders.append("Authorization",`Bearer ${token}`);
       }
       try {
-        const response = await fetch("/api/delegate-follow/updatefollower", {
+        const response = await fetchApi("/delegate-follow/updatefollower", {
           method: "PUT",
           headers: myHeaders,
           body: JSON.stringify({
@@ -518,7 +597,7 @@ function SpecificDelegate({ props }: { props: Type }) {
           myHeaders.append("Authorization",`Bearer ${token}`);
         }
         try {
-          const response = await fetch("/api/delegate-follow/updatefollower", {
+          const response = await fetchApi("/delegate-follow/updatefollower", {
             method: "PUT",
             headers: myHeaders,
             body: JSON.stringify({
@@ -571,7 +650,7 @@ function SpecificDelegate({ props }: { props: Type }) {
         delegate_address = props.individualDelegate;
         const token=await getAccessToken();
         try {
-          const response = await fetch("/api/delegate-follow/savefollower", {
+          const response = await fetchApi("/delegate-follow/savefollower", {
             method: "PUT",
             headers: {
               "Content-Type": "application/json",
@@ -610,73 +689,168 @@ function SpecificDelegate({ props }: { props: Type }) {
       }
     }
   };
+  // const handleDelegateVotes = async (to: string) => {
+  //   // let address;
+  //   // let address1;
+
+  //   // try {
+  //   //   address = await walletClient.getAddresses();
+  //   //   address1 = address[0];
+  //   // } catch (error) {
+  //   //   console.error("Error getting addresses:", error);
+  //   //   toast.error("Please connect your MetaMask wallet!");
+  //   //   return;
+  //   // }
+
+  //   if (!address || !walletAddress) {
+  //     toast.error("Please connect your MetaMask wallet!");
+  //     return;
+  //   }
+
+  //   let chainAddress;
+  //   if (props.daoDelegates === "optimism") {
+  //     chainAddress = "0x4200000000000000000000000000000000000042";
+  //   } else if (props.daoDelegates === "arbitrum") {
+  //     chainAddress = "0x912CE59144191C1204E64559FE8253a0e49E6548";
+  //   } else {
+  //     return;
+  //   }
+
+  //   if (walletClient?.chain === "") {
+  //     toast.error("Please connect your wallet!");
+  //   } else {
+  //     let network;
+  //     if (props.daoDelegates === "optimism") {
+  //       network = "OP Mainnet";
+  //     } else if (props.daoDelegates === "arbitrum") {
+  //       network = "Arbitrum One";
+  //     }
+
+  //     console.log("network: ", network);
+  //     if (walletClient?.chain.name === network) {
+  //       try {
+  //         setDelegatingToAddr(true);
+  //         const delegateTx = await walletClient.writeContract({
+  //           address: chainAddress,
+  //           chain: props.daoDelegates === "arbitrum" ? arbitrum : optimism,
+  //           abi: dao_abi.abi,
+  //           functionName: "delegate",
+  //           args: [to],
+  //           account: walletAddress,
+  //         });
+
+  //         setDelegatingToAddr(false);
+  //         setConfettiVisible(true);
+  //         setTimeout(() => setConfettiVisible(false), 5000);
+  //       } catch (e) {
+  //         toast.error("Transaction failed");
+  //         console.log(e);
+  //         setDelegatingToAddr(false);
+  //       }
+  //     } else {
+  //       toast.error("Please switch to appropriate network to delegate!");
+
+  //       // if (openChainModal) {
+  //       //   // openChainModal();
+  //       // }
+  //     }
+  //   }
+  // };
+
   const handleDelegateVotes = async (to: string) => {
-    // let address;
-    // let address1;
-
-    // try {
-    //   address = await walletClient.getAddresses();
-    //   address1 = address[0];
-    // } catch (error) {
-    //   console.error("Error getting addresses:", error);
-    //   toast.error("Please connect your MetaMask wallet!");
-    //   return;
-    // }
-
-    if (!address || !walletAddress) {
-      toast.error("Please connect your MetaMask wallet!");
-      return;
-    }
-
-    let chainAddress;
-    if (props.daoDelegates === "optimism") {
-      chainAddress = "0x4200000000000000000000000000000000000042";
-    } else if (props.daoDelegates === "arbitrum") {
-      chainAddress = "0x912CE59144191C1204E64559FE8253a0e49E6548";
-    } else {
-      return;
-    }
-
-    if (walletClient?.chain === "") {
+    if (!walletAddress) {
       toast.error("Please connect your wallet!");
-    } else {
-      let network;
-      if (props.daoDelegates === "optimism") {
-        network = "OP Mainnet";
-      } else if (props.daoDelegates === "arbitrum") {
-        network = "Arbitrum One";
+      return;
+    }
+  
+    const chainAddress = getChainAddress(chain?.name);
+    if (!chainAddress) {
+      toast.error("Invalid chain address,try again!");
+      return;
+    }
+  
+    const network = props.daoDelegates === "optimism" ? "OP Mainnet" : "Arbitrum One";
+    const chainId = props.daoDelegates === "optimism" ? 10 : 42161;
+  
+    try {
+      setDelegatingToAddr(true);
+  
+      // For Privy wallets, we should get the provider from the wallet instance
+      // Assuming you have access to the Privy wallet instance
+      const privyProvider = await wallets[0]?.getEthereumProvider();
+      
+      if (!privyProvider) {
+        toast.error("Could not get wallet provider");
+        return;
       }
-
-      console.log("network: ", network);
-      if (walletClient?.chain.name === network) {
+  
+      // Create ethers provider
+      const provider = new BrowserProvider(privyProvider);
+      
+      // Get the current network
+      const currentNetwork = await provider.getNetwork();
+      const currentChainId = Number(currentNetwork.chainId);
+  
+      // Check if we're on the correct network
+      if (currentChainId !== chainId) {
+        toast.error(`Please switch to ${network} (Chain ID: ${chainId})`);
+        
+        // Try to switch network
         try {
-          setDelegatingToAddr(true);
-          const delegateTx = await walletClient.writeContract({
-            address: chainAddress,
-            chain: props.daoDelegates === "arbitrum" ? arbitrum : optimism,
-            abi: dao_abi.abi,
-            functionName: "delegate",
-            args: [to],
-            account: walletAddress,
+          await privyProvider.request({
+            method: 'wallet_switchEthereumChain',
+            params: [{ chainId: `0x${chainId.toString(16)}` }],
           });
-
-          setDelegatingToAddr(false);
-          setConfettiVisible(true);
-          setTimeout(() => setConfettiVisible(false), 5000);
-        } catch (e) {
-          toast.error("Transaction failed");
-          setDelegatingToAddr(false);
+        } catch (switchError) {
+          console.error('Failed to switch network:', switchError);
+          return;
         }
-      } else {
-        toast.error("Please switch to appropriate network to delegate!");
-
-        // if (openChainModal) {
-        //   // openChainModal();
-        // }
+        return;
       }
+  
+      console.log('Getting signer...');
+      const signer = await provider.getSigner();
+      
+      console.log('Creating contract instance...');
+      const contract = new Contract(
+        chainAddress,
+        dao_abi.abi,
+        signer
+      );
+  
+      console.log('Initiating delegation transaction...');
+      const tx = await contract.delegate(to);
+      console.log('Waiting for transaction confirmation...');
+      await tx.wait();
+  
+      setConfettiVisible(true);
+      setTimeout(() => setConfettiVisible(false), 5000);
+      toast.success("Delegation successful!");
+  
+    } catch (error) {
+      console.error("Delegation failed:", error);
+      
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      
+      if (errorMessage.includes('eth_chainId is not supported')) {
+        console.log('Provider state:', {
+          provider: await wallets[0]?.getEthereumProvider(),
+          network,
+          chainId
+        });
+        toast.error(`Network Error: Make sure you're connected to ${network}`);
+      } else if (errorMessage.includes('user rejected')) {
+        toast.error("Transaction was rejected by user");
+      } else if (errorMessage.includes('network')) {
+        toast.error(`Please connect to ${network} (Chain ID: ${chainId})`);
+      } else {
+        toast.error("Transaction failed. Please try again");
+        console.error('Detailed error:', error);
+      }
+    } finally {
+      setDelegatingToAddr(false);
     }
   };
-
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -699,7 +873,7 @@ function SpecificDelegate({ props }: { props: Type }) {
           redirect: "follow",
         };
         const res = await fetch(
-          `/api/profile/${props.individualDelegate}`,
+          `/profile/${props.individualDelegate}`,
           requestOptions
         );
 
@@ -742,14 +916,17 @@ function SpecificDelegate({ props }: { props: Type }) {
               );
             }
             setDisplayName(item.displayName);
+           
 
-            if (!isConnected) {
+            if (!authenticated) {
               setIsFollowing(false);
               isNotification(false);
+              await fetchDelegateData();
             } else {
               // await updateFollowerState();
               // await setFollowerscount();
-              await fetchDelegateData();
+              console.log("followers count!");
+             
             }
             setSocials({
               twitter: item.socialHandles.twitter,

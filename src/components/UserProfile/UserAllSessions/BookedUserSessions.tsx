@@ -13,6 +13,7 @@ import RecordedSessionsSkeletonLoader from "@/components/SkeletonLoader/Recorded
 import { SessionInterface } from "@/types/MeetingTypes";
 import { usePrivy } from "@privy-io/react-auth";
 import { useWalletAddress } from "@/app/hooks/useWalletAddress";
+import { fetchApi } from "@/utils/api";
 
 function BookedUserSessions({ daoName }: { daoName: string }) {
   const { address,isConnected } = useAccount();
@@ -46,7 +47,7 @@ function BookedUserSessions({ daoName }: { daoName: string }) {
       const requestOptions: any = {
         method: "POST",
         headers: myHeaders,
-        // body: raw,
+        body: raw,
         redirect: "follow",
       };
       const response = await fetch(

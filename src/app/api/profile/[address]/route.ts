@@ -110,6 +110,7 @@ export async function GET(
 ) {
   try {
     const client = await connectDB();
+    // console.log("Get API called!");
     const db = client.db();
     const collection = db.collection("delegates");
     const address = req.url.split("profile/")[1];

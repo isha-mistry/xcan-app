@@ -29,6 +29,9 @@ import chatImghover from "@/assets/images/instant-meet/chatImghover.svg";
 import heroImg from "@/assets/images/instant-meet/instant-meet-hero.svg";
 import { usePrivy } from "@privy-io/react-auth";
 import { useWalletAddress } from "@/app/hooks/useWalletAddress";
+import { MEETING_BASE_URL } from "@/config/constants";
+import { redirectionInNewTab } from "@/utils/meetingUtils";
+import { fetchApi } from "@/utils/api";
 
 interface instantMeetProps {
   isDelegate: boolean;
@@ -36,7 +39,7 @@ interface instantMeetProps {
   daoName: string;
 }
 
-function InstantMeet({ isDelegate, selfDelegate, daoName }: instantMeetProps) {
+function  InstantMeet({ isDelegate, selfDelegate, daoName }: instantMeetProps) {
   const [modalData, setModalData] = useState({
     title: "",
     description: "",
@@ -121,14 +124,24 @@ function InstantMeet({ isDelegate, selfDelegate, daoName }: instantMeetProps) {
 
     try {
       // console.log("calling.......");
-      const response = await fetch("/api/book-slot", requestOptions);
+      const response = await fetchApi("/book-slot", requestOptions);
       const result = await response.json();
       console.log("result:", result);
       if (result.success) {
         // setIsScheduled(true);
         setConfirmSave(false);
-        router.push(`/meeting/session/${roomId}/lobby`);
+
+        // if (roomId) {
+        //   redirectionInNewTab(
+        //     `${MEETING_BASE_URL}/meeting/session/${roomId}/lobby`
+        //   );
+        // }
+
+        router.push(`${MEETING_BASE_URL}/meeting/session/${roomId}/lobby`);
         onClose();
+      }
+      if (result.error) {
+        setConfirmSave(false);
       }
     } catch (error) {
       setConfirmSave(false);

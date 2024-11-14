@@ -31,6 +31,8 @@ import {
 import { IoCopy } from "react-icons/io5";
 import { useAccount } from "wagmi";
 import { SessionInterface } from "@/types/MeetingTypes";
+import { MEETING_BASE_URL } from "@/config/constants";
+import { fetchApi } from "@/utils/api";
 import { usePrivy } from "@privy-io/react-auth";
 import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 
@@ -189,8 +191,8 @@ function EventTile({ tileIndex, data: initialData, isEvent }: TileProps) {
         headers: myHeaders,
         body: raw,
       };
-      const response = await fetch(
-        "/api/book-slot/update-slot/",
+      const response = await fetchApi(
+        "/book-slot/update-slot/",
         requestOptions
       );
       const result = await response.json();
@@ -225,7 +227,7 @@ function EventTile({ tileIndex, data: initialData, isEvent }: TileProps) {
 
     if (timeDifference <= 300000) {
       setStartLoading(true);
-      router.push(`/meeting/session/${data.meetingId}/lobby`);
+      router.push(`${MEETING_BASE_URL}/meeting/session/${data.meetingId}/lobby`);
     } else {
       toast.error(
         "The meeting can only be started 5 minutes before the meeting time."
@@ -413,7 +415,7 @@ function EventTile({ tileIndex, data: initialData, isEvent }: TileProps) {
                         onClick={() => {
                           setStartLoading(true);
                           router.push(
-                            `/meeting/session/${data.meetingId}/lobby`
+                            `${MEETING_BASE_URL}/meeting/session/${data.meetingId}/lobby`
                           );
                           // handleJoinClick();
                         }}
@@ -493,7 +495,7 @@ function EventTile({ tileIndex, data: initialData, isEvent }: TileProps) {
               <div
                 onClick={() => {
                   setStartLoading(true);
-                  router.push(`/meeting/session/${data.meetingId}/lobby`);
+                  router.push(`${MEETING_BASE_URL}/meeting/session/${data.meetingId}/lobby`);
                   // handleJoinClick();
                 }}
                 className="text-center rounded-full font-bold text-white mt-2 text-xs cursor-pointer"

@@ -22,6 +22,7 @@ import SessionTileSkeletonLoader from "@/components/SkeletonLoader/SessionTileSk
 import { headers } from "next/headers";
 import { usePrivy } from "@privy-io/react-auth";
 import { useWalletAddress } from "@/app/hooks/useWalletAddress";
+import { fetchApi } from "@/utils/api";
 
 interface SessionDetail {
   img: any;

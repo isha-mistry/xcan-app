@@ -7,7 +7,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useAccount, useDisconnect, useSwitchChain } from 'wagmi';
-import toast from 'react-hot-toast';
+import toast, { Toaster } from 'react-hot-toast';
 import OPLogo from "@/assets/images/daos/op.png";
 import ArbLogo from "@/assets/images/daos/arb.png";
 import { usePrivy } from '@privy-io/react-auth';
@@ -53,7 +53,7 @@ export default function   ({
       navigator.clipboard.writeText(address);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
-      toast('Address copied ');
+      toast('Address copied');
     }
   };
 
@@ -107,16 +107,16 @@ export default function   ({
         <div className="flex items-center space-x-3">
           {ensAvatar && (
             <img
-              alt="ENS Avatar"
-              src={ensAvatar}
-              className="w-6 h-6 rounded-full"
+            alt="ENS Avatar"
+            src={ensAvatar}
+            className="w-6 h-6 rounded-full"
             />
           )}
            {/* <img
               alt="ENS Avatar"
               src={"https://avatars.jakerunzer.com/test"}
               className="w-6 h-6 rounded-full"
-            /> */}
+              /> */}
           <span className="text-gray-800 font-semibold">
             {getSlicedAddress(address)}
           </span>
@@ -126,10 +126,22 @@ export default function   ({
             className={`cursor-pointer transition-colors ml-2 ${
               copied ? 'text-green-500' : 'text-gray-500 hover:text-gray-700'
             }`}
-          />
+            />
         </div>
 
         {/* Chain Switcher */}
+        <Toaster
+            toastOptions={{
+              style: {
+                fontSize: "14px",
+                backgroundColor: "#3E3D3D",
+                color: "#fff",
+                boxShadow: "none",
+                borderRadius: "50px",
+                padding: "3px 5px",
+              },
+            }}
+          />
         <DropdownMenu>
           <DropdownMenuTrigger className="flex items-center gap-2 bg-gray-200 rounded-lg px-4 ml-2 py-2 hover:bg-gray-300 transition-colors">
             {currentChain && (

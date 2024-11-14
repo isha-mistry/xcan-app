@@ -21,6 +21,7 @@ import { fetchEnsNameAndAvatar } from "@/utils/ENSUtils";
 import { headers } from "next/headers";
 import { usePrivy } from "@privy-io/react-auth";
 import { useWalletAddress } from "@/app/hooks/useWalletAddress";
+import { fetchApi } from "@/utils/api";
 
 interface dataToStore {
   userAddress: `0x${string}` | undefined | null;
@@ -320,7 +321,7 @@ function ScheduledUserSessions({ daoName }: { daoName: string }) {
     try {
       console.log("storing....");
       setCreateSessionLoading(true);
-      const response = await fetch("/api/store-availability", requestOptions);
+      const response = await fetchApi("/store-availability", requestOptions);
       const result = await response.json();
       console.log(result);
       if (result.success) {
@@ -339,7 +340,7 @@ function ScheduledUserSessions({ daoName }: { daoName: string }) {
             myHeaders.append("x-wallet-address", walletAddress);
             myHeaders.append("Authorization",`Bearer ${token}`);
           }
-          const response = await fetch("/api/delegate-follow/send-mails", {
+          const response = await fetchApi("/delegate-follow/send-mails", {
             method: "PUT",
             headers: myHeaders,
             body: JSON.stringify({

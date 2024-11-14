@@ -40,6 +40,7 @@ import {
 } from "lucide-react";
 import { getAccessToken, usePrivy } from "@privy-io/react-auth";
 import { useWalletAddress } from "@/app/hooks/useWalletAddress";
+import { fetchApi } from "@/utils/api";
 
 interface Attendee extends DynamicAttendeeInterface {
   profileInfo: UserProfileInterface;
@@ -243,7 +244,7 @@ const WatchFreeCollect = ({
     });
 
     try {
-      const response = await fetch("/api/update-recorded-session", {
+      const response = await fetchApi("/update-recorded-session", {
         method: "PUT",
         headers: myHeaders,
         body: raw,

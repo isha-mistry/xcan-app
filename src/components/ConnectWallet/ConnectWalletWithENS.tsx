@@ -15,6 +15,7 @@ import MobileChainSwitcher from "./MobileChainSwitcher";
 import { Dialog, DialogContent, DialogTitle } from "@radix-ui/react-dialog";
 import { DialogHeader } from "../ui/dialog";
 
+import { fetchApi } from "@/utils/api";
 
 function ConnectWalletWithENS() {
   const [displayAddress, setDisplayAddress] = useState<string>("");
@@ -63,7 +64,8 @@ function ConnectWalletWithENS() {
           myHeaders.append("x-wallet-address", walletAddress2 ? walletAddress2 : "");
           setDisplayAddress(address ? address : "");
 
-          const raw = JSON.stringify({ address: address });
+          const raw = JSON.stringify({ address: walletAddress2.toLowerCase() });
+          // console.log("Line 68:",raw)
 
           const requestOptions: any = {
             method: "POST",
@@ -72,7 +74,10 @@ function ConnectWalletWithENS() {
             redirect: "follow",
           };
 
-          const res = await fetch(`/api/profile/${walletAddress2}`, requestOptions);
+          // Add this debug log
+          // console.log("Headers before fetch:", Array.from(myHeaders.entries()));
+
+          const res = await fetchApi(`/profile/${walletAddress2.toLowerCase()}`, requestOptions);
           const dbResponse = await res.json();
           // console.log("line number 48:", dbResponse);
 
@@ -180,7 +185,7 @@ function ConnectWalletWithENS() {
     // </div>
 
 <div className="wallet">
-  {!authenticated && !address ? (
+  {!authenticated  ? (
     <button
       onClick={login}
       type="button"

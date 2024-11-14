@@ -12,7 +12,7 @@
         ]
       },
       "technology": {
-        "description": "Optimism utilizes Optimistic Rollups, a Layer 2 scaling solution that bundles multiple transactions off-chain and then posts the bundled data to the Ethereum mainnet. This approach significantly reduces gas fees and increases transaction speed while inheriting Ethereum's security.",
+        "description": "Optimism Collective utilizes Optimistic Rollups, a Layer 2 scaling solution that bundles multiple transactions off-chain and then posts the bundled data to the Ethereum mainnet. This approach significantly reduces gas fees and increases transaction speed while inheriting Ethereum's security.",
         "features": [
           "Full EVM equivalence, ensuring compatibility with existing Ethereum smart contracts",
           "The OP Stack, an open-source development framework for creating optimistic rollups",

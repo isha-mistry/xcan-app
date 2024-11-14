@@ -24,6 +24,7 @@ import { usePrivy } from "@privy-io/react-auth";
 import { useConnection } from "@/app/hooks/useConnection";
 import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 
+import { fetchApi } from "@/utils/api";
 
 function NotificationMain() {
   const {isConnected} =useConnection()
@@ -98,7 +99,7 @@ function NotificationMain() {
         headers: myHeaders,
         body: raw,
       };
-      const response = await fetch("/api/notifications", requestOptions);
+      const response = await fetchApi("/notifications", requestOptions);
       const result = await response.json();
       if (Array.isArray(result.data)) {
         setNotifications(result.data);
@@ -201,8 +202,8 @@ function NotificationMain() {
         headers: myHeaders,
         body: raw,
       };
-      const response = await fetch(
-        "/api/notifications/mark-as-read",
+      const response = await fetchApi(
+        "/notifications/mark-as-read",
         requestOptions
       );
       if (response.ok) {

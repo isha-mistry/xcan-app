@@ -176,7 +176,7 @@ function FollowingModal({
                   ) : (
                     <>
                       <Image src={oplogo} alt="optimism" width={23} />
-                      Optimism
+                      Optimism Collective
                     </>
                   )}
                 </button>

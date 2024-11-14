@@ -22,6 +22,7 @@ import Heading from "../ComponentUtils/Heading";
 import { CiSearch } from "react-icons/ci";
 import { usePrivy } from "@privy-io/react-auth";
 import { useWalletAddress } from "@/app/hooks/useWalletAddress";
+import { fetchApi } from "@/utils/api";
 interface Type {
   img: StaticImageData;
   title: string;
@@ -69,8 +70,8 @@ function DaoOfficeHours() {
           headers: myHeaders,
         };
 
-        const response = await fetch(
-          "/api/get-specific-officehours",
+        const response = await fetchApi(
+          "/get-specific-officehours",
           requestOptions
         );
         const result = await response.json();
@@ -125,8 +126,8 @@ function DaoOfficeHours() {
         }),
         redirect: "follow",
       };
-      const res = await fetch(
-        `/api/search-officehours/${query}`,
+      const res = await fetchApi(
+        `/search-officehours/${query}`,
         requestOptions
       );
       const result = await res.json();

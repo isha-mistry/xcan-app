@@ -27,6 +27,7 @@ import { MdCancel } from "react-icons/md";
 import { useRouter } from "next-nprogress-bar";
 import { usePrivy } from "@privy-io/react-auth";
 import { useWalletAddress } from "@/app/hooks/useWalletAddress";
+import { fetchApi } from "@/utils/api";
 interface Type {
   daoDelegates: string;
   individualDelegate: string;
@@ -121,8 +122,8 @@ function BookSession({ props }: { props: Type }) {
 
   const getSlotTimeAvailability = async () => {
     try {
-      const response = await fetch(
-        `/api/get-meeting/${host_address}?dao_name=${daoName}`,
+      const response = await fetchApi(
+        `/get-meeting/${host_address}?dao_name=${daoName}`,
         {
           method: "GET",
           headers: {
@@ -331,7 +332,7 @@ function BookSession({ props }: { props: Type }) {
 
     try {
       setConfirmSave(true);
-      const response = await fetch("/api/book-slot", requestOptions);
+      const response = await fetchApi("/book-slot", requestOptions);
       const result = await response.json();
       if (result.success) {
         setIsScheduled(true);
@@ -490,7 +491,7 @@ function BookSession({ props }: { props: Type }) {
               redirect: "follow",
             };
 
-            const response = await fetch("/api/profile", requestOptions);
+            const response = await fetchApi("/profile", requestOptions);
             const result = await response.json();
             if (result.success) {
               setContinueAPICalling(true);

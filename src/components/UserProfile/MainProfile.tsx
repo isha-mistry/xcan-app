@@ -31,7 +31,7 @@ import { useAccount } from "wagmi";
 import WalletAndPublicClient from "@/helpers/signer";
 import dao_abi from "../../artifacts/Dao.sol/GovernanceToken.json";
 import axios from "axios";
-import { Oval } from "react-loader-spinner";
+import { Oval,InfinitySpin } from "react-loader-spinner";
 import lighthouse from "@lighthouse-web3/sdk";
 import InstantMeet from "./InstantMeet";
 import { useSession } from "next-auth/react";
@@ -55,8 +55,10 @@ import MobileResponsiveMessage from "../MobileResponsiveMessage/MobileResponsive
 import RewardButton from "../ClaimReward/RewardButton";
 import Heading from "../ComponentUtils/Heading";
 import { ChevronDownIcon } from "lucide-react";
-import { getAccessToken, usePrivy } from "@privy-io/react-auth";
+import { getAccessToken, usePrivy, useWallets } from "@privy-io/react-auth";
 import { useWalletAddress } from "@/app/hooks/useWalletAddress";
+import { fetchApi } from "@/utils/api";
+import { BrowserProvider,Contract } from "ethers";
 
 function MainProfile() {
   const { isConnected, address, chain } = useAccount();
@@ -87,8 +89,10 @@ function MainProfile() {
   const [userFollowings, setUserFollowings] = useState<Following[]>([]);
   const [isModalLoading, setIsModalLoading] = useState(false);
   const { ready, authenticated, login, logout,getAccessToken,user } = usePrivy();
+  const [isspin,setSpin]=useState(false);
   // const [walletAddress, setWalletAddress] = useState<string | null>(null);
   const {walletAddress}=useWalletAddress();
+  const { wallets } = useWallets();
   // const [dbResponse, setDbResponse] = useState<any>(null);
   const [modalData, setModalData] = useState({
     displayImage: "",
@@ -249,16 +253,16 @@ function MainProfile() {
       // const address1 = addr[0];
       try {
         const contractAddress = getChainAddress(chain?.name);
-        // console.log(walletClient);
         if (walletAddress) {
           const delegateTx = await publicClient.readContract({
             address: contractAddress,
             abi: dao_abi.abi,
             functionName: "delegates",
-            args: [walletAddress],
+            args: [address],
             // account: address1,
           });
-          // console.log("Delegate tx", delegateTx);
+          console.log("Delegate tx", delegateTx);
+          alert(delegateTx);
 
           const delegateTxAddr = delegateTx.toLowerCase();
 
@@ -274,35 +278,137 @@ function MainProfile() {
       }
     };
     checkDelegateStatus();
-  }, [address,walletAddress, daoName, selfDelegate]);
+  }, [walletAddress, daoName, selfDelegate]);
 
   // Pass the address of whom you want to delegate the voting power to
-  const handleDelegateVotes = async (to: string) => {
+  // const handleDelegateVotes = async (to: string) => {
+  //   try {
+  //     // const addr = await walletClient.getAddresses();
+  //     // const address1 = addr[0];
+  //     // console.log("addrrr", address1);
+  //     const contractAddress = getChainAddress(chain?.name);
+
+  //     console.log("contractAddress: ", contractAddress);
+
+  //     // console.log("Contract", contractAddress);
+  //     console.log("Wallet Client", walletClient);
+  //     const delegateTx = await walletClient.writeContract({
+  //       address: contractAddress,
+  //       abi: dao_abi.abi,
+  //       functionName: "delegate",
+  //       args: [to],
+  //       account: walletAddress,
+  //     });
+
+  //     console.log(delegateTx);
+  //   } catch (error) {
+  //     console.log("Error:", error);
+  //     toast.error("Failed to become delegate. Please try again.");
+  //   }
+  // };
+
+  const handleDelegateVotes = async (
+    to: string, 
+    // walletAddress: string | undefined,
+    // wallets: any[],
+    // setDelegatingToAddr: (value: boolean) => void,
+    // setConfettiVisible: (value: boolean) => void
+  ) => {
+    if (!walletAddress) {
+      toast.error("Please connect your wallet!");
+      return;
+    }
+  
     try {
-      // const addr = await walletClient.getAddresses();
-      // const address1 = addr[0];
-      // console.log("addrrr", address1);
-
-      const contractAddress = getChainAddress(chain?.name);
-
-      console.log("contractAddress: ", contractAddress);
-
-      // console.log("Contract", contractAddress);
-      console.log("Wallet Client", walletClient);
-      const delegateTx = await walletClient.writeContract({
-        address: contractAddress,
-        abi: dao_abi.abi,
-        functionName: "delegate",
-        args: [to],
-        account: walletAddress,
-      });
-
-      console.log(delegateTx);
+      // setDelegatingToAddr(true);
+  
+      // Get provider from Privy wallet
+      setSpin(true);
+      const privyProvider = await wallets[0]?.getEthereumProvider();
+      
+      if (!privyProvider) {
+        toast.error("Could not get wallet provider");
+        return;
+      }
+  
+      // Create ethers provider
+      const provider = new BrowserProvider(privyProvider);
+      
+      // Get the current network
+      const currentNetwork = await provider.getNetwork();
+      const currentChainId = Number(currentNetwork.chainId);
+  
+      // Determine the required network based on current chain
+      const chainConfig = {
+        10: {
+          name: "OP Mainnet",
+          chainId: 10
+        },
+        42161: {
+          name: "Arbitrum One",
+          chainId: 42161
+        }
+      };
+  
+      const currentChainConfig = chainConfig[currentChainId as keyof typeof chainConfig];
+      
+      if (!currentChainConfig) {
+        toast.error("Please connect to OP Mainnet or Arbitrum One");
+        return;
+      }
+  
+      // Get contract address for current chain
+      const chainAddress = getChainAddress(currentChainConfig.name);
+      if (!chainAddress) {
+        toast.error("Invalid chain address for current network");
+        return;
+      }
+  
+      console.log('Getting signer...');
+      const signer = await provider.getSigner();
+      
+      console.log('Creating contract instance...');
+      const contract = new Contract(
+        chainAddress,
+        dao_abi.abi,
+        signer
+      );
+  
+      console.log('Initiating delegation transaction...');
+      const tx = await contract.delegate(to);
+      console.log('Waiting for transaction confirmation...');
+      await tx.wait();
+  
+      // setConfettiVisible(true);
+      // setTimeout(() => setConfettiVisible(false), 5000);
+      toast.success("Delegation successful!");
+      setSpin(false);
+  
     } catch (error) {
-      console.log("Error:", error);
-      toast.error("Failed to become delegate. Please try again.");
+      console.error("Delegation failed:", error);
+      setSpin(false);
+      
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      
+      if (errorMessage.includes('eth_chainId is not supported')) {
+        console.log('Provider state:', {
+          provider: await wallets[0]?.getEthereumProvider()
+        });
+        toast.error("Network Error: Please check your network connection");
+      } else if (errorMessage.includes('user rejected')) {
+        toast.error("Transaction was rejected by user");
+      } else if (errorMessage.includes('network')) {
+        toast.error("Please connect to a supported network (OP Mainnet or Arbitrum One)");
+      } else {
+        toast.error("Transaction failed. Please try again");
+        console.error('Detailed error:', error);
+      }
+    } finally {
+      // setDelegatingToAddr(false);
+      setSpin(false);
     }
   };
+  
 
   const handleCopy = (addr: string) => {
     copy(addr);
@@ -317,6 +423,7 @@ function MainProfile() {
     setIsModalLoading(true);
     const myHeaders = new Headers();
     const token=await getAccessToken();
+    // console.log("Line 321:",walletAddress);
     myHeaders.append("Content-Type", "application/json");
     if (walletAddress) {
       myHeaders.append("x-wallet-address", walletAddress);
@@ -334,12 +441,10 @@ function MainProfile() {
       body: raw,
       redirect: "follow",
     };
-    const res = await fetch(
-      `/api/delegate-follow/savefollower`,
-      requestOptions
-    );
+    const res = await fetchApi(`/delegate-follow/savefollower`, requestOptions);
 
     const dbResponse = await res.json();
+    // console.log("Line 341",dbResponse);
 
     if (isfollowingchange == 1) {
       updateFollowerState(dbResponse);
@@ -393,7 +498,7 @@ function MainProfile() {
       }
 
       try {
-        const response = await fetch("/api/delegate-follow/savefollower", {
+        const response = await fetchApi("/delegate-follow/savefollower", {
           method: "PUT",
           headers: myHeaders,
           body: JSON.stringify({
@@ -428,7 +533,7 @@ function MainProfile() {
           myHeaders.append("x-wallet-address", walletAddress);
           myHeaders.append("Authorization",`Bearer ${token}`);
         }
-        const response = await fetch("/api/delegate-follow/updatefollower", {
+        const response = await fetchApi("/delegate-follow/updatefollower", {
           method: "PUT",
           headers: myHeaders,
           body: JSON.stringify({
@@ -475,7 +580,7 @@ function MainProfile() {
         myHeaders.append("x-wallet-address", walletAddress);
         myHeaders.append("Authorization",`Bearer ${token}`);
       }
-      const response = await fetch("/api/delegate-follow/updatefollower", {
+      const response = await fetchApi("/delegate-follow/updatefollower", {
         method: "PUT",
         headers: myHeaders,
         body: JSON.stringify({
@@ -509,6 +614,7 @@ function MainProfile() {
 
   const updateFollowerState = async (dbResponse: any) => {
     const userData = dbResponse?.data?.[0];
+    // console.log("Line 512:",userData);
     // let address = await walletClient.getAddresses();
     // let address_user = address[0].toLowerCase();
     let currentDaoName = getDaoName(chain?.name);
@@ -528,6 +634,7 @@ function MainProfile() {
       const activeFollowings = matchDao.following?.filter(
         (f: any) => f.isFollowing
       );
+      // console.log("Line 532:",activeFollowings.length);
       setFollowings(activeFollowings.length);
       setUserFollowings(activeFollowings);
     } else {
@@ -569,7 +676,7 @@ function MainProfile() {
         body: raw,
         redirect: "follow",
       };
-      const response = await fetch("/api/profile/emailstatus", requestOptions);
+      const response = await fetchApi("/profile/emailstatus", requestOptions);
 
       if (!response.ok) {
         throw new Error("Failed to toggle");
@@ -596,6 +703,7 @@ function MainProfile() {
         const token = await getAccessToken();
         let dao = getDaoName(chain?.name);
         const myHeaders = new Headers();
+        // console.log("Line 598:",walletAddress);
         myHeaders.append("Content-Type", "application/json");
         myHeaders.append("Authorization", `Bearer ${token}`);
         if (walletAddress) {
@@ -613,7 +721,7 @@ function MainProfile() {
           body: raw,
           redirect: "follow",
         };
-        const res = await fetch(`/api/profile/${walletAddress}`, requestOptions);
+        const res = await fetchApi(`/profile/${walletAddress}`, requestOptions);
 
         const dbResponse = await res.json();
 
@@ -640,10 +748,10 @@ function MainProfile() {
         }
 
         if (dbResponse.data.length > 0) {
-          console.log("db Response", dbResponse.data[0]);
-          console.log(`Length ${dbResponse.data.length}`);
+          // console.log("db Response", dbResponse.data[0]);
+          // console.log(`Length ${dbResponse.data.length}`);
           const profileData = dbResponse.data[0];
-          console.log(profileData);
+          // console.log(profileData);
           // console.log(
           //   "dbResponse.data[0]?.networks:",
           //   dbResponse.data[0]?.networks
@@ -680,7 +788,7 @@ function MainProfile() {
             )?.description || ""
           );
 
-          if (!isConnected) {
+          if (!authenticated) {
             setFollowings(0);
             setFollowers(0);
           } else {
@@ -715,6 +823,7 @@ function MainProfile() {
   const handleSave = async (newDescription?: string) => {
     try {
       // Check if the delegate already exists in the database
+      // console.log("Line 716:",walletAddress);
       if (newDescription) {
         setDescription(newDescription);
         console.log("New Description", description);
@@ -748,7 +857,7 @@ function MainProfile() {
   const checkDelegateExists = async (address: any) => {
     try {
       // Make a request to your backend API to check if the address exists
-      console.log("Line number 764:Checking",address.toLowerCase());
+      // console.log("Line number 764:Checking",address.toLowerCase());
 
       const myHeaders = new Headers();
       const token=await getAccessToken();
@@ -769,7 +878,7 @@ function MainProfile() {
         body: raw,
         redirect: "follow",
       };
-      const res = await fetch(`/api/profile/${address}`, requestOptions);
+      const res = await fetchApi(`/profile/${address}`, requestOptions);
 
       const response = await res.json();
 
@@ -777,7 +886,10 @@ function MainProfile() {
         // Iterate over each item in the response data array
         for (const item of response.data) {
           // Check if address and daoName match
-          if (item.address === address.toLowerCase()) {
+          // console.log("779:",item.address);
+          const dbAddress=item.address;
+          if (dbAddress.toLowerCase() === address.toLowerCase()) {
+            // console.log("782:",address.toLowerCase())
             return true; // Return true if match found
           }
         }
@@ -833,7 +945,7 @@ function MainProfile() {
         redirect: "follow",
       };
 
-      const response = await fetch("/api/profile/", requestOptions);
+      const response = await fetchApi("/profile/", requestOptions);
       console.log("Response Add", response);
 
       if (response.status === 200) {
@@ -871,39 +983,45 @@ function MainProfile() {
       // if (address) {
       //   myHeaders.append("x-wallet-address", address);
       // }
-      const response: any = await axios.put(
-        "/api/profile",
-        {
-          address: walletAddress?.toLowerCase(),
-          image: modalData.displayImage,
-          isDelegate: true,
-          displayName: modalData.displayName,
-          emailId: modalData.emailId,
-          socialHandles: {
-            twitter: modalData.twitter,
-            discord: modalData.discord,
-            github: modalData.github,
-          },
-          networks: [
-            {
-              dao_name: daoName,
-              network: chain?.name,
-              discourse: modalData.discourse,
-              description: newDescription,
-            },
-          ],
+      const myHeaders = new Headers();
+      myHeaders.append("Content-Type", "application/json");
+      if (walletAddress) {
+        myHeaders.append("x-wallet-address", walletAddress);
+        myHeaders.append("Authorization",`Bearer ${token}`)
+      }
+      const raw = JSON.stringify({
+        address: walletAddress, 
+        image: modalData.displayImage,
+        isDelegate: true,
+        displayName: modalData.displayName,
+        emailId: modalData.emailId,
+        socialHandles: {
+          twitter: modalData.twitter,
+          discord: modalData.discord,
+          github: modalData.github,
         },
-        {
-          headers: {
-            "Content-Type": "application/json",
-            ...(walletAddress && { "x-wallet-address": walletAddress.toLowerCase() }),
-            ...(token && { "Authorization": `Bearer ${token}` }),
+        networks: [
+          {
+            dao_name: daoName,
+            network: chain?.name,
+            discourse: modalData.discourse,
+            description: newDescription,
           },
-        }
-      );
-      // console.log("response", response);
+        ],
+      });
+
+      const requestOptions: any = {
+        method: "PUT",
+        headers: myHeaders,
+        body: raw,
+        redirect: "follow",
+      };
+      const response = await fetchApi("/profile", requestOptions);
+      console.log("response", response);
+      const result = await response.json();
+      console.log("result", result);
       // Handle response from the PUT API function
-      if (response.data.success) {
+      if (response.status===200) {
         // Delegate updated successfully
         console.log("Delegate updated successfully");
         setIsLoading(false);
@@ -916,7 +1034,7 @@ function MainProfile() {
           github: modalData.github,
         });
       } else {
-        console.error("Failed to update delegate:", response.error);
+        console.error("Failed to update delegate:", result.error);
         setIsLoading(false);
       }
     } catch (error) {
@@ -1148,8 +1266,17 @@ function MainProfile() {
                     <button
                       className="bg-blue-shade-200 font-bold text-white rounded-full py-[10px] px-6 xs:py-2 xs:px-4 sm:px-6 xs:text-xs sm:text-sm text-sm lg:px-8 lg:py-[10px] w-full xs:w-auto"
                       onClick={() => handleDelegateVotes(`${walletAddress}`)}
+                      disabled={isspin}
                     >
-                      Become Delegate
+                      
+                      {isspin ? (
+          <div className="flex justify-center items-center">
+            <Oval color="#fff" height={20} width={20} />
+           {/* <InfinitySpin width="" color="#fff" /> */}
+          </div>
+        ) : (
+          'Become Delegate'
+        )}
                     </button>
 
                     <button

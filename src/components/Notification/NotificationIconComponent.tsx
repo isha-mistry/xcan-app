@@ -18,6 +18,7 @@ import { useNotificationStudioState } from "@/store/notificationStudioState";
 import { useSession } from "next-auth/react";
 import { usePrivy } from "@privy-io/react-auth";
 import { useWalletAddress } from "@/app/hooks/useWalletAddress";
+import { fetchApi } from "@/utils/api";
 
 function NotificationIconComponent() {
   const router = useRouter();
@@ -85,7 +86,7 @@ function NotificationIconComponent() {
           headers: myHeaders,
           body: raw,
         };
-        const response = await fetch("/api/notifications", requestOptions);
+        const response = await fetchApi("/notifications", requestOptions);
         const result = await response.json();
         if (result.success && result?.data) {
           const notificationsData = result.data.map((notification: any) => ({

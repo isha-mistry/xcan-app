@@ -3,6 +3,7 @@ import { useAccount } from "wagmi";
 import toast, { Toaster } from "react-hot-toast";
 import { usePrivy } from "@privy-io/react-auth";
 import { useWalletAddress } from "@/app/hooks/useWalletAddress";
+import { fetchApi } from "@/utils/api";
 
 const UserScheduledHours = ({ daoName }: { daoName: string }) => {
   const [selectedDate, setSelectedDate] = useState<string>("");
@@ -53,7 +54,7 @@ const UserScheduledHours = ({ daoName }: { daoName: string }) => {
         myHeaders.append("Authorization",`Bearer ${token}`);
       }
 
-      const response = await fetch("/api/office-hours", {
+      const response = await fetchApi("/office-hours", {
         method: "POST",
         headers: myHeaders,
         body: JSON.stringify({

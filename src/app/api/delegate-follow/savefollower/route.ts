@@ -324,3 +324,43 @@ export async function PUT(req: NextRequest) {
     );
   }
 }
+
+// Replace the POST method with GET in your Next.js API handler:
+export async function GET(req: Request) {
+  try {
+    const client = await connectDB();
+    const db = client.db();
+    const collection = db.collection("delegate_follow");
+
+    // Extract the address from query params
+    const url = new URL(req.url);
+    const address = url.searchParams.get("address");
+
+    if (!address) {
+      return NextResponse.json(
+        { success: false, error: "Address is required" },
+        { status: 400 }
+      );
+    }
+
+    const documents = await collection
+      .find({
+        address: { $regex: `^${address}$`, $options: "i" },
+      })
+      .toArray();
+
+    client.close();
+
+    return NextResponse.json(
+      { success: true, data: documents },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error("Error retrieving data in profile:", error);
+    return NextResponse.json(
+      { success: false, error: "Internal Server Error" },
+      { status: 500 }
+    );
+  }
+}
+
