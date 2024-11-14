@@ -20,6 +20,7 @@ import { motion } from "framer-motion";
 import ExploreDaosSkeletonLoader from "../SkeletonLoader/ExploreDaosSkeletonLoader";
 import Heading from "../ComponentUtils/Heading";
 import PageBackgroundPattern from "@/components/ComponentUtils/PageBackgroundPattern";
+import FeaturedArticles from "./FeaturedArticles";
 
 const ExploreDAOs = () => {
   const dao_info = Object.keys(dao_details).map((key) => {
@@ -94,9 +95,11 @@ const ExploreDAOs = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-200 relative overflow-hidden">
       <PageBackgroundPattern />
-      <div className="relative w-full px-4 py-8">
+      <div className="pt-2 xs:pt-4 sm:pt-6 px-4 md:px-6 lg:px-14">
         <Heading />
+      </div>
 
+      <div className="relative w-full px-4 md:px-6 lg:px-14 pb-8 font-poppins">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -136,7 +139,7 @@ const ExploreDAOs = () => {
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.8 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
             className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 md:w-[95%] 2md:w-[85%] gap-6 2xl:w-[65%] mx-auto"
           >
             {daoInfo.length > 0 ? (
@@ -204,6 +207,7 @@ const ExploreDAOs = () => {
           </motion.div>
         )}
       </div>
+      <FeaturedArticles />
     </div>
   );
 };
