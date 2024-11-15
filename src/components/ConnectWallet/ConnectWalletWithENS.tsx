@@ -124,7 +124,7 @@ function ConnectWalletWithENS() {
                 userSelect: "none",
               },
             })}
-            className="wallet"
+            className="wallet flex items-center gap-2"
           >
             {(() => {
               if (!connected) {
@@ -154,7 +154,7 @@ function ConnectWalletWithENS() {
 
               return (
                 <>
-                  <div style={{ gap: 8 }} className="hidden lg:flex ml-2">
+                  <div style={{ gap: 8 }} className="flex ml-2">
                     <button
                       onClick={openChainModal}
                       type="button"
@@ -223,7 +223,7 @@ function ConnectWalletWithENS() {
                       //   fontWeight: "bold",
                       //   boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.1)",
                       // }}
-                      className="flex items-center font-bold text-black transition-transform transform hover:scale-105 text-xs sm:text-sm"
+                      className="hidden lg:flex items-center font-bold text-black transition-transform transform hover:scale-105 text-xs sm:text-sm"
                     >
                       <div
                         style={{

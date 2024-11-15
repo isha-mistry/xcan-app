@@ -3,7 +3,7 @@ import React from "react";
 function PageBackgroundPattern() {
   return (
     <div
-      className="fixed inset-0 opacity-10"
+      className="fixed inset-0 opacity-10 z-[-4px]"
       style={{
         backgroundImage: `linear-gradient(30deg, #a0aec0 12%, transparent 12.5%, transparent 87%, #a0aec0 87.5%, #a0aec0),    linear-gradient(150deg, #a0aec0 12%, transparent 12.5%, transparent 87%, #a0aec0 87.5%, #a0aec0), 
       linear-gradient(30deg, #a0aec0 12%, transparent 12.5%, transparent 87%, #a0aec0 87.5%, #a0aec0), 

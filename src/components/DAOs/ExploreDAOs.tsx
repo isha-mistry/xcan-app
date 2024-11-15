@@ -182,7 +182,7 @@ const ExploreDAOs = () => {
               whileTap={{ scale: 0.95 }}
               onMouseEnter={() => setIsHovered(true)}
               onMouseLeave={() => setIsHovered(false)}
-              className="bg-white rounded-xl shadow-lg overflow-hidden cursor-pointer flex items-center justify-center h-[220px]"
+              className="bg-white rounded-xl shadow-lg overflow-hidden cursor-pointer flex items-center justify-center h-[220px] md:h-full"
             >
               <Link
                 href="https://app.deform.cc/form/a401a65c-73c0-49cb-8d96-63e36ef36f88"
