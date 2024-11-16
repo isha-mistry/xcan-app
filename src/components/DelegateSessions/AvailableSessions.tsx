@@ -25,6 +25,7 @@ import { CiSearch } from "react-icons/ci";
 import { FaChevronDown } from "react-icons/fa";
 import { MdOutlineHourglassDisabled } from "react-icons/md";
 import { useConnectModal } from "@rainbow-me/rainbowkit";
+import Link from "next/link";
 
 interface Type {
   ensName: string;
@@ -67,6 +68,7 @@ function AvailableSessions() {
   const [initialFetchComplete, setInitialFetchComplete] = useState(false);
   const [showFilterOptions, setShowFilterOptions] = useState(false);
   const { openConnectModal } = useConnectModal();
+  const [tooltipContent, setTooltipContent] = useState('Copy');
 
   const handleBookSession = (daoName: string, userAddress: string) => {
     if (isConnected) {
@@ -193,9 +195,15 @@ function AvailableSessions() {
     fetchData();
   }, [selectedDao, selectedDate, startTime, endTime]);
 
-  const handleCopy = (addr: string) => {
+  const handleCopy = (addr:string) => {
     copy(addr);
-    toast("Address Copied");
+    setTooltipContent('Copied');
+    toast('Address Copied');
+    
+    // Reset tooltip text after 2 seconds
+    setTimeout(() => {
+      setTooltipContent('Copy');
+    }, 2000);
   };
 
   const handleSearchChange = (query: string) => {
@@ -640,23 +648,23 @@ function AvailableSessions() {
                       </div>
                     </div>
 
-                    <div className="w-3/4 ml-2 sm:ml-4">
-                      <div className="text-[#3E3D3D] text-base sm:text-lg font-semibold mb-1">
+                    <div className="w-3/4 ml-2 sm:ml-4 pr-16 xs:pr-20 sm:pr-24">
+                      <Link className="text-[#3E3D3D] text-base sm:text-lg font-semibold mb-1 w-[50%] 0.5xs:w-[80%] truncate" href={`/${daos.session.dao_name}/${daos.session.userAddress}?active=info`}>
                         {ensNames[daos?.userInfo[0]?.address] ||
                           daos.userInfo[0]?.displayName ||
                           daos.session.userAddress.slice(0, 6) +
                             "..." +
                             daos.session.userAddress.slice(-4)}
-                      </div>
+                      </Link>
                       <div className="text-xs sm:text-sm flex">
-                        <div>
+                        <Link href={`/${daos.session.dao_name}/${daos.session.userAddress}?active=info`}>
                           {daos.session.userAddress.slice(0, 6) +
                             "..." +
                             daos.session.userAddress.slice(-4)}
-                        </div>
+                        </Link>
                         <div className="items-center">
                           <Tooltip
-                            content="Copy"
+                            content={tooltipContent}
                             placement="right"
                             closeDelay={1}
                             showArrow
@@ -679,7 +687,7 @@ function AvailableSessions() {
                       </div>
                       <div>
                         <div
-                          className="text-[#4F4F4F] border-[0.5px] border-[#D9D9D9] rounded-md px-1.5 sm:px-3 py-1 mt-2 sm:mt-4 sm:max-h-[86px] sm:overflow-y-scroll overflow-x-auto"
+                          className="text-[#4F4F4F] border-[0.5px] w-min 0.5xs:w-auto border-[#D9D9D9] rounded-md px-1.5 sm:px-3 py-1 mt-2 sm:mt-4 max-h-[63px] xs:max-h-[70px] sm:max-h-[86px] overflow-y-scroll overflow-x-auto"
                           style={{
                             scrollbarWidth: "thin",
                             msOverflowStyle: "none",
