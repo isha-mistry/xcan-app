@@ -85,6 +85,7 @@ function TotalRewards() {
       setEthToUsdConversionRate(coingeckoData.ethereum.usd);
       if (data.data.rewardsPerUsers.length < 1) {
         setTotalRewards({ amount: "0.0 ", value: "$0.0" });
+        setFetchingReward(false);
         return;
       }
       const total =
@@ -195,7 +196,7 @@ function TotalRewards() {
 
   return (
     <>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:p-6 font-poppins">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:py-6 font-poppins">
         <div className="bg-gradient-to-br from-blue-500 to-purple-600 text-white rounded-lg overflow-hidden shadow-lg transition-all duration-300 hover:shadow-xl">
           <div className="p-6">
             <h2 className="text-2xl font-bold flex items-center mb-4">
