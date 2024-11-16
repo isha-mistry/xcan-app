@@ -649,18 +649,22 @@ function AvailableSessions() {
                     </div>
 
                     <div className="w-3/4 ml-2 sm:ml-4 pr-16 xs:pr-20 sm:pr-24">
-                      <Link className="text-[#3E3D3D] text-base sm:text-lg font-semibold mb-1 w-[50%] 0.5xs:w-[80%] truncate" href={`/${daos.session.dao_name}/${daos.session.userAddress}?active=info`}>
+                    <Link href={`/${daos.session.dao_name}/${daos.session.userAddress}?active=info`}>
+                      <div className="text-[#3E3D3D] text-base sm:text-lg font-semibold mb-1 w-[50%] 0.5xs:w-[80%] truncate" >
                         {ensNames[daos?.userInfo[0]?.address] ||
                           daos.userInfo[0]?.displayName ||
                           daos.session.userAddress.slice(0, 6) +
                             "..." +
                             daos.session.userAddress.slice(-4)}
+                      </div>
                       </Link>
                       <div className="text-xs sm:text-sm flex">
                         <Link href={`/${daos.session.dao_name}/${daos.session.userAddress}?active=info`}>
+                        <div>
                           {daos.session.userAddress.slice(0, 6) +
                             "..." +
                             daos.session.userAddress.slice(-4)}
+                        </div>
                         </Link>
                         <div className="items-center">
                           <Tooltip
