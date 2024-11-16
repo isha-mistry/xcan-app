@@ -164,7 +164,7 @@ const SidebarMainMobile = () => {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center">
                       <IoGiftSharp className="size-5 mr-4" />
-                      <span>Reward</span>
+                      <span>Claim Rewards</span>
                     </div>
                     <FiArrowUpRight className="w-5 h-5" />
                   </div>
