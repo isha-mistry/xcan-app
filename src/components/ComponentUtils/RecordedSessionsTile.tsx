@@ -58,11 +58,27 @@ function RecordedSessionsTile({
   const [updatedSessionDetails, setUpdatedSessionDetails] = useState<any[]>([]);
   const [claimInProgress, setClaimInProgress] = useState(false);
   const [claimingMeetingId, setClaimingMeetingId] = useState(null);
+  const [copiedStates, setCopiedStates] = useState<Record<string, boolean>>({});
 
-  const handleCopy = (addr: string) => {
+  const handleCopy = (addr: string, buttonId: string) => {
     copy(addr);
     toast("Address Copied");
+    
+    // Update only the specific button state
+    setCopiedStates(prev => ({
+      ...prev,
+      [buttonId]: true
+    }));
+    
+    // Reset after 4 seconds
+    setTimeout(() => {
+      setCopiedStates(prev => ({
+        ...prev,
+        [buttonId]: false
+      }));
+    }, 4000);
   };
+
   function formatViews(views: number): string {
     // Handle negative numbers or NaN
     if (isNaN(views) || views < 0) {
@@ -332,7 +348,7 @@ function RecordedSessionsTile({
                     </div>
                     <div>
                       <Tooltip
-                        content="Copy"
+                        content={copiedStates[`host-${index}-${data.host_address}`] ? "Copied!" : "Copy"}
                         placement="right"
                         closeDelay={1}
                         showArrow
@@ -341,8 +357,11 @@ function RecordedSessionsTile({
                           <IoCopy
                             onClick={(event) => {
                               event.stopPropagation();
-                              handleCopy(data.host_address);
+                              handleCopy(data.host_address, `host-${index}-${data.host_address}`);
                             }}
+                            className={`transition-colors duration-300 ${
+                              copiedStates[`host-${index}-${data.host_address}`] ? 'text-blue-500' : ''
+                            }`}
                           />
                         </span>
                       </Tooltip>
@@ -377,7 +396,7 @@ function RecordedSessionsTile({
                       </div>
                       <div className="">
                         <Tooltip
-                          content="Copy"
+                          content={copiedStates[`guest-${index}-${data.attendees[0]?.attendee_address}`] ? "Copied!" : "Copy"}
                           placement="right"
                           closeDelay={1}
                           showArrow
@@ -386,8 +405,14 @@ function RecordedSessionsTile({
                             <IoCopy
                               onClick={(event) => {
                                 event.stopPropagation();
-                                handleCopy(data.attendees[0]?.attendee_address);
+                                handleCopy(
+                                  data.attendees[0]?.attendee_address,
+                                  `guest-${index}-${data.attendees[0]?.attendee_address}`
+                                );
                               }}
+                              className={`transition-colors duration-300 ${
+                                copiedStates[`guest-${index}-${data.attendees[0]?.attendee_address}`] ? 'text-blue-500' : ''
+                              }`}
                             />
                           </span>
                         </Tooltip>

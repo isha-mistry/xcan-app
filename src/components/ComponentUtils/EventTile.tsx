@@ -4,12 +4,12 @@ import React, { useState, useEffect } from "react";
 import Image, { StaticImageData } from "next/image";
 import { FaCircleCheck, FaCircleXmark, FaCirclePlay } from "react-icons/fa6";
 import { Tooltip } from "@nextui-org/react";
-import toast, { Toaster } from "react-hot-toast";
 import { Oval } from "react-loader-spinner";
 // import { useRouter } from "next/navigation";
 import { useRouter } from "next-nprogress-bar";
 import Link from "next/link";
 import copy from "copy-to-clipboard";
+import toast from "react-hot-toast"
 import text1 from "@/assets/images/daos/texture1.png";
 import text2 from "@/assets/images/daos/texture2.png";
 import oplogo from "@/assets/images/daos/op.png";
@@ -85,10 +85,27 @@ function EventTile({ tileIndex, data: initialData, isEvent }: TileProps) {
   const [loadingEnsData, setLoadingEnsData] = useState(true);
   const { address } = useAccount();
   // const address = "0xB351a70dD6E5282A8c84edCbCd5A955469b9b032";
+  const [tooltipContent, setTooltipContent] = useState('Copy');
+  const [isAnimating, setIsAnimating] = useState(false);
+  const [copyStates, setCopyStates] = useState({
+    host: { isAnimating: false, tooltipContent: 'Copy' },
+    guest: { isAnimating: false, tooltipContent: 'Copy' }
+  });
 
-  const handleCopy = (addr: string) => {
+  const handleCopy = (addr: string, type: 'host' | 'guest') => {
     copy(addr);
-    toast("Address Copied");
+    
+    setCopyStates(prev => ({
+      ...prev,
+      [type]: { isAnimating: true, tooltipContent: 'Copied' }
+    }));
+
+    setTimeout(() => {
+      setCopyStates(prev => ({
+        ...prev,
+        [type]: { isAnimating: false, tooltipContent: 'Copy' }
+      }));
+    }, 4000);
   };
 
   useEffect(() => {
@@ -308,16 +325,16 @@ function EventTile({ tileIndex, data: initialData, isEvent }: TileProps) {
                     : ensGuestName}
                   &nbsp;
                   <Tooltip
-                    content="Copy"
+                    content={copyStates.guest.tooltipContent}
                     placement="right"
                     closeDelay={1}
                     showArrow
                   >
-                    <span className="cursor-pointer text-xs sm:text-sm">
+                    <span className={`cursor-pointer text-xs sm:text-sm ${copyStates.guest.isAnimating ? 'text-blue-500' : 'text-gray-400 hover:text-gray-600'}`}>
                       <IoCopy
                         onClick={(event) => {
                           event.stopPropagation();
-                          handleCopy(data.attendees[0].attendee_address);
+                          handleCopy(data.attendees[0].attendee_address,'guest');
                         }}
                       />
                     </span>
@@ -358,16 +375,16 @@ function EventTile({ tileIndex, data: initialData, isEvent }: TileProps) {
                 )}
                 &nbsp;
                 <Tooltip
-                  content="Copy"
+                  content={copyStates.host.tooltipContent}
                   placement="right"
                   closeDelay={1}
                   showArrow
                 >
-                  <span className="cursor-pointer text-xs sm:text-sm">
+                  <span className={`cursor-pointer text-xs sm:text-sm ${copyStates.host.isAnimating ? 'text-blue-500' : 'text-gray-400 hover:text-gray-600'}`}>
                     <IoCopy
                       onClick={(event) => {
                         event.stopPropagation();
-                        handleCopy(data.host_address);
+                        handleCopy(data.host_address,'host');
                       }}
                     />
                   </span>

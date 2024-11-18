@@ -1,13 +1,12 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import search from "@/assets/images/daos/search.png";
 import Image, { StaticImageData } from "next/image";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useRouter } from "next-nprogress-bar";
 import { IoCopy } from "react-icons/io5";
 import copy from "copy-to-clipboard";
-import toast, { Toaster } from "react-hot-toast";
 import { Tooltip } from "@nextui-org/react";
 import clockIcn from "@/assets/images/daos/icon_clock.png";
 import ccLogo from "@/assets/images/daos/CCLogo2.png";
@@ -68,7 +67,31 @@ function AvailableSessions() {
   const [initialFetchComplete, setInitialFetchComplete] = useState(false);
   const [showFilterOptions, setShowFilterOptions] = useState(false);
   const { openConnectModal } = useConnectModal();
-  const [tooltipContent, setTooltipContent] = useState('Copy');
+  const [tooltipContent, setTooltipContent] = useState("Copy");
+  const [animatingButtons, setAnimatingButtons] = useState<{[key: string]: boolean}>({});
+  const [isTextTruncated, setIsTextTruncated] = useState(false);
+  const textRef = useRef(null);
+
+  const isTruncated = (element: HTMLElement | null) => {
+    if (!element) return false;
+    return element.scrollWidth > element.clientWidth;
+  };
+
+  // Add useEffect to check truncation on window resize
+  useEffect(() => {
+    const handleResize = () => {
+      const elements = document.querySelectorAll(".truncate-text");
+      elements.forEach((element) => {
+        const isTrunc = isTruncated(element as HTMLElement);
+        setIsTextTruncated(isTrunc);
+      });
+    };
+
+    window.addEventListener("resize", handleResize);
+    handleResize(); // Check on initial render
+
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   const handleBookSession = (daoName: string, userAddress: string) => {
     if (isConnected) {
@@ -195,15 +218,23 @@ function AvailableSessions() {
     fetchData();
   }, [selectedDao, selectedDate, startTime, endTime]);
 
-  const handleCopy = (addr:string) => {
+  const handleCopy = (addr: string) => {
     copy(addr);
-    setTooltipContent('Copied');
-    toast('Address Copied');
-    
-    // Reset tooltip text after 2 seconds
+    setTooltipContent("Copied");
+
+    setAnimatingButtons(prev => ({
+      ...prev,
+      [addr]: true
+    }));
+
+    // Reset tooltip text and animation after 4 seconds
     setTimeout(() => {
-      setTooltipContent('Copy');
-    }, 2000);
+      setTooltipContent("Copy");
+      setAnimatingButtons(prev => ({
+        ...prev,
+        [addr]: false
+      }));
+    }, 4000);
   };
 
   const handleSearchChange = (query: string) => {
@@ -360,7 +391,7 @@ function AvailableSessions() {
     );
 
   return (
-    <div className="xs:mx-4 ">
+    <div className="xs:mx-4">
       <div className="flex flex-col lg:flex-row lg:gap-3 bg-[#D9D9D945] px-2 py-4 xs:p-4 mt-4 mx-2 rounded-2xl font-poppins">
         {/* <div
           style={{ background: "rgba(238, 237, 237, 0.36)" }}
@@ -649,22 +680,44 @@ function AvailableSessions() {
                     </div>
 
                     <div className="w-3/4 ml-2 sm:ml-4 pr-16 xs:pr-20 sm:pr-24">
-                    <Link href={`/${daos.session.dao_name}/${daos.session.userAddress}?active=info`}>
-                      <div className="text-[#3E3D3D] text-base sm:text-lg font-semibold mb-1 w-[50%] 0.5xs:w-[80%] truncate" >
-                        {ensNames[daos?.userInfo[0]?.address] ||
-                          daos.userInfo[0]?.displayName ||
-                          daos.session.userAddress.slice(0, 6) +
-                            "..." +
-                            daos.session.userAddress.slice(-4)}
-                      </div>
+                      <Link
+                        href={`/${daos.session.dao_name}/${daos.session.userAddress}?active=info`}
+                      >
+                        <Tooltip
+                          content={
+                            ensNames[daos?.userInfo[0]?.address] ||
+                            daos.userInfo[0]?.displayName ||
+                            daos.session.userAddress
+                          }
+                          placement="top"
+                          isDisabled={!isTextTruncated}
+                          showArrow
+                        >
+                          <div
+                            className="text-[#3E3D3D] hover:text-blue-shade-100 text-base sm:text-lg font-semibold mb-1 w-[50%] 0.5xs:w-[80%] truncate truncate-text"
+                            ref={textRef}
+                            onMouseEnter={(e) => {
+                              const element = e.currentTarget;
+                              setIsTextTruncated(isTruncated(element));
+                            }}
+                          >
+                            {ensNames[daos?.userInfo[0]?.address] ||
+                              daos.userInfo[0]?.displayName ||
+                              daos.session.userAddress.slice(0, 6) +
+                                "..." +
+                                daos.session.userAddress.slice(-4)}
+                          </div>
+                        </Tooltip>
                       </Link>
                       <div className="text-xs sm:text-sm flex">
-                        <Link href={`/${daos.session.dao_name}/${daos.session.userAddress}?active=info`}>
-                        <div>
-                          {daos.session.userAddress.slice(0, 6) +
-                            "..." +
-                            daos.session.userAddress.slice(-4)}
-                        </div>
+                        <Link
+                          href={`/${daos.session.dao_name}/${daos.session.userAddress}?active=info`}
+                        >
+                          <div className="hover:text-blue-shade-100">
+                            {daos.session.userAddress.slice(0, 6) +
+                              "..." +
+                              daos.session.userAddress.slice(-4)}
+                          </div>
                         </Link>
                         <div className="items-center">
                           <Tooltip
@@ -674,8 +727,9 @@ function AvailableSessions() {
                             showArrow
                           >
                             <div
-                              className="pl-2 pt-[2px] cursor-pointer"
-                              color="#3E3D3D"
+                              className={`pl-2 pt-[2px] cursor-pointer  ${
+                                animatingButtons[daos.session.userAddress] ? "text-blue-500" : "text-[#3E3D3D]"
+        }`}
                             >
                               <IoCopy
                                 onClick={() =>
