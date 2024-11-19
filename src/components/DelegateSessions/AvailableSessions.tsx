@@ -30,6 +30,11 @@ import arb from "@/assets/images/daos/arb.png";
 import { Calendar } from "lucide-react";
 import { FaDatabase } from "react-icons/fa";
 import { BsLink45Deg } from "react-icons/bs";
+import user1 from "@/assets/images/user/user5.svg"
+import user2 from "@/assets/images/user/user2.svg"
+import user3 from "@/assets/images/user/user8.svg"
+import user4 from "@/assets/images/user/user9.svg"
+import user5 from "@/assets/images/user/user4.svg"
 
 interface Type {
   ensName: string;
@@ -79,6 +84,16 @@ function AvailableSessions() {
   const [isTextTruncated, setIsTextTruncated] = useState(false);
   const textRef = useRef(null);
 
+  const getDefaultUserImage = (address: string) => {
+    const defaultImages = [user1, user2, user3, user4, user5];
+    // Use the last character of the address to determine the image
+    const lastChar = address.slice(-1);
+    // Convert the last character to a number (0-15 for hex)
+    const num = parseInt(lastChar, 16);
+    // Use modulo to get an index within our image array length
+    const imageIndex = num % defaultImages.length;
+    return defaultImages[imageIndex];
+  };
   // const scrollContainerRef = useRef<HTMLDivElement>(null)
 
   // const scroll = (direction: "left" | "right") => {
@@ -665,11 +680,12 @@ function AvailableSessions() {
                           src={
                             daos?.userInfo[0]?.image
                               ? `https://gateway.lighthouse.storage/ipfs/${daos?.userInfo[0]?.image}`
-                              : daos.session.dao_name === "optimism"
-                              ? OPLogo
-                              : daos.session.dao_name === "arbitrum"
-                              ? ArbLogo
-                              : ccLogo
+                              // : daos.session.dao_name === "optimism"
+                              // ? OPLogo
+                              // : daos.session.dao_name === "arbitrum"
+                              // ? ArbLogo
+                              // : ccLogo
+                              : getDefaultUserImage(daos.session.userAddress)
                           }
                           alt="user"
                           width={48}
