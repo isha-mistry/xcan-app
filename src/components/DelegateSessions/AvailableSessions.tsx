@@ -30,11 +30,11 @@ import arb from "@/assets/images/daos/arb.png";
 import { Calendar } from "lucide-react";
 import { FaDatabase } from "react-icons/fa";
 import { BsLink45Deg } from "react-icons/bs";
-import user1 from "@/assets/images/user/user5.svg"
-import user2 from "@/assets/images/user/user2.svg"
-import user3 from "@/assets/images/user/user8.svg"
-import user4 from "@/assets/images/user/user9.svg"
-import user5 from "@/assets/images/user/user4.svg"
+import user1 from "@/assets/images/user/user5.svg";
+import user2 from "@/assets/images/user/user2.svg";
+import user3 from "@/assets/images/user/user8.svg";
+import user4 from "@/assets/images/user/user9.svg";
+import user5 from "@/assets/images/user/user4.svg";
 
 interface Type {
   ensName: string;
@@ -680,12 +680,12 @@ function AvailableSessions() {
                           src={
                             daos?.userInfo[0]?.image
                               ? `https://gateway.lighthouse.storage/ipfs/${daos?.userInfo[0]?.image}`
-                              // : daos.session.dao_name === "optimism"
-                              // ? OPLogo
-                              // : daos.session.dao_name === "arbitrum"
-                              // ? ArbLogo
-                              // : ccLogo
-                              : getDefaultUserImage(daos.session.userAddress)
+                              : // : daos.session.dao_name === "optimism"
+                                // ? OPLogo
+                                // : daos.session.dao_name === "arbitrum"
+                                // ? ArbLogo
+                                // : ccLogo
+                                getDefaultUserImage(daos.session.userAddress)
                           }
                           alt="user"
                           width={48}
@@ -804,10 +804,10 @@ function AvailableSessions() {
                       <div className="relative w-full max-w-full mt-3">
                         <div className="w-full overflow-hidden">
                           <div
-                            className="overflow-x-auto  mx-4 scroll-smooth [&::-webkit-scrollbar]:h-1 [&::-webkit-scrollbar]:transition-all [&::-webkit-scrollbar]:duration-300 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full  group-hover:[&::-webkit-scrollbar-thumb]:bg-blue-200  group-hover:[&::-webkit-scrollbar-track]:bg-blue-50  hover:[&::-webkit-scrollbar-thumb]:bg-blue-300
+                            className="overflow-x-auto  mx-4 scroll-smooth [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar]:transition-all [&::-webkit-scrollbar]:duration-300 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full  [&::-webkit-scrollbar-thumb]:bg-indigo-100  [&::-webkit-scrollbar-track]:bg-blue-50  hover:[&::-webkit-scrollbar-thumb]:bg-blue-100
                             transition-all duration-300"
                           >
-                            <div className="flex space-x-2 p-1 w-fit">
+                            <div className="flex space-x-2 my-[1px] p-1 w-fit">
                               {daos.session.dateAndRanges
                                 .flatMap((dateRange: any) => dateRange.date)
                                 .filter(
@@ -854,19 +854,30 @@ function AvailableSessions() {
                     </div>
                   </div>
                   <div className="absolute top-3 right-3 gap-1 flex items-start">
-                    <Image
-                      src={
+                    <Tooltip
+                      content={
                         daos.session.dao_name === "optimism"
-                          ? op
-                          : daos.session.dao_name === "arbitrum"
-                          ? arb
-                          : ""
+                          ? "Delegate of Optimism Collective"
+                          : "Delegate of Arbitrum DAO"
                       }
-                      alt=""
-                      height={32}
-                      width={32}
-                      className="size-6"
-                    />
+                      placement="left"
+                      closeDelay={1}
+                      showArrow
+                    >
+                      <Image
+                        src={
+                          daos.session.dao_name === "optimism"
+                            ? op
+                            : daos.session.dao_name === "arbitrum"
+                            ? arb
+                            : ""
+                        }
+                        alt=""
+                        height={32}
+                        width={32}
+                        className="size-6"
+                      />
+                    </Tooltip>
                   </div>
                 </div>
 
