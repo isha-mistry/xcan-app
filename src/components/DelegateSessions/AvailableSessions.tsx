@@ -685,7 +685,7 @@ function AvailableSessions() {
                           <div className="flex gap-1 items-center mb-1">
                             <Link
                               href={`/${daos.session.dao_name}/${daos.session.userAddress}?active=info`}
-                              className="flex items-center"
+                              className="min-w-0 flex-shrink w-1/2 0.7xs:w-auto"
                             >
                               <Tooltip
                                 content={
@@ -698,7 +698,7 @@ function AvailableSessions() {
                                 showArrow
                               >
                                 <div
-                                  className="text-[#3E3D3D] hover:text-blue-shade-100 text-base sm:text-lg font-semibold  w-[80%] 0.5xs:w-full truncate truncate-text"
+                                  className="text-[#3E3D3D] hover:text-blue-shade-100 text-base sm:text-lg font-semibold truncate truncate-text"
                                   ref={textRef}
                                   onMouseEnter={(e) => {
                                     const element = e.currentTarget;
@@ -713,7 +713,7 @@ function AvailableSessions() {
                                 </div>
                               </Tooltip>
                             </Link>
-                            <div className="flex gap-1">
+                            <div className="flex gap-1 flex-shrink-0">
                               {daos.meetingsInfo.counts.onChainCount > 0 && (
                                 <Tooltip
                                   content={
