@@ -44,38 +44,7 @@ function Proposals({ props }: { props: string }) {
   const isOptimism = props === "optimism";
   const currentCache = isOptimism ? optimismCache : arbitrumCache;
   const [visible, setVisible] = useState(true);
-
-  if (!visible) return null;
-  const VoteLoader = () => (
-    <div className=" flex justify-center items-center w-28 xs:w-32">
-      <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-black-shade-900"></div>
-    </div>
-  );
-  const StatusLoader = () => (
-    <div className="flex items-center justify-center w-[84px] xs:w-24">
-      <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-black-shade-900"></div>
-    </div>
-  );
-
-  const handleClick = (proposal: Proposal) => {
-    router.push(`/${props}/proposals/${proposal.proposalId}`);
-  };
-
-  const weiToEther = (wei: string): number => {
-    return Number(wei) / 1e18;
-  };
-
-  const formatWeight = (weight: number): string => {
-    if (weight >= 1e9) {
-      return (weight / 1e9).toFixed(2) + "B";
-    } else if (weight >= 1e6) {
-      return (weight / 1e6).toFixed(2) + "M";
-    } else if (weight >= 1e3) {
-      return (weight / 1e3).toFixed(2) + "K";
-    } else {
-      return weight?.toFixed(2);
-    }
-  };
+  const [isShowing, setIsShowing] = useState(true);
   useEffect(() => {
     const fetchCanacelledProposals = async () => {
       const response = await fetch(`/api/get-canceledproposal?dao=${props}`);
@@ -85,7 +54,9 @@ function Proposals({ props }: { props: string }) {
     };
     fetchCanacelledProposals();
   }, []);
-
+  const weiToEther = (wei: string): number => {
+    return Number(wei) / 1e18;
+  };
   const fetchVotes = useCallback(
     async (proposal: Proposal): Promise<Proposal> => {
       let allVotes: any[] = [];
@@ -116,6 +87,7 @@ function Proposals({ props }: { props: string }) {
                 ? parseInt(vote.blockNumber)
                 : vote.blockNumber
             );
+            console.log(blockNumbers)
             lastBlockNumber = Math.max(...blockNumbers).toString();
           }
         }
@@ -237,7 +209,7 @@ function Proposals({ props }: { props: string }) {
         );
       } else {
         setError(
-          "Our platform is currently handling a temporary rate limit. We're actively working to resolve this. Thank you for your patience—please try again in a moment!"
+          "We're working to resolve a temporary rate-limit issue affecting data fetching. Thank you for your patience!"
         );
       }
     } finally {
@@ -431,10 +403,60 @@ function Proposals({ props }: { props: string }) {
         <ErrorDisplay message={error} onRetry={handleRetry} />
       </div>
     );
+    
+  if (!visible) return null;
+  const VoteLoader = () => (
+    <div className=" flex justify-center items-center w-28 xs:w-32">
+      <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-black-shade-900"></div>
+    </div>
+  );
+  const StatusLoader = () => (
+    <div className="flex items-center justify-center w-[84px] xs:w-24">
+      <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-black-shade-900"></div>
+    </div>
+  );
+
+  const handleClick = (proposal: Proposal) => {
+    router.push(`/${props}/proposals/${proposal.proposalId}`);
+  };
+
+
+
+  const formatWeight = (weight: number): string => {
+    if (weight >= 1e9) {
+      return (weight / 1e9).toFixed(2) + "B";
+    } else if (weight >= 1e6) {
+      return (weight / 1e6).toFixed(2) + "M";
+    } else if (weight >= 1e3) {
+      return (weight / 1e3).toFixed(2) + "K";
+    } else {
+      return weight?.toFixed(2);
+    }
+  };
+  const handleClose = () => {
+    setIsShowing(false);
+  };
 
   return (
     <>
       <div className="rounded-[2rem] mt-4">
+      {isShowing && (
+        <div
+          className="bg-yellow-200 border border-gray-300 rounded-md shadow-md text-gray-700 flex items-center p-3 w-100 mb-4"
+          style={{ width: "100%" }}
+        >
+          <span>
+          We&apos;re facing a temporary rate limit issue, which may affect data accuracy. We&apos;re working to resolve it quickly. Thank you for your patience!
+          </span>{" "}
+          &nbsp;
+          <button
+            className="flex ml-auto items-center justify-center p-1 text-gray-500 hover:text-red-500 bg-white border border-gray-300 rounded-md"
+            onClick={handleClose}
+          >
+            Close
+          </button>
+        </div>
+      )}
         {displayedProposals.map((proposal: Proposal, index: number) => (
           <div
             key={index}
