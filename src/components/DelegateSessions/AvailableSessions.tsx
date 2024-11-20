@@ -804,7 +804,7 @@ function AvailableSessions() {
                       <div className="relative w-full max-w-full mt-3">
                         <div className="w-full overflow-hidden">
                           <div
-                            className="overflow-x-auto  mx-4 scroll-smooth [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar]:transition-all [&::-webkit-scrollbar]:duration-300 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full  [&::-webkit-scrollbar-thumb]:bg-indigo-100  [&::-webkit-scrollbar-track]:bg-blue-50  hover:[&::-webkit-scrollbar-thumb]:bg-blue-100
+                            className="overflow-x-auto  mx-4 scroll-smooth [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar]:transition-all [&::-webkit-scrollbar]:duration-300  [&::-webkit-scrollbar-track]:rounded-full  [&::-webkit-scrollbar-thumb]:rounded-full  [&::-webkit-scrollbar-thumb]:bg-indigo-100  [&::-webkit-scrollbar-track]:bg-blue-50  hover:[&::-webkit-scrollbar-thumb]:bg-blue-100
                             transition-all duration-300"
                           >
                             <div className="flex space-x-2 my-[1px] p-1 w-fit">
