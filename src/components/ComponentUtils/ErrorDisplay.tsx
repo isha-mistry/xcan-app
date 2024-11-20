@@ -11,7 +11,7 @@ const ErrorDisplay: React.FC<ErrorDisplayProps> = ({ message, onRetry }) => {
     <div className="flex flex-col items-center justify-center p-8 bg-red-50 rounded-lg shadow-md">
       <RiErrorWarningLine className="text-red-500 text-5xl mb-4" />
       <h2 className="text-2xl font-bold text-red-700 mb-2">
-        Oops! Something went wrong
+        Oops! Sorry for the Inconvenience.
       </h2>
       <p className="text-red-600 text-center mb-6">{message}</p>
       <button
