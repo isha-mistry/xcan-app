@@ -119,7 +119,7 @@ export default function RootLayout({
                   <div className="lg:hidden fixed z-10 w-full bg-white border border-b-0">
                     <SidebarMainMobile />
                   </div>
-                  <div className="w-[100%] lg:w-[94%] ml-auto mt-[78px] sm:mt-[64px] lg:mt-0">
+                  <div className="w-[100%] lg:w-[94%] ml-auto mt-[78px] sm:mt-[64px] lg:mt-0 z-0">
                     <FeedbackTile />
                     <div>{children}</div>
                   </div>

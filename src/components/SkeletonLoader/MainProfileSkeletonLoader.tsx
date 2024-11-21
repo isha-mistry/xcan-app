@@ -5,7 +5,7 @@ const MainProfileSkeletonLoader = () => {
     <div className="">
   <div className="flex py-5 justify-between px-4 md:px-6 lg:px-14">
     <div className="flex flex-col xs:flex-row xs:items-center justify-center">
-      <div className="size-[80vw] xs:size-40 bg-gray-200 rounded-3xl animate-pulse"></div>
+      <div className="size-[90vw] xs:size-40 bg-gray-200 rounded-3xl animate-pulse"></div>
       <div className="px-4 flex flex-col gap-8">
         <div className=''>
           <div className="w-full xs:w-48 h-6 bg-gray-200 rounded animate-pulse mt-1  "></div>

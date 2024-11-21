@@ -10,6 +10,8 @@ import ConnectYourWallet from "../ComponentUtils/ConnectYourWallet";
 import { useConnection } from "@/app/hooks/useConnection";
 import { usePrivy } from "@privy-io/react-auth";
 import { useWalletAddress } from "@/app/hooks/useWalletAddress";
+import { RotatingLines } from "react-loader-spinner";
+
 function ReferralsMain() {
   const { address } = useAccount();
   const { isConnected, isLoading, isPageLoading, isReady } =
@@ -43,15 +45,13 @@ function ReferralsMain() {
       // console.log(`${ready} and walletaddress ${walletAddress}`);
       return (
         <div className="flex items-center justify-center h-screen">
-          <Oval
+          <RotatingLines
+            strokeColor="#0356fc"
+            strokeWidth="5"
+            animationDuration="0.75"
+            width="60"
             visible={true}
-            height="40"
-            width="40"
-            color="#0500FF"
-            secondaryColor="#cdccff"
-            ariaLabel="oval-loading"
           />
-          <p className="ml-4 text-black">Loading...</p>
         </div>
       );
     }
@@ -69,8 +69,7 @@ function ReferralsMain() {
 
   return (
     <>
-      <MobileResponsiveMessage />
-      <div className="hidden md:block font-poppins">{renderContent()}</div>
+      <div className="font-poppins">{renderContent()}</div>
     </>
   );
 }

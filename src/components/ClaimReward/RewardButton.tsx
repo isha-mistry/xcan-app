@@ -89,7 +89,7 @@ function RewardButton() {
 
   return (
     <>
-      <div className="relative inline-block">
+      <div className="relative hidden md:inline-block ">
         <div
           ref={hoverRef}
           onClick={handleClick}

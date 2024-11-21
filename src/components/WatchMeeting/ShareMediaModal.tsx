@@ -105,12 +105,12 @@ function ShareMediaModal({
 
   return (
     <>
-      <div className="fixed inset-0 flex items-center justify-center z-50  overflow-hidden">
+      <div className="fixed inset-0 flex items-center justify-center z-50  overflow-hidden p-4">
         <div
           className="absolute inset-0 backdrop-blur-md"
           onClick={toggleModal}
         ></div>
-        <div className="p-5 border z-50 rounded-2xl bg-white flex flex-col gap-3 relative">
+        <div className="p-4 sm:p-5 border z-50 rounded-2xl bg-white flex flex-col gap-2 sm:gap-3 relative w-full max-w-md mx-2 xm:mx-auto">
           <div className="bg-black rounded-full size-5 p-px flex justify-center items-center absolute top-5 right-5">
             <IoClose
               className="cursor-pointer w-5 h-5 text-white "
@@ -118,10 +118,10 @@ function ShareMediaModal({
             />
           </div>
 
-          <p className="flex items-center justify-center font-medium text-[28px]">
+          <p className="flex items-center justify-center font-medium text-xl sm:text-2xl text-[28px]">
             Share
           </p>
-          <div className="flex gap-4 justify-center items-center my-5">
+          <div className="flex gap-3 sm:gap-4 justify-center items-center my-5">
             {/* <div
               className="bg-green-shade-200 rounded-full size-[72px]  flex justify-center items-center cursor-pointer"
               onClick={shareOnWhatsapp}
@@ -132,16 +132,16 @@ function ShareMediaModal({
               <FaFacebook className="text-blue-shade-100 bg-white size-[72px] cursor-pointer" />
             </div> */}
             <div
-              className="bg-black rounded-full size-[72px]  flex justify-center items-center cursor-pointer"
+              className="bg-black rounded-full size-14 sm:size-16 md:size-[72px]  flex justify-center items-center cursor-pointer"
               onClick={shareOnTwitter}
             >
-              <RiTwitterXLine className="text-white bg-black size-10 " />
+              <RiTwitterXLine className="text-white bg-black size-8 sm:size-9 md:size-10 " />
             </div>
             <div onClick={shareOnFarcaster}>
-              <SiFarcaster className="bg-white text-[#8a63d2] rounded-full size-[72px] cursor-pointer" />
+              <SiFarcaster className="bg-white text-[#8a63d2] rounded-full size-14 sm:size-16 md:size-[72px] cursor-pointer" />
             </div>
             <div onClick={shareOnTelegram}>
-              <FaTelegram className="text-[#1d98dc] bg-white size-[72px] cursor-pointer" />
+              <FaTelegram className="text-[#1d98dc] bg-white size-14 sm:size-16 md:size-[72px] cursor-pointer" />
             </div>
             {/* <div
               className="bg-black-shade-900 rounded-full size-[72px] p-3 flex justify-center items-center cursor-pointer"
@@ -151,9 +151,9 @@ function ShareMediaModal({
             </div> */}
           </div>
           <div
-            className={`bg-black-shade-800 rounded-lg py-2.5 px-3 gap-28 flex justify-between items-center`}
+            className={`bg-black-shade-800 rounded-lg py-2 sm:py-2.5 px-2 sm:px-3 flex justify-between items-center gap-2 sm:gap-4`}
           >
-            <p className="text-sm font-light ">{link}</p>
+            <p className="text-xs sm:text-sm font-light truncate flex-1">{link}</p>
             <IoCopy
               className={`cursor-pointer ${
                 copySuccess ? "text-blue-shade-100" : ""

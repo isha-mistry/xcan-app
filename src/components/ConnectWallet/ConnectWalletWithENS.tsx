@@ -184,7 +184,7 @@ function ConnectWalletWithENS() {
     //   )}
     // </div>
 
-<div className="wallet">
+<div className="wallet z-10">
   {!authenticated  ? (
     <button
       onClick={login}

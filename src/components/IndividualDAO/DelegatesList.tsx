@@ -31,6 +31,7 @@ import debounce from "lodash/debounce";
 import { usePrivy,useWallets } from "@privy-io/react-auth";
 import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 import { BrowserProvider, Contract, JsonRpcSigner } from 'ethers';
+import { motion } from "framer-motion";
 
 const DELEGATES_PER_PAGE = 20;
 const DEBOUNCE_DELAY = 500;

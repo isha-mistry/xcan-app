@@ -1346,7 +1346,7 @@ function MainProfile() {
                 />
               </div>
               <div
-                className={`w-[calc(100vw-2rem)] mt-1 overflow-hidden transition-all duration-700 ease-in-out ${
+                className={`w-[calc(100vw-3rem)] mt-1 overflow-hidden transition-all duration-700 ease-in-out ${
                   isDropdownOpen
                     ? "max-h-[500px] opacity-100"
                     : "max-h-0 opacity-0"

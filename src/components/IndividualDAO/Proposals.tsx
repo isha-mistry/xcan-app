@@ -43,37 +43,8 @@ function Proposals({ props }: { props: string }) {
   const proposalsPerPage = 7;
   const isOptimism = props === "optimism";
   const currentCache = isOptimism ? optimismCache : arbitrumCache;
-
-  const VoteLoader = () => (
-    <div className=" flex justify-center items-center w-32">
-      <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-black-shade-900"></div>
-    </div>
-  );
-  const StatusLoader = () => (
-    <div className="flex items-center justify-center w-24">
-      <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-black-shade-900"></div>
-    </div>
-  );
-
-  const handleClick = (proposal: Proposal) => {
-    router.push(`/${props}/proposals/${proposal.proposalId}`);
-  };
-
-  const weiToEther = (wei: string): number => {
-    return Number(wei) / 1e18;
-  };
-
-  const formatWeight = (weight: number): string => {
-    if (weight >= 1e9) {
-      return (weight / 1e9).toFixed(2) + "B";
-    } else if (weight >= 1e6) {
-      return (weight / 1e6).toFixed(2) + "M";
-    } else if (weight >= 1e3) {
-      return (weight / 1e3).toFixed(2) + "K";
-    } else {
-      return weight?.toFixed(2);
-    }
-  };
+  const [visible, setVisible] = useState(true);
+  const [isShowing, setIsShowing] = useState(true);
   useEffect(() => {
     const fetchCanacelledProposals = async () => {
       const response = await fetch(`/api/get-canceledproposal?dao=${props}`);
@@ -83,7 +54,9 @@ function Proposals({ props }: { props: string }) {
     };
     fetchCanacelledProposals();
   }, []);
-
+  const weiToEther = (wei: string): number => {
+    return Number(wei) / 1e18;
+  };
   const fetchVotes = useCallback(
     async (proposal: Proposal): Promise<Proposal> => {
       let allVotes: any[] = [];
@@ -114,6 +87,7 @@ function Proposals({ props }: { props: string }) {
                 ? parseInt(vote.blockNumber)
                 : vote.blockNumber
             );
+            console.log(blockNumbers)
             lastBlockNumber = Math.max(...blockNumbers).toString();
           }
         }
@@ -235,7 +209,7 @@ function Proposals({ props }: { props: string }) {
         );
       } else {
         setError(
-          "Unable to load proposals. Please try again in a few moments."
+          "We're working to resolve a temporary rate-limit issue affecting data fetching. Thank you for your patience!"
         );
       }
     } finally {
@@ -316,6 +290,7 @@ function Proposals({ props }: { props: string }) {
       }
     } else {
       if (
+        Array.isArray(canceledProposals) &&
         canceledProposals.some(
           (item) => item.proposalId === proposal.proposalId
         )
@@ -428,23 +403,73 @@ function Proposals({ props }: { props: string }) {
         <ErrorDisplay message={error} onRetry={handleRetry} />
       </div>
     );
+    
+  if (!visible) return null;
+  const VoteLoader = () => (
+    <div className=" flex justify-center items-center w-28 xs:w-32">
+      <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-black-shade-900"></div>
+    </div>
+  );
+  const StatusLoader = () => (
+    <div className="flex items-center justify-center w-[84px] xs:w-24">
+      <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-black-shade-900"></div>
+    </div>
+  );
+
+  const handleClick = (proposal: Proposal) => {
+    router.push(`/${props}/proposals/${proposal.proposalId}`);
+  };
+
+
+
+  const formatWeight = (weight: number): string => {
+    if (weight >= 1e9) {
+      return (weight / 1e9).toFixed(2) + "B";
+    } else if (weight >= 1e6) {
+      return (weight / 1e6).toFixed(2) + "M";
+    } else if (weight >= 1e3) {
+      return (weight / 1e3).toFixed(2) + "K";
+    } else {
+      return weight?.toFixed(2);
+    }
+  };
+  const handleClose = () => {
+    setIsShowing(false);
+  };
 
   return (
     <>
-      <div className="mr-[16px] rounded-[2rem] mt-4">
+      <div className="rounded-[2rem] mt-4">
+      {isShowing && (
+        <div
+          className="bg-yellow-200 border border-gray-300 rounded-md shadow-md text-gray-700 flex items-center p-3 w-100 mb-4"
+          style={{ width: "100%" }}
+        >
+          <span>
+          We&apos;re facing a temporary rate limit issue, which may affect data accuracy. We&apos;re working to resolve it quickly. Thank you for your patience!
+          </span>{" "}
+          &nbsp;
+          <button
+            className="flex ml-auto items-center justify-center p-1 text-gray-500 hover:text-red-500 bg-white border border-gray-300 rounded-md"
+            onClick={handleClose}
+          >
+            Close
+          </button>
+        </div>
+      )}
         {displayedProposals.map((proposal: Proposal, index: number) => (
           <div
             key={index}
-            className="flex flex-col md:flex-row p-4 text-lg mb-2 gap-5 bg-gray-100 hover:bg-gray-50 rounded-3xl transition-shadow duration-300 ease-in-out shadow-lg cursor-pointer items-center"
+            className="flex flex-col 1.5md:flex-row px-2 py-4 0.5xs:p-4 text-lg mb-2 gap-2 1.5md:gap-5 bg-gray-100 hover:bg-gray-50 rounded-3xl transition-shadow duration-300 ease-in-out shadow-lg cursor-pointer 1.5md:items-center"
             onClick={() => handleClick(proposal)}
           >
-            <div className="flex items-center md:w-[60%]">
+            <div className="flex items-center 1.5md:w-[60%]">
               <Image
                 src={dao_details[props as keyof typeof dao_details].logo}
                 alt={`${
                   dao_details[props as keyof typeof dao_details].title
                 } logo`}
-                className="size-10 mx-5 rounded-full flex-shrink-0"
+                className="size-10 ml-0 mr-[2px] 0.2xs:mr-2 xs:mx-5 rounded-full flex-shrink-0"
               />
 
               <div>
@@ -459,13 +484,13 @@ function Proposals({ props }: { props: string }) {
                 </p>
                 <div className="flex gap-1">
                   {/* <Image src={user} alt="" className="size-4" /> */}
-                  <p className="flex text-xs font-normal items-center">
+                  <p className="flex text-[9px] xs:text-[11px] font-normal items-center">
                     <span className="text-[#004DFF]"> Created at </span>&nbsp;
                     {formatDate(proposal.blockTimestamp)}
                     <span>
                       <LuDot />
                     </span>
-                    <span className="font-bold text-sm text-blue-shade-200">
+                    <span className="font-bold text-xs xs:text-sm text-blue-shade-200">
                       OnChain
                     </span>
                   </p>
@@ -473,7 +498,7 @@ function Proposals({ props }: { props: string }) {
               </div>
             </div>
 
-            <div className="flex flex-wrap justify-between items-center md:w-[40%] mt-4 md:mt-0 gap-2">
+            <div className="flex flex-wrap justify-between items-center 1.5md:w-[40%] mt-2 1.5md:mt-0 gap-1 2md:gap-2 mx-auto 1.5md:mx-0">
               {/* <Tooltip
                 showArrow
                 content={<div className="font-poppins">OnChain</div>}
@@ -487,7 +512,7 @@ function Proposals({ props }: { props: string }) {
               </Tooltip> */}
               {proposal.votesLoaded ? (
                 <div
-                  className={`rounded-full flex items-center justify-center text-xs h-fit py-0.5 border font-medium w-24 ${
+                  className={`rounded-full flex items-center justify-center text-[10px] xs:text-xs h-[22px] xs:h-fit py-[1px] xs:py-0.5 border font-medium w-[84px] xs:w-24 ${
                     getProposalStatus(proposal) === "SUCCEEDED"
                       ? "bg-green-200 border-green-600 text-green-600"
                       : getProposalStatus(proposal) === "DEFEATED" ||
@@ -506,24 +531,26 @@ function Proposals({ props }: { props: string }) {
 
               {proposal.votesLoaded ? (
                 <div
-                  className={`py-0.5 rounded-md text-sm font-medium border flex justify-center items-center w-32 
-               ${
-                 canceledProposals?.some(
-                   (item) => item.proposalId === proposal.proposalId
-                 )
-                   ? proposal.support1Weight! > proposal.support0Weight!
-                     ? "text-[#639b55] border-[#639b55] bg-[#dbf8d4]" // Styles for proposals with more 'FOR' votes
-                     : "bg-[#fa989a] text-[#e13b15] border-[#e13b15]"
-                   : proposal.support1Weight! === 0 &&
-                     proposal.support0Weight! === 0 &&
-                     proposal.support2Weight! === 0
-                   ? "bg-[#FFEDD5] border-[#F97316] text-[#F97316]" // Styles for proposals that haven't started
-                   : proposal.support1Weight! > proposal.support0Weight!
-                   ? "text-[#639b55] border-[#639b55] bg-[#dbf8d4]" // Styles for proposals with more 'FOR' votes
-                   : "bg-[#fa989a] text-[#e13b15] border-[#e13b15]" // Styles for proposals with more 'AGAINST' votes
-               }`}
+                  className={`py-0.5 rounded-md text-xs xs:text-sm font-medium border flex justify-center items-center w-28 xs:w-32 
+      ${
+        Array.isArray(canceledProposals) &&
+        canceledProposals.some(
+          (item) => item.proposalId === proposal.proposalId
+        )
+          ? proposal.support1Weight! > proposal.support0Weight!
+            ? "text-[#639b55] border-[#639b55] bg-[#dbf8d4]" // Styles for proposals with more 'FOR' votes
+            : "bg-[#fa989a] text-[#e13b15] border-[#e13b15]"
+          : proposal.support1Weight! === 0 &&
+            proposal.support0Weight! === 0 &&
+            proposal.support2Weight! === 0
+          ? "bg-[#FFEDD5] border-[#F97316] text-[#F97316]" // Styles for proposals that haven't started
+          : proposal.support1Weight! > proposal.support0Weight!
+          ? "text-[#639b55] border-[#639b55] bg-[#dbf8d4]" // Styles for proposals with more 'FOR' votes
+          : "bg-[#fa989a] text-[#e13b15] border-[#e13b15]" // Styles for proposals with more 'AGAINST' votes
+      }`}
                 >
-                  {canceledProposals?.some(
+                  {Array.isArray(canceledProposals) &&
+                  canceledProposals.some(
                     (item) => item.proposalId === proposal.proposalId
                   )
                     ? proposal.support1Weight! > proposal.support0Weight!
@@ -540,45 +567,46 @@ function Proposals({ props }: { props: string }) {
               ) : (
                 <VoteLoader />
               )}
-              <div className="flex items-center justify-center w-[15%]">
-                <div className="rounded-full bg-[#f4d3f9] border border-[#77367a] flex text-[#77367a] text-xs h-fit py-0.5 font-medium px-2 ">
-                  {(() => {
-                    if (
-                      canceledProposals.some(
-                        (item) => item.proposalId === proposal.proposalId
-                      )
-                    ) {
+
+              {/* <div className="flex items-center justify-center w-[15%]"> */}
+              <div className="rounded-full bg-[#f4d3f9] border border-[#77367a] flex text-[#77367a] text-[10px] xs:text-xs h-[22px] items-center justify-center w-[19%] xs:h-fit py-[1px] xs:py-0.5 font-medium px-2 ">
+                {(() => {
+                  if (
+                    Array.isArray(canceledProposals) &&
+                    canceledProposals.some(
+                      (item) => item.proposalId === proposal.proposalId
+                    )
+                  ) {
+                    return "Closed";
+                  }
+
+                  const currentTime: any = new Date();
+                  const proposalTime: any = new Date(
+                    proposal.blockTimestamp * 1000
+                  );
+                  const timeDifference = currentTime - proposalTime;
+                  const daysDifference = timeDifference / (24 * 60 * 60 * 1000);
+
+                  if (props === "arbitrum") {
+                    if (daysDifference <= 3) {
+                      const daysLeft = Math.ceil(3 - daysDifference);
+                      return `${daysLeft} day${
+                        daysLeft !== 1 ? "s" : ""
+                      } to go`;
+                    } else if (daysDifference <= 17) {
+                      return "Active";
+                    } else {
                       return "Closed";
                     }
-
-                    const currentTime: any = new Date();
-                    const proposalTime: any = new Date(
-                      proposal.blockTimestamp * 1000
-                    );
-                    const timeDifference = currentTime - proposalTime;
-                    const daysDifference =
-                      timeDifference / (24 * 60 * 60 * 1000);
-
-                    if (props === "arbitrum") {
-                      if (daysDifference <= 3) {
-                        const daysLeft = Math.ceil(3 - daysDifference);
-                        return `${daysLeft} day${
-                          daysLeft !== 1 ? "s" : ""
-                        } to go`;
-                      } else if (daysDifference <= 17) {
-                        return "Active";
-                      } else {
-                        return "Closed";
-                      }
+                  } else {
+                    if (daysDifference <= 7) {
+                      return "Active";
                     } else {
-                      if (daysDifference <= 7) {
-                        return "Active";
-                      } else {
-                        return "Closed";
-                      }
+                      return "Closed";
                     }
-                  })()}
-                </div>
+                  }
+                })()}
+                {/* </div> */}
               </div>
             </div>
           </div>

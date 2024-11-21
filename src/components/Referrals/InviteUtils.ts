@@ -7,7 +7,7 @@ import { cache } from "react";
 export async function fetchInviteeDetails(userAddress: string) {
   const requestOptions = {
     method: "GET",
-    headers: { "Content-Type": "application/json","x-api-key":process.env.NEXT_PUBLIC_API_KEY??'' },
+    headers: { "Content-Type": "application/json","x-api-key":process.env.NEXT_PUBLIC_API_KEY_CC??'' },
   };
 
   const res = await fetch(

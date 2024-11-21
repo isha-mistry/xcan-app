@@ -32,10 +32,6 @@ function NotificationTile({ data, index, length }: NotificationTileProps) {
     await handleRedirection(currentData, router, markAsRead);
   };
 
-  // const handleTileRedirection = async () => {
-  //   await handleRedirection(tileData, router, markAsRead);
-  // };
-
   const handleExternalLinkClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (tileData.additionalData?.offchainAttestationLink) {
@@ -76,47 +72,46 @@ function NotificationTile({ data, index, length }: NotificationTileProps) {
   return (
     <>
       <div
-        className={`flex justify-between items-center rounded-md p-5 cursor-pointer hover:scale-[100.3%]
-          hover:shadow-md
-          bg-gray-200 text-black ${readStatus ? "bg-white text-gray-500" : ""}`}
+        className={`flex flex-col md:flex-row justify-between items-start md:items-center rounded-lg transition-all duration-200 ease-in-out hover:shadow-sm p-3 md:p-5 cursor-pointer hover:scale-[100.3%] mb-[6px]
+          shadow-lg space-y-3 md:space-y-0 border border-gray-100
+           text-black ${readStatus ? "bg-white" : "bg-gray-200"}`}
         onClick={handleTileRedirection}
       >
-        <div className="flex gap-5">
-          <div
-            className="flex items-center justify-center rounded-full h-14 w-14 min-w-14"
-            style={{ backgroundColor: getBackgroundColor(tileData) }}
-          >
-            {getIcon(tileData)}
+        <div className="flex flex-col md:flex-row gap-3 md:gap-5 w-full md:w-auto">
+          <div className="flex justify-between">
+            <div
+              className="flex items-center justify-center rounded-full h-12 w-12 md:h-14 md:w-14 md:min-w-14 shadow-inner transition-colors duration-200"
+              style={{ backgroundColor: getBackgroundColor(tileData) }}
+            >
+              {getIcon(tileData)}
+            </div>
+            <div
+              className={`text-xs text-black font-semibold min-w-24 flex md:hidden items-center justify-end md:justify-center `}
+            >
+              {formatTimestampOrDate(data.createdAt)}
+            </div>
           </div>
           <div className="flex flex-col gap-1 justify-center">
             <h1
-              className={`font-semibold text-sm flex gap-2 items-center text-black ${
-                readStatus ? "text-gray-500" : ""
-              }`}
+              className={`font-semibold text-sm flex gap-2 items-center text-black `}
             >
               {data.notification_title}
               {renderTitleContent()}
             </h1>
-            <p
-              className={`font-normal text-sm text-[#414141] ${
-                readStatus ? "text-gray-500" : ""
-              }`}
-            >
+            <p className={`font-normal text-sm text-[#414141] `}>
               {data.content}
             </p>
           </div>
         </div>
         <div
-          className={`text-xs text-black font-semibold min-w-24 flex items-center justify-center ${
-            readStatus ? "text-gray-500 font-normal" : ""
-          }`}
+          className={`text-xs text-black font-semibold min-w-24 hidden md:flex items-center justify-start md:justify-center`}
         >
           {formatTimestampOrDate(data.createdAt)}
         </div>
       </div>
-      {index < length - 1 && (
+      {/* {index < length - 1 && (
         <hr className="border-[#DDDDDD] border-0.5 mx-2" />
-      )}
+      )} */}
     </>
   );
 }

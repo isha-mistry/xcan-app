@@ -975,15 +975,11 @@ function ProposalMain({ props }: { props: Props }) {
 
   return (
     <>
-      {/* For Mobile Screen */}
-      <MobileResponsiveMessage />
-
-      {/* For Desktop Screen  */}
-      <div className="hidden md:block pr-16 pb-5 pl-24 pt-6 font-poppins">
+      <div className="px-4 md:px-6 lg:px-16 pb-5  pt-6 font-poppins">
         <IndividualDaoHeader />
       </div>
 
-      <div className="hidden md:flex gap-4 mx-24 mb-8 mt-5 font-poppins">
+      <div className="flex gap-4 px-4 md:px-6 lg:px-16 mb-8 mt-5 font-poppins">
         <div
           className="text-white bg-blue-shade-100 rounded-full py-1.5 px-4 flex justify-center items-center gap-1 cursor-pointer"
           onClick={handleBack}
@@ -1000,8 +996,7 @@ function ProposalMain({ props }: { props: Props }) {
         </div>
       </div>
 
-      <div
-        className={`rounded-[1rem] mx-20 md:mx-24 px-4 md:px-12 pb-6 pt-16 transition-shadow duration-300 ease-in-out shadow-xl bg-gray-50 font-poppins relative ${
+      <div className={`rounded-[1rem] mx-4 md:mx-6 px-4 lg:mx-16 pb-6 pt-16 transition-shadow duration-300 ease-in-out shadow-xl bg-gray-50 font-poppins relative ${
           isExpanded ? "h-fit" : "h-fit"
         }`}
       >
@@ -1126,19 +1121,19 @@ function ProposalMain({ props }: { props: Props }) {
         </div>
       </div>
 
-      <h1 className="my-8 mx-24 text-4xl font-semibold text-blue-shade-100 font-poppins">
+      <h1 className="my-8 mx-4 md:mx-6 lg:mx-16 text-2xl lg:text-4xl font-semibold text-blue-shade-100 font-poppins">
         Voters
       </h1>
-      <div className="flex mb-20 mx-24">
-        <div className="flex gap-8 items-center w-full">
-          <div className="h-[500px] w-[40%] font-poppins px-4 flex items-center justify-center rounded-2xl bg-gray-50 transition-shadow duration-300 ease-in-out shadow-xl">
+      <div className="flex mb-20 mx-4 md:mx-6 lg:mx-16">
+        <div className="flex flex-col 2md:flex-row gap-8 items-center w-full">
+          <div className="h-[500px] w-full 2md:w-[40%] font-poppins px-2 0.2xs:px-4 flex items-center justify-center rounded-2xl bg-gray-50 transition-shadow duration-300 ease-in-out shadow-xl">
             {isLoading ? (
               <div className="">
                 <ProposalMainVotersSkeletonLoader />
               </div>
             ) : (
               <div
-                className={`flex flex-col gap-2 py-3 pl-2 pr-1  xl:pl-3 xl:pr-2 my-3 border-gray-200 ${
+                className={`flex flex-col gap-2 py-3 pl-2 pr-1 w-full xl:pl-3 xl:pr-2 my-3 border-gray-200 ${
                   voterList.length > 5
                     ? `h-[440px] overflow-y-auto ${style.scrollbar}`
                     : "h-fit"
@@ -1154,10 +1149,10 @@ function ProposalMain({ props }: { props: Props }) {
                     .slice(0, displayCount)
                     .map((voter: any, index: any) => (
                       <div
-                        className="flex items-center py-6 xl:px-6 px-3 bg-white transition-all duration-300 rounded-2xl border-2 border-transparent hover:border-blue-200 transform hover:-translate-y-1 space-x-6"
+                        className="flex items-center py-6 xl:px-6 px-3 bg-white w-full transition-all duration-300 rounded-2xl border-2 border-transparent hover:border-blue-200 transform hover:-translate-y-1 space-x-6"
                         key={index}
                       >
-                        <div className="flex-grow flex items-center space-x-4">
+                        <div className="flex-grow flex items-center space-x-2 1.3lg:space-x-4">
                           {isArbitrum ? (
                             <Image
                               src={user2}
@@ -1175,16 +1170,16 @@ function ProposalMain({ props }: { props: Props }) {
                           <div>
                             <p
                               onClick={() => handleAddressClick(voter.voter)}
-                              className="text-gray-800 xl:text-sm hover:text-blue-600 transition-colors duration-200 cursor-pointer text-xs"
+                              className="text-gray-800 xl:text-sm hover:text-blue-600 transition-colors duration-200 cursor-pointer text-xs xs:text-sm 2md:text-xs"
                             >
                               {voter.voter.slice(0, 6)}...
                               {voter.voter.slice(-4)}
                             </p>
                           </div>
                         </div>
-                        <div className="flex items-center space-x-4">
+                        <div className="flex items-center space-x-1 0.5xs:space-x-2 1.3lg:space-x-4">
                           <div
-                            className={`xl:px-4 px-2 py-2 rounded-full xl:text-sm xl:w-36 w-25 flex items-center justify-center xl:font-medium text-xs ${
+                            className={`py-1 xs:py-2 rounded-full 1.5lg:text-sm w-24 0.2xs:w-28 xs:w-36 2md:w-28 lg:w-[100px] 1.3lg:w-28 1.5xl:w-36 flex items-center justify-center xl:font-medium text-xs ${
                               voter.support === 1
                                 ? "bg-green-100 text-green-800"
                                 : voter.support === 0
@@ -1240,14 +1235,14 @@ function ProposalMain({ props }: { props: Props }) {
 
           {isChartLoading ? (
             <div
-              className="xl:w-[46.5vw] w-[45%] h-[500px] flex items-center justify-center bg-gray-50 rounded-2xl"
+              className="w-full 2md:w-[60%] h-[500px] flex items-center justify-center bg-gray-50 rounded-2xl"
               style={{ boxShadow: "0px 4px 26.7px 0px rgba(0, 0, 0, 0.10)" }}
             >
               <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-black-shade-900"></div>
             </div>
           ) : voterList && chartData.length === 0 ? (
             <div
-              className="w-[46.5vw] h-[500px] flex items-center justify-center bg-gray-50 rounded-2xl"
+              className="w-full 2md:w-[60%] h-[500px] flex items-center justify-center bg-gray-50 rounded-2xl"
               style={{ boxShadow: "0px 4px 26.7px 0px rgba(0, 0, 0, 0.10)" }}
             >
               <p className="text-lg font-poppins text-gray-500">
@@ -1257,7 +1252,7 @@ function ProposalMain({ props }: { props: Props }) {
           ) : (
             <div
               ref={chartContainerRef}
-              className="w-[46.5vw] transition-shadow duration-300 ease-in-out shadow-xl h-[500px] rounded-2xl flex text-sm items-center justify-center bg-gray-50 font-poppins"
+              className="w-full 2md:w-[60%] transition-shadow duration-300 ease-in-out shadow-xl h-[500px] rounded-2xl flex text-sm items-center justify-center bg-gray-50 font-poppins"
             >
               <ResponsiveContainer width="100%" height={400}>
                 <LineChart

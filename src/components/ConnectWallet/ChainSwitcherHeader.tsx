@@ -33,10 +33,7 @@ export default function   ({
   address = '',
   currentChainId,
   switchChain,
-  // disconnect,
   ensAvatar,
-  onConnect,
-  authenticated = false,
 }: ChainSwitcherHeaderProps) {
   const [copied, setCopied] = useState(false);
   const {logout}=usePrivy();

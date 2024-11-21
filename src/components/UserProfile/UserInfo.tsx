@@ -257,7 +257,7 @@ function UserInfo({
             method: "GET",
             headers: {
               "Content-Type": "application/json",
-              "x-api-key":process.env.NEXT_PUBLIC_API_KEY??''
+              "x-api-key":process.env.NEXT_PUBLIC_API_KEY_CC??''
             },
           }
         );
@@ -318,6 +318,7 @@ function UserInfo({
         }
       } catch (e) {
         console.log("Error: ", e);
+        setSessionAttendedLoading(false);
       }
     };
 
@@ -356,6 +357,7 @@ function UserInfo({
         }
       } catch (e) {
         console.log("Error: ", e);
+        setOfficeHoursHostedLoading(false);
       }
     };
 

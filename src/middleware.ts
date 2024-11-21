@@ -39,7 +39,8 @@ export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
   const apiKey = request.headers.get("x-api-key");
   // console.log("Line 41",apiKey);
-
+  // console.log("Allowed Origins from Middle Ware",allowedOrigins)
+  // console.log("Origins",origin)
   // CORS check
   if (!origin || !allowedOrigins.includes(origin)) {
     return new NextResponse(
