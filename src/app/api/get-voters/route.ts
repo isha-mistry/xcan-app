@@ -5,7 +5,7 @@ import { NextResponse } from "next/server";
 export const runtime = "nodejs";
 
 const client = new Client({
-  url: "https://api.studio.thegraph.com/query/68573/v6_proxy/version/latest",
+  url: process.env.OPTIMISM_PROPOSALS_API_KEY || "default_url",
   exchanges: [fetchExchange],
 });
 
@@ -17,34 +17,32 @@ const arb_client = new Client({
 const COMBINED_VOTE_QUERY = gql`
   query CombinedVoteQuery(
     $proposalId: String!
-    $blockNumber: String!
+    $blockTimestamp: String!
     $first: Int!
   ) {
     voteCastWithParams: voteCastWithParams_collection(
-      where: { proposalId: $proposalId, blockNumber_gte: $blockNumber }
+      where: { proposalId: $proposalId, blockTimestamp_gte: $blockTimestamp }
       first: $first
-      orderBy: blockNumber
+      orderBy: blockTimestamp
       orderDirection: asc
     ) {
       voter
       weight
       support
-      blockNumber
       blockTimestamp
       transactionHash
       id
       reason
     }
     voteCasts(
-      where: { proposalId: $proposalId, blockNumber_gte: $blockNumber }
-      orderBy: blockNumber
+      where: { proposalId: $proposalId, blockTimestamp_gte: $blockTimestamp }
+      orderBy: blockTimestamp
       orderDirection: asc
       first: $first
     ) {
       voter
       weight
       support
-      blockNumber
       blockTimestamp
       transactionHash
       id
@@ -56,7 +54,7 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
 
   const proposalId = searchParams.get("proposalId");
-  const blockNumber = searchParams.get("blockNumber") || "0";
+  const blockTimestamp = searchParams.get("blockTimestamp") || "0";
   const first = parseInt(searchParams.get("first") || "1000", 10);
   const dao = searchParams.get("dao");
 
@@ -76,11 +74,11 @@ export async function GET(req: NextRequest) {
     let result;
     if (dao === "optimism") {
       result = await client
-        .query(COMBINED_VOTE_QUERY, { proposalId, blockNumber, first })
+        .query(COMBINED_VOTE_QUERY, { proposalId, blockTimestamp, first })
         .toPromise();
     } else {
       result = await arb_client
-        .query(COMBINED_VOTE_QUERY, { proposalId, blockNumber, first })
+        .query(COMBINED_VOTE_QUERY, { proposalId, blockTimestamp, first })
         .toPromise();
     }
 

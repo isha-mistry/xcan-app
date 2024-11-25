@@ -4,7 +4,7 @@ import { NextResponse } from 'next/server';
 export const revalidate = 0;
 
 const client = new Client({
-    url: 'https://api.studio.thegraph.com/query/68573/v6_proxy/version/latest',
+    url: process.env.OPTIMISM_PROPOSALS_API_KEY||'',
     exchanges: [fetchExchange],
 });
 
