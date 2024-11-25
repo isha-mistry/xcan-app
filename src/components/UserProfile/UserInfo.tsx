@@ -251,13 +251,12 @@ function UserInfo({
 
     const sessionHosted = async () => {
       try {
-        const response = await fetch(
-          `${BASE_URL}/api/get-meeting/${walletAddress}?dao_name=${dao_name}`,
+        const response = await fetchApi(
+          `/get-meeting/${walletAddress}?dao_name=${dao_name}`,
           {
             method: "GET",
             headers: {
               "Content-Type": "application/json",
-              "x-api-key":process.env.NEXT_PUBLIC_API_KEY_CC??''
             },
           }
         );

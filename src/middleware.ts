@@ -38,6 +38,7 @@ export async function middleware(request: NextRequest) {
   const origin = request.nextUrl.origin;
   const pathname = request.nextUrl.pathname;
   const apiKey = request.headers.get("x-api-key");
+
   // console.log("Line 41",apiKey);
   // console.log("Allowed Origins from Middle Ware",allowedOrigins)
   // console.log("Origins",origin)
@@ -73,7 +74,7 @@ export async function middleware(request: NextRequest) {
   const isProxyRoute = pathname.startsWith("/api/proxy/");
 
   // Token validation
-  const authHeader = request.headers.get("authorization");
+  const authHeader = request.headers.get("Authorization");
   const privyToken = authHeader?.replace("Bearer ", "");
 
 
@@ -84,6 +85,10 @@ export async function middleware(request: NextRequest) {
     //     { status: 401 }
     //   );
     // }
+
+    if (request.method === "GET") {
+      return NextResponse.next();
+    }
 
     if (!privyToken) {
       return new NextResponse(
@@ -113,16 +118,22 @@ export async function middleware(request: NextRequest) {
     // Find linked wallet that matches the provided address
     const linkedWallet = user.linkedAccounts
       .filter((account) => account.type === "wallet")
-      .find((wallet) => wallet.address?.toLowerCase() === walletAddress.toLowerCase());
+      .find(
+        (wallet) =>
+          wallet.address?.toLowerCase() === walletAddress.toLowerCase()
+      );
 
     if (!linkedWallet) {
       console.log(
         `Forbidden access attempt: Wallet address ${walletAddress} not linked to user ${verifiedUser.userId}`
       );
-      return new NextResponse(JSON.stringify({ error: "Invalid wallet address" }), {
-        status: 403,
-        headers: { "Content-Type": "application/json" },
-      });
+      return new NextResponse(
+        JSON.stringify({ error: "Invalid wallet address" }),
+        {
+          status: 403,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
     }
 
     // if (walletAddress && userAddress !== walletAddress) {
@@ -165,10 +176,10 @@ export const config = {
     "/api/book-slot/:path*",
     "/api/delegate-follow/:path*",
     "/api/edit-office-hours/:path*",
-    // "/api/get-attendee-individual/:path*",
+    "/api/get-attendee-individual/:path*",
     "/api/get-meeting/:path*",
-    // "/api/get-officehours-address/:path*",
-    // "/api/get-session-data/:path*",
+    "/api/get-officehours-address/:path*",
+    "/api/get-session-data/:path*",
     "/api/get-sessions/:path*",
     "/api/get-specific-officehours/:path*",
     "/api/notifications/:path*",
@@ -183,6 +194,4 @@ export const config = {
     "/api/update-office-hours/:path*",
     "/api/update-recorded-session/:path*",
   ],
-
-  
 };

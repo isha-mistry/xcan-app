@@ -9,7 +9,7 @@ import RecordedSessionsTile from "../ComponentUtils/RecordedSessionsTile";
 import RecordedSessionsSkeletonLoader from "../SkeletonLoader/RecordedSessionsSkeletonLoader";
 import ErrorDisplay from "../ComponentUtils/ErrorDisplay";
 import style from "./MainProfile.module.css";
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight } from "lucide-react";
 import { usePrivy } from "@privy-io/react-auth";
 import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 import { fetchApi } from "@/utils/api";
@@ -25,7 +25,7 @@ function UserSessions({
   selfDelegate,
   daoName,
 }: UserSessionsProps) {
-  const { address,isConnected } = useAccount();
+  const { address, isConnected } = useAccount();
   // const address = "0xc622420AD9dE8E595694413F24731Dd877eb84E1";
   const router = useRouter();
   const path = usePathname();
@@ -39,8 +39,8 @@ function UserSessions({
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
   const [showLeftShadow, setShowLeftShadow] = useState(false);
   const [showRightShadow, setShowRightShadow] = useState(false);
-  const { user, ready, getAccessToken,authenticated } = usePrivy();
-  const {walletAddress}=useWalletAddress();
+  const { user, ready, getAccessToken, authenticated } = usePrivy();
+  const { walletAddress } = useWalletAddress();
 
   const handleRetry = () => {
     setError(null);
@@ -57,8 +57,8 @@ function UserSessions({
     };
 
     checkForOverflow();
-    window.addEventListener('resize', checkForOverflow);
-    return () => window.removeEventListener('resize', checkForOverflow);
+    window.addEventListener("resize", checkForOverflow);
+    return () => window.removeEventListener("resize", checkForOverflow);
   }, []);
 
   const handleScroll = () => {
@@ -76,12 +76,14 @@ function UserSessions({
     try {
       // setDataLoading(true);
       const myHeaders = new Headers();
-      const token=await getAccessToken();
+      const token = await getAccessToken();
       myHeaders.append("Content-Type", "application/json");
       if (walletAddress) {
         myHeaders.append("x-wallet-address", walletAddress);
-        myHeaders.append("Authorization",`Bearer ${token}`);
+        myHeaders.append("Authorization", `Bearer ${token}`);
       }
+      console.log("walletAddress:::: ", walletAddress);
+      console.log("token:::: ", token);
       const response = await fetchApi(`/get-sessions`, {
         method: "POST",
         headers: myHeaders,
@@ -109,7 +111,9 @@ function UserSessions({
   };
 
   useEffect(() => {
-    getUserMeetingData();
+    if (walletAddress) {
+      getUserMeetingData();
+    }
   }, [
     walletAddress,
     // sessionDetails,
@@ -138,8 +142,11 @@ function UserSessions({
   return (
     <div>
       <div className="pt-4 relative">
-        <div className={`flex gap-10 sm:gap-16 border-1 border-[#7C7C7C] px-6 rounded-xl text-sm overflow-x-auto whitespace-nowrap relative mx-4 md:mx-6 lg:mx-14`} ref={scrollContainerRef}
-        onScroll={handleScroll}>
+        <div
+          className={`flex gap-10 sm:gap-16 border-1 border-[#7C7C7C] px-6 rounded-xl text-sm overflow-x-auto whitespace-nowrap relative mx-4 md:mx-6 lg:mx-14`}
+          ref={scrollContainerRef}
+          onScroll={handleScroll}
+        >
           {selfDelegate === true && (
             <button
               className={`py-2  ${
@@ -209,13 +216,13 @@ function UserSessions({
           </button>
         </div>
         {showLeftShadow && (
-        <div className="absolute left-0 top-0 bottom-0 w-8 h-16 bg-gradient-to-r from-white to-transparent pointer-events-none" />
-      )}
-      {showRightShadow && (
-        <div className="absolute right-0 top-0 bottom-0 w-8 h-16 bg-gradient-to-l from-white to-transparent pointer-events-none" />
-      )}
-      
-      {/* {showRightShadow && (
+          <div className="absolute left-0 top-0 bottom-0 w-8 h-16 bg-gradient-to-r from-white to-transparent pointer-events-none" />
+        )}
+        {showRightShadow && (
+          <div className="absolute right-0 top-0 bottom-0 w-8 h-16 bg-gradient-to-l from-white to-transparent pointer-events-none" />
+        )}
+
+        {/* {showRightShadow && (
         <div className="absolute right-0 top-1/2 -translate-y-1/2 bg-white p-1 rounded-full shadow-md cursor-pointer">
           <ChevronRight className="text-gray-600" size={24} />
         </div>
@@ -228,7 +235,7 @@ function UserSessions({
           {selfDelegate === true &&
             searchParams.get("session") === "schedule" && (
               <div className="px-3">
-              <ScheduledUserSessions daoName={daoName} />
+                <ScheduledUserSessions daoName={daoName} />
               </div>
             )}
           {selfDelegate === true && searchParams.get("session") === "book" && (

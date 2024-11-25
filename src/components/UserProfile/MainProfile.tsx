@@ -262,7 +262,6 @@ function MainProfile() {
             // account: address1,
           });
           console.log("Delegate tx", delegateTx);
-          alert(delegateTx);
 
           const delegateTxAddr = delegateTx.toLowerCase();
 

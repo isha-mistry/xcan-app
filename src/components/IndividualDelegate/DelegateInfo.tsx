@@ -41,9 +41,9 @@ function DelegateInfo({ props, desc }: { props: Type; desc: string }) {
   const [loadingOpAgora, setLoadingOpAgora] = useState(false);
   const [loadingKarma, setLoadingKarma] = useState(false);
   const [convertedDescription, setConvertedDescription] = useState<string>("");
-  const { address,isConnected } = useAccount();
-  const { user, ready, getAccessToken,authenticated } = usePrivy();
-  const {walletAddress}=useWalletAddress();
+  const { address, isConnected } = useAccount();
+  const { user, ready, getAccessToken, authenticated } = usePrivy();
+  const { walletAddress } = useWalletAddress();
 
   useEffect(() => {
     if (activeButton === "onchain") {
@@ -51,9 +51,12 @@ function DelegateInfo({ props, desc }: { props: Type; desc: string }) {
     } else if (activeButton === "offchain") {
       fetchAttestation("offchain");
     }
-  }, [walletAddress,activeButton, props.individualDelegate, props.daoDelegates]);
-
-
+  }, [
+    walletAddress,
+    activeButton,
+    props.individualDelegate,
+    props.daoDelegates,
+  ]);
 
   const fetchAttestation = async (buttonType: string) => {
     let sessionHostingCount = 0;
@@ -75,13 +78,12 @@ function DelegateInfo({ props, desc }: { props: Type; desc: string }) {
 
     const sessionHosted = async () => {
       try {
-        const response = await fetch(
-          `${BASE_URL}/api/get-meeting/${props.individualDelegate}?dao_name=${props.daoDelegates}`,
+        const response = await fetchApi(
+          `/get-meeting/${props.individualDelegate}?dao_name=${props.daoDelegates}`,
           {
             method: "GET",
             headers: {
               "Content-Type": "application/json",
-              "x-api-key":process.env.NEXT_PUBLIC_API_KEY_CC??''
             },
           }
         );
@@ -110,16 +112,16 @@ function DelegateInfo({ props, desc }: { props: Type; desc: string }) {
     const sessionAttended = async () => {
       try {
         const myHeaders = new Headers();
-        const token=await getAccessToken();
+        const token = await getAccessToken();
         // console.log("Line 111:",walletAddress);
         myHeaders.append("Content-Type", "application/json");
-        if (walletAddress!=null) {
+        if (walletAddress != null) {
           myHeaders.append("x-wallet-address", walletAddress);
-          myHeaders.append("Authorization",`Bearer ${token}`);
+          myHeaders.append("Authorization", `Bearer ${token}`);
         }
-        // console.log("Headers before fetch:", Array.from(myHeaders.entries())); 
-        const response = await fetch(
-          `${BASE_URL}/api/get-session-data/${props.individualDelegate}`,
+        // console.log("Headers before fetch:", Array.from(myHeaders.entries()));
+        const response = await fetchApi(
+          `/get-session-data/${props.individualDelegate}`,
           {
             method: "POST",
             headers: myHeaders,
@@ -153,19 +155,22 @@ function DelegateInfo({ props, desc }: { props: Type; desc: string }) {
     const officeHoursHosted = async () => {
       try {
         const myHeaders = new Headers();
-        const token=await getAccessToken();
+        const token = await getAccessToken();
         myHeaders.append("Content-Type", "application/json");
         if (walletAddress) {
           myHeaders.append("x-wallet-address", walletAddress);
-          myHeaders.append("Authorization",`Bearer ${token}`);
+          myHeaders.append("Authorization", `Bearer ${token}`);
         }
-        const response = await fetch(`${BASE_URL}/api/get-officehours-address`, {
-          method: "POST",
-          headers: myHeaders,
-          body: JSON.stringify({
-            address: props.individualDelegate,
-          }),
-        });
+        const response = await fetchApi(
+          `/get-officehours-address`,
+          {
+            method: "POST",
+            headers: myHeaders,
+            body: JSON.stringify({
+              address: props.individualDelegate,
+            }),
+          }
+        );
         const result = await response.json();
         // console.log("office hours result: ", result);
         if (result.length > 0) {
@@ -193,19 +198,22 @@ function DelegateInfo({ props, desc }: { props: Type; desc: string }) {
     const officeHoursAttended = async () => {
       try {
         const myHeaders = new Headers();
-        const token=await getAccessToken();
+        const token = await getAccessToken();
         myHeaders.append("Content-Type", "application/json");
         if (walletAddress) {
           myHeaders.append("x-wallet-address", walletAddress);
-          myHeaders.append("Authorization",`Bearer ${token}`);
+          myHeaders.append("Authorization", `Bearer ${token}`);
         }
-        const response = await fetch(`${BASE_URL}/api/get-attendee-individual`, {
-          method: "POST",
-          headers: myHeaders,
-          body: JSON.stringify({
-            attendee_address: props.individualDelegate,
-          }),
-        });
+        const response = await fetchApi(
+          `/get-attendee-individual`,
+          {
+            method: "POST",
+            headers: myHeaders,
+            body: JSON.stringify({
+              attendee_address: props.individualDelegate,
+            }),
+          }
+        );
         const result = await response.json();
         // console.log("office hours attended result: ", result);
         if (result.length > 0) {
@@ -234,7 +242,6 @@ function DelegateInfo({ props, desc }: { props: Type; desc: string }) {
     sessionAttended();
     officeHoursHosted();
     officeHoursAttended();
-    
   };
 
   const details = [

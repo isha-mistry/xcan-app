@@ -7,15 +7,14 @@ import { cache } from "react";
 export async function fetchInviteeDetails(userAddress: string) {
   const requestOptions = {
     method: "GET",
-    headers: { "Content-Type": "application/json","x-api-key":process.env.NEXT_PUBLIC_API_KEY_CC??'' },
+    headers: {
+      "Content-Type": "application/json",
+    },
   };
 
-  const res = await fetch(
-    `api/profile/${userAddress}`,
-    requestOptions
-  );
+  const res = await fetchApi(`/profile/${userAddress}`, requestOptions);
   const response = await res.json();
-  // console.log("Line 20",response);  
+  // console.log("Line 20",response);
 
   const displayImage = response?.data[0]?.image;
   const displayName = response?.data[0]?.displayName;
