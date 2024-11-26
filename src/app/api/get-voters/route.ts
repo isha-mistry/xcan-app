@@ -5,7 +5,7 @@ import { NextResponse } from "next/server";
 export const runtime = "nodejs";
 
 const client = new Client({
-  url: process.env.OPTIMISM_PROPOSALS_API_KEY || "default_url",
+  url: process.env.OPTIMISM_PROPOSALS_GRAPH_URL|| "default_url",
   exchanges: [fetchExchange],
 });
 

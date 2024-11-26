@@ -4,7 +4,7 @@ import { NextResponse } from 'next/server';
 export const revalidate = 0;
 
 const client = new Client({
-    url: process.env.OPTIMISM_PROPOSALS_API_KEY||'',
+    url: process.env.OPTIMISM_PROPOSALS_GRAPH_URL||'',
     exchanges: [fetchExchange],
 });
 
