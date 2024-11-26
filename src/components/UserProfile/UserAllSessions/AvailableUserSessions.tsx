@@ -73,7 +73,9 @@ function AvailableUserSessions({
         toast.error("Failed to fetch data.");
       }
     };
-    fetchData();
+    if(walletAddress!=null){
+      fetchData();
+    }
   }, [
     daoName,
     walletAddress,

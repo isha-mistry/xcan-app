@@ -62,7 +62,7 @@ function  InstantMeet({ isDelegate, selfDelegate, daoName }: instantMeetProps) {
   ) => {
     const { name, value } = e.target;
 
-    console.log("Value in modal: ", value);
+    // console.log("Value in modal: ", value);
     setModalData((prevData) => ({
       ...prevData,
       [name]: value,
@@ -105,7 +105,7 @@ function  InstantMeet({ isDelegate, selfDelegate, daoName }: instantMeetProps) {
       attendees: [],
     };
 
-    console.log("requestData", requestData);
+    // console.log("requestData", requestData);
 
     const myHeaders = new Headers();
     const token = await getAccessToken();

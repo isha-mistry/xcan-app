@@ -124,7 +124,9 @@ function DelegateSessions({ props }: { props: Type }) {
   };
 
   useEffect(() => {
-    getMeetingData();
+    if(walletAddress!=null){
+      getMeetingData();
+    }
   }, [
     props.daoDelegates,
     props.individualDelegate,

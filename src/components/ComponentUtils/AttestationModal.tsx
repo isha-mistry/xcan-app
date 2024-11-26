@@ -8,8 +8,9 @@ import Confetti from "react-confetti";
 import { BsTwitterX } from "react-icons/bs";
 import { useAccount } from "wagmi";
 import StarRating from "../FeedbackPopup/RatingTypes/StarRating";
-import { usePrivy } from "@privy-io/react-auth";
+import { getAccessToken, usePrivy } from "@privy-io/react-auth";
 import { useWalletAddress } from "@/app/hooks/useWalletAddress";
+import { fetchApi } from "@/utils/api";
 
 function AttestationModal({
   isOpen,
@@ -95,7 +96,7 @@ function AttestationModal({
         },
       });
 
-      if (walletAddress) {
+      if (walletAddress!=null) {
         myHeaders.append("x-wallet-address", walletAddress);
       }
 
@@ -107,7 +108,7 @@ function AttestationModal({
       };
 
       const response = await fetch(
-        "/api/feedback/store-feedback",
+        "api/feedback/store-feedback",
         requestOptions
       );
 

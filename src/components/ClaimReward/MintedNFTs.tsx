@@ -48,7 +48,7 @@ function MintedNFTs() {
 
 
   useEffect(() => {
-    if (walletAddress) {
+    if (walletAddress!=null) {
       fetchNFTs();
     }
   }, [address,walletAddress]);

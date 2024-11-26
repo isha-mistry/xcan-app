@@ -18,6 +18,7 @@ import { useSession } from "next-auth/react";
 import { ConnectWallet } from "../ConnectWallet/ConnectWallet";
 import cclogo from "@/assets/images/daos/CCLogo.png"
 import { IoGiftSharp } from "react-icons/io5";
+import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 
 
 const SidebarMainMobile = () => {  
@@ -32,7 +33,7 @@ const SidebarMainMobile = () => {
       isPageLoading,
       session,
       status,
-      address,
+      walletAddress,
       isConnected,
     } = useSidebar();
     const sidebarRef = useRef<HTMLDivElement | null>(null);
@@ -232,7 +233,7 @@ const SidebarMainMobile = () => {
                 )
             ):(
                 <li>
-                    <Link href={`/profile/${address}?active=info`} className="block py-4 pl-6 sm:py-5 hover:bg-blue-shade-100">
+                    <Link href={`/profile/${walletAddress}?active=info`} className="block py-4 pl-6 sm:py-5 hover:bg-blue-shade-100">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center">
                       <FaUser className="size-5 mr-4" />

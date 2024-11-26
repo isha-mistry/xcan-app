@@ -121,6 +121,7 @@ function SpecificDelegate({ props }: { props: Type }) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [selectedTab, setSelectedTab] = useState("Info");
 
+
   const tabs = [
     { name: "Info", value: "info" },
     { name: "Past Votes", value: "pastVotes" },
@@ -937,7 +938,7 @@ function SpecificDelegate({ props }: { props: Type }) {
         );
 
         const dbResponse = await res.json();
-        console.log("dbResponse:: ", dbResponse);
+        // console.log("dbResponse:: ", dbResponse);
 
         if (
           dbResponse &&

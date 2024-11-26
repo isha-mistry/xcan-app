@@ -45,6 +45,7 @@ function DelegateInfo({ props, desc }: { props: Type; desc: string }) {
   const { user, ready, getAccessToken, authenticated } = usePrivy();
   const { walletAddress } = useWalletAddress();
 
+
   useEffect(() => {
     if (activeButton === "onchain") {
       fetchAttestation("onchain");
@@ -238,10 +239,13 @@ function DelegateInfo({ props, desc }: { props: Type; desc: string }) {
       }
     };
 
-    sessionHosted();
-    sessionAttended();
-    officeHoursHosted();
-    officeHoursAttended();
+
+      sessionHosted();
+      sessionAttended();
+      officeHoursHosted();
+      officeHoursAttended();
+    
+    
   };
 
   const details = [

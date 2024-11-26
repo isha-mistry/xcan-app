@@ -44,7 +44,7 @@ function AttendingUserSessions({ daoName }: { daoName: string }) {
         myHeaders.append("x-wallet-address", walletAddress);
         myHeaders.append("Authorization",`Bearer ${token}`);
       }
-      const response = await fetch(`/api/get-session-data/${walletAddress}`, {
+      const response = await fetchApi(`/get-session-data/${walletAddress}`, {
         method: "POST",
         headers: myHeaders,
         body: JSON.stringify({
@@ -68,7 +68,9 @@ function AttendingUserSessions({ daoName }: { daoName: string }) {
   };
 
   useEffect(() => {
-    getUserMeetingData();
+    if(walletAddress!=null){
+      getUserMeetingData();
+    }
   }, [searchParams.get("session")]);
 
   if (error) {

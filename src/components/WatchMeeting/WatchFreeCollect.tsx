@@ -343,7 +343,7 @@ const WatchFreeCollect = ({
   };
 
   const handleFirstMinter = async () => {
-    if (!walletAddress && !authenticated) {
+    if (!authenticated) {
       toast("Wallet not connected");
       console.log("Not connected");
       // openConnectModal?.();

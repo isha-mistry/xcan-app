@@ -239,7 +239,9 @@ function ScheduledUserSessions({ daoName }: { daoName: string }) {
         setDisplayEnsName("");
       }
     };
-    fetchEnsName();
+    if(walletAddress!=null){
+      fetchEnsName();
+    }
   }, [chain, walletAddress,address]);
 
   useEffect(() => {

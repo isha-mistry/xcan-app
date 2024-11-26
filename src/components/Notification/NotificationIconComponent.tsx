@@ -139,7 +139,7 @@ function NotificationIconComponent() {
   }, [socket]);
 
   useEffect(() => {
-    if (socket && walletAddress && socketId) {
+    if (socket && walletAddress!=null && socketId) {
       socket.emit("register_host", { hostAddress: walletAddress, socketId });
 
       socket.on("new_notification", (message: Notification) => {
@@ -197,7 +197,7 @@ function NotificationIconComponent() {
       );
     }
 
-    if (!canFetch) {
+    if (!authenticated) {
       return (
         <div className="flex justify-center items-center p-4">
           <p className="text-sm text-gray-500">

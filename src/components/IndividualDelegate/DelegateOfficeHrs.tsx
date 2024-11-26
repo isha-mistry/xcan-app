@@ -94,7 +94,7 @@ function DelegateOfficeHrs({ props }: { props: Type }) {
           requestOptions
         );
         const result = await response.json();
-        console.log(result);
+        // console.log(result);
 
         //api for individual attendees
         const rawData = JSON.stringify({
@@ -145,7 +145,10 @@ function DelegateOfficeHrs({ props }: { props: Type }) {
       }
     };
 
-    fetchData();
+    if(walletAddress!=null){
+      fetchData();
+    }
+
   }, [searchParams.get("hours")]); // Re-fetch data when filter changes
 
   useEffect(() => {

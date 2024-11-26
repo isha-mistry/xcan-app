@@ -286,8 +286,8 @@ function ProposalMain({ props }: { props: Props }) {
     } as any);
 
     try {
-      const response = await fetch(
-        `/api/get-vote-detail?${queryParams.toString()}`,
+      const response = await fetchApi(
+        `/get-vote-detail?${queryParams.toString()}`,
         {
           method: "GET",
           headers: {
@@ -470,8 +470,8 @@ function ProposalMain({ props }: { props: Props }) {
         setLoading(true);
         setError(null);
         try {
-          const response = await fetch(
-            `/api/get-proposals?proposalId=${props.id}`
+          const response = await fetchApi(
+            `/get-proposals?proposalId=${props.id}`
           );
           const result = await response.json();
 

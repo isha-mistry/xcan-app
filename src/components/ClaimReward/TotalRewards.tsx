@@ -125,7 +125,7 @@ function TotalRewards() {
   }, [chainId]);
 
   useEffect(() => {
-    if (walletAddress) {
+    if (walletAddress!=null) {
       fetchReward();
 
       const fetchEnsName = async () => {
@@ -190,7 +190,7 @@ function TotalRewards() {
         functionName: "withdraw",
         args: [recipient as `0x${string}`, withdrawAmount],
       });
-      console.log("result:::", result);
+      // console.log("result:::", result);
 
       await fetchReward();
     } catch (error) {

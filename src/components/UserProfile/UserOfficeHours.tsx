@@ -136,7 +136,9 @@ function UserOfficeHours({
       }
     };
 
-    fetchData();
+    if(walletAddress!=null){
+      fetchData();
+    }
   }, [searchParams.get("hours")]); // Re-fetch data when filter changes
 
   useEffect(() => {

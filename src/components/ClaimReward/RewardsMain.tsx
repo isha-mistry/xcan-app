@@ -10,7 +10,7 @@ import { TailSpin, Rings, Triangle } from "react-loader-spinner";
 import Heading from "../ComponentUtils/Heading";
 
 function RewardsMain() {
-  const { isConnected, isPageLoading, isSessionLoading, isReady } =
+  const { isConnected, isPageLoading,isReady } =
     useConnection();
   const [loadingMessage, setLoadingMessage] = useState("Initializing...");
 
@@ -62,7 +62,7 @@ function RewardsMain() {
   );
 
   const renderContent = () => {
-    if (isPageLoading || isSessionLoading) {
+    if (isPageLoading) {
       return renderLoader();
     }
 

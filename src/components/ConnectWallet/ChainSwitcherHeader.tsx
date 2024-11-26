@@ -16,7 +16,7 @@ import Image from 'next/image';
 interface Chain {
   id: number;
   name: string;
-  icon: string; // Add icon to store the chain logo
+  icon: string;
 }
 
 interface ChainSwitcherHeaderProps {
@@ -29,12 +29,12 @@ interface ChainSwitcherHeaderProps {
   authenticated?: boolean;
 }
 
-export default function   ({
+const ChainSwitcherHeader: React.FC<ChainSwitcherHeaderProps> = ({
   address = '',
   currentChainId,
   switchChain,
   ensAvatar,
-}: ChainSwitcherHeaderProps) {
+}: ChainSwitcherHeaderProps) => {
   const [copied, setCopied] = useState(false);
   const {logout}=usePrivy();
   const {isConnected}=useAccount();
@@ -62,31 +62,30 @@ export default function   ({
     {
       id: 10, // Optimism
       name: 'Optimism',
-      icon: OPLogo, // Add the path for Optimism logo
+      icon: OPLogo,
     },
     {
       id: 42161, // Arbitrum
       name: 'Arbitrum',
-      icon: ArbLogo, // Add the path for Arbitrum logo
+      icon: ArbLogo,
     },
     {
       id: 421614 , // Arbitrum Sepolia
       name: 'Arbitrum Sepolia',
-      icon: ArbLogo, // Add the path for Arbitrum Sepolia logo
+      icon: ArbLogo,
     },
   ];
 
   const handleLogout = async () => {
     try {
-      // Disconnect external wallet (e.g., MetaMask) if connected
       if (isConnected) {
-        disconnect(); // This is from wagmi
+        disconnect();
       }
   
-      // Logout from embedded wallet (Google via Privy)
-      await logout(); // Privy logout method
+      await logout();
+
+      localStorage.removeItem('persistentWalletAddress');
   
-      // Optionally, handle any other clean-up or state reset logic here
       console.log("User has been logged out from both wallets");
     } catch (error) {
       console.error("Error during logout:", error);
@@ -109,11 +108,6 @@ export default function   ({
             className="w-6 h-6 rounded-full"
             />
           )}
-           {/* <img
-              alt="ENS Avatar"
-              src={"https://avatars.jakerunzer.com/test"}
-              className="w-6 h-6 rounded-full"
-              /> */}
           <span className="text-gray-800 font-semibold">
             {getSlicedAddress(address)}
           </span>
@@ -188,4 +182,9 @@ export default function   ({
       </div>
     </div>
   );
-}
+};
+
+// Add display name
+ChainSwitcherHeader.displayName = 'ChainSwitcherHeader';
+
+export default ChainSwitcherHeader;

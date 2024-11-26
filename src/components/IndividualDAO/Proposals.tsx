@@ -10,6 +10,7 @@ import ProposalsSkeletonLoader from "../SkeletonLoader/ProposalsSkeletonLoader";
 import ArbLogo from "@/assets/images/daos/arb.png";
 import { dao_details } from "@/config/daoDetails";
 import ErrorDisplay from "../ComponentUtils/ErrorDisplay";
+import { fetchApi } from "@/utils/api";
 
 interface Proposal {
   proposalId: string;
@@ -47,9 +48,9 @@ function Proposals({ props }: { props: string }) {
   const [isShowing, setIsShowing] = useState(true);
   useEffect(() => {
     const fetchCanacelledProposals = async () => {
-      const response = await fetch(`/api/get-canceledproposal?dao=${props}`);
+      const response = await fetchApi(`/api/get-canceledproposal?dao=${props}`);
       const result = await response.json();
-      console.log("result", result);
+      // console.log("result", result);
       setCanceledProposals(result);
     };
     fetchCanacelledProposals();
@@ -66,7 +67,7 @@ function Proposals({ props }: { props: string }) {
 
       try {
         while (hasMore) {
-          const response = await fetch(
+          const response = await fetchApi(
             `/api/get-voters?proposalId=${proposal.proposalId}&blockNumber=${lastBlockNumber}&first=${limit}&dao=${props}`
           );
           const data = await response.json();

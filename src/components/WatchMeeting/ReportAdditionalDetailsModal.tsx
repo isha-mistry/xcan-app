@@ -95,7 +95,7 @@ function ReportAdditionalDetailsModal({
       ],
     };
 
-    if (walletAddress && isConnected) {
+    if (walletAddress && authenticated) {
       try {
         const result = await submitReport(
           meetingId,

@@ -80,7 +80,9 @@ function BookedUserSessions({ daoName }: { daoName: string }) {
   };
 
   useEffect(() => {
-    getMeetingData();
+    if(walletAddress!=null){
+      getMeetingData();
+    }
   }, [walletAddress]);
 
   if (error) {

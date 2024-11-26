@@ -128,7 +128,10 @@ function EventTile({ tileIndex, data: initialData, isEvent }: TileProps) {
       }
     };
 
-    fetchEnsData();
+    if(walletAddress!=null){
+      fetchEnsData();
+    }
+
   }, [data.host_address, data.attendees[0].attendee_address]);
 
   useEffect(() => {

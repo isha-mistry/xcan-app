@@ -82,8 +82,8 @@ function UserSessions({
         myHeaders.append("x-wallet-address", walletAddress);
         myHeaders.append("Authorization", `Bearer ${token}`);
       }
-      console.log("walletAddress:::: ", walletAddress);
-      console.log("token:::: ", token);
+      // console.log("walletAddress:::: ", walletAddress);
+      // console.log("token:::: ", token);
       const response = await fetchApi(`/get-sessions`, {
         method: "POST",
         headers: myHeaders,

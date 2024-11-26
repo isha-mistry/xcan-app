@@ -68,7 +68,7 @@ function DelegatesSession({ props }: { props: string }) {
       const response = await fetch(`/api/get-dao-sessions`, requestOptions);
       const result = await response.json();
       const resultData = await result.data;
-      console.log("resultData", resultData);
+      // console.log("resultData", resultData);
       if (Array.isArray(resultData)) {
         const filtered: any = resultData.filter((session: SessionInterface) => {
           if (searchParams.get("session") === "upcoming") {
@@ -107,7 +107,9 @@ function DelegatesSession({ props }: { props: string }) {
     }
   };
   useEffect(() => {
-    fetchData();
+    if(walletAddress!=null){
+      fetchData();
+    }
   }, [searchParams.get("session")]);
 
   useEffect(() => {

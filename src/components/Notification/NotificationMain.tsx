@@ -19,15 +19,11 @@ import toast, { Toaster } from "react-hot-toast";
 import { useNotificationStudioState } from "@/store/notificationStudioState";
 import MobileResponsiveMessage from "../MobileResponsiveMessage/MobileResponsiveMessage";
 import Heading from "../ComponentUtils/Heading";
-<<<<<<< HEAD
 import NotificationSkeletonLoader from '../SkeletonLoader/NotificationSkeletonLoader';
 import { usePrivy } from "@privy-io/react-auth";
 import { useConnection } from "@/app/hooks/useConnection";
 import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 
-=======
-import NotificationSkeletonLoader from "../SkeletonLoader/NotificationSkeletonLoader";
->>>>>>> baf47fee24f4c3b85d8ede3902cf404743aebf29
 import { fetchApi } from "@/utils/api";
 import { BellOff, ChevronDownIcon, Wallet } from "lucide-react";
 

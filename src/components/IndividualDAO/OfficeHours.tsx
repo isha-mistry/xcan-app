@@ -68,7 +68,7 @@ function OfficeHours({ props }: { props: string }) {
         requestOptions
       );
       const result = await response.json();
-      console.log(result);
+      // console.log(result);
 
       // Filter sessions based on meeting_status
       const filteredSessions = result.filter((session: Session) => {
@@ -107,7 +107,9 @@ function OfficeHours({ props }: { props: string }) {
   };
 
   useEffect(() => {
-    fetchData();
+    if(walletAddress!=null){
+      fetchData();
+    }
   }, [searchParams.get("hours")]); // Re-fetch data when filter changes
 
   useEffect(() => {
