@@ -110,6 +110,7 @@ function MainProfile() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [selectedTab, setSelectedTab] = useState("Info");
   const dropdownRef = useRef<HTMLDivElement | null>(null);
+  const [copiedAddress, setCopiedAddress] = useState<string | null>(null);
 
   const tabs = [
     { name: "Info", value: "info" },
@@ -302,6 +303,10 @@ function MainProfile() {
   const handleCopy = (addr: string) => {
     copy(addr);
     toast("Address Copied");
+    setCopiedAddress(addr);
+    setTimeout(() => {
+      setCopiedAddress(null);
+    }, 4000);
   };
   const handleUpdateFollowings = async (
     daoname: string,
@@ -1070,7 +1075,9 @@ function MainProfile() {
                     showArrow
                   >
                     <span className="px-2 cursor-pointer" color="#3E3D3D">
-                      <IoCopy onClick={() => handleCopy(`${address}`)} />
+                      <IoCopy onClick={() => handleCopy(`${address}`)} className={`transition-colors duration-300 ${
+                        copiedAddress === `${address}` ? 'text-blue-500' : ''
+                      }`} />
                     </span>
                   </Tooltip>
                   <div className="flex space-x-2">

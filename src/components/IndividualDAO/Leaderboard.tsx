@@ -41,11 +41,16 @@ function Leaderboard({ props }: { props: string }) {
   const [hoveredTitle, setHoveredTitle] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [copiedAddress, setCopiedAddress] = useState<string | null>(null);
   const ITEMS_PER_PAGE = 10;
 
   const handleCopy = (addr: string) => {
     copy(addr);
     toast("Address Copied");
+    setCopiedAddress(addr);
+    setTimeout(() => {
+      setCopiedAddress(null);
+    }, 4000);
   };
   function formatViews(views: number): string {
     // Handle negative numbers or NaN
@@ -346,17 +351,20 @@ function Leaderboard({ props }: { props: string }) {
                             {delegate.ensName}
                           </Link>
                           <Tooltip
-                            content="Copy"
-                            placement="right"
-                            closeDelay={1}
-                            showArrow
-                          >
-                            <span className="cursor-pointer text-xs">
-                              <IoCopy
-                                onClick={() => handleCopy(delegate.address)}
-                              />
-                            </span>
-                          </Tooltip>
+                  content={copiedAddress === delegate.address ? "Copied!" : "Copy"}
+                  placement="right"
+                  closeDelay={1}
+                  showArrow
+                >
+                  <span className="cursor-pointer text-xs">
+                    <IoCopy
+                      onClick={() => handleCopy(delegate.address)}
+                      className={`transition-colors duration-300 ${
+                        copiedAddress === delegate.address ? 'text-blue-500' : ''
+                      }`}
+                    />
+                  </span>
+                </Tooltip>
                         </div>
                       </div>
                     </div>
