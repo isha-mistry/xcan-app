@@ -13,6 +13,7 @@ const config: Config = {
       screens: {
         "0.2xs":"370px",
         "0.5xs":"400px",
+        "0.7xs": "420px",
         "2.5xl": "2100px",
         "1.5xl": "1350px",
         "1.7xl": "1450px",

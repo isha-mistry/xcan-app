@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import { Tooltip } from "@nextui-org/react";
 import { IoArrowForward, IoCopy } from "react-icons/io5";
-import toast from "react-hot-toast";
 import OPLogo from "@/assets/images/daos/op.png";
 import ARBLogo from "@/assets/images/daos/arbitrum.jpg";
 import ccLogo from "@/assets/images/daos/CCLogo2.png";
@@ -30,6 +29,8 @@ const DelegateInfoCard: React.FC<DelegateInfoCardProps> = ({
   const [isLoading, setIsLoading] = useState(true);
   const [isHovered, setIsHovered] = useState(false);
   const [isButtonHovered, setIsButtonHovered] = useState(false);
+  const [tooltipContent, setTooltipContent] = useState('Copy');
+  const [isAnimating, setIsAnimating] = useState(false);
 
   useEffect(() => {
     const fetchEnsData = async () => {
@@ -52,7 +53,13 @@ const DelegateInfoCard: React.FC<DelegateInfoCardProps> = ({
   const handleCopyAddress = (e: React.MouseEvent) => {
     e.stopPropagation();
     navigator.clipboard.writeText(delegate.delegate);
-    toast.success("Address copied!");
+    setTooltipContent('Copied');
+    setIsAnimating(true);
+
+    setTimeout(() => {
+      setTooltipContent('Copy');
+      setIsAnimating(false);
+    }, 4000);
   };
 
   const displayName = isLoading
@@ -112,10 +119,10 @@ const DelegateInfoCard: React.FC<DelegateInfoCardProps> = ({
                 -4
               )}`}
             </span>
-            <Tooltip content="Copy Address">
+            <Tooltip content={tooltipContent}>
               <button
                 onClick={handleCopyAddress}
-                className="text-gray-400 hover:text-gray-600 transition-colors duration-200"
+                className={` ${isAnimating ? 'text-blue-500' :'text-gray-400 hover:text-gray-600'}  transition-colors duration-200`}
               >
                 <IoCopy size={16} />
               </button>

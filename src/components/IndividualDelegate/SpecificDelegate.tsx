@@ -121,6 +121,16 @@ function SpecificDelegate({ props }: { props: Type }) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [selectedTab, setSelectedTab] = useState("Info");
 
+  const [copiedAddress, setCopiedAddress] = useState<string | null>(null);
+
+  const handleCopy = (addr: string) => {
+    copy(addr);
+    toast("Address Copied");
+    setCopiedAddress(addr);
+    setTimeout(() => {
+      setCopiedAddress(null);
+    }, 4000);
+  };
 
   const tabs = [
     { name: "Info", value: "info" },
@@ -428,10 +438,10 @@ function SpecificDelegate({ props }: { props: Type }) {
     }
   };
 
-  const handleCopy = (addr: string) => {
-    copy(addr);
-    toast("Address Copied");
-  };
+  // const handleCopy = (addr: string) => {
+  //   copy(addr);
+  //   toast("Address Copied");
+  // };
 
   // const fetchDelegateData = async () => {
   //   if (!walletAddress) {
@@ -593,6 +603,7 @@ function SpecificDelegate({ props }: { props: Type }) {
       setIsFollowStatusLoading(false);
     }
   };
+
 
   const handleConfirm = async (action: number) => {
     let delegate_address: string;
@@ -1189,7 +1200,7 @@ function SpecificDelegate({ props }: { props: Type }) {
                     </div>
 
                     <Tooltip
-                      content="Copy"
+                      content={copiedAddress === props.individualDelegate ? "Copied!" : "Copy"}
                       placement="right"
                       closeDelay={1}
                       showArrow
@@ -1197,6 +1208,9 @@ function SpecificDelegate({ props }: { props: Type }) {
                       <span className="px-2 cursor-pointer" color="#3E3D3D">
                         <IoCopy
                           onClick={() => handleCopy(props.individualDelegate)}
+                          className={`transition-colors duration-300 ${
+                            copiedAddress === props.individualDelegate ? 'text-blue-500' : ''
+                          }`}
                         />
                       </span>
                     </Tooltip>

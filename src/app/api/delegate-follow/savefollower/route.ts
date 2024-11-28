@@ -325,7 +325,6 @@ export async function PUT(req: NextRequest) {
   }
 }
 
-// Replace the POST method with GET in your Next.js API handler:
 export async function GET(req: Request) {
   try {
     const client = await connectDB();
@@ -363,4 +362,3 @@ export async function GET(req: Request) {
     );
   }
 }
-
