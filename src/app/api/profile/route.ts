@@ -191,27 +191,22 @@ export async function PUT(
     networks,
   }: DelegateRequestBody = await req.json();
 
-  console.log("Received Properties:");
-  console.log("address:", address);
-  console.log("image:", image);
-  console.log("isDelegate:", isDelegate);
-  console.log("displayName:", displayName);
-  console.log("networks: ", networks);
-  console.log("emailId:", emailId);
-  console.log("socialHandles:", socialHandles);
-
   try {
-    // Connect to your MongoDB database
-    console.log("Connecting to MongoDB...");
     const client = await connectDB();
-    console.log("Connected to MongoDB");
-
-    // Access the collection
     const db = client.db();
     const collection = db.collection("delegates");
-    const documents = await collection
-      .find({ address: { $regex: `^${address}$`, $options: "i" } })
-      .toArray();
+
+    // console.log("Getting wallet address 199:-",address);
+
+    // Convert address to lowercase for consistent matching
+    const lowercaseAddress = address.toLowerCase();
+
+    // console.log("Convert into 204 lowercase",lowercaseAddress);
+
+    // Find the existing document
+    const existingDocument = await collection.findOne({ 
+      address: lowercaseAddress 
+    });
 
     // Prepare update fields
     const updateFields: any = {};
@@ -219,73 +214,54 @@ export async function PUT(
     if (isDelegate !== undefined) updateFields.isDelegate = isDelegate;
     if (displayName !== undefined) updateFields.displayName = displayName;
     if (emailId !== undefined) updateFields.emailId = emailId;
+    if (isEmailVisible !== undefined) updateFields.isEmailVisible = isEmailVisible;
     if (socialHandles !== undefined) updateFields.socialHandles = socialHandles;
-    if (networks !== undefined) {
-      if (documents.length > 0) {
-        const document = documents[0];
-        console.log("document::", document);
-        if (document.networks?.length > 0) {
-          const existingNetworkIndex = document.networks.findIndex(
-            (item: any) => item.dao_name === networks[0].dao_name
+
+    // Handle networks update
+    if (networks && networks.length > 0) {
+      // If no existing networks, set the new networks
+      if (!existingDocument?.networks || existingDocument.networks.length === 0) {
+        updateFields.networks = networks;
+      } else {
+        // Check if the new network already exists
+        const updatedNetworks = [...(existingDocument.networks || [])];
+        networks.forEach(newNetwork => {
+          const existingNetworkIndex = updatedNetworks.findIndex(
+            existingNetwork => existingNetwork.dao_name.toLowerCase() === newNetwork.dao_name.toLowerCase()
           );
-          console.log("existingNetworkIndex", existingNetworkIndex);
+
           if (existingNetworkIndex !== -1) {
-            console.log("exist call");
-            const updateQuery = {
-              $set: {
-                [`networks.${existingNetworkIndex}`]: networks[0],
-              },
+            // Update existing network
+            updatedNetworks[existingNetworkIndex] = {
+              ...updatedNetworks[existingNetworkIndex],
+              ...newNetwork
             };
-            await collection.updateOne(
-              { address: document.address },
-              updateQuery
-            );
           } else {
-            console.log("push call");
-            const updateQuery = {
-              $push: {
-                networks: networks[0],
-              },
-            };
-            await collection.updateOne(
-              { address: document.address },
-              /* @ts-ignore */
-              updateQuery
-            );
+            // Add new network
+            updatedNetworks.push(newNetwork);
           }
-        } else {
-          console.log("add networks field");
-          const updateQuery = {
-            $set: {
-              networks: [networks[0]],
-            },
-          };
-          await collection.updateOne(
-            { address: document.address },
-            updateQuery
-          );
-        }
+        });
+
+        updateFields.networks = updatedNetworks;
       }
     }
 
     // Update the delegate document
-    console.log("Updating delegate document...");
     const result = await collection.updateOne(
       { address: address },
       { $set: updateFields }
     );
-    console.log("Delegate document updated:", result);
 
     client.close();
-    console.log("MongoDB connection closed");
 
     if (result.modifiedCount > 0) {
-      // If at least one document was modified
-      return NextResponse.json({ success: true }, { status: 200 });
+      return NextResponse.json({ 
+        success: true, 
+        message: "Document updated successfully" 
+      }, { status: 200 });
     } else {
-      // If no document was modified
       return NextResponse.json(
-        { error: "No document found to update" },
+        { error: "No document found to update or no changes made" },
         { status: 404 }
       );
     }

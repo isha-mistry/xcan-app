@@ -186,7 +186,7 @@ function ScheduledUserSessions({ daoName }: { daoName: string }) {
         body: raw,
         redirect: "follow",
       };
-      const response = await fetch(`/api/profile/${walletAddress}`, requestOptions);
+      const response = await fetchApi(`/profile/${walletAddress}`, requestOptions);
       const result = await response.json();
       console.log("result", result);
       if (Array.isArray(result.data) && result.data.length > 0) {
@@ -258,6 +258,7 @@ function ScheduledUserSessions({ daoName }: { daoName: string }) {
       try {
         setCreateSessionLoading(true);
         const checkUserMail = await checkUser();
+        alert(`Line 262 ${checkUserMail}`);
         const userRejectedLocal: any = await sessionStorage.getItem(
           "schedulingMailRejected"
         );
@@ -575,9 +576,11 @@ function ScheduledUserSessions({ daoName }: { daoName: string }) {
           try {
             setAddingEmail(true);
             const myHeaders = new Headers();
+            const token=await getAccessToken();
             myHeaders.append("Content-Type", "application/json");
             if (walletAddress) {
               myHeaders.append("x-wallet-address", walletAddress);
+              myHeaders.append("Authorization",`Bearer ${token}`)
             }
 
             const raw = JSON.stringify({
@@ -593,7 +596,7 @@ function ScheduledUserSessions({ daoName }: { daoName: string }) {
               redirect: "follow",
             };
 
-            const response = await fetch("/api/profile", requestOptions);
+            const response = await fetchApi("/profile", requestOptions);
             const result = await response.json();
             if (result.success) {
               setContinueAPICalling(true);
