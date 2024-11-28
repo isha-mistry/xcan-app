@@ -48,11 +48,14 @@ export interface FollowerData {
 export interface SessionRecord {
   totalHostedMeetings: number;
   offchainCounts: number;
+  onchainCounts: number;
 }
 
 export interface DaoSessionRecords {
   sessionHosted: SessionRecord;
   sessionAttended: SessionRecord;
+  officeHoursHosted: SessionRecord;
+  officeHoursAttended: SessionRecord;
 }
 
 export interface MeetingRecords {
