@@ -50,9 +50,15 @@ export interface SessionRecord {
   offchainCounts: number;
 }
 
-export interface MeetingRecords {
+export interface DaoSessionRecords {
   sessionHosted: SessionRecord;
   sessionAttended: SessionRecord;
+}
+
+export interface MeetingRecords {
+  optimism: DaoSessionRecords;
+  arbitrum: DaoSessionRecords;
+  // You can easily add more DAOs here
 }
 
 export interface UserProfileInterface {

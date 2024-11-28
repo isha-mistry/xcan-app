@@ -13,6 +13,7 @@ interface AddAttendeeRequestBody {
   meetingType: number;
   uidOnchain: string;
   address: string;
+  daoName:string;
   attendees: Attendee[]; // Array of attendees
 }
 
@@ -22,6 +23,7 @@ export async function PUT(req: NextRequest, res: NextResponse) {
     meetingType,
     uidOnchain,
     address,
+    daoName
   }: AddAttendeeRequestBody = await req.json();
 
   try {
@@ -48,7 +50,7 @@ export async function PUT(req: NextRequest, res: NextResponse) {
       await usersCollection.findOneAndUpdate(
         { address: address },
         {
-          $inc: { "meetingRecords.sessionHosted.onchainCounts": 1 },
+          $inc: { [`meetingRecords.${daoName}.sessionHosted.onchainCounts`]: 1 },
         }
       );
     } else if (meetingType === 2) {
@@ -62,7 +64,7 @@ export async function PUT(req: NextRequest, res: NextResponse) {
       await usersCollection.findOneAndUpdate(
         { address: address },
         {
-          $inc: { "meetingRecords.sessionAttended.onchainCounts": 1 },
+          $inc: { [`meetingRecords.${daoName}.sessionAttended.onchainCounts`]: 1 },
         }
       );
     }

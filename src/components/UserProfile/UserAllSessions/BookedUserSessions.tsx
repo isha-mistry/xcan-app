@@ -16,13 +16,13 @@ import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 import { fetchApi } from "@/utils/api";
 
 function BookedUserSessions({ daoName }: { daoName: string }) {
-  const { address,isConnected } = useAccount();
-  const { user, ready, getAccessToken,authenticated } = usePrivy();
+  const { address, isConnected } = useAccount();
+  const { user, ready, getAccessToken, authenticated } = usePrivy();
   // const address = "0xB351a70dD6E5282A8c84edCbCd5A955469b9b032";
   const [sessionDetails, setSessionDetails] = useState([]);
   const [pageLoading, setPageLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const {walletAddress}=useWalletAddress();
+  const { walletAddress } = useWalletAddress();
 
   const handleRetry = () => {
     setError(null);
@@ -33,11 +33,11 @@ function BookedUserSessions({ daoName }: { daoName: string }) {
   const getMeetingData = async () => {
     try {
       const myHeaders = new Headers();
-      const token=await getAccessToken();
+      const token = await getAccessToken();
       myHeaders.append("Content-Type", "application/json");
       if (walletAddress) {
         myHeaders.append("x-wallet-address", walletAddress);
-        myHeaders.append("Authorization",`Bearer ${token}`);
+        myHeaders.append("Authorization", `Bearer ${token}`);
       }
 
       const raw = JSON.stringify({
@@ -50,8 +50,8 @@ function BookedUserSessions({ daoName }: { daoName: string }) {
         body: raw,
         redirect: "follow",
       };
-      const response = await fetch(
-        `/api/get-meeting/${walletAddress}?dao_name=${daoName}`,
+      const response = await fetchApi(
+        `/get-meeting/${walletAddress}?dao_name=${daoName}`,
         requestOptions
       );
       const result = await response.json();
@@ -80,7 +80,7 @@ function BookedUserSessions({ daoName }: { daoName: string }) {
   };
 
   useEffect(() => {
-    if(walletAddress!=null){
+    if (walletAddress != null) {
       getMeetingData();
     }
   }, [walletAddress]);

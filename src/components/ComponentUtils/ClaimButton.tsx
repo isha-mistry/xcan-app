@@ -153,6 +153,7 @@ const ClaimButton: React.FC<ClaimButtonProps> = ({
             meetingType: meetingType,
             uidOnchain: newAttestationUID,
             address: address,
+            daoName: dao
           }),
         });
         const updateData = await updateResponse.json();

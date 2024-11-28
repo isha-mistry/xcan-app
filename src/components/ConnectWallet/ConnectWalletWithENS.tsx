@@ -184,7 +184,7 @@ function ConnectWalletWithENS() {
     //   )}
     // </div>
 
-<div className="wallet z-10">
+<div className="wallet z-10 font-poppins">
   {!authenticated  ? (
     <button
       onClick={login}

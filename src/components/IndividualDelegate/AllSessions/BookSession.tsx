@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import DayTimeScheduler from "@captainwalterdev/daytimescheduler";
 import { useAccount } from "wagmi";
 import { DateTime, Duration } from "luxon";
-import dateFns from "date-fns";
+import { isSameDay } from "date-fns";
 import { useSession } from "next-auth/react";
 import { Oval, ThreeDots } from "react-loader-spinner";
 import styled from "styled-components";
@@ -69,8 +69,9 @@ function BookSession({ props }: { props: Type }) {
   const [continueAPICalling, setContinueAPICalling] = useState<Boolean>(false);
   const [userRejected, setUserRejected] = useState<Boolean>();
   const [addingEmail, setAddingEmail] = useState<boolean>();
-  const { ready, authenticated, login, logout,getAccessToken,user } = usePrivy();
-  const {walletAddress}=useWalletAddress();
+  const { ready, authenticated, login, logout, getAccessToken, user } =
+    usePrivy();
+  const { walletAddress } = useWalletAddress();
   const styles = `
   .calendar-container > div > ul {
     height: auto;
@@ -210,7 +211,7 @@ function BookSession({ props }: { props: Type }) {
     } else {
       if (!authenticated) {
         // openConnectModal();
-        login()
+        login();
       }
     }
   };
@@ -231,11 +232,11 @@ function BookSession({ props }: { props: Type }) {
   const checkUser = async () => {
     try {
       const myHeaders = new Headers();
-      const token=await getAccessToken();
+      const token = await getAccessToken();
       myHeaders.append("Content-Type", "application/json");
       if (walletAddress) {
         myHeaders.append("x-wallet-address", walletAddress);
-        myHeaders.append("Authorization",`Bearer ${token}`);
+        myHeaders.append("Authorization", `Bearer ${token}`);
       }
 
       const raw = JSON.stringify({
@@ -248,7 +249,10 @@ function BookSession({ props }: { props: Type }) {
         body: raw,
         redirect: "follow",
       };
-      const response = await fetch(`/api/profile/${walletAddress}`, requestOptions);
+      const response = await fetch(
+        `/api/profile/${walletAddress}`,
+        requestOptions
+      );
       const result = await response.json();
       if (Array.isArray(result.data) && result.data.length > 0) {
         for (const item of result.data) {
@@ -451,7 +455,7 @@ function BookSession({ props }: { props: Type }) {
       ) {
         const isBooked = bookedSlots.some((bookedSlot: any) => {
           return (
-            dateFns.isSameDay(startTime, bookedSlot) &&
+            isSameDay(startTime, bookedSlot) &&
             slotTime.getHours() === bookedSlot.getHours() &&
             slotTime.getMinutes() === bookedSlot.getMinutes()
           );
