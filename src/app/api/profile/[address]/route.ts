@@ -168,6 +168,8 @@ export async function POST(
     // Extract address from request parameters
     const address = req.url.split("profile/")[1];
 
+    // console.log("Line 171 of front-end side...",address)
+
     // Find documents based on address
     console.log("Finding documents for address:", address);
     const documents = await collection
@@ -176,6 +178,8 @@ export async function POST(
         // daoName: daoName,
       })
       .toArray();
+
+    // console.log("Line 182...",documents);  
 
     client.close();
     // console.log("MongoDB connection closed");

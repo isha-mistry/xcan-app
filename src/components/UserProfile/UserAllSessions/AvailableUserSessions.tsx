@@ -6,8 +6,9 @@ import toast, { Toaster } from "react-hot-toast";
 import { useAccount } from "wagmi";
 import { Grid } from "react-loader-spinner";
 import { motion, AnimatePresence } from "framer-motion";
-import { usePrivy } from "@privy-io/react-auth";
+import { getAccessToken, usePrivy } from "@privy-io/react-auth";
 import { useWalletAddress } from "@/app/hooks/useWalletAddress";
+import { fetchApi } from "@/utils/api";
 
 interface AvailableUserSessionsProps {
   daoName: string;
@@ -36,7 +37,6 @@ function AvailableUserSessions({
 
 
 
-
   useEffect(() => {
     const fetchData = async () => {
       if (!daoName) return;
@@ -50,7 +50,7 @@ function AvailableUserSessions({
 
         const raw = JSON.stringify({
           dao_name: daoName,
-          userAddress: walletAddress,
+          userAddress: walletAddress
         });
 
         const requestOptions = {
@@ -181,13 +181,33 @@ function TimeSlotTable({
 
   const handleDeleteButtonClick = async ({ date, startTime, endTime }: any) => {
     setDeleting(date);
+    
+    // Add logging to understand the current state
+    // console.log('Current walletAddress:', walletAddress);
+    console.log('Is walletAddress null or undefined?', walletAddress == null);
+  
     try {
+      // Ensure we have a valid wallet address before proceeding
+      if (!walletAddress) {
+        // Option 1: Use the hook's method to get the stored address
+        const storedAddress = localStorage.getItem('persistentWalletAddress');
+        
+        if (!storedAddress) {
+          toast.error("No wallet address found. Please connect your wallet.");
+          setDeleting(null);
+          return;
+        }
+  
+        // Override walletAddress with stored address
+        walletAddress = storedAddress;
+      }
+  
+      const token = await getAccessToken();
       const myHeaders = new Headers();
       myHeaders.append("Content-Type", "application/json");
-      if (walletAddress) {
-        myHeaders.append("x-wallet-address", walletAddress);
-      }
-
+      myHeaders.append("x-wallet-address", walletAddress.toLowerCase());
+      myHeaders.append("Authorization", `Bearer ${token}`);
+  
       const raw = JSON.stringify({
         dao_name: dao_name,
         userAddress: walletAddress,
@@ -196,16 +216,17 @@ function TimeSlotTable({
         startTime: startTime,
         endTime: endTime,
       });
-
+  
       const requestOptions: any = {
         method: "PUT",
         headers: myHeaders,
         body: raw,
         redirect: "follow",
       };
-
-      const response = await fetch("/api/get-availability", requestOptions);
+  
+      const response = await fetchApi("/get-availability", requestOptions);
       const result = await response.json();
+      
       if (result.success) {
         toast.success("Deleted successfully!");
         setData((prevData: any) =>
@@ -219,22 +240,19 @@ function TimeSlotTable({
                     !(
                       timeRange.startTime === startTime &&
                       timeRange.endTime === endTime &&
-                      // item.dateAndRanges.date === date
                       range.date === date
                     )
                 ),
               })),
             }))
             .filter((item: any) =>
-              item.dateAndRanges.some(
-                (range: any) => range.timeRanges.length > 0
-              )
+              item.dateAndRanges.some((range: any) => range.timeRanges.length > 0)
             )
         );
       }
       triggerUpdate();
     } catch (error) {
-      console.error(error);
+      console.error('Delete error:', error);
       toast.error("Failed to delete.");
     } finally {
       setDeleting(null);

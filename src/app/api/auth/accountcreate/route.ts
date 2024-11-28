@@ -1,5 +1,4 @@
 import { connectDB } from "@/config/connectDB";
-// import { NextApiResponse } from "next";
 import { NextRequest, NextResponse } from "next/server";
 import { AuthTokenClaims, PrivyClient } from "@privy-io/server-auth";
 
@@ -12,7 +11,7 @@ interface DelegateRequestBody {
   address: string;
   isEmailVisible: boolean;
   createdAt: Date;
-  referrer: string;
+  referrer: string | null;
 }
 
 export async function POST(req: NextRequest, res: NextResponse) {
@@ -42,7 +41,7 @@ export async function POST(req: NextRequest, res: NextResponse) {
       console.log("User linked accounts:", userDetails.linkedAccounts);
 
       // Get request wallet address from header
-      const requestWalletAddress = req.headers.get("x-wallet-address")?.toLowerCase();
+      const requestWalletAddress = req.headers.get("x-wallet-address");
       if (!requestWalletAddress) {
         return NextResponse.json(
           { error: "No wallet address provided in request" },
@@ -56,13 +55,13 @@ export async function POST(req: NextRequest, res: NextResponse) {
       );
 
       const verifiedWallet = linkedWallets.find(
-        wallet => wallet.address?.toLowerCase() === requestWalletAddress
+        wallet => wallet.address === requestWalletAddress
       );
 
       if (!verifiedWallet) {
         console.log("Verification failed. Available wallets:", 
           linkedWallets.map(w => ({
-            address: w.address?.toLowerCase(),
+            address: w.address,
             type: w.type
           }))
         );
@@ -89,7 +88,7 @@ export async function POST(req: NextRequest, res: NextResponse) {
 
       // Check if delegate already exists
       const existingDocument = await collection.findOne({
-        address: { $regex: `^${requestWalletAddress}$`, $options: "i" },
+        address: requestWalletAddress,
       });
 
       if (existingDocument) {
@@ -101,7 +100,7 @@ export async function POST(req: NextRequest, res: NextResponse) {
 
       // Create new delegate document
       const newDocument = {
-        address: requestWalletAddress, // Use the verified wallet address
+        address: requestWalletAddress, // Use the exact wallet address
         isEmailVisible,
         createdAt,
         image: null,
