@@ -581,7 +581,7 @@ function ScheduledUserSessions({ daoName }: { daoName: string }) {
               redirect: "follow",
             };
 
-            const response = await fetch("/api/profile", requestOptions);
+            const response = await fetchApi("/profile", requestOptions);
             const result = await response.json();
             if (result.success) {
               setContinueAPICalling(true);

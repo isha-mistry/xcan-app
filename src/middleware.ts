@@ -71,6 +71,11 @@ export async function middleware(request: NextRequest) {
       secret: process.env.NEXTAUTH_SECRET,
     });
 
+    if (request.method === "GET") {
+      return NextResponse.next();
+    }
+
+
     if (!token) {
       return new NextResponse(
         JSON.stringify({ error: "Authentication required" }),

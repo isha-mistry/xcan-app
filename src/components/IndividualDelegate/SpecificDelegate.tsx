@@ -422,28 +422,105 @@ function SpecificDelegate({ props }: { props: Type }) {
     }
   };
 
+  // const fetchDelegateData = async () => {
+  //   setIsFollowStatusLoading(true);
+
+  //   const myHeaders = new Headers();
+  //   myHeaders.append("Content-Type", "application/json");
+  //   if (address) {
+  //     myHeaders.append("x-wallet-address", address);
+  //   }
+  //   const raw = JSON.stringify({
+  //     address: props.individualDelegate,
+  //   });
+
+  //   const requestOptions: any = {
+  //     method: "POST",
+  //     headers: myHeaders,
+  //     body: raw,
+  //     redirect: "follow",
+  //   };
+
+  //   try {
+  //     const resp = await fetchApi(
+  //       `/delegate-follow/savefollower`,
+  //       requestOptions
+  //     );
+
+  //     if (!resp.ok) {
+  //       throw new Error("Failed to fetch delegate data");
+  //     }
+
+  //     const data = await resp.json();
+
+  //     if (!data.success || !data.data || data.data.length === 0) {
+  //       console.log("No data returned from API");
+  //       return;
+  //     }
+
+  //     const followerData = data.data[0];
+  //     const currentDaoName = props.daoDelegates.toLowerCase();
+  //     const daoFollowers = followerData.followers.find(
+  //       (dao: any) => dao.dao_name.toLowerCase() === currentDaoName
+  //     );
+
+  //     if (daoFollowers) {
+  //       // Update follower count
+  //       const followerCount = daoFollowers.follower.filter(
+  //         (f: any) => f.isFollowing
+  //       ).length;
+  //       setFollowers(followerCount);
+  //       setFollowerCountLoading(false);
+
+  //       // Update follow and notification status
+  //       // const address = await walletClient.getAddresses();
+  //       // const address_user = address[0].toLowerCase();
+  //       const userFollow = daoFollowers.follower.find(
+  //         (f: any) => f.address.toLowerCase() === address?.toLowerCase()
+  //       );
+
+  //       if (userFollow) {
+  //         setIsFollowing(userFollow.isFollowing);
+  //         isNotification(userFollow.isNotification);
+  //       } else {
+  //         setIsFollowing(false);
+  //         isNotification(false);
+  //       }
+  //     } else {
+  //       setFollowers(0);
+  //       setIsFollowing(false);
+  //       isNotification(false);
+  //       setFollowerCountLoading(false);
+  //     }
+  //   } catch (error) {
+  //     console.error("Error in fetchDelegateData:", error);
+  //     setFollowers(0);
+  //     setIsFollowing(false);
+  //     isNotification(false);
+  //     setFollowerCountLoading(false);
+  //   } finally {
+  //     setFollowerCountLoading(false);
+  //     setIsFollowStatusLoading(false);
+  //   }
+  // };
+
+
   const fetchDelegateData = async () => {
+    console.log("458...");
     setIsFollowStatusLoading(true);
 
-    const myHeaders = new Headers();
-    myHeaders.append("Content-Type", "application/json");
-    if (address) {
-      myHeaders.append("x-wallet-address", address);
-    }
-    const raw = JSON.stringify({
-      address: props.individualDelegate,
+    const headers = new Headers({
+      "Content-Type": "application/json",
     });
-
     const requestOptions: any = {
-      method: "POST",
-      headers: myHeaders,
-      body: raw,
-      redirect: "follow",
+      method: "GET",
+      headers,
     };
 
     try {
+      // Add delegate address as query parameter
       const resp = await fetchApi(
-        `/delegate-follow/savefollower`,
+        `/delegate-follow/savefollower?address=${props.individualDelegate}`,
         requestOptions
       );
 
@@ -455,6 +532,7 @@ function SpecificDelegate({ props }: { props: Type }) {
 
       if (!data.success || !data.data || data.data.length === 0) {
         console.log("No data returned from API");
+        setFollowers(0); // Show 0 if no data
         return;
       }
 
@@ -465,23 +543,20 @@ function SpecificDelegate({ props }: { props: Type }) {
       );
 
       if (daoFollowers) {
-        // Update follower count
         const followerCount = daoFollowers.follower.filter(
           (f: any) => f.isFollowing
         ).length;
+
         setFollowers(followerCount);
         setFollowerCountLoading(false);
 
-        // Update follow and notification status
-        // const address = await walletClient.getAddresses();
-        // const address_user = address[0].toLowerCase();
-        const userFollow = daoFollowers.follower.find(
-          (f: any) => f.address.toLowerCase() === address?.toLowerCase()
-        );
+        if (address) {
+          const userFollow = daoFollowers.follower.find(
+            (f: any) => f.address.toLowerCase() === address.toLowerCase()
+          );
 
-        if (userFollow) {
-          setIsFollowing(userFollow.isFollowing);
-          isNotification(userFollow.isNotification);
+          setIsFollowing(userFollow?.isFollowing ?? false);
+          isNotification(userFollow?.isNotification ?? false);
         } else {
           setIsFollowing(false);
           isNotification(false);
@@ -490,19 +565,18 @@ function SpecificDelegate({ props }: { props: Type }) {
         setFollowers(0);
         setIsFollowing(false);
         isNotification(false);
-        setFollowerCountLoading(false);
       }
     } catch (error) {
       console.error("Error in fetchDelegateData:", error);
       setFollowers(0);
       setIsFollowing(false);
       isNotification(false);
-      setFollowerCountLoading(false);
     } finally {
       setFollowerCountLoading(false);
       setIsFollowStatusLoading(false);
     }
   };
+
 
   const handleConfirm = async (action: number) => {
     let delegate_address: string;
@@ -794,7 +868,8 @@ function SpecificDelegate({ props }: { props: Type }) {
             } else {
               // await updateFollowerState();
               // await setFollowerscount();
-              await fetchDelegateData();
+              // await fetchDelegateData();
+              console.log("Followers count!",followers);
             }
             setSocials({
               twitter: item.socialHandles.twitter,
