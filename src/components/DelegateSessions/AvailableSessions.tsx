@@ -1,13 +1,12 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import search from "@/assets/images/daos/search.png";
 import Image, { StaticImageData } from "next/image";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useRouter } from "next-nprogress-bar";
 import { IoCopy } from "react-icons/io5";
 import copy from "copy-to-clipboard";
-import toast, { Toaster } from "react-hot-toast";
 import { Tooltip } from "@nextui-org/react";
 import clockIcn from "@/assets/images/daos/icon_clock.png";
 import ccLogo from "@/assets/images/daos/CCLogo2.png";
@@ -27,6 +26,17 @@ import { MdOutlineHourglassDisabled } from "react-icons/md";
 import { usePrivy } from "@privy-io/react-auth";
 import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 // import { useConnectModal } from "@rainbow-me/rainbowkit";
+import Link from "next/link";
+import op from "@/assets/images/daos/op.png";
+import arb from "@/assets/images/daos/arb.png";
+import { Calendar } from "lucide-react";
+import { FaDatabase } from "react-icons/fa";
+import { BsLink45Deg } from "react-icons/bs";
+import user1 from "@/assets/images/user/user5.svg";
+import user2 from "@/assets/images/user/user2.svg";
+import user3 from "@/assets/images/user/user8.svg";
+import user4 from "@/assets/images/user/user9.svg";
+import user5 from "@/assets/images/user/user4.svg";
 
 interface Type {
   ensName: string;
@@ -72,6 +82,57 @@ function AvailableSessions() {
   const { ready, authenticated, login, logout, user } = usePrivy();
   const {walletAddress}=useWalletAddress();
 
+  const [tooltipContent, setTooltipContent] = useState("Copy");
+  const [animatingButtons, setAnimatingButtons] = useState<{
+    [key: string]: boolean;
+  }>({});
+  const [isTextTruncated, setIsTextTruncated] = useState(false);
+  const textRef = useRef(null);
+
+  const getDefaultUserImage = (address: string) => {
+    const defaultImages = [user1, user2, user3, user4, user5];
+    // Use the last character of the address to determine the image
+    const lastChar = address.slice(-1);
+    // Convert the last character to a number (0-15 for hex)
+    const num = parseInt(lastChar, 16);
+    // Use modulo to get an index within our image array length
+    const imageIndex = num % defaultImages.length;
+    return defaultImages[imageIndex];
+  };
+  // const scrollContainerRef = useRef<HTMLDivElement>(null)
+
+  // const scroll = (direction: "left" | "right") => {
+  //   if (scrollContainerRef.current) {
+  //     const scrollAmount = 200
+  //     const newScrollLeft =
+  //       scrollContainerRef.current.scrollLeft + (direction === "left" ? -scrollAmount : scrollAmount)
+  //     scrollContainerRef.current.scrollTo({
+  //       left: newScrollLeft,
+  //       behavior: "smooth",
+  //     })
+  //   }
+  // }
+
+  const isTruncated = (element: HTMLElement | null) => {
+    if (!element) return false;
+    return element.scrollWidth > element.clientWidth;
+  };
+
+  // Add useEffect to check truncation on window resize
+  useEffect(() => {
+    const handleResize = () => {
+      const elements = document.querySelectorAll(".truncate-text");
+      elements.forEach((element) => {
+        const isTrunc = isTruncated(element as HTMLElement);
+        setIsTextTruncated(isTrunc);
+      });
+    };
+
+    window.addEventListener("resize", handleResize);
+    handleResize(); // Check on initial render
+
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   const handleBookSession = (daoName: string, userAddress: string) => {
     if (isConnected) {
@@ -201,7 +262,21 @@ function AvailableSessions() {
 
   const handleCopy = (addr: string) => {
     copy(addr);
-    toast("Address Copied");
+    setTooltipContent("Copied");
+
+    setAnimatingButtons((prev) => ({
+      ...prev,
+      [addr]: true,
+    }));
+
+    // Reset tooltip text and animation after 4 seconds
+    setTimeout(() => {
+      setTooltipContent("Copy");
+      setAnimatingButtons((prev) => ({
+        ...prev,
+        [addr]: false,
+      }));
+    }, 4000);
   };
 
   const handleSearchChange = (query: string) => {
@@ -358,7 +433,7 @@ function AvailableSessions() {
     );
 
   return (
-    <div className="xs:mx-4 ">
+    <div className="xs:mx-4">
       <div className="flex flex-col lg:flex-row lg:gap-3 bg-[#D9D9D945] px-2 py-4 xs:p-4 mt-4 mx-2 rounded-2xl font-poppins">
         {/* <div
           style={{ background: "rgba(238, 237, 237, 0.36)" }}
@@ -601,177 +676,214 @@ function AvailableSessions() {
                 style={{
                   boxShadow: "0px 4px 50.8px 0px rgba(0, 0, 0, 0.11)",
                 }}
-                className="rounded-3xl flex flex-col bg-white h-full justify-between"
+                className="rounded-3xl flex flex-col bg-white h-full justify-between transition-all duration-700 ease-in-out hover:shadow-2xl hover:transform hover:scale-105"
               >
                 <div className="border-b-2 sm:border-b-0 mb-2 sm:mb-0 relative">
-                  <div className="flex py-5 px-5 rounded-tl-3xl rounded-tr-3xl">
-                    <div
-                      className="relative object-cover rounded-3xl border-none xs:border-[2px] border-[#E9E9E9]"
-                      // style={{
-                      //   backgroundColor: "#fcfcfc",
-                      // }}
-                    >
-                      <div className="size-24 sm:size-32 flex items-center justify-content ">
-                        <div className="flex justify-start sm:justify-center items-center size-24 sm:size-32">
-                          <Image
-                            src={
-                              daos?.userInfo[0]?.image
-                                ? `https://gateway.lighthouse.storage/ipfs/${daos?.userInfo[0]?.image}`
-                                : daos.session.dao_name === "optimism"
-                                ? OPLogo
-                                : daos.session.dao_name === "arbitrum"
-                                ? ArbLogo
-                                : ccLogo
-                            }
-                            alt="user"
-                            width={256}
-                            height={256}
-                            className={
-                              daos?.userInfo[0]?.image
-                                ? "size-24 sm:w-32 sm:h-32 rounded-xl xs:rounded-3xl"
-                                : "w-20 h-20 rounded-3xl"
-                            }
-                          />
-                        </div>
-
+                  <div className=" py-5 px-5 rounded-tl-3xl rounded-tr-3xl">
+                    <div className="">
+                      <div className="flex gap-2">
                         <Image
-                          src={ccLogo}
-                          alt="ChoraClub Logo"
-                          className="absolute hidden xs:flex  xs:size-5 sm:size-[30px] top-0 right-0 rounded-full bg-white"
-                          style={{
-                            marginTop: "10px",
-                            marginRight: "10px",
-                          }}
+                          src={
+                            daos?.userInfo[0]?.image
+                              ? `https://gateway.lighthouse.storage/ipfs/${daos?.userInfo[0]?.image}`
+                              : // : daos.session.dao_name === "optimism"
+                                // ? OPLogo
+                                // : daos.session.dao_name === "arbitrum"
+                                // ? ArbLogo
+                                // : ccLogo
+                                getDefaultUserImage(daos.session.userAddress)
+                          }
+                          alt="user"
+                          width={48}
+                          height={48}
+                          className={
+                            daos?.userInfo[0]?.image
+                              ? "size-12 sm:size-14 rounded-full"
+                              : "w-14 h-14 rounded-3xl"
+                          }
                         />
-                      </div>
-                    </div>
 
-                    <div className="w-3/4 ml-2 sm:ml-4">
-                      <div className="text-[#3E3D3D] text-base sm:text-lg font-semibold mb-1">
-                        {ensNames[daos?.userInfo[0]?.address] ||
-                          daos.userInfo[0]?.displayName ||
-                          daos.session.userAddress.slice(0, 6) +
-                            "..." +
-                            daos.session.userAddress.slice(-4)}
-                      </div>
-                      <div className="text-xs sm:text-sm flex">
-                        <div>
-                          {daos.session.userAddress.slice(0, 6) +
-                            "..." +
-                            daos.session.userAddress.slice(-4)}
-                        </div>
-                        <div className="items-center">
-                          <Tooltip
-                            content="Copy"
-                            placement="right"
-                            closeDelay={1}
-                            showArrow
-                          >
-                            <div
-                              className="pl-2 pt-[2px] cursor-pointer"
-                              color="#3E3D3D"
+                        <div className="">
+                          <div className="flex gap-1 items-center mb-1">
+                            <Link
+                              href={`/${daos.session.dao_name}/${daos.session.userAddress}?active=info`}
+                              className="min-w-0 flex-shrink w-1/2 0.7xs:w-auto"
                             >
-                              <IoCopy
-                                onClick={() =>
-                                  handleCopy(`${daos.session.userAddress}`)
+                              <Tooltip
+                                content={
+                                  ensNames[daos?.userInfo[0]?.address] ||
+                                  daos.userInfo[0]?.displayName ||
+                                  daos.session.userAddress
                                 }
-                              />
+                                placement="top"
+                                isDisabled={!isTextTruncated}
+                                showArrow
+                              >
+                                <div
+                                  className="text-[#3E3D3D] hover:text-blue-shade-100 text-base sm:text-lg font-semibold truncate truncate-text"
+                                  ref={textRef}
+                                  onMouseEnter={(e) => {
+                                    const element = e.currentTarget;
+                                    setIsTextTruncated(isTruncated(element));
+                                  }}
+                                >
+                                  {ensNames[daos?.userInfo[0]?.address] ||
+                                    daos.userInfo[0]?.displayName ||
+                                    daos.session.userAddress.slice(0, 6) +
+                                      "..." +
+                                      daos.session.userAddress.slice(-4)}
+                                </div>
+                              </Tooltip>
+                            </Link>
+                            <div className="flex gap-1 flex-shrink-0">
+                              {daos.meetingsInfo.counts.onChainCount > 0 && (
+                                <Tooltip
+                                  content={
+                                    "Received " +
+                                    daos.meetingsInfo.counts.onChainCount +
+                                    " Onchain attestation"
+                                  }
+                                  placement="top"
+                                  closeDelay={1}
+                                  showArrow
+                                >
+                                  <div className="flex justify-center items-center px-[2px] rounded-full border-[1.5px] border-blue-shade-100">
+                                    <BsLink45Deg className="size-4 text-blue-shade-100" />
+                                  </div>
+                                </Tooltip>
+                              )}
+                              {daos.meetingsInfo.counts.offChainCount > 0 && (
+                                <Tooltip
+                                  content={
+                                    "Received " +
+                                    daos.meetingsInfo.counts.offChainCount +
+                                    " Offchain attestation"
+                                  }
+                                  placement="top"
+                                  closeDelay={1}
+                                  showArrow
+                                >
+                                  <div className="p-1 rounded-full border-[1.5px] border-blue-shade-100">
+                                    <FaDatabase className="size-3 text-blue-shade-100" />
+                                  </div>
+                                </Tooltip>
+                              )}
                             </div>
-                          </Tooltip>
+                          </div>
+                          <div className="text-xs sm:text-sm flex">
+                            <Link
+                              href={`/${daos.session.dao_name}/${daos.session.userAddress}?active=info`}
+                            >
+                              <div className="hover:text-blue-shade-100">
+                                {daos.session.userAddress.slice(0, 6) +
+                                  "..." +
+                                  daos.session.userAddress.slice(-4)}
+                              </div>
+                            </Link>
+
+                            <div className="items-center">
+                              <Tooltip
+                                content={tooltipContent}
+                                placement="right"
+                                closeDelay={1}
+                                showArrow
+                              >
+                                <div
+                                  className={`pl-2 pt-[2px] cursor-pointer  ${
+                                    animatingButtons[daos.session.userAddress]
+                                      ? "text-blue-500"
+                                      : "text-[#3E3D3D]"
+                                  }`}
+                                >
+                                  <IoCopy
+                                    onClick={() =>
+                                      handleCopy(`${daos.session.userAddress}`)
+                                    }
+                                  />
+                                </div>
+                              </Tooltip>
+                            </div>
+                          </div>
                         </div>
                       </div>
-                      <div className="mt-1 sm:mt-2 bg-[#1E1E1E] border border-[#1E1E1E] text-white rounded-md text-[10px] sm:text-xs px-4 py-0.5 sm:px-5 sm:py-1 font-semibold w-fit capitalize">
-                        {daos.session.dao_name}
-                      </div>
-                      <div>
-                        <div
-                          className="text-[#4F4F4F] border-[0.5px] border-[#D9D9D9] rounded-md px-1.5 sm:px-3 py-1 mt-2 sm:mt-4 sm:max-h-[86px] sm:overflow-y-scroll overflow-x-auto"
-                          style={{
-                            scrollbarWidth: "thin",
-                            msOverflowStyle: "none",
-                          }}
-                        >
-                          <div className="flex flex-row flex-wrap gap-1 xs:gap-2 sm:gap-4">
-                            {daos.session.dateAndRanges
-                              .flatMap((dateRange: any) => dateRange.date)
-                              .filter(
-                                (date: any, index: any, self: any) =>
-                                  self.indexOf(date) === index
-                              )
-                              .sort(
-                                (a: any, b: any) =>
-                                  new Date(a).getTime() - new Date(b).getTime()
-                              )
-                              .map((date: string, index: number) => (
-                                <div
-                                  key={index}
-                                  className="text-black bg-[#f7f7f7c3] rounded-2xl font-semibold text-[10px] xs:text-xs sm:text-small border-[0.5px] border-[#D9D9D9] px-3 py-1"
-                                >
-                                  {
-                                    new Date(date)
-                                      .toLocaleString()
-                                      .split(",")[0]
-                                  }
-                                </div>
-                              ))}
+
+                      <div className="relative w-full max-w-full mt-3">
+                        <div className="w-full overflow-hidden">
+                          <div
+                            className="overflow-x-auto  mx-4 scroll-smooth [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar]:transition-all [&::-webkit-scrollbar]:duration-300  [&::-webkit-scrollbar-track]:rounded-full  [&::-webkit-scrollbar-thumb]:rounded-full  [&::-webkit-scrollbar-thumb]:bg-indigo-100  [&::-webkit-scrollbar-track]:bg-blue-50  hover:[&::-webkit-scrollbar-thumb]:bg-blue-100
+                            transition-all duration-300"
+                          >
+                            <div className="flex space-x-2 my-[1px] p-1 w-fit">
+                              {daos.session.dateAndRanges
+                                .flatMap((dateRange: any) => dateRange.date)
+                                .filter(
+                                  (date: any, index: any, self: any) =>
+                                    self.indexOf(date) === index
+                                )
+                                .sort(
+                                  (a: any, b: any) =>
+                                    new Date(a).getTime() -
+                                    new Date(b).getTime()
+                                )
+                                .map((date: string, index: number) => (
+                                  <>
+                                    <Link
+                                      href={`/${daos.session.dao_name}/${daos.session.userAddress}?active=info`}
+                                      key={index}
+                                      className="flex-shrink-0 group relative"
+                                    >
+                                      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100  transition-all duration-300 ease-in-out rounded-xl border border-indigo-100 hover:border-indigo-200 shadow-md hover:shadow-lg px-4 py-2 min-w-[120px] text-center">
+                                        <div className="text-xs sm:text-sm font-medium text-gray-600">
+                                          {new Date(date).toLocaleDateString(
+                                            "en-US",
+                                            { weekday: "short" }
+                                          )}
+                                        </div>
+                                        <div className="text-sm sm:text-base font-semibold text-gray-800 mt-0.5">
+                                          {new Date(date).toLocaleDateString(
+                                            "en-US",
+                                            {
+                                              day: "numeric",
+                                              month: "short",
+                                            }
+                                          )}
+                                        </div>
+                                        <div className="absolute -top-1 -right-1 w-2 h-2 bg-blue-500 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                                      </div>
+                                    </Link>
+                                  </>
+                                ))}
+                            </div>
                           </div>
                         </div>
                       </div>
                     </div>
                   </div>
-                  <div className="absolute top-3 right-3 gap-1">
-                    {daos.meetingsInfo.counts.onChainCount > 0 && (
-                      <Tooltip
-                        content={
-                          "Received " +
-                          daos.meetingsInfo.counts.onChainCount +
-                          " Onchain attestation"
+                  <div className="absolute top-3 right-3 gap-1 flex items-start">
+                    <Tooltip
+                      content={
+                        daos.session.dao_name === "optimism"
+                          ? "Delegate of Optimism Collective"
+                          : "Delegate of Arbitrum DAO"
+                      }
+                      placement="left"
+                      closeDelay={1}
+                      showArrow
+                    >
+                      <Image
+                        src={
+                          daos.session.dao_name === "optimism"
+                            ? op
+                            : daos.session.dao_name === "arbitrum"
+                            ? arb
+                            : ""
                         }
-                        placement="top"
-                        closeDelay={1}
-                        showArrow
-                      >
-                        <div className="flex items-center cursor-pointer bg-white rounded-full px-1 mb-2 gap-1 sm:gap-2 border border-blue-shade-200">
-                          <div>
-                            <Image
-                              src={onChain_link}
-                              alt="image"
-                              width={20}
-                              className="size-3 sm:size-4"
-                            />
-                          </div>
-                          <span className="text-sm sm:text-base">
-                            {daos.meetingsInfo.counts.onChainCount}
-                          </span>
-                        </div>
-                      </Tooltip>
-                    )}
-                    {daos.meetingsInfo.counts.offChainCount > 0 && (
-                      <Tooltip
-                        content={
-                          "Received " +
-                          daos.meetingsInfo.counts.offChainCount +
-                          " Offchain attestation"
-                        }
-                        placement="top"
-                        closeDelay={1}
-                        showArrow
-                      >
-                        <div className="flex items-center cursor-pointer bg-white rounded-full px-1 gap-1 sm:gap-2 border border-blue-shade-200">
-                          <div>
-                            <Image
-                              src={offChain_link}
-                              alt="image"
-                              width={20}
-                              className="size-3 sm:size-4"
-                            />
-                          </div>
-                          <span className="text-sm sm:text-base">
-                            {daos.meetingsInfo.counts.offChainCount}
-                          </span>
-                        </div>
-                      </Tooltip>
-                    )}
+                        alt=""
+                        height={32}
+                        width={32}
+                        className="size-6"
+                      />
+                    </Tooltip>
                   </div>
                 </div>
 
@@ -784,13 +896,13 @@ function AvailableSessions() {
                     className="size-4 xs:size-5"
                     priority
                   />
-                  <div className="w-[60%] flex items-center">
+                  <div className="w-[55%] 0.5xs:w-[60%] flex items-center">
                     <span className="text-[10px] xs:text-xs sm:text-base font-semibold text-[#0500FF] ml-1">
                       Available for {`${daos.session.timeSlotSizeMinutes}`}{" "}
                       minutes
                     </span>
                   </div>
-                  <div className="w-[40%] flex justify-end ">
+                  <div className="w-[45%] 0.5xs:w-[40%] flex justify-end ">
                     <button
                       onClick={() =>
                         handleBookSession(
@@ -798,9 +910,15 @@ function AvailableSessions() {
                           daos.session.userAddress
                         )
                       }
-                      className="bg-black text-white py-2 xs:py-3 sm:py-4 px-4 sm:px-6 rounded-[36px] text-[10px] xs:text-xs sm:text-sm w-[11rem] hover:bg-[#333333] focus:outline-none focus:ring-2 focus:ring-gray-400 font-medium"
+                      className="group relative bg-black text-white py-2 xs:py-3 sm:py-4 px-4 sm:px-6 rounded-[36px] text-[10px] xs:text-xs sm:text-sm w-[11rem] font-medium shadow-[0_8px_30px_rgb(0,0,0,0.12)] before:content-[''] before:absolute before:inset-0 before:rounded-[36px] before:bg-gradient-to-r before:from-transparent before:via-white/5 before:to-transparent before:pointer-events-none transition-all duration-300 ease-out hover:transform hover:translate-y-[-2px]hover:shadow-[0_20px_40px_rgba(0,0,0,0.25)] hover:bg-[#1b1b1b] focus:outline-none focus:ring-2 focus:ring-gray-400 active:transform active:translate-y-[1px] flex items-center justify-center gap-2 overflow-hidden"
                     >
-                      Book Session
+                      <span className="transition-transform duration-300 group-hover:translate-x-[-2px]">
+                        Book Session
+                      </span>
+                      <Calendar
+                        size={16}
+                        className="size-3 xs:size-4 transition-all duration-500 ease-in-out group-hover:translate-x-[10px] group-hover:scale-125 group-hover:rotate-12 group-hover:animate-pulse relative after:absolute after:content-[''] after:w-full after:h-full after:bg-white/10 after:top-0 after:left-0 after:rounded-full after:scale-0 group-hover:after:scale-150 after:transition-transform after:duration-300 after:opacity-0 group-hover:after:opacity-100"
+                      />
                     </button>
                   </div>
                 </div>
