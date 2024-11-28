@@ -5,8 +5,9 @@ import text1 from "@/assets/images/daos/texture1.png";
 import Tile from "../ComponentUtils/Tile";
 import { Oval } from "react-loader-spinner";
 import SessionTileSkeletonLoader from "../SkeletonLoader/SessionTileSkeletonLoader";
-import {useAccount} from "wagmi";
+import { useAccount } from "wagmi";
 import { fetchApi } from "@/utils/api";
+import OfficeHoursAlertMessage from "../AlertMessage/OfficeHoursAlertMessage";
 
 interface Type {
   daoDelegates: string;
@@ -29,7 +30,7 @@ function DelegateOfficeHrs({ props }: { props: Type }) {
   const router = useRouter();
   const path = usePathname();
   const searchParams = useSearchParams();
-  const {address}=useAccount();
+  const { address } = useAccount();
 
   const [sessionDetails, setSessionDetails] = useState([]);
   const [dataLoading, setDataLoading] = useState(true);
@@ -48,8 +49,8 @@ function DelegateOfficeHrs({ props }: { props: Type }) {
     };
 
     checkForOverflow();
-    window.addEventListener('resize', checkForOverflow);
-    return () => window.removeEventListener('resize', checkForOverflow);
+    window.addEventListener("resize", checkForOverflow);
+    return () => window.removeEventListener("resize", checkForOverflow);
   }, []);
 
   const handleScroll = () => {
@@ -150,8 +151,11 @@ function DelegateOfficeHrs({ props }: { props: Type }) {
   return (
     <div>
       <div className="pt-3">
-        <div className="flex gap-10 sm:gap-16 border-1 border-[#7C7C7C] px-6 rounded-xl text-sm overflow-x-auto whitespace-nowrap relative" ref={scrollContainerRef}
-        onScroll={handleScroll}>
+        <div
+          className="flex gap-10 sm:gap-16 border-1 border-[#7C7C7C] px-6 rounded-xl text-sm overflow-x-auto whitespace-nowrap relative"
+          ref={scrollContainerRef}
+          onScroll={handleScroll}
+        >
           <button
             className={`py-2  ${
               searchParams.get("hours") === "ongoing"
@@ -160,7 +164,8 @@ function DelegateOfficeHrs({ props }: { props: Type }) {
             }`}
             onClick={() =>
               router.push(path + "?active=officeHours&hours=ongoing")
-            }>
+            }
+          >
             Ongoing
           </button>
           <button
@@ -171,7 +176,8 @@ function DelegateOfficeHrs({ props }: { props: Type }) {
             }`}
             onClick={() =>
               router.push(path + "?active=officeHours&hours=upcoming")
-            }>
+            }
+          >
             Upcoming
           </button>
           <button
@@ -182,7 +188,8 @@ function DelegateOfficeHrs({ props }: { props: Type }) {
             }`}
             onClick={() =>
               router.push(path + "?active=officeHours&hours=hosted")
-            }>
+            }
+          >
             Hosted
           </button>
           <button
@@ -193,12 +200,13 @@ function DelegateOfficeHrs({ props }: { props: Type }) {
             }`}
             onClick={() =>
               router.push(path + "?active=officeHours&hours=attended")
-            }>
+            }
+          >
             Attended
           </button>
         </div>
 
-        <div className="py-10">
+        {/* <div className="py-10">
           {searchParams.get("hours") === "ongoing" &&
             (dataLoading ? (
               <SessionTileSkeletonLoader />
@@ -243,6 +251,10 @@ function DelegateOfficeHrs({ props }: { props: Type }) {
                 isOfficeHour={true}
               />
             ))}
+        </div> */}
+
+        <div className="py-10">
+          <OfficeHoursAlertMessage />
         </div>
       </div>
     </div>

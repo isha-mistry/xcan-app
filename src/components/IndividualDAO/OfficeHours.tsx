@@ -11,6 +11,7 @@ import { headers } from "next/headers";
 import { useAccount } from "wagmi";
 import { CiSearch } from "react-icons/ci";
 import { fetchApi } from "@/utils/api";
+import OfficeHoursAlertMessage from "../AlertMessage/OfficeHoursAlertMessage";
 
 interface Session {
   _id: string;
@@ -100,90 +101,90 @@ function OfficeHours({ props }: { props: string }) {
     }
   };
 
-  useEffect(() => {
-    fetchData();
-  }, [searchParams.get("hours")]); // Re-fetch data when filter changes
+  // useEffect(() => {
+  //   fetchData();
+  // }, [searchParams.get("hours")]); // Re-fetch data when filter changes
 
-  useEffect(() => {
-    // Set initial session details
-    setSessionDetails([]);
-  }, [props]);
+  // useEffect(() => {
+  //   // Set initial session details
+  //   setSessionDetails([]);
+  // }, [props]);
 
-  const handleSearchChange = async (query: string) => {
-    setSearchQuery(query);
-    setDataLoading(true);
-    setNoResults(false);
+  // const handleSearchChange = async (query: string) => {
+  //   setSearchQuery(query);
+  //   setDataLoading(true);
+  //   setNoResults(false);
 
-    try {
-      if (query.length > 0) {
-        setDataLoading(true);
-        const raw = JSON.stringify({
-          dao_name: dao_name,
-        });
+  //   try {
+  //     if (query.length > 0) {
+  //       setDataLoading(true);
+  //       const raw = JSON.stringify({
+  //         dao_name: dao_name,
+  //       });
 
-        const myHeaders = new Headers();
-        myHeaders.append("Content-Type", "application/json");
-        if (address) {
-          myHeaders.append("x-wallet-address", address);
-        }
+  //       const myHeaders = new Headers();
+  //       myHeaders.append("Content-Type", "application/json");
+  //       if (address) {
+  //         myHeaders.append("x-wallet-address", address);
+  //       }
 
-        const requestOptions: any = {
-          method: "POST",
-          headers: myHeaders,
-          body: raw,
-          redirect: "follow",
-        };
-        const res = await fetchApi(
-          `/search-officehours/${query}`,
-          requestOptions
-        );
-        if (!res.ok) {
-          throw new Error(`HTTP error! status: ${res.status}`);
-        }
-        const result = await res.json();
-        const resultData = await result.data;
+  //       const requestOptions: any = {
+  //         method: "POST",
+  //         headers: myHeaders,
+  //         body: raw,
+  //         redirect: "follow",
+  //       };
+  //       const res = await fetchApi(
+  //         `/search-officehours/${query}`,
+  //         requestOptions
+  //       );
+  //       if (!res.ok) {
+  //         throw new Error(`HTTP error! status: ${res.status}`);
+  //       }
+  //       const result = await res.json();
+  //       const resultData = await result.data;
 
-        if (result.success) {
-          const filtered: any = resultData.filter((session: Session) => {
-            if (searchParams.get("hours") === "ongoing") {
-              return session.meeting_status === "ongoing";
-            } else if (searchParams.get("hours") === "upcoming") {
-              return session.meeting_status === "active";
-            } else if (searchParams.get("hours") === "recorded") {
-              return session.meeting_status === "inactive";
-            }
-          });
-          console.log("filtered: ", filtered);
-          setSessionDetails(filtered);
-          setNoResults(filtered.length === 0);
-          setError(null);
-        }
-      } else {
-        setSessionDetails(tempDetails);
-        setNoResults(tempDetails.length === 0);
-        setError(null);
-      }
-    } catch (error: any) {
-      console.error("Search error:", error);
-      if (error.name === "TypeError" && error.message === "Failed to fetch") {
-        setError("Please check your internet connection and try again.");
-      } else if (error.name === "TimeoutError") {
-        setError(
-          "The search request is taking longer than expected. Please try again."
-        );
-      } else if (error.name === "SyntaxError") {
-        setError(
-          "We're having trouble processing the search data. Please try again later."
-        );
-      } else {
-        setError(
-          `Unable to perform search for "${query}". Please try again in a few moments.`
-        );
-      }
-    } finally {
-      setDataLoading(false);
-    }
-  };
+  //       if (result.success) {
+  //         const filtered: any = resultData.filter((session: Session) => {
+  //           if (searchParams.get("hours") === "ongoing") {
+  //             return session.meeting_status === "ongoing";
+  //           } else if (searchParams.get("hours") === "upcoming") {
+  //             return session.meeting_status === "active";
+  //           } else if (searchParams.get("hours") === "recorded") {
+  //             return session.meeting_status === "inactive";
+  //           }
+  //         });
+  //         console.log("filtered: ", filtered);
+  //         setSessionDetails(filtered);
+  //         setNoResults(filtered.length === 0);
+  //         setError(null);
+  //       }
+  //     } else {
+  //       setSessionDetails(tempDetails);
+  //       setNoResults(tempDetails.length === 0);
+  //       setError(null);
+  //     }
+  //   } catch (error: any) {
+  //     console.error("Search error:", error);
+  //     if (error.name === "TypeError" && error.message === "Failed to fetch") {
+  //       setError("Please check your internet connection and try again.");
+  //     } else if (error.name === "TimeoutError") {
+  //       setError(
+  //         "The search request is taking longer than expected. Please try again."
+  //       );
+  //     } else if (error.name === "SyntaxError") {
+  //       setError(
+  //         "We're having trouble processing the search data. Please try again later."
+  //       );
+  //     } else {
+  //       setError(
+  //         `Unable to perform search for "${query}". Please try again in a few moments.`
+  //       );
+  //     }
+  //   } finally {
+  //     setDataLoading(false);
+  //   }
+  // };
 
   const handleRetry = () => {
     setError(null);
@@ -218,19 +219,19 @@ function OfficeHours({ props }: { props: string }) {
         </span>
       </div> */}
       <div
-          className={`flex items-center rounded-full shadow-lg my-4 bg-gray-100 text-black cursor-pointer w-[300px] xs:w-[365px]`}
-        >
-          <CiSearch
-            className={`text-base transition-all duration-700 ease-in-out ml-3`}
-          />
-          <input
-            type="text"
-            placeholder="Search by title and host address"
-            className="w-[100%] pl-2 pr-4 py-1.5 font-poppins md:py-2 text-sm bg-transparent outline-none"
-            value={searchQuery}
-            onChange={(e) => handleSearchChange(e.target.value)}
-          />
-        </div>
+        className={`flex items-center rounded-full shadow-lg my-4 bg-gray-100 text-black cursor-pointer w-[300px] xs:w-[365px]`}
+      >
+        <CiSearch
+          className={`text-base transition-all duration-700 ease-in-out ml-3`}
+        />
+        <input
+          type="text"
+          placeholder="Search by title and host address"
+          className="w-[100%] pl-2 pr-4 py-1.5 font-poppins md:py-2 text-sm bg-transparent outline-none"
+          value={searchQuery}
+          // onChange={(e) => handleSearchChange(e.target.value)}
+        />
+      </div>
 
       <div className="pr-36 pt-3">
         <div className="flex gap-16 border-1 border-[#7C7C7C] pl-6 rounded-xl text-sm">
@@ -272,7 +273,7 @@ function OfficeHours({ props }: { props: string }) {
           </button>
         </div>
 
-        <div className="py-10">
+        {/* <div className="py-10">
           {noResults ? (
             <div className="flex flex-col justify-center items-center pt-10">
               <div className="text-5xl">☹️</div>
@@ -321,6 +322,10 @@ function OfficeHours({ props }: { props: string }) {
                 ))}
             </>
           )}
+        </div> */}
+
+        <div className="py-10">
+          <OfficeHoursAlertMessage />
         </div>
       </div>
     </div>
