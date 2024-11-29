@@ -19,7 +19,7 @@ import toast, { Toaster } from "react-hot-toast";
 import { useNotificationStudioState } from "@/store/notificationStudioState";
 import MobileResponsiveMessage from "../MobileResponsiveMessage/MobileResponsiveMessage";
 import Heading from "../ComponentUtils/Heading";
-import NotificationSkeletonLoader from '../SkeletonLoader/NotificationSkeletonLoader';
+import NotificationSkeletonLoader from "../SkeletonLoader/NotificationSkeletonLoader";
 import { usePrivy } from "@privy-io/react-auth";
 import { useConnection } from "@/app/hooks/useConnection";
 import { useWalletAddress } from "@/app/hooks/useWalletAddress";
@@ -28,10 +28,10 @@ import { fetchApi } from "@/utils/api";
 import { BellOff, ChevronDownIcon, Wallet } from "lucide-react";
 
 function NotificationMain() {
-  const {isConnected} =useConnection()
+  const { isConnected } = useConnection();
   const { data: session } = useSession();
   const { address } = useAccount();
-  const { user, ready, getAccessToken,authenticated } = usePrivy();
+  const { user, ready, getAccessToken, authenticated } = usePrivy();
   const searchParams = useSearchParams();
   const router = useRouter();
   const path = usePathname();
@@ -56,8 +56,7 @@ function NotificationMain() {
   const [buttonText, setButtonText] = useState("Mark all as read");
   const [markAllReadCalling, setMarkAllReadCalling] = useState<boolean>(false);
   const [isPageLoading, setIsPageLoading] = useState<boolean>(true);
-  const {walletAddress}=useWalletAddress();
-
+  const { walletAddress } = useWalletAddress();
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [selectedTab, setSelectedTab] = useState("Info");
@@ -134,7 +133,6 @@ function NotificationMain() {
     setIsPageLoading(false);
   }, [isPageLoading]);
 
-
   useEffect(() => {
     if (socket) {
       socket.on("connect", () => {
@@ -150,21 +148,23 @@ function NotificationMain() {
   useEffect(() => {
     // Set canFetch based on address and session
     setCanFetch(!!walletAddress && !!authenticated);
-  }, [address,walletAddress, session, setCanFetch]);
+  }, [address, walletAddress, session, setCanFetch]);
 
   const fetchNotifications = useCallback(async () => {
     if (!canFetch) return;
     setIsLoading(true);
     try {
       const myHeaders = new Headers();
-      const token=await getAccessToken();
+      const token = await getAccessToken();
       myHeaders.append("Content-Type", "application/json");
       if (walletAddress) {
         myHeaders.append("x-wallet-address", walletAddress);
-        myHeaders.append("Authorization",`Bearer ${token}`);
+        myHeaders.append("Authorization", `Bearer ${token}`);
       }
 
-      const raw = JSON.stringify({ walletAddress });
+      const raw = JSON.stringify({ address: walletAddress });
+
+      console.log("walletAddress:: ", walletAddress);
 
       const requestOptions: RequestInit = {
         method: "POST",
@@ -184,11 +184,17 @@ function NotificationMain() {
     } finally {
       setIsLoading(false);
     }
-  }, [walletAddress,address, canFetch, setNotifications, updateCombinedNotifications]);
+  }, [
+    walletAddress,
+    address,
+    canFetch,
+    setNotifications,
+    updateCombinedNotifications,
+  ]);
 
   useEffect(() => {
     // if (canFetch) {
-      fetchNotifications();
+    fetchNotifications();
     // }
   }, [fetchNotifications, canFetch]);
 
@@ -257,11 +263,11 @@ function NotificationMain() {
     setMarkAllReadCalling(true);
     try {
       const myHeaders = new Headers();
-      const token=await getAccessToken();
+      const token = await getAccessToken();
       myHeaders.append("Content-Type", "application/json");
       if (walletAddress) {
         myHeaders.append("x-wallet-address", walletAddress);
-        myHeaders.append("Authorization",`Bearer ${token}`);
+        myHeaders.append("Authorization", `Bearer ${token}`);
       }
 
       const raw = JSON.stringify({
@@ -315,43 +321,51 @@ function NotificationMain() {
     if (!canFetch) {
       return (
         <div className="flex flex-col justify-center items-center min-h-[16rem] px-4 sm:px-6 md:px-8 py-12 sm:py-16 md:py-20 bg-gradient-to-b from-blue-50/50 to-white">
-      <div className="bg-white/80 backdrop-blur-lg rounded-3xl p-8 sm:p-10 md:p-12 max-w-md w-full mx-auto 
+          <div
+            className="bg-white/80 backdrop-blur-lg rounded-3xl p-8 sm:p-10 md:p-12 max-w-md w-full mx-auto 
         shadow-[0_20px_50px_rgba(59,130,246,0.15)] hover:shadow-[0_25px_60px_rgba(59,130,246,0.2)]
-        border border-blue-100 transition-all duration-500">
-        
-        <div className="flex flex-col items-center space-y-8">
-          {/* Enhanced Animated Icon Container */}
-          <div className="relative group">
-            <div className="absolute inset-0 bg-blue-200 rounded-full blur-2xl opacity-40 group-hover:opacity-60 
-              transition-all duration-500 animate-pulse"></div>
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-300/40 to-blue-200/40 rounded-full 
-              blur-xl rotate-180 transform group-hover:rotate-0 transition-transform duration-700"></div>
-            <div className="relative bg-gradient-to-br from-blue-300 to-blue-400 p-6 rounded-full
+        border border-blue-100 transition-all duration-500"
+          >
+            <div className="flex flex-col items-center space-y-8">
+              {/* Enhanced Animated Icon Container */}
+              <div className="relative group">
+                <div
+                  className="absolute inset-0 bg-blue-200 rounded-full blur-2xl opacity-40 group-hover:opacity-60 
+              transition-all duration-500 animate-pulse"
+                ></div>
+                <div
+                  className="absolute inset-0 bg-gradient-to-r from-blue-300/40 to-blue-200/40 rounded-full 
+              blur-xl rotate-180 transform group-hover:rotate-0 transition-transform duration-700"
+                ></div>
+                <div
+                  className="relative bg-gradient-to-br from-blue-300 to-blue-400 p-6 rounded-full
               shadow-[0_8px_20px_rgba(59,130,246,0.3)] group-hover:shadow-[0_10px_25px_rgba(59,130,246,0.35)]
-              transform transition-all duration-300 group-hover:scale-105">
-              <Wallet 
-                className="w-12 h-12 sm:w-14 sm:h-14 text-white transform group-hover:rotate-12 transition-transform duration-300" 
-                strokeWidth={1.5} 
-              />
+              transform transition-all duration-300 group-hover:scale-105"
+                >
+                  <Wallet
+                    className="w-12 h-12 sm:w-14 sm:h-14 text-white transform group-hover:rotate-12 transition-transform duration-300"
+                    strokeWidth={1.5}
+                  />
+                </div>
+              </div>
+
+              {/* Enhanced Text Content */}
+              <div className="text-center space-y-4">
+                <h3
+                  className="text-xl sm:text-2xl md:text-3xl font-bold 
+              bg-gradient-to-r from-blue-400 to-blue-300 bg-clip-text text-transparent
+              tracking-tight"
+                >
+                  Connect Your Wallet
+                </h3>
+                <p className="text-sm sm:text-base text-gray-600/90 max-w-sm leading-relaxed">
+                  Please connect your wallet and sign in to view your
+                  notifications and activity.
+                </p>
+              </div>
             </div>
           </div>
-          
-          {/* Enhanced Text Content */}
-          <div className="text-center space-y-4">
-            <h3 className="text-xl sm:text-2xl md:text-3xl font-bold 
-              bg-gradient-to-r from-blue-400 to-blue-300 bg-clip-text text-transparent
-              tracking-tight">
-              Connect Your Wallet
-            </h3>
-            <p className="text-sm sm:text-base text-gray-600/90 max-w-sm leading-relaxed">
-              Please connect your wallet and sign in to view your notifications and activity.
-            </p>
-          </div>
-
-         
         </div>
-      </div>
-    </div>
       );
     }
 
@@ -373,33 +387,38 @@ function NotificationMain() {
     if (filteredNotifications.length === 0) {
       return (
         <div className="flex flex-col justify-center items-center min-h-[16rem] px-4 py-8">
-      <div className="bg-white/80 backdrop-blur-lg rounded-3xl p-8 sm:p-10 
+          <div
+            className="bg-white/80 backdrop-blur-lg rounded-3xl p-8 sm:p-10 
         shadow-[0_20px_50px_rgba(59,130,246,0.15)] 
         border border-blue-100 
-        transform transition-all duration-500 hover:shadow-[0_25px_60px_rgba(59,130,246,0.2)]">
-        
-        <div className="flex flex-col items-center space-y-6">
-          <div className="relative group">
-            <div className="absolute inset-0 bg-blue-200 rounded-full blur-xl opacity-30 group-hover:opacity-50 animate-pulse"></div>
-            <div className="relative bg-gradient-to-br from-blue-300 to-blue-400 p-5 rounded-full
+        transform transition-all duration-500 hover:shadow-[0_25px_60px_rgba(59,130,246,0.2)]"
+          >
+            <div className="flex flex-col items-center space-y-6">
+              <div className="relative group">
+                <div className="absolute inset-0 bg-blue-200 rounded-full blur-xl opacity-30 group-hover:opacity-50 animate-pulse"></div>
+                <div
+                  className="relative bg-gradient-to-br from-blue-300 to-blue-400 p-5 rounded-full
               shadow-[0_8px_16px_rgba(59,130,246,0.2)]
-              transform transition-all duration-300 group-hover:scale-105">
-              <BellOff 
-                className="w-8 h-8 sm:w-10 sm:h-10 text-white transform group-hover:rotate-12 transition-transform duration-300" 
-                strokeWidth={1.5}
-              />
+              transform transition-all duration-300 group-hover:scale-105"
+                >
+                  <BellOff
+                    className="w-8 h-8 sm:w-10 sm:h-10 text-white transform group-hover:rotate-12 transition-transform duration-300"
+                    strokeWidth={1.5}
+                  />
+                </div>
+              </div>
+
+              <div className="text-center space-y-2">
+                <h3
+                  className="text-xl sm:text-2xl font-semibold 
+              bg-gradient-to-r from-blue-500 to-blue-400 bg-clip-text text-transparent"
+                >
+                  No New Notifications
+                </h3>
+              </div>
             </div>
           </div>
-
-          <div className="text-center space-y-2">
-            <h3 className="text-xl sm:text-2xl font-semibold 
-              bg-gradient-to-r from-blue-500 to-blue-400 bg-clip-text text-transparent">
-              No New Notifications
-            </h3>
-          </div>
         </div>
-      </div>
-    </div>
       );
     }
 
@@ -546,7 +565,9 @@ function NotificationMain() {
             {buttonText}
           </button>
         </div>
-        <div className="flex flex-col pt-7 px-4 md:px-6 lg:px-16">{renderContent()}</div>
+        <div className="flex flex-col pt-7 px-4 md:px-6 lg:px-16">
+          {renderContent()}
+        </div>
       </div>
     </>
   );
