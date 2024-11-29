@@ -17,6 +17,7 @@ import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { ConnectWallet } from "../ConnectWallet/ConnectWallet";
 import cclogo from "@/assets/images/daos/CCLogo.png"
+import { IoGiftSharp } from "react-icons/io5";
 
 
 const SidebarMainMobile = () => {  
@@ -127,7 +128,7 @@ const SidebarMainMobile = () => {
               </li>
               <li>
                 <Link
-                  href={"/sessions?active=recordedSessions"}
+                  href={"/sessions?active=availableDelegates"}
                   className="block py-4 pl-6 sm:py-5 hover:bg-blue-shade-100"
                 >
                   <div className="flex items-center justify-between">
@@ -149,6 +150,21 @@ const SidebarMainMobile = () => {
                     <div className="flex items-center">
                       <BiSolidMessageSquareAdd className="size-5 mr-4" />
                       <span>Invite</span>
+                    </div>
+                    <FiArrowUpRight className="w-5 h-5" />
+                  </div>
+                </Link>
+                <div className="h-[0.1px] w-full bg-white"></div>
+              </li>
+              <li className=" md:hidden">
+                <Link
+                  href={"/claim-rewards"}
+                  className="block py-4 pl-6 sm:py-5 hover:bg-blue-shade-100"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <IoGiftSharp className="size-5 mr-4" />
+                      <span>Claim Rewards</span>
                     </div>
                     <FiArrowUpRight className="w-5 h-5" />
                   </div>
@@ -179,7 +195,7 @@ const SidebarMainMobile = () => {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center">
                       <SiGitbook className="size-5 mr-4" />
-                      <span>Git Book</span>
+                      <span>Docs</span>
                     </div>
                     <FiArrowUpRight className="w-5 h-5" />
                   </div>

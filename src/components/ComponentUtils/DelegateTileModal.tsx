@@ -72,7 +72,7 @@ function DelegateTileModal({
           className="absolute inset-0 backdrop-blur-md"
           onClick={closeModal}
         ></div>
-        <div className="bg-white p-9 rounded-[34px] flex flex-col  z-50 border-[2px] items-center justify-center ">
+        <div className="bg-white p-5 xs:p-9 rounded-[34px] flex flex-col  z-50 border-[2px] items-center justify-center mx-4 sm:mx-0">
           {confettiVisible && <Confetti />}
           <h1 className="font-semibold text-[26px] mb-2 text-blue-shade-100 text-center">
             Set {delegateName} as your delegate
@@ -83,7 +83,7 @@ function DelegateTileModal({
           </p>
 
           <div className="my-6 w-full">
-            <div className="flex items-center rounded-3xl border-[2.5px] border-white bg-[#F4F4F4] pb-5 pt-4">
+            <div className="flex items-center rounded-3xl border-[2.5px] border-white bg-[#F4F4F4] pt-3 pb-5 xs:pt-4">
               <Image src={user} alt="" className="size-[46px] mx-5" />
               <div className="">
                 <p className=" text-sm font-medium">Currently delegated to</p>
@@ -103,7 +103,7 @@ function DelegateTileModal({
             </div>
             <div className="w-full border-[0.5px] border-white flex items-center justify-center h-0">
               {/* <div className='rounded-full size-14 border-[5px] border-white flex items-center justify-center z-50 bg-[#F4F4F4]'><IoArrowDown className='text-black size-7 hover:text-blue-shade-100'/></div> */}
-              <div className="border-[5px] border-white rounded-full size-14">
+              <div className="border-[5px] border-white rounded-full size-12 xs:size-14">
                 <Image
                   src={isHovering ? Arrow2 : Arrow1}
                   alt=""
@@ -113,7 +113,7 @@ function DelegateTileModal({
                 />
               </div>
             </div>
-            <div className="flex items-center rounded-3xl border-[2.5px] border-white bg-[#F4F4F4] pb-4 pt-5">
+            <div className="flex items-center rounded-3xl border-[2.5px] border-white bg-[#F4F4F4] pb-4 xs:pb-5 pt-4">
               <Image
                 src={displayImage}
                 alt=""
@@ -128,7 +128,7 @@ function DelegateTileModal({
             </div>
           </div>
           <button
-            className={`rounded-full py-5 font-semibold font-poppins w-full text-base ${
+            className={`rounded-full py-3 xs:py-5 font-semibold font-poppins w-full text-base ${
               addressCheck
                 ? "bg-grey-shade-50 text-grey"
                 : "bg-black text-white hover:bg-blue-shade-100"

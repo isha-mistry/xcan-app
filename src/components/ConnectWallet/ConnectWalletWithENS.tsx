@@ -9,6 +9,7 @@ import { usePathname } from "next/navigation";
 import Image from "next/image";
 import user from "@/assets/images/user/user2.svg";
 import { useConnection } from "@/app/hooks/useConnection";
+import { fetchApi } from "@/utils/api";
 
 function ConnectWalletWithENS() {
   const [displayAddress, setDisplayAddress] = useState<any>();
@@ -35,7 +36,7 @@ function ConnectWalletWithENS() {
             redirect: "follow",
           };
 
-          const res = await fetch(`/api/profile/${address}`, requestOptions);
+          const res = await fetchApi(`/profile/${address}`, requestOptions);
           const dbResponse = await res.json();
           console.log("data", dbResponse);
 
@@ -123,7 +124,7 @@ function ConnectWalletWithENS() {
                 userSelect: "none",
               },
             })}
-            className="wallet"
+            className="wallet flex items-center gap-2"
           >
             {(() => {
               if (!connected) {
@@ -153,7 +154,7 @@ function ConnectWalletWithENS() {
 
               return (
                 <>
-                  <div style={{ gap: 8 }} className="hidden lg:flex ml-2">
+                  <div style={{ gap: 8 }} className="flex ml-2">
                     <button
                       onClick={openChainModal}
                       type="button"
@@ -222,7 +223,7 @@ function ConnectWalletWithENS() {
                       //   fontWeight: "bold",
                       //   boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.1)",
                       // }}
-                      className="flex items-center font-bold text-black transition-transform transform hover:scale-105 text-xs sm:text-sm"
+                      className="hidden lg:flex items-center font-bold text-black transition-transform transform hover:scale-105 text-xs sm:text-sm"
                     >
                       <div
                         style={{
