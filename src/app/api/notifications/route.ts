@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
   const { address } = await req.json();
+
   const client = await connectDB();
   try {
     const db = client.db();
@@ -18,10 +19,7 @@ export async function POST(req: NextRequest) {
         { status: 200 }
       );
     } else {
-      return NextResponse.json(
-        { success: false, data: [] },
-        { status: 200 }
-      );
+      return NextResponse.json({ success: false, data: [] }, { status: 200 });
     }
   } catch (error) {
     console.error("Error fetching notifications:", error);

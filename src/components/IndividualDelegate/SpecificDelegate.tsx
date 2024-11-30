@@ -66,6 +66,7 @@ import { fetchApi } from "@/utils/api";
 import { BrowserProvider, Contract, JsonRpcSigner } from "ethers";
 import { ChevronDownIcon } from "lucide-react";
 import Heading from "../ComponentUtils/Heading";
+import { MeetingRecords } from "@/types/UserProfileTypes";
 
 interface Type {
   daoDelegates: string;
@@ -86,6 +87,8 @@ function SpecificDelegate({ props }: { props: Type }) {
   const [displayName, setDisplayName] = useState("");
   const [displayImage, setDisplayImage] = useState("");
   const [description, setDescription] = useState("");
+  const [attestationStatistics, setAttestationStatistics] =
+    useState<MeetingRecords | null>(null);
   // const provider = new ethers.BrowserProvider(window?.ethereum);
   const [displayEnsName, setDisplayEnsName] = useState<any>();
   const [delegate, setDelegate] = useState("");
@@ -992,6 +995,7 @@ const optimismTokenAddress = '0x4200000000000000000000000000000000000042';
             // setResponseFromDB(true);
             setDisplayImage(item.image);
             setDescription(item.description);
+            setAttestationStatistics(item?.meetingRecords ?? null);
             if (item.isEmailVisible) {
               setIsEmailVisible(true);
               setEmailId(item.emailId);
@@ -1517,7 +1521,11 @@ const optimismTokenAddress = '0x4200000000000000000000000000000000000042';
 
             <div className="pt-2 xs:pt-4 sm:pt-6 px-4 md:px-6 lg:px-14">
               {searchParams.get("active") === "info" && (
-                <DelegateInfo props={props} desc={description} />
+                <DelegateInfo
+                  props={props}
+                  desc={description}
+                  attestationCounts={attestationStatistics}
+                />
               )}
               {searchParams.get("active") === "pastVotes" && (
                 <DelegateVotes props={props} />
