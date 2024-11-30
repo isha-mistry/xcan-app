@@ -990,12 +990,13 @@ function SpecificDelegate({ props }: { props: Type }) {
             //   break;
             // }
           }
-        } else {
-          console.log(
-            "Data not found in the database, fetching from third-party API"
-          );
+        } 
+        // else {
+        //   console.log(
+        //     "Data not found in the database, fetching from third-party API"
+        //   );
           // Data not found in the database, fetch data from the third-party API
-        }
+        // }
       } catch (error) {
         console.error("Error fetching data:", error);
       }
