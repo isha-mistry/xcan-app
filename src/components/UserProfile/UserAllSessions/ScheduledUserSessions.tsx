@@ -258,7 +258,6 @@ function ScheduledUserSessions({ daoName }: { daoName: string }) {
       try {
         setCreateSessionLoading(true);
         const checkUserMail = await checkUser();
-        alert(`Line 262 ${checkUserMail}`);
         const userRejectedLocal: any = await sessionStorage.getItem(
           "schedulingMailRejected"
         );

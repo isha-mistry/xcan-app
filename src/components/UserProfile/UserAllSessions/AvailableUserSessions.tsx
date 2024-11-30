@@ -107,7 +107,7 @@ function AvailableUserSessions({
             <TimeSlotTable
               title="15 Minutes"
               slotSize={15}
-              address={walletAddress}
+              // address={walletAddress}
               dao_name={daoName}
               data={data.filter((item: any) => item.timeSlotSizeMinutes === 15)}
               setData={setData}
@@ -118,7 +118,7 @@ function AvailableUserSessions({
             <TimeSlotTable
               title="30 Minutes"
               slotSize={30}
-              address={walletAddress}
+               // address={walletAddress}
               dao_name={daoName}
               data={data.filter((item: any) => item.timeSlotSizeMinutes === 30)}
               setData={setData}
@@ -129,7 +129,7 @@ function AvailableUserSessions({
             <TimeSlotTable
               title="45 Minutes"
               slotSize={45}
-              address={walletAddress}
+               // address={walletAddress}
               dao_name={daoName}
               data={data.filter((item: any) => item.timeSlotSizeMinutes === 45)}
               setData={setData}
@@ -164,12 +164,13 @@ function TimeSlotTable({
   title,
   data,
   slotSize,
-  walletAddress,
+  // wallletAddres
   dao_name,
   setData,
   triggerUpdate,
 }: any) {
   const [deleting, setDeleting] = useState<string | null>(null);
+  const {walletAddress}=useWalletAddress();
 
   useEffect(() => {
     console.log("data", data);
@@ -188,24 +189,10 @@ function TimeSlotTable({
   
     try {
       // Ensure we have a valid wallet address before proceeding
-      if (!walletAddress) {
-        // Option 1: Use the hook's method to get the stored address
-        const storedAddress = localStorage.getItem('persistentWalletAddress');
-        
-        if (!storedAddress) {
-          toast.error("No wallet address found. Please connect your wallet.");
-          setDeleting(null);
-          return;
-        }
-  
-        // Override walletAddress with stored address
-        walletAddress = storedAddress;
-      }
-  
       const token = await getAccessToken();
       const myHeaders = new Headers();
       myHeaders.append("Content-Type", "application/json");
-      myHeaders.append("x-wallet-address", walletAddress.toLowerCase());
+      myHeaders.append("x-wallet-address", walletAddress?walletAddress:'');
       myHeaders.append("Authorization", `Bearer ${token}`);
   
       const raw = JSON.stringify({

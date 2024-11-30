@@ -16,6 +16,7 @@ import { Dialog, DialogContent, DialogTitle } from "@radix-ui/react-dialog";
 import { DialogHeader } from "../ui/dialog";
 
 import { fetchApi } from "@/utils/api";
+import toast, { Toaster } from "react-hot-toast";
 
 function ConnectWalletWithENS() {
   const [displayAddress, setDisplayAddress] = useState<string>("");
@@ -40,6 +41,14 @@ function ConnectWalletWithENS() {
   // console.log("Line number 24:", activeWallet);
   // const walletAddress = activeWallet?.address;
   // console.log("Line number 25:", walletAddress);
+
+  
+  useEffect(() => {
+    // Check if the current chain is not in supported networks
+    if(chain?.id==undefined){
+     toast.error("Unsupported network!",{duration:4000});
+    }
+  }, [chain?.id]);
 
  
   useEffect(() => {
@@ -200,7 +209,7 @@ function ConnectWalletWithENS() {
       <div className="hidden lg:block">
         <ChainSwitcherHeader
           address={walletAddress2 ? walletAddress2 : ''}
-          currentChainId={chainId}
+          currentChainId={chain?.id}
           switchChain={switchChain}
           ensAvatar={ensAvatar}
         />

@@ -170,6 +170,7 @@ const WatchFreeCollect = ({
       if (switchChain) {
         try {
           setIsLoading(true);
+          toast('Switching to Arbitrum Sepolia network,try again!');
           await switchChain({ chainId: TARGET_CHAIN_ID });
         } catch (error) {
           console.error("Failed to switch network:", error);
