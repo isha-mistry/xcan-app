@@ -38,7 +38,6 @@ export async function POST(req: NextRequest, res: NextResponse) {
       
       // Get full user details
       const userDetails = await privyClient.getUser(verifiedUserId);
-      console.log("User linked accounts:", userDetails.linkedAccounts);
 
       // Get request wallet address from header
       const requestWalletAddress = req.headers.get("x-wallet-address");
@@ -59,13 +58,6 @@ export async function POST(req: NextRequest, res: NextResponse) {
       );
 
       if (!verifiedWallet) {
-        console.log("Verification failed. Available wallets:", 
-          linkedWallets.map(w => ({
-            address: w.address,
-            type: w.type
-          }))
-        );
-        console.log("Requested wallet:", requestWalletAddress);
         
         return NextResponse.json(
           { error: "Wallet address not found in user's linked accounts" },

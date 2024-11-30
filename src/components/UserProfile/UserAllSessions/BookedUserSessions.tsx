@@ -55,7 +55,6 @@ function BookedUserSessions({ daoName }: { daoName: string }) {
         requestOptions
       );
       const result = await response.json();
-      // console.log("result in get meeting", result);
       let filteredData: any = result.data;
       if (result.success) {
         const currentTime = new Date();

@@ -104,12 +104,10 @@ function ReportAdditionalDetailsModal({
         );
 
         if (result.success) {
-          console.log("Report submitted successfully:", result);
           toast("Report submitted successfully");
         } else {
           if (result.exists) {
             toast.error("You have already reported this session.");
-            console.log("User already reported the session before");
           } else {
             console.error("Failed to submit report:", result);
             toast.error(result.error || "Failed to submit report");

@@ -203,12 +203,10 @@ function MainProfile() {
   }, [chain, chain?.name]);
 
   useEffect(() => {
-    // console.log("path", path);
     if (isConnected && session && path.includes("profile/undefined")) {
       const newPath = path.includes("profile/undefined")
         ? path.replace("profile/undefined", `profile/${address}?active=info`)
         : path;
-      // console.log("newPath", newPath);
       router.replace(`${newPath}`);
     } else if (!isConnected && !session) {
       if (!authenticated) {
@@ -240,7 +238,6 @@ function MainProfile() {
 
     const output = await lighthouse.upload(selectedFile, apiKey);
 
-    // console.log("File Status:", output);
     setModalData((prevUserData) => ({
       ...prevUserData,
       displayImage: output.data.Hash,
@@ -252,7 +249,6 @@ function MainProfile() {
   };
 
   useEffect(() => {
-    console.log("chain name:::: ", chain?.name);
     const checkDelegateStatus = async () => {
       // const addr = await walletClient.getAddresses();
       // const address1 = addr[0];
@@ -266,7 +262,6 @@ function MainProfile() {
             args: [address],
             // account: address1,
           });
-          console.log("Delegate tx", delegateTx);
 
           const delegateTxAddr = delegateTx.toLowerCase();
 
@@ -289,13 +284,8 @@ function MainProfile() {
   //   try {
   //     // const addr = await walletClient.getAddresses();
   //     // const address1 = addr[0];
-  //     // console.log("addrrr", address1);
   //     const contractAddress = getChainAddress(chain?.name);
 
-  //     console.log("contractAddress: ", contractAddress);
-
-  //     // console.log("Contract", contractAddress);
-  //     console.log("Wallet Client", walletClient);
   //     const delegateTx = await walletClient.writeContract({
   //       address: contractAddress,
   //       abi: dao_abi.abi,
@@ -369,15 +359,11 @@ function MainProfile() {
         return;
       }
 
-      console.log("Getting signer...");
       const signer = await provider.getSigner();
 
-      console.log("Creating contract instance...");
       const contract = new Contract(chainAddress, dao_abi.abi, signer);
 
-      console.log("Initiating delegation transaction...");
       const tx = await contract.delegate(to);
-      console.log("Waiting for transaction confirmation...");
       await tx.wait();
 
       // setConfettiVisible(true);
@@ -392,9 +378,6 @@ function MainProfile() {
         error instanceof Error ? error.message : String(error);
 
       if (errorMessage.includes("eth_chainId is not supported")) {
-        console.log("Provider state:", {
-          provider: await wallets[0]?.getEthereumProvider(),
-        });
         toast.error("Network Error: Please check your network connection");
       } else if (errorMessage.includes("user rejected")) {
         toast.error("Transaction was rejected by user");
@@ -429,7 +412,6 @@ function MainProfile() {
     setIsModalLoading(true);
     const myHeaders = new Headers();
     const token = await getAccessToken();
-    // console.log("Line 321:",walletAddress);
     myHeaders.append("Content-Type", "application/json");
     if (walletAddress) {
       myHeaders.append("x-wallet-address", walletAddress);
@@ -450,7 +432,6 @@ function MainProfile() {
     const res = await fetchApi(`/delegate-follow/savefollower`, requestOptions);
 
     const dbResponse = await res.json();
-    // console.log("Line 341",dbResponse);
 
     if (isfollowingchange == 1) {
       updateFollowerState(dbResponse);
@@ -521,7 +502,6 @@ function MainProfile() {
 
         const data = await response.json();
         // settoaster(false);
-        // console.log("Follow successful:", data);
       } catch (error) {
         console.error("Error following:", error);
       }
@@ -558,7 +538,6 @@ function MainProfile() {
         const data = await response.json();
         // settoaster(false);
         setLoading(false);
-        // console.log("unFollow successful:", data);
       } catch (error) {
         setLoading(false);
         console.error("Error following:", error);
@@ -605,7 +584,6 @@ function MainProfile() {
 
       const data = await response.json();
       // settoaster(false);
-      // console.log("notification successful:", data);
     } catch (error) {
       console.error("Error following:", error);
     }
@@ -620,7 +598,6 @@ function MainProfile() {
 
   const updateFollowerState = async (dbResponse: any) => {
     const userData = dbResponse?.data?.[0];
-    // console.log("Line 512:",userData);
     // let address = await walletClient.getAddresses();
     // let address_user = address[0].toLowerCase();
     let currentDaoName = getDaoName(chain?.name);
@@ -640,7 +617,6 @@ function MainProfile() {
       const activeFollowings = matchDao.following?.filter(
         (f: any) => f.isFollowing
       );
-      // console.log("Line 532:",activeFollowings.length);
       setFollowings(activeFollowings.length);
       setUserFollowings(activeFollowings);
     } else {
@@ -690,7 +666,6 @@ function MainProfile() {
 
       const data = await response.json();
       setToggle(!isToggled);
-      // console.log("status successfully change!", data);
     } catch (error) {
       console.error("Error following:", error);
     } finally {
@@ -702,14 +677,11 @@ function MainProfile() {
     // if (!walletAddress) return;
     const fetchData = async () => {
       try {
-        // console.log("Fetching from DB");
         // Fetch data from your backend API to check if the address exists
-        // console.log("Fetching from DB");
         // const dbResponse = await axios.get(`/api/profile/${address}`);
         const token = await getAccessToken();
         let dao = getDaoName(chain?.name);
         const myHeaders = new Headers();
-        // console.log("Line 598:",walletAddress);
         myHeaders.append("Content-Type", "application/json");
         myHeaders.append("Authorization", `Bearer ${token}`);
         if (walletAddress) {
@@ -754,7 +726,6 @@ function MainProfile() {
         }
 
         if (dbResponse.data.length > 0) {
-          console.log("db Response", dbResponse.data[0]);
           // console.log(`Length ${dbResponse.data.length}`);
           const profileData = dbResponse.data[0];
           // console.log(profileData);
@@ -830,27 +801,22 @@ function MainProfile() {
   const handleSave = async (newDescription?: string) => {
     try {
       // Check if the delegate already exists in the database
-      // console.log("Line 716:",walletAddress);
       if (newDescription) {
         setDescription(newDescription);
-        console.log("New Description", description);
       }
       setIsLoading(true);
       const isExisting = await checkDelegateExists(walletAddress);
-      // console.log("Line number 737:",isExisting);
 
       if (isExisting) {
         // If delegate exists, update the delegate
         await handleUpdate(newDescription);
         setIsLoading(false);
         onClose();
-        // console.log("Existing True");
       } else {
         // If delegate doesn't exist, add a new delegate
         await handleAdd(newDescription);
         setIsLoading(false);
         onClose();
-        // console.log("Sorry! Doesn't exist");
       }
 
       toast.success("Saved");
@@ -864,7 +830,6 @@ function MainProfile() {
   const checkDelegateExists = async (address: any) => {
     try {
       // Make a request to your backend API to check if the address exists
-      // console.log("Line number 764:Checking",address.toLowerCase());
 
       const myHeaders = new Headers();
       const token = await getAccessToken();
@@ -893,10 +858,8 @@ function MainProfile() {
         // Iterate over each item in the response data array
         for (const item of response.data) {
           // Check if address and daoName match
-          // console.log("779:",item.address);
           const dbAddress = item.address;
           if (dbAddress.toLowerCase() === address.toLowerCase()) {
-            // console.log("782:",address.toLowerCase())
             return true; // Return true if match found
           }
         }
@@ -913,7 +876,6 @@ function MainProfile() {
   const handleAdd = async (newDescription?: string) => {
     try {
       // Call the POST API function for adding a new delegate
-      console.log("Adding the delegate..");
 
       const myHeaders = new Headers();
       const token = await getAccessToken();
@@ -953,11 +915,9 @@ function MainProfile() {
       };
 
       const response = await fetchApi("/profile/", requestOptions);
-      console.log("Response Add", response);
 
       if (response.status === 200) {
         // Delegate added successfully
-        console.log("Delegate added successfully:", response.status);
         setIsLoading(false);
         setUserData({
           displayImage: modalData.displayImage,
@@ -981,10 +941,6 @@ function MainProfile() {
   const handleUpdate = async (newDescription?: string) => {
     try {
       const token = await getAccessToken();
-      console.log("Updating");
-      // console.log("Inside Updating Description", newDescription);
-      // console.log("Updating");
-      // console.log("Inside Updating Description", newDescription);
       // const myHeaders = new Headers();
       // myHeaders.append("Content-Type", "application/json");
       // if (address) {
@@ -1024,13 +980,10 @@ function MainProfile() {
         redirect: "follow",
       };
       const response = await fetchApi("/profile", requestOptions);
-      console.log("response", response);
       const result = await response.json();
-      console.log("result", result);
       // Handle response from the PUT API function
       if (response.status === 200) {
         // Delegate updated successfully
-        console.log("Delegate updated successfully");
         setIsLoading(false);
         setUserData({
           displayImage: modalData.displayImage,
@@ -1227,9 +1180,14 @@ function MainProfile() {
                     showArrow
                   >
                     <span className="px-2 cursor-pointer" color="#3E3D3D">
-                      <IoCopy onClick={() => handleCopy(`${walletAddress}`)} className={`transition-colors duration-300 ${
-                        copiedAddress === `${walletAddress}` ? 'text-blue-500' : ''
-                      }`} />
+                      <IoCopy
+                        onClick={() => handleCopy(`${walletAddress}`)}
+                        className={`transition-colors duration-300 ${
+                          copiedAddress === `${walletAddress}`
+                            ? "text-blue-500"
+                            : ""
+                        }`}
+                      />
                     </span>
                   </Tooltip>
                   <div className="flex space-x-2">

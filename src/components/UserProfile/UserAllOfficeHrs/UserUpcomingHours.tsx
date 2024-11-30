@@ -96,7 +96,6 @@ function UserUpcomingHours() {
     const selectedDateUTC = new Date(selectedDateTime);
     const utcFormattedDate = selectedDateUTC.toISOString();
 
-    console.log("utcFormattedDate", utcFormattedDate);
 
     // Create updated form data with UTC formatted date
     const updatedFormData = { ...formData, officeHoursSlot: utcFormattedDate };
@@ -217,9 +216,6 @@ function UserUpcomingHours() {
     formattedDate = `${year}-${month}-${day}`;
   }
 
-  // console.log("formattedDate", formattedDate);
-
-  // console.log("currentDate", currentDate);
 
   return (
     <div>

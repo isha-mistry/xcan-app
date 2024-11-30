@@ -171,10 +171,6 @@ function TimeSlotTable({
 }: any) {
   const [deleting, setDeleting] = useState<string | null>(null);
 
-  useEffect(() => {
-    console.log("data", data);
-  }, [data]);
-
   const handleButtonClick = () => {
     toast("Coming soon 🚀");
   };

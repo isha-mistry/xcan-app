@@ -66,9 +66,7 @@ function SpecificDAO({ props }: { props: { daoDelegates: string } }) {
   ];
 
   const handleTabChange = (tabValue: string) => {
-    console.log(tabValue);
     const selected = tabs.find((tab) => tab.value === tabValue);
-    console.log(selected);
     if (selected) {
       setSelectedTab(selected.name);
       setIsDropdownOpen(false);

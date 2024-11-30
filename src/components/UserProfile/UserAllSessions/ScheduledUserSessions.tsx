@@ -122,11 +122,6 @@ function ScheduledUserSessions({ daoName }: { daoName: string }) {
       `${selectedDate} ${endTime.hour}:${endTime.minute} ${endTime.ampm}`
     );
 
-    console.log(startTime.hour, "s.t. hour");
-    console.log(startTime.minute, "s.t. minute");
-    console.log(endTime.hour, "e.t. hour");
-    console.log(endTime.minute, "s.t. minute");
-
     if (end <= start) {
       end.setDate(end.getDate() + 1);
     }
@@ -151,7 +146,6 @@ function ScheduledUserSessions({ daoName }: { daoName: string }) {
       slots.push(new Date(current));
       current.setMinutes(current.getMinutes() + 30);
 
-      console.log(current, "current");
     }
 
     setTimeSlots(slots);
@@ -188,16 +182,12 @@ function ScheduledUserSessions({ daoName }: { daoName: string }) {
       };
       const response = await fetchApi(`/profile/${walletAddress}`, requestOptions);
       const result = await response.json();
-      console.log("result", result);
       if (Array.isArray(result.data) && result.data.length > 0) {
-        console.log("inside array");
         // Iterate over each item in the response data array
         for (const item of result.data) {
-          console.log("item::", item);
           // Check if address and daoName match
           if (item.address === walletAddress) {
             if (item.emailId === null || item.emailId === "") {
-              console.log("NO emailId found");
               setHasEmailID(false);
               return false;
             } else if (item.emailId) {
@@ -207,7 +197,6 @@ function ScheduledUserSessions({ daoName }: { daoName: string }) {
                 setMailId(item.emailId);
                 setContinueAPICalling(true);
                 setHasEmailID(true);
-                console.log("emailId:", item.emailId);
                 return true;
               } else {
                 setContinueAPICalling(false);
@@ -224,7 +213,6 @@ function ScheduledUserSessions({ daoName }: { daoName: string }) {
 
   useEffect(() => {
     // checkUser();
-    console.log("continueAPICalling", continueAPICalling);
     if (continueAPICalling) {
       handleApplyButtonClick();
     }
@@ -245,11 +233,9 @@ function ScheduledUserSessions({ daoName }: { daoName: string }) {
   }, [chain, walletAddress,address]);
 
   useEffect(() => {
-    console.log("userRejected in useEffect", userRejected);
     const hasRejected = JSON.parse(
       sessionStorage.getItem("schedulingMailRejected") || "false"
     );
-    console.log("hasRejected in useEffect", hasRejected);
     setUserRejected(hasRejected);
   }, [userRejected, sessionStorage.getItem("schedulingMailRejected")]);
 
@@ -263,28 +249,19 @@ function ScheduledUserSessions({ daoName }: { daoName: string }) {
           "schedulingMailRejected"
         );
         // setUserRejected(userRejectedLocal);
-        console.log("userRejectedLocal", userRejectedLocal);
-        console.log("checkUserMail in handleApplyWithCheck", checkUserMail);
-        console.log("userRejected in handleApplyWithCheck", userRejected);
         if (!checkUserMail && (!userRejected || !userRejectedLocal)) {
           setShowGetMailModal(true);
         } else {
-          console.log("inside else condition!!!!!");
-          console.log("continueAPICalling", continueAPICalling);
-          console.log("!continueAPICalling", !continueAPICalling);
           if (!continueAPICalling || continueAPICalling === false) {
-            // console.log("inside if(!continueAPICalling)", !continueAPICalling);
             setContinueAPICalling(true);
           } else if (continueAPICalling) {
             handleApplyButtonClick();
           }
         }
-        console.log("inside handleApplyWithCheck");
         // if (continueAPICalling) {
         //   handleApplyButtonClick();
         // }
       } catch (error) {
-        console.log("error:", error);
         setCreateSessionLoading(false);
       }
     } else {
@@ -295,7 +272,6 @@ function ScheduledUserSessions({ daoName }: { daoName: string }) {
   };
 
   const handleApplyButtonClick = async () => {
-    console.log("handleApplyButton call");
 
     const dataToStore: dataToStore = {
       userAddress: walletAddress as `0x${string}`,
@@ -306,7 +282,6 @@ function ScheduledUserSessions({ daoName }: { daoName: string }) {
     };
     setFinalData(dataToStore);
 
-    console.log("dataToStore", dataToStore);
     const myHeaders = new Headers();
     const token=await getAccessToken();
     myHeaders.append("Content-Type", "application/json");
@@ -322,11 +297,9 @@ function ScheduledUserSessions({ daoName }: { daoName: string }) {
     };
 
     try {
-      console.log("storing....");
       setCreateSessionLoading(true);
       const response = await fetchApi("/store-availability", requestOptions);
       const result = await response.json();
-      console.log(result);
       if (result.success) {
         setSuccessModalOpen(true);
         setCreateSessionLoading(false);
@@ -387,7 +360,6 @@ function ScheduledUserSessions({ daoName }: { daoName: string }) {
     const localDateTime_startTime = new Date(combinedDateTimeString_startTime);
     const utcDateTime_startTime = localDateTime_startTime.toUTCString();
     const formattedUTCTime_startTime = utcDateTime_startTime.toLocaleString();
-    console.log("formattedUTCTime_startTime", formattedUTCTime_startTime);
 
     const utcFromFormatTime_startTime = DateTime.fromFormat(
       formattedUTCTime_startTime,
@@ -403,7 +375,6 @@ function ScheduledUserSessions({ daoName }: { daoName: string }) {
     const utcDateTime_endTime = localDateTime_endTime.toUTCString();
 
     const formattedUTCTime_endTime = utcDateTime_endTime.toLocaleString();
-    console.log("formattedUTCTime_endTime", formattedUTCTime_endTime);
 
     const utcFromFormatTime_endTime = DateTime.fromFormat(
       formattedUTCTime_endTime,
@@ -532,7 +503,6 @@ function ScheduledUserSessions({ daoName }: { daoName: string }) {
           timeOptions.push(`${formattedHour}:${formattedMinute}`);
         }
       }
-      console.log(allData, "all data");
       return timeOptions;
     };
 
@@ -555,7 +525,6 @@ function ScheduledUserSessions({ daoName }: { daoName: string }) {
   }
 
   const handleModalClose = () => {
-    console.log("Popup Closed");
     setSuccessModalOpen(false);
   };
 
@@ -602,8 +571,6 @@ function ScheduledUserSessions({ daoName }: { daoName: string }) {
               setContinueAPICalling(true);
               setAddingEmail(false);
             }
-            console.log("result", result);
-            console.log("Email submitted:", mailId);
             // Optionally, close the modal
             // handleGetMailModalClose();
             setShowGetMailModal(false);

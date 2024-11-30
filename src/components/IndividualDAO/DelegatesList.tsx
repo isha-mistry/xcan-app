@@ -157,7 +157,6 @@ function DelegatesList({ props }: { props: string }) {
   // }, [debouncedSearch]);
 
   const handleDelegateModal = async (delegateObject: any) => {
-    console.log("delegateObject", delegateObject);
     setSelectedDelegate(delegateObject);
     if (!isConnected && !authenticated)  {
       login()

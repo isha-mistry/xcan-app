@@ -64,7 +64,6 @@ function DelegateTileModal({
       </div>
     );
   }
-  // console.log("deleeeeee", addressCheck);
   return (
     <>
       <div className="fixed inset-0 flex items-center justify-center z-50  overflow-hidden font-poppins">

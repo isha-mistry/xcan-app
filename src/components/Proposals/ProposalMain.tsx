@@ -298,7 +298,7 @@ function ProposalMain({ props }: { props: Props }) {
       );
 
       if (!response.ok) {
-        console.log("Network response was not ok");
+        // console.log("Network response was not ok");
       }
 
       const data = await response.json();

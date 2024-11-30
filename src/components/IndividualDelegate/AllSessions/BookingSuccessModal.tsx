@@ -43,7 +43,6 @@ function BookingSuccessModal({
   //     window.location.href = url;
   //   } else {
   //     // Handle the case where the user is not connected
-  //     console.log("User is not connected");
   //   }
   // };
 

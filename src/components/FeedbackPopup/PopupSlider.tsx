@@ -43,7 +43,6 @@ function PopupSlider({
   const handleSubmit = async () => {
     // setIsClosed(true);
     setIsSubmitting(true);
-    console.log("Responses submitted:", responses);
 
     try {
       const myHeaders = new Headers();

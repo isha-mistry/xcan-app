@@ -62,7 +62,6 @@ function  InstantMeet({ isDelegate, selfDelegate, daoName }: instantMeetProps) {
   ) => {
     const { name, value } = e.target;
 
-    // console.log("Value in modal: ", value);
     setModalData((prevData) => ({
       ...prevData,
       [name]: value,
@@ -84,14 +83,12 @@ function  InstantMeet({ isDelegate, selfDelegate, daoName }: instantMeetProps) {
     });
     const result = await res.json();
     const roomId = await result.data;
-    console.log("Instant meet: ", roomId);
 
     let localDateTime = new Date();
 
     // Convert the local date and time to the specified format (YYYY-MM-DDTHH:mm:ss.sssZ)
     let dateInfo = localDateTime.toISOString();
 
-    console.log("Modal details: ", modalData);
 
     const requestData = {
       dao_name: daoName,
@@ -105,7 +102,6 @@ function  InstantMeet({ isDelegate, selfDelegate, daoName }: instantMeetProps) {
       attendees: [],
     };
 
-    // console.log("requestData", requestData);
 
     const myHeaders = new Headers();
     const token = await getAccessToken();
@@ -123,10 +119,8 @@ function  InstantMeet({ isDelegate, selfDelegate, daoName }: instantMeetProps) {
     };
 
     try {
-      // console.log("calling.......");
       const response = await fetchApi("/book-slot", requestOptions);
       const result = await response.json();
-      console.log("result:", result);
       if (result.success) {
         // setIsScheduled(true);
         setConfirmSave(false);

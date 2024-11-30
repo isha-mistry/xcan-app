@@ -46,7 +46,6 @@ function IndividualTileModal({
     };
   }, [onClose]);
 
-  useEffect(() => console.log("Attendees: ", attendees), []);
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">

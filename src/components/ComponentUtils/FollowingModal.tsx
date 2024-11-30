@@ -94,7 +94,6 @@ function FollowingModal({
 
   useEffect(() => {
     const fetchEnsNames = async () => {
-      // console.log(" user followings", userFollowings);
       const addresses = userFollowings.map(
         (user: any) => user.follower_address
       );
@@ -110,7 +109,6 @@ function FollowingModal({
       names.forEach(({ address, ensName }) => {
         ensNameMap[address] = ensName;
       });
-      // console.log("ens name: ", ensNameMap);
       setEnsNames(ensNameMap);
     };
 
@@ -130,7 +128,6 @@ function FollowingModal({
       avatars.forEach(({ address, avatar }) => {
         ensAvatarMap[address] = avatar;
       });
-      //   console.log("ens name: ", ensNameMap);
       setEnsAvatars(ensAvatarMap);
     };
     if (userFollowings.length > 0) {

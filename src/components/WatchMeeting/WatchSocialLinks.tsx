@@ -28,8 +28,6 @@ const WatchSocialLinks = ({
   data: Meeting;
   collection: string;
 }) => {
-  const [showComingSoon, setShowComingSoon] = useState(true);
-  console.log("data of socials: ", data);
 
   const socialLinks = [
     {

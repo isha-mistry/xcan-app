@@ -66,9 +66,7 @@ const createRandomRoom = async () => {
     },
   });
   const result = await res.json();
-  // console.log("result", result);
   const roomId = await result.data;
-  // console.log("roomId", roomId);
   return roomId;
 };
 

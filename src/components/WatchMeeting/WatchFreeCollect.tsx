@@ -345,8 +345,6 @@ const WatchFreeCollect = ({
   const handleFirstMinter = async () => {
     if (!authenticated) {
       toast("Wallet not connected");
-      console.log("Not connected");
-      // openConnectModal?.();
       login()
       return;
     }
@@ -375,7 +373,6 @@ const WatchFreeCollect = ({
         hash: txHash,
       });
       const newContractAddress = transactionReceipt.logs[0].address;
-      console.log("Contract Address",newContractAddress);
       setDeployedContractAddress(newContractAddress);
       await handleContractSubmit(newContractAddress);
     } catch (error) {

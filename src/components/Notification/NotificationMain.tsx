@@ -164,7 +164,6 @@ function NotificationMain() {
 
       const raw = JSON.stringify({ address: walletAddress });
 
-      console.log("walletAddress:: ", walletAddress);
 
       const requestOptions: RequestInit = {
         method: "POST",

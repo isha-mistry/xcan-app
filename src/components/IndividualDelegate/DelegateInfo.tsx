@@ -177,8 +177,6 @@ function DelegateInfo({
             `/api/get-arbitrum-delegatelist?user=${props.individualDelegate}`
           );
           const details = await res.json();
-          console.log("Details: ", details);
-          console.log("Desc: ", details.delegate.statement.statement);
           // setKarmaDescription(details.delegate.statement.statement);
           const statementHtml = await convertMarkdownToHtml(
             details.delegate.statement.statement
@@ -215,7 +213,6 @@ function DelegateInfo({
 
           const data = await res.json();
           const statement = data.statement.payload.delegateStatement;
-          console.log("statement", statement);
           // setOpAgoraDescription(statement);
           // setConvertedDescription(convertMarkdownToHtml(statement));
           const statementHtml = await convertMarkdownToHtml(statement);
@@ -234,8 +231,6 @@ function DelegateInfo({
     fetchData();
   }, [props.individualDelegate, props.daoDelegates]);
 
-  console.log("desc from karma: ", karmaDescription);
-  console.log("desc from db: ", desc);
 
   return (
     <div className="pt-4">

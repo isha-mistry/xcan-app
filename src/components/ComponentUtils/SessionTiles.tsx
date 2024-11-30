@@ -89,7 +89,7 @@ function SessionTile({
   isSession,
 }: // query,
 SessionTileProps) {
-  const { address,isConnected } = useAccount();
+  const { address, isConnected } = useAccount();
   const router = useRouter();
   const path = usePathname();
   const [selectedTileIndex, setSelectedTileIndex] = useState<number | null>(
@@ -106,8 +106,8 @@ SessionTileProps) {
     description: "",
     image: "",
   });
-  const { user, ready, getAccessToken,authenticated } = usePrivy();
-  const {walletAddress}=useWalletAddress();
+  const { user, ready, getAccessToken, authenticated } = usePrivy();
+  const { walletAddress } = useWalletAddress();
 
   const handleEditModal = (index: number) => {
     setSelectedTileIndex(index);
@@ -116,7 +116,6 @@ SessionTileProps) {
   const handleCloseEdit = () => {
     setEditOpen(false);
   };
- 
 
   // const provider = new ethers.BrowserProvider(window?.ethereum);
   // const provider =
@@ -166,15 +165,8 @@ SessionTileProps) {
     dao,
   }: AttestationDataParams) => {
     setIsClaiming((prev: any) => ({ ...prev, [index]: true }));
-    if (
-      typeof window.ethereum === "undefined" ||
-      !window.ethereum.isConnected()
-    ) {
-      console.log("not connected");
-    }
 
-    // const address = await walletClient.getAddresses();
-    // console.log(address);
+   
     let token = "";
     let EASContractAddress = "";
 
@@ -200,7 +192,7 @@ SessionTileProps) {
     myHeaders.append("Content-Type", "application/json");
     if (walletAddress) {
       myHeaders.append("x-wallet-address", walletAddress);
-      myHeaders.append("Authorization",`Bearer ${Clienttoken}`);
+      myHeaders.append("Authorization", `Bearer ${Clienttoken}`);
     }
 
     // Configure the request options
@@ -227,10 +219,7 @@ SessionTileProps) {
 
       const eas = new EAS(EASContractAddress);
       const signer = await provider.getSigner();
-      console.log("the wallet2 obj", signer);
       eas.connect(signer);
-      console.log("obj created");
-      console.log("eas obj", eas);
       const schemaUID =
         "0xf9e214a80b66125cad64453abe4cef5263be3a7f01760d0cc72789236fca2b5d";
       const tx = await eas.attestByDelegation({
@@ -247,16 +236,15 @@ SessionTileProps) {
         attester: "0x7B2C5f70d66Ac12A25cE4c851903436545F1b741",
       });
       const newAttestationUID = await tx.wait();
-      console.log("New attestation UID: ", newAttestationUID);
 
       if (newAttestationUID) {
         try {
           const myHeaders = new Headers();
-          const token=await getAccessToken();
+          const token = await getAccessToken();
           myHeaders.append("Content-Type", "application/json");
           if (walletAddress) {
             myHeaders.append("x-wallet-address", walletAddress);
-            myHeaders.append("Authorization",`Bearer ${token}`);
+            myHeaders.append("Authorization", `Bearer ${token}`);
           }
 
           const raw = JSON.stringify({
@@ -276,9 +264,7 @@ SessionTileProps) {
             requestOptions
           );
           const responseData = await response.json();
-          console.log("responseData", responseData);
           if (responseData.success) {
-            console.log("On-chain attestation Claimed");
             setIsClaimed((prev) => ({ ...prev, [index]: true }));
             setIsClaiming((prev) => ({ ...prev, [index]: false }));
           }
@@ -313,7 +299,6 @@ SessionTileProps) {
 
   const handleChange = (e: any) => {
     const { name, value, files } = e.target;
-    console.log("name-value-files", name, value, files);
     setFormData((prevData) => ({
       ...prevData,
       [name]: files ? files : value,
@@ -341,7 +326,6 @@ SessionTileProps) {
       if (formData.image) {
         const output = await lighthouse.upload(formData.image, apiKey);
         imageCid = output.data.Hash;
-        console.log("image output: ", output.data.Hash);
       }
 
       if (formData.title === "") {
@@ -355,11 +339,11 @@ SessionTileProps) {
         imageCid = sessionData.thumbnail_image;
       }
       const myHeaders = new Headers();
-      const token=await getAccessToken();
+      const token = await getAccessToken();
       myHeaders.append("Content-Type", "application/json");
       if (walletAddress) {
         myHeaders.append("x-wallet-address", walletAddress);
-        myHeaders.append("Authorization",`Bearer ${token}`);
+        myHeaders.append("Authorization", `Bearer ${token}`);
       }
 
       const raw = JSON.stringify({
@@ -382,7 +366,6 @@ SessionTileProps) {
       );
       if (response) {
         const responseData = await response.json();
-        console.log("responseData: ", responseData);
         setLoading(false);
       } else {
         setLoading(false);
@@ -390,7 +373,7 @@ SessionTileProps) {
 
       handleCloseEdit();
     } catch (e) {
-      console.log("errorrrrrr: ", e);
+      console.log("Error: ", e);
       toast.error("Unable to update the data.");
       setLoading(false);
       handleCloseEdit();

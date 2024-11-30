@@ -122,9 +122,7 @@ function UpdateSessionDetails({ roomId }: { roomId: string }) {
           `/update-recorded-session`,
           requestOptions
         );
-        console.log("response::::::", response);
         const responseData = await response.json();
-        console.log("responseData::::::", responseData);
         if (response) {
           setLoading(false);
           setShowHostPopup(true);

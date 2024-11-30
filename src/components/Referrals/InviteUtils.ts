@@ -14,11 +14,9 @@ export async function fetchInviteeDetails(userAddress: string) {
 
   const res = await fetchApi(`/profile/${userAddress}`, requestOptions);
   const response = await res.json();
-  // console.log("Line 20",response);
 
   const displayImage = response?.data[0]?.image;
   const displayName = response?.data[0]?.displayName;
-  // console.log("Line 22",displayName);
 
   const ensData = await fetchEnsNameAndAvatar(userAddress);
   const ensName = ensData?.ensName;

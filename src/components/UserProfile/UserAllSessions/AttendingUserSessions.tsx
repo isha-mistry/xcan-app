@@ -56,11 +56,9 @@ function AttendingUserSessions({ daoName }: { daoName: string }) {
 
       if (result.success) {
         const resultData = await result.attending;
-        console.log("resultData in attending", resultData);
         setSessionDetails(resultData);
       }
     } catch (error) {
-      console.log("error in catch", error);
       setError("Unable to load sessions. Please try again in a few moments.");
     } finally {
       setPageLoading(false);

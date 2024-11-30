@@ -41,7 +41,6 @@ export async function generateMetadata({
   // const [avatar] = await Promise.all([
   //   fetchEnsNameAndAvatar(params.individualDelegate),
   // ]);
-  // console.log("avatar...", avatar);
   // const dao_name = params.daoDelegates;
   // const tokenName = "Optimism";
 
@@ -54,7 +53,6 @@ export async function generateMetadata({
   const [avatar] = await Promise.all([
     fetchEnsNameAndAvatar(params.individualDelegate),
   ]);
-  console.log("avatar...", avatar);
   const dao_name = params.daoDelegates;
   const tokenName = "Optimism";
 
@@ -65,7 +63,6 @@ export async function generateMetadata({
     dao_name ? `dao_name=${encodeURIComponent(dao_name)}` : null,
   ].filter((param): param is string => param !== null);
 
-  console.log("imgParams...", imgParams);
   // .filter(Boolean);
 
   const preview = `${BASE_URL}/api/images/og/ccTest?${imgParams.join(

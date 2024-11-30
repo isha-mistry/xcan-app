@@ -163,7 +163,6 @@ function OfficeHours({ props }: { props: string }) {
               return session.meeting_status === "inactive";
             }
           });
-          console.log("filtered: ", filtered);
           setSessionDetails(filtered);
           setNoResults(filtered.length === 0);
           setError(null);

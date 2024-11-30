@@ -54,7 +54,6 @@ function AttestationModal({
     }
     onClose();
   };
-  // console.log("Attestation modal");
 
   const shareOnTwitter = () => {
     const url = encodeURIComponent(`https://app.chora.club/`);
@@ -77,7 +76,6 @@ function AttestationModal({
 
   const handleRatingClick = (value: number) => {
     setRating(value);
-    console.log("Rating submitted:", value);
   };
 
   const storeUserFeedback = async () => {

@@ -12,8 +12,6 @@ export async function fetchApi(
   endpoint: string,
   options: RequestOptions | RequestInit = {}
 ) {
-  // console.log("endpoint", endpoint);
-  // console.log("options", options);
   
   const { method = "GET", body, headers = {}, ...otherOptions } = options;
 
@@ -53,12 +51,6 @@ export async function fetchApi(
       fetchOptions.body = JSON.stringify(body);
     }
   }
-
-  // Debug log to verify headers
-  // console.log("Final fetch options:", {
-  //   ...fetchOptions,
-  //   headers: mergedHeaders
-  // });
 
   const response = await fetch(`/api/proxy${endpoint}`, fetchOptions);
 

@@ -36,7 +36,7 @@ function UserOfficeHours({
   selfDelegate,
   daoName,
 }: UserOfficeHoursProps) {
-  const { address,isConnected } = useAccount();
+  const { address, isConnected } = useAccount();
   const router = useRouter();
   const path = usePathname();
   const searchParams = useSearchParams();
@@ -44,19 +44,19 @@ function UserOfficeHours({
   const [sessionDetails, setSessionDetails] = useState([]);
   const [dataLoading, setDataLoading] = useState(true);
   const [showComingSoon, setShowComingSoon] = useState(true);
-  const { user, ready, getAccessToken,authenticated } = usePrivy();
-  const {walletAddress}=useWalletAddress();
-  
+  const { user, ready, getAccessToken, authenticated } = usePrivy();
+  const { walletAddress } = useWalletAddress();
+
   useEffect(() => {
     const fetchData = async () => {
       try {
         setDataLoading(true);
         const myHeaders = new Headers();
-        const token=await getAccessToken(); 
+        const token = await getAccessToken();
         myHeaders.append("Content-Type", "application/json");
         if (walletAddress) {
           myHeaders.append("x-wallet-address", walletAddress);
-          myHeaders.append("Authorization",`Bearer ${token}`);
+          myHeaders.append("Authorization", `Bearer ${token}`);
         }
 
         const raw = JSON.stringify({
@@ -74,7 +74,6 @@ function UserOfficeHours({
           requestOptions
         );
         const result = await response.json();
-        console.log(result);
 
         //api for individual attendees
         const rawData = JSON.stringify({
@@ -92,7 +91,6 @@ function UserOfficeHours({
           requestOption
         );
         const resultData = await responseData.json();
-        console.log(resultData);
 
         if (
           searchParams.get("hours") === "ongoing" ||
@@ -136,7 +134,7 @@ function UserOfficeHours({
       }
     };
 
-    if(walletAddress!=null){
+    if (walletAddress != null) {
       fetchData();
     }
   }, [searchParams.get("hours")]); // Re-fetch data when filter changes
@@ -145,7 +143,7 @@ function UserOfficeHours({
     // Set initial session details
     setSessionDetails([]);
     setDataLoading(true);
-  }, [address,walletAddress]);
+  }, [address, walletAddress]);
 
   useEffect(() => {
     if (!selfDelegate && searchParams.get("hours") === "schedule") {

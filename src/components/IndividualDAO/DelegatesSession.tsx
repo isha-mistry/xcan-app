@@ -40,10 +40,9 @@ function DelegatesSession({ props }: { props: string }) {
   const [dataLoading, setDataLoading] = useState(true);
   const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure();
   const [error, setError] = useState<string | null>(null);
-  const { address,isConnected } = useAccount();
-  const { user, ready, getAccessToken,authenticated } = usePrivy();
-  const {walletAddress}=useWalletAddress();
-
+  const { address, isConnected } = useAccount();
+  const { user, ready, getAccessToken, authenticated } = usePrivy();
+  const { walletAddress } = useWalletAddress();
 
   const fetchData = async () => {
     try {
@@ -63,12 +62,9 @@ function DelegatesSession({ props }: { props: string }) {
         }),
       };
 
-      // console.log("propspropsprops", dao_name);
-
       const response = await fetch(`/api/get-dao-sessions`, requestOptions);
       const result = await response.json();
       const resultData = await result.data;
-      // console.log("resultData", resultData);
       if (Array.isArray(resultData)) {
         const filtered: any = resultData.filter((session: SessionInterface) => {
           if (searchParams.get("session") === "upcoming") {
@@ -107,7 +103,7 @@ function DelegatesSession({ props }: { props: string }) {
     }
   };
   useEffect(() => {
-    if(walletAddress!=null){
+    if (walletAddress != null) {
       fetchData();
     }
   }, [searchParams.get("session")]);
@@ -127,11 +123,11 @@ function DelegatesSession({ props }: { props: string }) {
         });
 
         const myHeaders = new Headers();
-        const token=await getAccessToken();
+        const token = await getAccessToken();
         myHeaders.append("Content-Type", "application/json");
         if (walletAddress) {
           myHeaders.append("x-wallet-address", walletAddress);
-          myHeaders.append("Authorization",`Bearer ${token}`);
+          myHeaders.append("Authorization", `Bearer ${token}`);
         }
 
         const requestOptions: any = {
@@ -158,7 +154,6 @@ function DelegatesSession({ props }: { props: string }) {
               return false;
             }
           );
-          console.log("filtered: ", filtered);
           setSessionDetails(filtered);
           setError(null);
         } else {
@@ -221,19 +216,19 @@ function DelegatesSession({ props }: { props: string }) {
         </span>
       </div> */}
       <div
-          className={`flex items-center rounded-full shadow-lg bg-gray-100 text-black cursor-pointer my-4 w-[300px] xs:w-[365px]`}
-        >
-          <CiSearch
-            className={`text-base transition-all duration-700 ease-in-out ml-3`}
-          />
-          <input
-            type="text"
-            placeholder="Search by title and host address"
-            className="w-[100%] pl-2 pr-4 py-1.5 font-poppins md:py-2 text-sm bg-transparent outline-none"
-            value={searchQuery}
-            onChange={(e) => handleSearchChange(e.target.value)}
-          />
-        </div>
+        className={`flex items-center rounded-full shadow-lg bg-gray-100 text-black cursor-pointer my-4 w-[300px] xs:w-[365px]`}
+      >
+        <CiSearch
+          className={`text-base transition-all duration-700 ease-in-out ml-3`}
+        />
+        <input
+          type="text"
+          placeholder="Search by title and host address"
+          className="w-[100%] pl-2 pr-4 py-1.5 font-poppins md:py-2 text-sm bg-transparent outline-none"
+          value={searchQuery}
+          onChange={(e) => handleSearchChange(e.target.value)}
+        />
+      </div>
 
       <div className=" pt-3">
         <div className="flex w-fit gap-16 border-1 border-[#7C7C7C] px-6 rounded-xl text-sm">

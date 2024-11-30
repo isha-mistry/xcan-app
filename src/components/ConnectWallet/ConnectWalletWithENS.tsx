@@ -34,12 +34,6 @@ function ConnectWalletWithENS() {
 
   const { wallets } = useWallets();
   const activeWallet = wallets[0]; // Primary wallet
-  // console.log("Line 26:", address);
-  // console.log("Line 29:", chainId);
-  // console.log('Is authenticated:',authenticated);
-  // console.log("Line number 24:", activeWallet);
-  // const walletAddress = activeWallet?.address;
-  // console.log("Line number 25:", walletAddress);
 
  
   useEffect(() => {
@@ -65,7 +59,6 @@ function ConnectWalletWithENS() {
           setDisplayAddress(address ? address : "");
 
           const raw = JSON.stringify({ address: walletAddress2.toLowerCase() });
-          // console.log("Line 68:",raw)
 
           const requestOptions: any = {
             method: "POST",
@@ -75,15 +68,12 @@ function ConnectWalletWithENS() {
           };
 
           // Add this debug log
-          // console.log("Headers before fetch:", Array.from(myHeaders.entries()));
 
           const res = await fetchApi(`/profile/${walletAddress2.toLowerCase()}`, requestOptions);
           const dbResponse = await res.json();
-          // console.log("line number 48:", dbResponse);
 
           if (dbResponse.data.length > 0) {
             const profileImage = dbResponse.data[0]?.image;
-            // console.log("78",profileImage)
             setUserProfileImage(
               profileImage
                 ? `https://gateway.lighthouse.storage/ipfs/${profileImage}`
@@ -97,9 +87,7 @@ function ConnectWalletWithENS() {
 
           // Get ENS name
           const displayName = await fetchEnsName(walletAddress2);
-          // console.log("Line number 64:", displayName);
           setDisplayAddress(displayName?.ensNameOrAddress || walletAddress2);
-          // console.log("Line number 66:", displayAddress);
         } catch (error) {
           console.error("Error fetching user profile:", error);
         }

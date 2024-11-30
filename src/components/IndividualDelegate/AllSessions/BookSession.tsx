@@ -485,10 +485,6 @@ function BookSession({ props }: { props: Type }) {
     return regex.test(email);
   };
 
-  useEffect(() => {
-    console.log("mailId", mailId);
-  }, [mailId]);
-
   const handleSubmit = async () => {
     if (walletAddress) {
       if (mailId && (mailId !== "" || mailId !== undefined)) {

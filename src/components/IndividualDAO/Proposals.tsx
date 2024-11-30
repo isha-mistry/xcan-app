@@ -60,7 +60,7 @@ function Proposals({ props }: { props: string }) {
 
   useEffect(() => {
     const fetchCanacelledProposals = async () => {
-      const response = await fetchApi(`/api/get-canceledproposal?dao=${props}`);
+      const response = await fetchApi(`/get-canceledproposal?dao=${props}`);
       const result = await response.json();
       setCanceledProposals(result);
     };
@@ -444,8 +444,8 @@ function Proposals({ props }: { props: string }) {
     const RETRY_DELAY = 2000; // 2 seconds
 
     try {
-      const response = await fetch(
-        `/api/get-voters?proposalId=${proposalId}&blockTimestamp=${lastBlockTimestamp}&first=${batchSize}&dao=${props}`
+      const response = await fetchApi(
+        `/get-voters?proposalId=${proposalId}&blockTimestamp=${lastBlockTimestamp}&first=${batchSize}&dao=${props}`
       );
 
       if (!response.ok) {

@@ -43,7 +43,6 @@ function InviteCreators({ userAddress }: { userAddress: any }) {
   };
 
   useEffect(() => {
-    // console.log("fetch data!");
     const fetchData = async () => {
       const details = await fetchInviteeDetails(userAddress);
       setInviteeDetails(details);

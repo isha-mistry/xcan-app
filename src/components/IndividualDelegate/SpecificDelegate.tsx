@@ -342,9 +342,7 @@ function SpecificDelegate({ props }: { props: Type }) {
   }, [op_client, props.individualDelegate]);
 
   useEffect(() => {
-    // console.log("Network", chain?.network);
     const fetchData = async () => {
-      console.log("fetching from karma");
       setIsPageLoading(true);
       try {
         const res = await fetch(
@@ -448,7 +446,6 @@ function SpecificDelegate({ props }: { props: Type }) {
 
   // const fetchDelegateData = async () => {
   //   if (!walletAddress) {
-  //     console.log("No wallet address available");
   //     return;
   //   }
   //   setIsFollowStatusLoading(true);
@@ -484,7 +481,6 @@ function SpecificDelegate({ props }: { props: Type }) {
   //     const data = await resp.json();
 
   //     if (!data.success || !data.data || data.data.length === 0) {
-  //       console.log("No data returned from API");
   //       return;
   //     }
 
@@ -499,7 +495,6 @@ function SpecificDelegate({ props }: { props: Type }) {
   //       const followerCount = daoFollowers.follower.filter(
   //         (f: any) => f.isFollowing
   //       ).length;
-  //       // console.log("Follower count:",followerCount);
   //       setFollowers(followerCount);
   //       setFollowerCountLoading(false);
 
@@ -536,7 +531,6 @@ function SpecificDelegate({ props }: { props: Type }) {
   // };
 
   const fetchDelegateData = async () => {
-    console.log("458...");
     setIsFollowStatusLoading(true);
 
     const headers = new Headers({
@@ -561,7 +555,6 @@ function SpecificDelegate({ props }: { props: Type }) {
       const data = await resp.json();
 
       if (!data.success || !data.data || data.data.length === 0) {
-        console.log("No data returned from API");
         setFollowers(0); // Show 0 if no data
         return;
       }
@@ -606,7 +599,6 @@ function SpecificDelegate({ props }: { props: Type }) {
       setIsFollowStatusLoading(false);
     }
   };
-
 
   const handleConfirm = async (action: number) => {
     let delegate_address: string;
@@ -803,7 +795,6 @@ function SpecificDelegate({ props }: { props: Type }) {
   //       network = "Arbitrum One";
   //     }
 
-  //     console.log("network: ", network);
   //     if (walletClient?.chain.name === network) {
   //       try {
   //         setDelegatingToAddr(true);
@@ -886,15 +877,11 @@ function SpecificDelegate({ props }: { props: Type }) {
         return;
       }
 
-      console.log("Getting signer...");
       const signer = await provider.getSigner();
 
-      console.log("Creating contract instance...");
       const contract = new Contract(chainAddress, dao_abi.abi, signer);
 
-      console.log("Initiating delegation transaction...");
       const tx = await contract.delegate(to);
-      console.log("Waiting for transaction confirmation...");
       await tx.wait();
 
       setConfettiVisible(true);
@@ -907,11 +894,6 @@ function SpecificDelegate({ props }: { props: Type }) {
         error instanceof Error ? error.message : String(error);
 
       if (errorMessage.includes("eth_chainId is not supported")) {
-        console.log("Provider state:", {
-          provider: await wallets[0]?.getEthereumProvider(),
-          network,
-          chainId,
-        });
         toast.error(`Network Error: Make sure you're connected to ${network}`);
       } else if (errorMessage.includes("user rejected")) {
         toast.error("Transaction was rejected by user");
@@ -952,7 +934,6 @@ function SpecificDelegate({ props }: { props: Type }) {
         );
 
         const dbResponse = await res.json();
-        // console.log("dbResponse:: ", dbResponse);
 
         if (
           dbResponse &&
@@ -962,13 +943,11 @@ function SpecificDelegate({ props }: { props: Type }) {
           // Iterate over each item in the response data array
           for (const item of dbResponse.data) {
             // Check if address and daoName match
-            // console.log("Item: ", item);
 
             // if (
             //   item.daoName === dao &&
             //   item.address === props.individualDelegate
             // ) {
-            // console.log("Data found in the database", item);
             // Data found in the database, set the state accordingly
             // setResponseFromDB(true);
             setDisplayImage(item.image);
@@ -1000,7 +979,6 @@ function SpecificDelegate({ props }: { props: Type }) {
             } else {
               // await updateFollowerState();
               // await setFollowerscount();
-              console.log("followers count!");
             }
             setSocials({
               twitter: item.socialHandles.twitter,
@@ -1204,7 +1182,11 @@ function SpecificDelegate({ props }: { props: Type }) {
                     </div>
 
                     <Tooltip
-                      content={copiedAddress === props.individualDelegate ? "Copied!" : "Copy"}
+                      content={
+                        copiedAddress === props.individualDelegate
+                          ? "Copied!"
+                          : "Copy"
+                      }
                       placement="right"
                       closeDelay={1}
                       showArrow
@@ -1213,7 +1195,9 @@ function SpecificDelegate({ props }: { props: Type }) {
                         <IoCopy
                           onClick={() => handleCopy(props.individualDelegate)}
                           className={`transition-colors duration-300 ${
-                            copiedAddress === props.individualDelegate ? 'text-blue-500' : ''
+                            copiedAddress === props.individualDelegate
+                              ? "text-blue-500"
+                              : ""
                           }`}
                         />
                       </span>

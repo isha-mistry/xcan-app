@@ -77,7 +77,6 @@ const UserScheduledHours = ({ daoName }: { daoName: string }) => {
       setSelectedDate("");
       setError(null);
       toast.success("Successfully scheduled your office hour.");
-      console.log("Data submitted successfully");
     } catch (error) {
       console.error("Error:", error);
       toast.error("Error scheduling your office hour.");
@@ -114,9 +113,7 @@ const UserScheduledHours = ({ daoName }: { daoName: string }) => {
     formattedDate = `${year}-${month}-${day}`;
   }
 
-  // console.log("formattedDate", formattedDate);
 
-  // console.log("currentDate", currentDate);
 
   return (
     <div className="ps-4 font-poppins">

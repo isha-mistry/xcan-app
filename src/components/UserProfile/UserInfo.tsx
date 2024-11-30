@@ -175,12 +175,6 @@ function UserInfo({
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      console.log("document name ", document.title);
-    }
-  }, []);
-
   const getCustomCommands = (isMobile: boolean): ICommand[] => {
     const mobileCommands = [
       commands.bold,
@@ -308,12 +302,10 @@ function UserInfo({
 
   const handleDescChange = (value?: string) => {
     setTempDesc(value || "");
-    console.log("Temp Desc", value);
   };
 
   const handleSaveClick = async () => {
     setLoading(true);
-    console.log("Desc", tempDesc);
     await onSaveButtonClick(tempDesc);
     setEditing(false);
     setLoading(false);

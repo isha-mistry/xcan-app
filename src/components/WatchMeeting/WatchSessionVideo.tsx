@@ -95,7 +95,6 @@ function WatchSessionVideo({
           hasCalledApi = true;
           try {
             CountAsView(data.meetingId);
-            // console.log("API called at total watch time:", totalWatchTime);
           } catch (error) {
             console.error("Error calling CountAsView:", error);
           }
@@ -125,7 +124,6 @@ function WatchSessionVideo({
       };
       const response = await fetch("/api/counting-views", requestOptions);
       const data = await response.json();
-      // console.log("Response from API", data);
     } catch (error) {
       console.error("Error in views:", error);
     }

@@ -88,7 +88,6 @@ function TotalRewards() {
         "https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd"
       );
       const coingeckoData = await response.json();
-      // console.log("here data is ", data, coingeckoData.ethereum.usd);
       setEthToUsdConversionRate(coingeckoData.ethereum.usd);
       if (data.data.rewardsPerUsers.length < 1) {
         setTotalRewards({ amount: "0.0 ", value: "$0.0" });
@@ -104,7 +103,6 @@ function TotalRewards() {
           ).toFixed(2)}`,
         })) || [];
       setTotalRewards(total[0]);
-      // console.log("total reward", total)
       const Rewards =
         data?.data.rewardsPerUsers?.map((reward: any) => ({
           platform: reward.id,
@@ -179,7 +177,6 @@ function TotalRewards() {
     }
     setClaimingReward(true);
 
-    console.log("setClaimingReward(true);");
     try {
       const result = await writeContractAsync({
         abi: protocolRewardsABI,
@@ -190,7 +187,6 @@ function TotalRewards() {
         functionName: "withdraw",
         args: [recipient as `0x${string}`, withdrawAmount],
       });
-      // console.log("result:::", result);
 
       await fetchReward();
     } catch (error) {

@@ -17,7 +17,6 @@ const WalletAndPublicClient = () => {
 
   const { chain } = useAccount();
 
-  // console.log("chain: ", chain?.name);
 
   if (chain?.name === "OP Mainnet") {
     chainName = optimism;
@@ -27,7 +26,6 @@ const WalletAndPublicClient = () => {
     chainName = "";
   }
 
-  // console.log("chainName in signer: ", chainName);
   if (typeof window !== "undefined" && window.ethereum) {
     // Instantiate public client and wallet client
     publicClient = createPublicClient({

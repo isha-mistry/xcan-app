@@ -55,7 +55,6 @@ function RewardButton() {
         );
         const data = await response.json();
         setEthToUsdConversionRate(data.ethereum.usd);
-        console.log("data.ethereum.usd", data.ethereum.usd);
       } catch (error) {
         console.error("Failed to fetch ETH to USD conversion rate:", error);
       }

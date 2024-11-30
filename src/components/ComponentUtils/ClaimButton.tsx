@@ -64,7 +64,6 @@ const ClaimButton: React.FC<ClaimButtonProps> = ({
         typeof window.ethereum === "undefined" ||
         !window.ethereum.isConnected()
       ) {
-        console.log("not connected");
         setIsClaiming(false);
         onClaimEnd();
         return;
@@ -142,7 +141,6 @@ const ClaimButton: React.FC<ClaimButtonProps> = ({
         attester: "0x7B2C5f70d66Ac12A25cE4c851903436545F1b741",
       });
       const newAttestationUID = await tx.wait();
-      console.log("New attestation UID: ", newAttestationUID);
 
       if (newAttestationUID) {
         const updateResponse = await fetchApi(`/update-attestation-uid`, {
@@ -158,7 +156,6 @@ const ClaimButton: React.FC<ClaimButtonProps> = ({
         });
         const updateData = await updateResponse.json();
         if (updateData.success) {
-          console.log("On-chain attestation Claimed");
           setIsClaimed(true);
           setTimeout(() => {
             triggerConfetti();
