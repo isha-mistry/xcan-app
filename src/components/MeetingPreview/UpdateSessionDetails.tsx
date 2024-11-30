@@ -91,11 +91,10 @@ function UpdateSessionDetails({ roomId }: { roomId: string }) {
     try {
       if (address?.toLowerCase() === data.host_address.toLowerCase()) {
         setLoading(true);
-        const myHeaders = new Headers();
-        myHeaders.append("Content-Type", "application/json");
-        if (address) {
-          myHeaders.append("x-wallet-address", address);
-        }
+        const myHeaders: HeadersInit = {
+          "Content-Type": "application/json",
+          ...(address && { "x-wallet-address": address }),
+        };
 
         const raw = JSON.stringify({
           meetingId: roomId,

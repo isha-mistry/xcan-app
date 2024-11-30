@@ -35,11 +35,10 @@ function AvailableUserSessions({
       if (!daoName) return;
       setDataLoading(true);
       try {
-        const myHeaders = new Headers();
-        myHeaders.append("Content-Type", "application/json");
-        if (address) {
-          myHeaders.append("x-wallet-address", address);
-        }
+        const myHeaders: HeadersInit = {
+          "Content-Type": "application/json",
+          ...(address && { "x-wallet-address": address }),
+        };
 
         const raw = JSON.stringify({
           dao_name: daoName,
@@ -173,11 +172,10 @@ function TimeSlotTable({
   const handleDeleteButtonClick = async ({ date, startTime, endTime }: any) => {
     setDeleting(date);
     try {
-      const myHeaders = new Headers();
-      myHeaders.append("Content-Type", "application/json");
-      if (address) {
-        myHeaders.append("x-wallet-address", address);
-      }
+      const myHeaders: HeadersInit = {
+        "Content-Type": "application/json",
+        ...(address && { "x-wallet-address": address }),
+      };
 
       const raw = JSON.stringify({
         dao_name: dao_name,

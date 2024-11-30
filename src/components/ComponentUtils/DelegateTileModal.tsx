@@ -9,6 +9,7 @@ import { BASE_URL } from "@/config/constants";
 import { HiOutlineExternalLink } from "react-icons/hi";
 import { ThreeDots } from "react-loader-spinner";
 import Confetti from "react-confetti";
+import { useApiData } from "@/contexts/ApiDataContext";
 
 interface delegate {
   isOpen: boolean;
@@ -21,6 +22,8 @@ interface delegate {
   addressCheck: boolean;
   delegatingToAddr: boolean;
   confettiVisible: boolean;
+  tempCpi: any;
+  tempCpiCalling: boolean;
 }
 
 function DelegateTileModal({
@@ -34,7 +37,12 @@ function DelegateTileModal({
   addressCheck,
   delegatingToAddr,
   confettiVisible,
+  tempCpi,
+  tempCpiCalling,
 }: delegate) {
+  const { apiData: cpiData, loading, error: errorApi } = useApiData();
+  const actualCpi = cpiData?.data?.results[0].cpi;
+  console.log("cpiData::::", cpiData);
   const [isLoading, setIsLoading] = useState(true);
   const [isHovering, setIsHovering] = useState(false);
   const handleMouseEnter = () => {
@@ -127,6 +135,28 @@ function DelegateTileModal({
               </div>
             </div>
           </div>
+
+          {daoName === "optimism" && (
+            <div className="flex items-center justify-between w-full max-w-md bg-gray-100 rounded-xl p-4 my-3">
+              <div className="flex flex-col items-center">
+                <span className="text-sm text-gray-600 mb-2">Actual CPI</span>
+                <div className="text-lg font-semibold text-black">
+                  {actualCpi ? Number(actualCpi).toFixed(2) : "Loading..."}
+                </div>
+              </div>
+              <div className="flex flex-col items-center">
+                <span className="text-sm text-gray-600 mb-2">Temp CPI</span>
+                <div className="text-lg font-semibold text-black">
+                  {!tempCpiCalling && tempCpi ? (
+                    Number(tempCpi).toFixed(2)
+                  ) : (
+                    <span className="text-gray-500 italic">Loading...</span>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
           <button
             className={`rounded-full py-3 xs:py-5 font-semibold font-poppins w-full text-base ${
               addressCheck

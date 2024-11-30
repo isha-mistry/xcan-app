@@ -33,11 +33,10 @@ function AttendingUserSessions({ daoName }: { daoName: string }) {
   const getUserMeetingData = async () => {
     try {
       setPageLoading(true);
-      const myHeaders = new Headers();
-      myHeaders.append("Content-Type", "application/json");
-      if (address) {
-        myHeaders.append("x-wallet-address", address);
-      }
+      const myHeaders: HeadersInit = {
+        "Content-Type": "application/json",
+        ...(address && { "x-wallet-address": address }),
+      };
       const response = await fetchApi(`/get-session-data/${address}`, {
         method: "POST",
         headers: myHeaders,

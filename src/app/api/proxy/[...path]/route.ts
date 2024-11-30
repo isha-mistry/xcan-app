@@ -2,16 +2,6 @@ import { BASE_URL } from "@/config/constants";
 import { getToken } from "next-auth/jwt";
 import { NextRequest, NextResponse } from "next/server";
 
-const PUBLIC_ROUTES = [
-  "verify-meeting-id",
-  // Add more public routes as needed
-];
-
-// Helper function to check if the current path should bypass auth
-const shouldBypassAuth = (path: string): boolean => {
-  return PUBLIC_ROUTES.some((route) => path.startsWith(route));
-};
-
 async function handler(
   request: NextRequest,
   { params }: { params: { path: string[] } }
@@ -19,22 +9,49 @@ async function handler(
   const path = params.path.join("/");
   const method = request.method;
   const searchParams = request.nextUrl.searchParams.toString();
-  console.log("path:::", path);
+
   let requestBody;
-  if (["POST", "PUT", "DELETE"].includes(method)) {
-    requestBody = await request.json();
+
+  if (["POST", "PUT", "PATCH", "DELETE"].includes(method)) {
+    const contentType = request.headers.get("content-type");
+
+    if (contentType?.includes("application/json")) {
+      try {
+        requestBody = await request.json();
+      } catch (error) {
+        console.log("No JSON body or empty body");
+      }
+    }
   }
-
-  // Get all headers from the incoming request
-  const headers = Object.fromEntries(request.headers);
-  // console.log("header from incoming request::", headers);
-
   try {
+    // Get all headers from the incoming request
+    const headers = Object.fromEntries(
+      Array.from(request.headers.entries()).filter(
+        ([key]) =>
+          !["content-length", "content-type"].includes(key.toLowerCase())
+      )
+    );
+
+    // const headers = Object.fromEntries(request.headers);
+    console.log("header from incoming request::", headers);
+
     const url = `${BASE_URL}/api/${path}${
       searchParams ? `?${searchParams}` : ""
     }`;
-    console.log("url", url);
-    console.log("requestBody", requestBody);
+
+    const fetchOptions: any = {
+      method,
+      headers: {
+        ...Object.fromEntries(request.headers),
+        "x-api-key": `${process.env.CHORA_CLUB_API_KEY}`,
+      },
+    };
+
+    if (requestBody) {
+      fetchOptions.body = JSON.stringify(requestBody);
+      fetchOptions.headers["Content-Type"] = "application/json";
+    }
+
     const response = await fetch(url, {
       method,
       headers: {

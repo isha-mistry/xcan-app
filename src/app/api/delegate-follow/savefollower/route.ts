@@ -69,12 +69,6 @@ export async function PUT(req: NextRequest) {
   try {
     const { delegate_address, follower_address, dao } = await req.json();
 
-    console.log("Received follower details:", {
-      delegate_address,
-      follower_address,
-      dao,
-    });
-
     // console.log("Connecting to MongoDB...");
     const client = await connectDB();
     // console.log("Connected to MongoDB");
@@ -207,7 +201,7 @@ export async function PUT(req: NextRequest) {
           );
 
           if (existingFollowingIndex !== -1) {
-            console.log("Updating existing following for DAO");
+            // console.log("Updating existing following for DAO");
             const updateQuery = {
               $set: {
                 [`followings.${existingDaoIndex}.following.${existingFollowingIndex}.isFollowing`]:
@@ -285,7 +279,7 @@ export async function PUT(req: NextRequest) {
         await collection.updateOne({ address: document.address }, updateQuery);
       }
     } else {
-      console.log("Creating new document with address and following");
+      // console.log("Creating new document with address and following");
       const newDocument = {
         address: follower_address,
         followings: [
@@ -306,7 +300,7 @@ export async function PUT(req: NextRequest) {
     }
 
     await client.close();
-    console.log("MongoDB connection closed");
+    // console.log("MongoDB connection closed");
 
     return NextResponse.json(
       {

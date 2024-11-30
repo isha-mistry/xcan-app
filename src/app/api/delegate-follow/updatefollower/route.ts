@@ -12,21 +12,14 @@ export async function PUT(req: NextRequest) {
       dao,
     } = await req.json();
 
-    console.log("Received follower details:", {
-      delegate_address,
-      follower_address,
-      action,
-      dao,
-    });
-
-    console.log("Connecting to MongoDB...");
+    // console.log("Connecting to MongoDB...");
     const client = await connectDB();
-    console.log("Connected to MongoDB");
+    // console.log("Connected to MongoDB");
 
     const db = client.db();
     const collection = db.collection("delegate_follow");
 
-    console.log(`Updating delegate document for ${delegate_address}...`);
+    // console.log(`Updating delegate document for ${delegate_address}...`);
 
     let updateOperation;
     if (action === 1) {
@@ -89,7 +82,7 @@ export async function PUT(req: NextRequest) {
       }
     );
 
-    console.log(`Delegate document updated for ${delegate_address}:`, result);
+    // console.log(`Delegate document updated for ${delegate_address}:`, result);
 
     await client.close();
     console.log("MongoDB connection closed");
@@ -134,9 +127,6 @@ async function updateFollowing(
     const dao_name = dao;
 
     if (Array.isArray(document.followings)) {
-      console.log("Followings array:", JSON.stringify(document.followings));
-      console.log("Delegate address:", delegate_address);
-
       const existingDaoIndex = document.followings.findIndex(
         (item: any) => item.dao === dao_name
       );
@@ -173,8 +163,6 @@ async function updateFollowing(
           } else {
             throw new Error("Invalid action");
           }
-
-          console.log("Updating following status");
           await collection.updateOne(
             { address: follower_address },
             updateQuery

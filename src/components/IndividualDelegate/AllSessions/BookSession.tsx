@@ -226,11 +226,10 @@ function BookSession({ props }: { props: Type }) {
 
   const checkUser = async () => {
     try {
-      const myHeaders = new Headers();
-      myHeaders.append("Content-Type", "application/json");
-      if (address) {
-        myHeaders.append("x-wallet-address", address);
-      }
+      const myHeaders: HeadersInit = {
+        "Content-Type": "application/json",
+        ...(address && { "x-wallet-address": address }),
+      };
 
       const raw = JSON.stringify({
         address: address,
@@ -327,11 +326,10 @@ function BookSession({ props }: { props: Type }) {
       host_joined_status: "Pending",
     };
 
-    const myHeaders = new Headers();
-    myHeaders.append("Content-Type", "application/json");
-    if (address) {
-      myHeaders.append("x-wallet-address", address);
-    }
+    const myHeaders: HeadersInit = {
+      "Content-Type": "application/json",
+      ...(address && { "x-wallet-address": address }),
+    };
 
     const requestOptions: any = {
       method: "POST",
@@ -483,11 +481,10 @@ function BookSession({ props }: { props: Type }) {
         if (isValidEmail) {
           try {
             setAddingEmail(true);
-            const myHeaders = new Headers();
-            myHeaders.append("Content-Type", "application/json");
-            if (address) {
-              myHeaders.append("x-wallet-address", address);
-            }
+            const myHeaders: HeadersInit = {
+              "Content-Type": "application/json",
+              ...(address && { "x-wallet-address": address }),
+            };
 
             const raw = JSON.stringify({
               address: address,

@@ -134,11 +134,10 @@ function UserUpcomingHours() {
   };
 
   const updateOfficeHours = (data: any) => {
-    const myHeaders = new Headers();
-    myHeaders.append("Content-Type", "application/json");
-    if (address) {
-      myHeaders.append("x-wallet-address", address);
-    }
+    const myHeaders: HeadersInit = {
+      "Content-Type": "application/json",
+      ...(address && { "x-wallet-address": address }),
+    };
 
     const raw = JSON.stringify({
       office_hours_slot: data.officeHoursSlot,
@@ -159,11 +158,10 @@ function UserUpcomingHours() {
 
   const handleDelete = (index: number) => {
     const session = sessionDetails[index];
-    const myHeaders = new Headers();
-    myHeaders.append("Content-Type", "application/json");
-    if (address) {
-      myHeaders.append("x-wallet-address", address);
-    }
+    const myHeaders: HeadersInit = {
+      "Content-Type": "application/json",
+      ...(address && { "x-wallet-address": address }),
+    };
     const requestOptions = {
       method: "DELETE",
       headers: myHeaders,

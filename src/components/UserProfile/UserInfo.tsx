@@ -277,11 +277,10 @@ function UserInfo({
 
     const sessionAttended = async () => {
       try {
-        const myHeaders = new Headers();
-        myHeaders.append("Content-Type", "application/json");
-        if (address) {
-          myHeaders.append("x-wallet-address", address);
-        }
+        const myHeaders: HeadersInit = {
+          "Content-Type": "application/json",
+          ...(address && { "x-wallet-address": address }),
+        };
         const response = await fetchApi(`/get-session-data/${address}`, {
           method: "POST",
           headers: myHeaders,
@@ -313,11 +312,10 @@ function UserInfo({
 
     const officeHoursHosted = async () => {
       try {
-        const myHeaders = new Headers();
-        myHeaders.append("Content-Type", "application/json");
-        if (address) {
-          myHeaders.append("x-wallet-address", address);
-        }
+        const myHeaders: HeadersInit = {
+          "Content-Type": "application/json",
+          ...(address && { "x-wallet-address": address }),
+        };
         const response = await fetchApi(`/get-officehours-address`, {
           method: "POST",
           headers: myHeaders,
@@ -350,11 +348,10 @@ function UserInfo({
 
     const officeHoursAttended = async () => {
       try {
-        const myHeaders = new Headers();
-        myHeaders.append("Content-Type", "application/json");
-        if (address) {
-          myHeaders.append("x-wallet-address", address);
-        }
+        const myHeaders: HeadersInit = {
+          "Content-Type": "application/json",
+          ...(address && { "x-wallet-address": address }),
+        };
         const response = await fetchApi(`/get-attendee-individual`, {
           method: "POST",
           headers: myHeaders,

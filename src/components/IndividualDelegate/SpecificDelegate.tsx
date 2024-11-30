@@ -63,6 +63,8 @@ import MobileResponsiveMessage from "../MobileResponsiveMessage/MobileResponsive
 import { fetchApi } from "@/utils/api";
 import { ChevronDownIcon } from "lucide-react";
 import Heading from "../ComponentUtils/Heading";
+import { useApiData } from "@/contexts/ApiDataContext";
+import { calculateTempCpi } from "@/actions/calculatetempCpi";
 
 interface Type {
   daoDelegates: string;
@@ -114,6 +116,8 @@ function SpecificDelegate({ props }: { props: Type }) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [selectedTab, setSelectedTab] = useState("Info");
   const [copiedAddress, setCopiedAddress] = useState<string | null>(null);
+  const [tempCpi, setTempCpi] = useState();
+  const [tempCpiCalling, setTempCpiCalling] = useState(true);
 
   const handleCopy = (addr: string) => {
     copy(addr);
@@ -192,6 +196,8 @@ function SpecificDelegate({ props }: { props: Type }) {
         openConnectModal();
       }
     } else {
+      const delegatorAddress = address;
+      const toAddress = props.individualDelegate;
       setDelegateOpen(true);
       setLoading(true);
       try {
@@ -200,6 +206,23 @@ function SpecificDelegate({ props }: { props: Type }) {
           data = await op_client.query(DELEGATE_CHANGED_QUERY, {
             delegator: address,
           });
+
+          try {
+            setTempCpiCalling(true);
+            const result = await calculateTempCpi(
+              delegatorAddress,
+              toAddress,
+              address
+            );
+            console.log("result:::::::::", result);
+            if (result?.data?.results[0].cpi) {
+              const data = result?.data?.results[0].cpi;
+              setTempCpi(data);
+              setTempCpiCalling(false);
+            }
+          } catch (error) {
+            console.log("Error in calculating temp CPI", error);
+          }
         } else {
           data = await arb_client.query(DELEGATE_CHANGED_QUERY, {
             delegator: address,
@@ -422,89 +445,6 @@ function SpecificDelegate({ props }: { props: Type }) {
     }
   };
 
-  // const fetchDelegateData = async () => {
-  //   setIsFollowStatusLoading(true);
-
-  //   const myHeaders = new Headers();
-  //   myHeaders.append("Content-Type", "application/json");
-  //   if (address) {
-  //     myHeaders.append("x-wallet-address", address);
-  //   }
-  //   const raw = JSON.stringify({
-  //     address: props.individualDelegate,
-  //   });
-
-  //   const requestOptions: any = {
-  //     method: "POST",
-  //     headers: myHeaders,
-  //     body: raw,
-  //     redirect: "follow",
-  //   };
-
-  //   try {
-  //     const resp = await fetchApi(
-  //       `/delegate-follow/savefollower`,
-  //       requestOptions
-  //     );
-
-  //     if (!resp.ok) {
-  //       throw new Error("Failed to fetch delegate data");
-  //     }
-
-  //     const data = await resp.json();
-
-  //     if (!data.success || !data.data || data.data.length === 0) {
-  //       console.log("No data returned from API");
-  //       return;
-  //     }
-
-  //     const followerData = data.data[0];
-  //     const currentDaoName = props.daoDelegates.toLowerCase();
-  //     const daoFollowers = followerData.followers.find(
-  //       (dao: any) => dao.dao_name.toLowerCase() === currentDaoName
-  //     );
-
-  //     if (daoFollowers) {
-  //       // Update follower count
-  //       const followerCount = daoFollowers.follower.filter(
-  //         (f: any) => f.isFollowing
-  //       ).length;
-  //       setFollowers(followerCount);
-  //       setFollowerCountLoading(false);
-
-  //       // Update follow and notification status
-  //       // const address = await walletClient.getAddresses();
-  //       // const address_user = address[0].toLowerCase();
-  //       const userFollow = daoFollowers.follower.find(
-  //         (f: any) => f.address.toLowerCase() === address?.toLowerCase()
-  //       );
-
-  //       if (userFollow) {
-  //         setIsFollowing(userFollow.isFollowing);
-  //         isNotification(userFollow.isNotification);
-  //       } else {
-  //         setIsFollowing(false);
-  //         isNotification(false);
-  //       }
-  //     } else {
-  //       setFollowers(0);
-  //       setIsFollowing(false);
-  //       isNotification(false);
-  //       setFollowerCountLoading(false);
-  //     }
-  //   } catch (error) {
-  //     console.error("Error in fetchDelegateData:", error);
-  //     setFollowers(0);
-  //     setIsFollowing(false);
-  //     isNotification(false);
-  //     setFollowerCountLoading(false);
-  //   } finally {
-  //     setFollowerCountLoading(false);
-  //     setIsFollowStatusLoading(false);
-  //   }
-  // };
-
-
   const fetchDelegateData = async () => {
     console.log("458...");
     setIsFollowStatusLoading(true);
@@ -577,7 +517,6 @@ function SpecificDelegate({ props }: { props: Type }) {
     }
   };
 
-
   const handleConfirm = async (action: number) => {
     let delegate_address: string;
     // let follower_address: string;
@@ -589,11 +528,10 @@ function SpecificDelegate({ props }: { props: Type }) {
 
     if (action == 1) {
       setLoading(true);
-      const myHeaders = new Headers();
-      myHeaders.append("Content-Type", "application/json");
-      if (address) {
-        myHeaders.append("x-wallet-address", address);
-      }
+      const myHeaders: HeadersInit = {
+        "Content-Type": "application/json",
+        ...(address && { "x-wallet-address": address }),
+      };
       try {
         const response = await fetchApi("/delegate-follow/updatefollower", {
           method: "PUT",
@@ -634,11 +572,10 @@ function SpecificDelegate({ props }: { props: Type }) {
         let updatenotification: boolean;
         updatenotification = !notification;
         setNotificationLoading(true);
-        const myHeaders = new Headers();
-        myHeaders.append("Content-Type", "application/json");
-        if (address) {
-          myHeaders.append("x-wallet-address", address);
-        }
+        const myHeaders: HeadersInit = {
+          "Content-Type": "application/json",
+          ...(address && { "x-wallet-address": address }),
+        };
         try {
           const response = await fetchApi("/delegate-follow/updatefollower", {
             method: "PUT",
@@ -803,8 +740,10 @@ function SpecificDelegate({ props }: { props: Type }) {
 
         // const dbResponse = await axios.get(`/api/profile/${address}`);
 
-        const myHeaders = new Headers();
-        myHeaders.append("Content-Type", "application/json");
+        const myHeaders: HeadersInit = {
+          "Content-Type": "application/json",
+          ...(address && { "x-wallet-address": address }),
+        };
 
         // const raw = JSON.stringify({
         //   address: props.individualDelegate,
@@ -869,7 +808,7 @@ function SpecificDelegate({ props }: { props: Type }) {
               // await updateFollowerState();
               // await setFollowerscount();
               // await fetchDelegateData();
-              console.log("Followers count!",followers);
+              console.log("Followers count!", followers);
             }
             setSocials({
               twitter: item.socialHandles.twitter,
@@ -910,46 +849,46 @@ function SpecificDelegate({ props }: { props: Type }) {
 
       {/* For Desktop Screen  */}
       <div className="">
-      <div className="lg:hidden pt-2 xs:pt-4 sm:pt-6 px-4 md:px-6 lg:px-14">
-        <Heading />
-      </div>
+        <div className="lg:hidden pt-2 xs:pt-4 sm:pt-6 px-4 md:px-6 lg:px-14">
+          <Heading />
+        </div>
         {isPageLoading && <MainProfileSkeletonLoader />}
         {!isPageLoading && (isDelegate || selfDelegate) ? (
           <div className="font-poppins">
             {/* {followed && <Confetti recycle={false} numberOfPieces={550} />} */}
             <div className="flex flex-col md:flex-row pb-5 lg:py-5 px-4 md:px-6 lg:px-14 justify-between items-start">
-            <div className="flex flex-col xs:flex-row xs:items-start xs:justify-start items-center lg:items-start justify-center lg:justify-start w-full lg:w-auto">
+              <div className="flex flex-col xs:flex-row xs:items-start xs:justify-start items-center lg:items-start justify-center lg:justify-start w-full lg:w-auto">
                 <div
                   className={`${
                     displayImage ? "h-full" : "h-[80vw] xs:h-auto"
-                } relative object-cover rounded-3xl w-full xs:w-auto my-4 xs:my-0`}
+                  } relative object-cover rounded-3xl w-full xs:w-auto my-4 xs:my-0`}
                   style={{
                     backgroundColor: "#fcfcfc",
                     border: "2px solid #E9E9E9 ",
                   }}
                 >
-                <div className="w-full h-full xs:w-28 xs:h-28 sm:w-36 sm:h-36 lg:w-40 lg:h-40 flex items-center justify-center ">
+                  <div className="w-full h-full xs:w-28 xs:h-28 sm:w-36 sm:h-36 lg:w-40 lg:h-40 flex items-center justify-center ">
                     {/* <div className="flex justify-center items-center w-40 h-40"> */}
-                      <Image
-                        src={
-                          displayImage
-                            ? `https://gateway.lighthouse.storage/ipfs/${displayImage}`
-                            : delegateInfo?.profilePicture ||
-                              (props.daoDelegates === "optimism"
-                                ? OPLogo
-                                : props.daoDelegates === "arbitrum"
-                                ? ArbLogo
-                                : ccLogo)
-                        }
-                        alt="user"
-                        width={256}
-                        height={256}
-                        className={
-                          displayImage || delegateInfo?.profilePicture
-                            ? "w-full xs:w-28 xs:h-28 sm:w-36 sm:h-36 lg:w-40 lg:h-40 rounded-3xl"
-                        : "w-14 h-14 sm:w-20 sm:h-20 lg:w-20 lg:h-20 rounded-3xl"
-                        }
-                      />
+                    <Image
+                      src={
+                        displayImage
+                          ? `https://gateway.lighthouse.storage/ipfs/${displayImage}`
+                          : delegateInfo?.profilePicture ||
+                            (props.daoDelegates === "optimism"
+                              ? OPLogo
+                              : props.daoDelegates === "arbitrum"
+                              ? ArbLogo
+                              : ccLogo)
+                      }
+                      alt="user"
+                      width={256}
+                      height={256}
+                      className={
+                        displayImage || delegateInfo?.profilePicture
+                          ? "w-full xs:w-28 xs:h-28 sm:w-36 sm:h-36 lg:w-40 lg:h-40 rounded-3xl"
+                          : "w-14 h-14 sm:w-20 sm:h-20 lg:w-20 lg:h-20 rounded-3xl"
+                      }
+                    />
                     {/* </div> */}
 
                     <Image
@@ -967,7 +906,7 @@ function SpecificDelegate({ props }: { props: Type }) {
                 </div>
                 <div className="px-4 mt-4 xs:mt-0 md:mt-2 lg:mt-4 w-full xs:w-auto">
                   <div className=" flex items-center py-1">
-                  <div className="font-bold text-[22px] xs:text-xl sm:text-xl lg:text-[22px] pr-4">
+                    <div className="font-bold text-[22px] xs:text-xl sm:text-xl lg:text-[22px] pr-4">
                       {delegateInfo?.ensName ||
                         displayEnsName ||
                         displayName || (
@@ -1073,7 +1012,11 @@ function SpecificDelegate({ props }: { props: Type }) {
                     </div>
 
                     <Tooltip
-                      content={copiedAddress === props.individualDelegate ? "Copied!" : "Copy"}
+                      content={
+                        copiedAddress === props.individualDelegate
+                          ? "Copied!"
+                          : "Copy"
+                      }
                       placement="right"
                       closeDelay={1}
                       showArrow
@@ -1082,7 +1025,9 @@ function SpecificDelegate({ props }: { props: Type }) {
                         <IoCopy
                           onClick={() => handleCopy(props.individualDelegate)}
                           className={`transition-colors duration-300 ${
-                            copiedAddress === props.individualDelegate ? 'text-blue-500' : ''
+                            copiedAddress === props.individualDelegate
+                              ? "text-blue-500"
+                              : ""
                           }`}
                         />
                       </span>
@@ -1168,60 +1113,58 @@ function SpecificDelegate({ props }: { props: Type }) {
                     </button>
 
                     <div className="flex gap-2 w-full">
-
-                    <button
-                      className={`font-bold xs:text-xs sm:text-sm text-sm text-white rounded-full w-full xs:w-[112px] md:w-[128px] h-[40px] lg:py-[10px] py-[10px] xs:py-2 flex justify-center items-center ${
-                        isFollowing ? "bg-blue-shade-200" : "bg-black"
-                      }`}
-                      onClick={handleFollow}
-                    >
-                      {isFollowStatusLoading ? (
-                        <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white"></div>
-                      ) : loading ? (
-                        <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white"></div>
-                      ) : isFollowing ? (
-                        "Following"
-                      ) : (
-                        "Follow"
-                      )}
-                    </button>
-
-                    <Tooltip
-                      content={
-                        notification
-                          ? "Click to mute delegate activity alerts."
-                          : "Don't miss out! Click to get alerts on delegate activity."
-                      }
-                      placement="top"
-                      closeDelay={1}
-                      showArrow
-                    >
-                      <div
-                        className={`border  rounded-full flex items-center justify-center p-[7px] xs:p-0 size-10  ${
-                          isFollowing
-                            ? "cursor-pointer border-blue-shade-200"
-                            : "cursor-not-allowed border-gray-200"
+                      <button
+                        className={`font-bold xs:text-xs sm:text-sm text-sm text-white rounded-full w-full xs:w-[112px] md:w-[128px] h-[40px] lg:py-[10px] py-[10px] xs:py-2 flex justify-center items-center ${
+                          isFollowing ? "bg-blue-shade-200" : "bg-black"
                         }`}
-                        onClick={() =>
-                          isFollowing &&
-                          !notificationLoading &&
-                          handleConfirm(2)
-                        }
+                        onClick={handleFollow}
                       >
-                        {notificationLoading ? (
-                          <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-blue-shade-100"></div>
+                        {isFollowStatusLoading ? (
+                          <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white"></div>
+                        ) : loading ? (
+                          <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white"></div>
                         ) : isFollowing ? (
-                          notification ? (
-                            <IoMdNotifications className="text-blue-shade-200 size-6" />
-                          ) : (
-                            <IoMdNotificationsOff className="text-blue-shade-200 size-6" />
-                          )
+                          "Following"
                         ) : (
-                          <IoMdNotifications className="text-gray-200 size-6" />
+                          "Follow"
                         )}
-                      </div>
-                    </Tooltip>
+                      </button>
 
+                      <Tooltip
+                        content={
+                          notification
+                            ? "Click to mute delegate activity alerts."
+                            : "Don't miss out! Click to get alerts on delegate activity."
+                        }
+                        placement="top"
+                        closeDelay={1}
+                        showArrow
+                      >
+                        <div
+                          className={`border  rounded-full flex items-center justify-center p-[7px] xs:p-0 size-10  ${
+                            isFollowing
+                              ? "cursor-pointer border-blue-shade-200"
+                              : "cursor-not-allowed border-gray-200"
+                          }`}
+                          onClick={() =>
+                            isFollowing &&
+                            !notificationLoading &&
+                            handleConfirm(2)
+                          }
+                        >
+                          {notificationLoading ? (
+                            <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-blue-shade-100"></div>
+                          ) : isFollowing ? (
+                            notification ? (
+                              <IoMdNotifications className="text-blue-shade-200 size-6" />
+                            ) : (
+                              <IoMdNotificationsOff className="text-blue-shade-200 size-6" />
+                            )
+                          ) : (
+                            <IoMdNotifications className="text-gray-200 size-6" />
+                          )}
+                        </div>
+                      </Tooltip>
                     </div>
 
                     {isOpenunfollow && (
@@ -1254,14 +1197,14 @@ function SpecificDelegate({ props }: { props: Type }) {
                               >
                                 {loading ? (
                                   <div className="flex justify-center">
-                                  <Oval
-                                    visible={true}
-                                    height="20"
-                                    width="20"
-                                    color="white"
-                                    secondaryColor="#cdccff"
-                                    ariaLabel="oval-loading"
-                                  />
+                                    <Oval
+                                      visible={true}
+                                      height="20"
+                                      width="20"
+                                      color="white"
+                                      secondaryColor="#cdccff"
+                                      ariaLabel="oval-loading"
+                                    />
                                   </div>
                                 ) : (
                                   "Unfollow"
@@ -1275,10 +1218,10 @@ function SpecificDelegate({ props }: { props: Type }) {
                   </div>
                 </div>
               </div>
-                <div className="hidden lg:flex gap-1 xs:gap-2 items-center">
-                  <RewardButton />
-                  <ConnectWalletWithENS />
-                </div>
+              <div className="hidden lg:flex gap-1 xs:gap-2 items-center">
+                <RewardButton />
+                <ConnectWalletWithENS />
+              </div>
             </div>
 
             <div
@@ -1396,6 +1339,8 @@ function SpecificDelegate({ props }: { props: Type }) {
         )}
         {delegateOpen && (
           <DelegateTileModal
+            tempCpi={tempCpi}
+            tempCpiCalling={tempCpiCalling}
             isOpen={delegateOpen}
             closeModal={handleCloseDelegateModal}
             handleDelegateVotes={() =>

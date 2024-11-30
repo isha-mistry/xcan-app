@@ -105,8 +105,9 @@ function WatchSessionVideo({
   };
   async function CountAsView(meetingId: string) {
     try {
-      const myHeaders = new Headers();
-      myHeaders.append("Content-Type", "application/json");
+      const myHeaders: HeadersInit = {
+        "Content-Type": "application/json",
+      };
       let clientToken = localStorage.getItem("clientToken");
       if (!clientToken) {
         clientToken = uuidv4();
