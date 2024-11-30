@@ -90,7 +90,7 @@ function DelegateTileModal({
             address
           </p>
 
-          <div className="my-6 w-full">
+          <div className="mt-6 w-full">
             <div className="flex items-center rounded-3xl border-[2.5px] border-white bg-[#F4F4F4] pt-3 pb-5 xs:pt-4">
               <Image src={user} alt="" className="size-[46px] mx-5" />
               <div className="">
@@ -137,20 +137,42 @@ function DelegateTileModal({
           </div>
 
           {daoName === "optimism" && (
-            <div className="flex items-center justify-between w-full max-w-md bg-gray-100 rounded-xl p-4 my-3">
+            <div className="flex items-center justify-between w-full max-w-md bg-gradient-to-br from-[#000000d0] to-[#4f4f4f] rounded-xl p-4 my-4 shadow-md border ">
               <div className="flex flex-col items-center">
-                <span className="text-sm text-gray-600 mb-2">Actual CPI</span>
-                <div className="text-lg font-semibold text-black">
-                  {actualCpi ? Number(actualCpi).toFixed(2) : "Loading..."}
+                <span className="text-sm text-white/80 mb-2 font-bold">
+                  Current CPI
+                </span>
+                <div className="text-lg font-semibold text-white bg-white/20 px-3 py-1 rounded-lg">
+                  {actualCpi ? (
+                    Number(actualCpi).toFixed(2)
+                  ) : (
+                    <ThreeDots
+                      visible={true}
+                      height="30"
+                      width="40"
+                      color="white"
+                      ariaLabel="oval-loading"
+                    />
+                  )}
                 </div>
               </div>
               <div className="flex flex-col items-center">
-                <span className="text-sm text-gray-600 mb-2">Temp CPI</span>
-                <div className="text-lg font-semibold text-black">
+                <span className="text-sm text-white/80 mb-2 font-bold">
+                  CPI if you delegate
+                </span>
+                <div className="text-lg font-semibold text-white bg-white/20 px-3 py-1 rounded-lg">
                   {!tempCpiCalling && tempCpi ? (
                     Number(tempCpi).toFixed(2)
                   ) : (
-                    <span className="text-gray-500 italic">Loading...</span>
+                    <span className="text-white/70 italic">
+                      <ThreeDots
+                        visible={true}
+                        height="30"
+                        width="40"
+                        color="white"
+                        ariaLabel="oval-loading"
+                      />
+                    </span>
                   )}
                 </div>
               </div>
