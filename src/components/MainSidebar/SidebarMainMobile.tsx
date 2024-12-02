@@ -128,7 +128,7 @@ const SidebarMainMobile = () => {
               </li>
               <li>
                 <Link
-                  href={"/sessions?active=recordedSessions"}
+                  href={"/sessions?active=availableDelegates"}
                   className="block py-4 pl-6 sm:py-5 hover:bg-blue-shade-100"
                 >
                   <div className="flex items-center justify-between">
