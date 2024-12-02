@@ -864,7 +864,7 @@ function MainProfile() {
             dao_name: daoName,
             network: chain?.name,
             discourse: modalData.discourse,
-            description: newDescription,
+            description: newDescription ? newDescription : description,
           },
         ],
       });
@@ -1075,9 +1075,12 @@ function MainProfile() {
                     showArrow
                   >
                     <span className="px-2 cursor-pointer" color="#3E3D3D">
-                      <IoCopy onClick={() => handleCopy(`${address}`)} className={`transition-colors duration-300 ${
-                        copiedAddress === `${address}` ? 'text-blue-500' : ''
-                      }`} />
+                      <IoCopy
+                        onClick={() => handleCopy(`${address}`)}
+                        className={`transition-colors duration-300 ${
+                          copiedAddress === `${address}` ? "text-blue-500" : ""
+                        }`}
+                      />
                     </span>
                   </Tooltip>
                   <div className="flex space-x-2">
