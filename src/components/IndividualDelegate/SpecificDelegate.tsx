@@ -392,6 +392,28 @@ function SpecificDelegate({ props }: { props: Type }) {
     fetchData();
   }, [props.daoDelegates, props.individualDelegate, walletAddress]);
 
+  // For Optimism Governance Token
+const optimismTokenAddress = '0x4200000000000000000000000000000000000042';
+
+// Alternative read method
+// const checkOptimismDelegate = async () => {
+//   try {
+//     // Additional check using lower-level method
+//     const delegateData = await publicClient.call({
+//       to: optimismTokenAddress,
+//       data: encodeFunctionData({
+//         abi: dao_abi.abi,
+//         functionName: 'delegates',
+//         args: [props.individualDelegate]
+//       })
+//     });
+
+//     console.log('Raw Delegate Data:', delegateData);
+//   } catch (error) {
+//     console.error('Low-level delegate check failed:', error);
+//   }
+// };
+
   useEffect(() => {
     const checkDelegateStatus = async () => {
       setIsPageLoading(true);
@@ -410,7 +432,7 @@ function SpecificDelegate({ props }: { props: Type }) {
           address: contractAddress,
           abi: dao_abi.abi,
           functionName: "delegates",
-          args: [props.individualDelegate],
+          args: [props.individualDelegate], 
           // account: address1,
         });
         delegateTxAddr = delegateTx;

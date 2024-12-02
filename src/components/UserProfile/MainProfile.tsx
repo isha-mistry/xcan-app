@@ -317,7 +317,6 @@ function MainProfile() {
       // setDelegatingToAddr(true);
 
       // Get provider from Privy wallet
-      setSpin(true);
       const privyProvider = await wallets[0]?.getEthereumProvider();
 
       if (!privyProvider) {
@@ -391,7 +390,6 @@ function MainProfile() {
       }
     } finally {
       // setDelegatingToAddr(false);
-      setSpin(false);
     }
   };
 
@@ -674,7 +672,7 @@ function MainProfile() {
   };
 
   useEffect(() => {
-    // if (!walletAddress) return;
+    if (!walletAddress) return;
     const fetchData = async () => {
       try {
         // Fetch data from your backend API to check if the address exists
