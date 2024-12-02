@@ -47,6 +47,7 @@ import ProposalMainDescriptionSkeletonLoader from "../SkeletonLoader/ProposalMai
 import DOMPurify from "dompurify";
 import MobileResponsiveMessage from "../MobileResponsiveMessage/MobileResponsiveMessage";
 import { Transaction } from "ethers";
+import { fetchApi } from "@/utils/api";
 
 // Create a client
 const client = createPublicClient({
@@ -92,6 +93,14 @@ interface Proposal {
   queueEndTime?: number;
 }
 
+interface VoteData {
+  address: string;
+  proposalId: string;
+  choice: string[];
+  votingPower?: number;
+  network: string;
+}
+
 function ProposalMain({ props }: { props: Props }) {
   const router = useRouter();
   const [link, setLink] = useState("");
@@ -104,6 +113,7 @@ function ProposalMain({ props }: { props: Props }) {
   const [canceledProposals, setCanceledProposals] = useState<any[]>([]);
   const [support0Weight, setSupport0Weight] = useState(0);
   const [support1Weight, setSupport1Weight] = useState(0);
+  const [support2Weight, setSupport2Weight] = useState(0);
   const [isArbitrum, setIsArbitrum] = useState(false);
   const [displayCount, setDisplayCount] = useState(20);
   const [queueStartTime, setQueueStartTime] = useState<number>();
@@ -118,14 +128,6 @@ function ProposalMain({ props }: { props: Props }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [hasVoted, setHasVoted] = useState(false);
   const chartContainerRef = useRef<HTMLDivElement | null>(null);
-
-  interface VoteData {
-    address: string;
-    proposalId: string;
-    choice: string[];
-    votingPower?: number;
-    network: string;
-  }
 
   const getContractAddress = async (txHash: `0x${string}`) => {
     try {
@@ -148,13 +150,12 @@ function ProposalMain({ props }: { props: Props }) {
   const StoreData = async (voteData: VoteData) => {
     // Make the API call to submit the vote
 
-    const myHeaders = new Headers();
-    myHeaders.append("Content-Type", "application/json");
-    if (address) {
-      myHeaders.append("x-wallet-address", address);
-    }
+    const myHeaders: HeadersInit = {
+      "Content-Type": "application/json",
+      ...(address && { "x-wallet-address": address }),
+    };
 
-    const response = await fetch("/api/submit-vote", {
+    const response = await fetchApi("/submit-vote", {
       method: "PUT",
       headers: myHeaders,
       body: JSON.stringify(voteData),
@@ -509,93 +510,253 @@ function ProposalMain({ props }: { props: Props }) {
     fetchDescription();
   }, [props]);
 
+  //   const fetchVotes = useCallback(async () => {
+  //     let allVotes: VoteCast[] = [];
+  //     let blockTimestamp = "0";
+  //     const first = 1000; // Batch size
+
+  //     try {
+  //       while (true) {
+  //         const response = await fetch(
+  //           `/api/get-voters?proposalId=${props.id}&blockTimestamp=${blockTimestamp}&first=${first}&dao=${props.daoDelegates}`
+  //         );
+  //         const data = await response.json();
+  //         console.log('response', data)
+  //         const newVoteCastWithParams = data?.voteCastWithParams || [];
+  //         const newVoteCasts = data?.voteCasts || [];
+
+  //         if (newVoteCastWithParams.length === 0 && newVoteCasts.length === 0) {
+  //           break;
+  //         }
+
+  //         // Combine new votes
+  //         const allVotes = [...newVoteCasts, ...newVoteCastWithParams];
+  // console.log('alll votes', allVotes)
+  //         if (allVotes.length === 0) {
+  //           return { votes: [], nextBlockNumber: null };
+  //         }
+  //         // Find the highest block number from the new votes
+  //         const blockNumbers = newVoteCasts.map((vote: VoteCast) =>
+  //           typeof vote.blockTimestamp === "string"
+  //             ? BigInt(vote.blockTimestamp)
+  //             : BigInt((vote.blockTimestamp as string | number).toString())
+  //         );
+  // console.log(blockNumbers)
+  //         // if (blockNumbers.length > 0) {
+  //           // Convert to BigInt for safe comparison of large numbers
+  //           const maxBlock = blockNumbers.reduce((a:any, b:any) => (a > b ? a : b));
+  //           // Add 1 to ensure we don't duplicate the last block
+  //           blockTimestamp = (maxBlock + BigInt(1)).toString();
+  //         // }
+  //       }
+
+  //       // Sort by weight (descending)
+  //       allVotes.sort((a, b) => {
+  //         const weightA = BigInt(a.weight);
+  //         const weightB = BigInt(b.weight);
+  //         return weightB > weightA ? 1 : -1;
+  //       });
+
+  //       // Update voter list state
+  //       setVoterList(allVotes);
+  //       setIsLoading(false);
+
+  //       // Calculate weights
+  //       let s0Weight = 0;
+  //       let s1Weight = 0;
+  //       let s2Weight = 0;
+
+  //       allVotes.forEach((vote: VoteCast) => {
+  //         const weightInEther = weiToEther(vote.weight);
+  //         if (vote.support === 0) {
+  //           s0Weight += weightInEther;
+  //         } else if (vote.support === 1) {
+  //           s1Weight += weightInEther;
+  //         } else if (vote.support === 2) {
+  //           s2Weight += weightInEther;
+  //         }
+  //       });
+
+  //       // Update support weight states
+  //       setSupport0Weight(s0Weight);
+  //       setSupport1Weight(s1Weight);
+
+  //       return {
+  //         support0Weight: s0Weight,
+  //         support1Weight: s1Weight,
+  //         support2Weight: s2Weight,
+  //         votersCount: allVotes.length,
+  //         votesLoaded: true,
+  //       };
+  //     } catch (err: any) {
+  //       console.error("Error fetching votes:", err);
+  //       setIsLoading(false);
+  //       throw err;
+  //     }
+  //   }, [props.id, props.daoDelegates]);
+
+  //   useEffect(() => {
+  //     fetchVotes();
+  //   }, [support0Weight, support1Weight]);
+
+  // ----2nd
+
+  const fetchVotePage = async (blockTimestamp: string, first: number) => {
+    const response = await fetch(
+      `/api/get-voters?proposalId=${props.id}&blockTimestamp=${blockTimestamp}&first=${first}&dao=${props.daoDelegates}`
+    );
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    return data;
+  };
+
   const fetchVotes = useCallback(async () => {
-    let allVotes: VoteCast[] = [];
-    let lastBlockNumber = "0";
-    const first = 1000; // Batch size
+    setIsLoading(true);
+    setError(null);
+
+    let accumulatedVotes: VoteCast[] = [];
+    let blockTimestamp = "0";
+    const BATCH_SIZE = 1000;
+    const MAX_RETRIES = 3;
+    const MAX_PAGES = 50; // Safety limit
+    let pageCount = 0;
 
     try {
-      while (true) {
-        const response = await fetch(
-          `/api/get-voters?proposalId=${props.id}&blockNumber=${lastBlockNumber}&first=${first}&dao=${props.daoDelegates}`
-        );
-        const data = await response.json();
-        const newVoteCastWithParams = data?.voteCastWithParams || [];
-        const newVoteCasts = data?.voteCasts || [];
+      while (pageCount < MAX_PAGES) {
+        pageCount++;
 
-        if (newVoteCastWithParams.length === 0 && newVoteCasts.length === 0) {
+        // Implement retry logic
+        let retryCount = 0;
+        let pageData = null;
+
+        while (retryCount < MAX_RETRIES && !pageData) {
+          try {
+            pageData = await fetchVotePage(blockTimestamp, BATCH_SIZE);
+          } catch (err) {
+            retryCount++;
+            if (retryCount === MAX_RETRIES) throw err;
+            await new Promise((resolve) =>
+              setTimeout(resolve, 2000 * retryCount)
+            );
+          }
+        }
+
+        if (!pageData) {
+          throw new Error("Failed to fetch page after retries");
+        }
+
+        const newVoteCastWithParams = pageData?.voteCastWithParams || [];
+        const newVoteCasts = pageData?.voteCasts || [];
+        const newVotes = [...newVoteCasts, ...newVoteCastWithParams];
+
+        // Break if no new votes
+        if (newVotes.length === 0) {
           break;
         }
 
-        // Combine new votes
-        const newVotes = [...newVoteCastWithParams, ...newVoteCasts];
-        allVotes = [...allVotes, ...newVotes];
+        // Add new votes to accumulated votes
+        accumulatedVotes = [...accumulatedVotes, ...newVotes];
 
         // Find the highest block number from the new votes
-        const blockNumbers = newVotes.map((vote: VoteCast) =>
-          typeof vote.blockNumber === "string"
-            ? BigInt(vote.blockNumber)
-            : BigInt((vote.blockNumber as string | number).toString())
-        );
+        const blockTimestamps = newVoteCasts
+          .map((vote: any) => {
+            try {
+              return BigInt(vote.blockTimestamp.toString());
+            } catch (err) {
+              console.error("Error parsing blockTimestamp:", err);
+              return BigInt(0);
+            }
+          })
+          .filter((num: any) => num > 0);
 
-        if (blockNumbers.length > 0) {
-          // Convert to BigInt for safe comparison of large numbers
-          const maxBlock = blockNumbers.reduce((a, b) => (a > b ? a : b));
-          // Add 1 to ensure we don't duplicate the last block
-          lastBlockNumber = (maxBlock + BigInt(1)).toString();
-        } else {
+        if (blockTimestamps.length === 0) {
           break;
         }
+
+        const maxBlock = blockTimestamps.reduce((a: any, b: any) =>
+          a > b ? a : b
+        );
+        const nextBlockTimestamp = (maxBlock + BigInt(1)).toString();
+
+        // Break if we're not making progress
+        if (nextBlockTimestamp === blockTimestamp) {
+          break;
+        }
+
+        blockTimestamp = nextBlockTimestamp;
+
+        // Add delay between requests to prevent rate limiting
+        await new Promise((resolve) => setTimeout(resolve, 500));
       }
 
+      // Remove duplicates based on voter and blockTimestamp
+      const uniqueVotes = Array.from(
+        new Map(
+          accumulatedVotes.map((vote) => [
+            `${vote.voter}-${vote.blockTimestamp}`,
+            vote,
+          ])
+        ).values()
+      );
+
       // Sort by weight (descending)
-      allVotes.sort((a, b) => {
-        const weightA = BigInt(a.weight);
-        const weightB = BigInt(b.weight);
-        return weightB > weightA ? 1 : -1;
-      });
-
-      // Update voter list state
-      setVoterList(allVotes);
-      setIsLoading(false);
-
-      // Calculate weights
-      let s0Weight = 0;
-      let s1Weight = 0;
-      let s2Weight = 0;
-
-      allVotes.forEach((vote: VoteCast) => {
-        const weightInEther = weiToEther(vote.weight);
-        if (vote.support === 0) {
-          s0Weight += weightInEther;
-        } else if (vote.support === 1) {
-          s1Weight += weightInEther;
-        } else if (vote.support === 2) {
-          s2Weight += weightInEther;
+      uniqueVotes.sort((a, b) => {
+        try {
+          const weightA = BigInt(a.weight);
+          const weightB = BigInt(b.weight);
+          return weightB > weightA ? 1 : -1;
+        } catch {
+          return 0;
         }
       });
 
-      // Update support weight states
-      setSupport0Weight(s0Weight);
-      setSupport1Weight(s1Weight);
+      // Calculate weights
+      const weights = uniqueVotes.reduce(
+        (acc, vote) => {
+          const weightInEther = weiToEther(vote.weight);
+          if (vote.support === 0) acc.s0Weight += weightInEther;
+          else if (vote.support === 1) acc.s1Weight += weightInEther;
+          else if (vote.support === 2) acc.s2Weight += weightInEther;
+          return acc;
+        },
+        { s0Weight: 0, s1Weight: 0, s2Weight: 0 }
+      );
+
+      // Update all states
+      setVoterList(uniqueVotes);
+      setSupport0Weight(weights.s0Weight);
+      setSupport1Weight(weights.s1Weight);
+      setSupport2Weight(weights.s2Weight);
 
       return {
-        support0Weight: s0Weight,
-        support1Weight: s1Weight,
-        support2Weight: s2Weight,
-        votersCount: allVotes.length,
+        support0Weight: weights.s0Weight,
+        support1Weight: weights.s1Weight,
+        support2Weight: weights.s2Weight,
+        votersCount: uniqueVotes.length,
         votesLoaded: true,
       };
     } catch (err: any) {
       console.error("Error fetching votes:", err);
-      setIsLoading(false);
+      setError(err.message);
       throw err;
+    } finally {
+      setIsLoading(false);
     }
   }, [props.id, props.daoDelegates]);
 
   useEffect(() => {
-    fetchVotes();
-  }, [support0Weight, support1Weight]);
+    // Only fetch if we haven't loaded votes yet
+    if (!voterList?.length && isLoading) {
+      fetchVotes().catch((err) => {
+        console.error("Error in vote fetching effect:", err);
+      });
+    }
+  }, [fetchVotes]); // Remove support0Weight and support1Weight from dependencies
 
   const formatDate = (timestamp: number): string => {
     const milliseconds = timestamp * 1000;
@@ -958,15 +1119,11 @@ function ProposalMain({ props }: { props: Props }) {
 
   return (
     <>
-      {/* For Mobile Screen */}
-      <MobileResponsiveMessage />
-
-      {/* For Desktop Screen  */}
-      <div className="hidden md:block pr-16 pb-5 pl-24 pt-6 font-poppins">
+      <div className="px-4 md:px-6 lg:px-16 pb-5  pt-6 font-poppins">
         <IndividualDaoHeader />
       </div>
 
-      <div className="hidden md:flex gap-4 mx-24 mb-8 mt-5 font-poppins">
+      <div className="flex gap-4 px-4 md:px-6 lg:px-16 mb-8 mt-5 font-poppins">
         <div
           className="text-white bg-blue-shade-100 rounded-full py-1.5 px-4 flex justify-center items-center gap-1 cursor-pointer"
           onClick={handleBack}
@@ -984,7 +1141,7 @@ function ProposalMain({ props }: { props: Props }) {
       </div>
 
       <div
-        className={`rounded-[1rem] mx-20 md:mx-24 px-4 md:px-12 pb-6 pt-16 transition-shadow duration-300 ease-in-out shadow-xl bg-gray-50 font-poppins relative ${
+        className={`rounded-[1rem] mx-4 md:mx-6 px-4 lg:mx-16 pb-6 pt-16 transition-shadow duration-300 ease-in-out shadow-xl bg-gray-50 font-poppins relative ${
           isExpanded ? "h-fit" : "h-fit"
         }`}
       >
@@ -1109,19 +1266,19 @@ function ProposalMain({ props }: { props: Props }) {
         </div>
       </div>
 
-      <h1 className="my-8 mx-24 text-4xl font-semibold text-blue-shade-100 font-poppins">
+      <h1 className="my-8 mx-4 md:mx-6 lg:mx-16 text-2xl lg:text-4xl font-semibold text-blue-shade-100 font-poppins">
         Voters
       </h1>
-      <div className="flex mb-20 mx-24">
-        <div className="flex gap-8 items-center w-full">
-          <div className="h-[500px] w-[40%] font-poppins px-4 flex items-center justify-center rounded-2xl bg-gray-50 transition-shadow duration-300 ease-in-out shadow-xl">
+      <div className="flex mb-20 mx-4 md:mx-6 lg:mx-16">
+        <div className="flex flex-col 2md:flex-row gap-8 items-center w-full">
+          <div className="h-[500px] w-full 2md:w-[40%] font-poppins px-2 0.2xs:px-4 flex items-center justify-center rounded-2xl bg-gray-50 transition-shadow duration-300 ease-in-out shadow-xl">
             {isLoading ? (
               <div className="">
                 <ProposalMainVotersSkeletonLoader />
               </div>
             ) : (
               <div
-                className={`flex flex-col gap-2 py-3 pl-2 pr-1  xl:pl-3 xl:pr-2 my-3 border-gray-200 ${
+                className={`flex flex-col gap-2 py-3 pl-2 pr-1 w-full xl:pl-3 xl:pr-2 my-3 border-gray-200 ${
                   voterList.length > 5
                     ? `h-[440px] overflow-y-auto ${style.scrollbar}`
                     : "h-fit"
@@ -1137,10 +1294,10 @@ function ProposalMain({ props }: { props: Props }) {
                     .slice(0, displayCount)
                     .map((voter: any, index: any) => (
                       <div
-                        className="flex items-center py-6 xl:px-6 px-3 bg-white transition-all duration-300 rounded-2xl border-2 border-transparent hover:border-blue-200 transform hover:-translate-y-1 space-x-6"
+                        className="flex items-center py-6 xl:px-6 px-3 bg-white w-full transition-all duration-300 rounded-2xl border-2 border-transparent hover:border-blue-200 transform hover:-translate-y-1 space-x-6"
                         key={index}
                       >
-                        <div className="flex-grow flex items-center space-x-4">
+                        <div className="flex-grow flex items-center space-x-2 1.3lg:space-x-4">
                           {isArbitrum ? (
                             <Image
                               src={user2}
@@ -1158,16 +1315,16 @@ function ProposalMain({ props }: { props: Props }) {
                           <div>
                             <p
                               onClick={() => handleAddressClick(voter.voter)}
-                              className="text-gray-800 xl:text-sm hover:text-blue-600 transition-colors duration-200 cursor-pointer text-xs"
+                              className="text-gray-800 xl:text-sm hover:text-blue-600 transition-colors duration-200 cursor-pointer text-xs xs:text-sm 2md:text-xs"
                             >
                               {voter.voter.slice(0, 6)}...
                               {voter.voter.slice(-4)}
                             </p>
                           </div>
                         </div>
-                        <div className="flex items-center space-x-4">
+                        <div className="flex items-center space-x-1 0.5xs:space-x-2 1.3lg:space-x-4">
                           <div
-                            className={`xl:px-4 px-2 py-2 rounded-full xl:text-sm xl:w-36 w-25 flex items-center justify-center xl:font-medium text-xs ${
+                            className={`py-1 xs:py-2 rounded-full 1.5lg:text-sm w-24 0.2xs:w-28 xs:w-36 2md:w-28 lg:w-[100px] 1.3lg:w-28 1.5xl:w-36 flex items-center justify-center xl:font-medium text-xs ${
                               voter.support === 1
                                 ? "bg-green-100 text-green-800"
                                 : voter.support === 0
@@ -1223,14 +1380,14 @@ function ProposalMain({ props }: { props: Props }) {
 
           {isChartLoading ? (
             <div
-              className="xl:w-[46.5vw] w-[45%] h-[500px] flex items-center justify-center bg-gray-50 rounded-2xl"
+              className="w-full 2md:w-[60%] h-[500px] flex items-center justify-center bg-gray-50 rounded-2xl"
               style={{ boxShadow: "0px 4px 26.7px 0px rgba(0, 0, 0, 0.10)" }}
             >
               <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-black-shade-900"></div>
             </div>
           ) : voterList && chartData.length === 0 ? (
             <div
-              className="w-[46.5vw] h-[500px] flex items-center justify-center bg-gray-50 rounded-2xl"
+              className="w-full 2md:w-[60%] h-[500px] flex items-center justify-center bg-gray-50 rounded-2xl"
               style={{ boxShadow: "0px 4px 26.7px 0px rgba(0, 0, 0, 0.10)" }}
             >
               <p className="text-lg font-poppins text-gray-500">
@@ -1240,7 +1397,7 @@ function ProposalMain({ props }: { props: Props }) {
           ) : (
             <div
               ref={chartContainerRef}
-              className="w-[46.5vw] transition-shadow duration-300 ease-in-out shadow-xl h-[500px] rounded-2xl flex text-sm items-center justify-center bg-gray-50 font-poppins"
+              className="w-full 2md:w-[60%] transition-shadow duration-300 ease-in-out shadow-xl h-[500px] rounded-2xl flex text-sm items-center justify-center bg-gray-50 font-poppins"
             >
               <ResponsiveContainer width="100%" height={400}>
                 <LineChart

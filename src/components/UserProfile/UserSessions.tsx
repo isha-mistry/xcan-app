@@ -10,6 +10,7 @@ import RecordedSessionsSkeletonLoader from "../SkeletonLoader/RecordedSessionsSk
 import ErrorDisplay from "../ComponentUtils/ErrorDisplay";
 import style from "./MainProfile.module.css";
 import { ChevronRight } from 'lucide-react';
+import { fetchApi } from "@/utils/api";
 
 interface UserSessionsProps {
   isDelegate: boolean | undefined;
@@ -70,12 +71,11 @@ function UserSessions({
     setDataLoading(true);
     try {
       // setDataLoading(true);
-      const myHeaders = new Headers();
-      myHeaders.append("Content-Type", "application/json");
-      if (address) {
-        myHeaders.append("x-wallet-address", address);
-      }
-      const response = await fetch(`/api/get-sessions`, {
+      const myHeaders: HeadersInit = {
+        "Content-Type": "application/json",
+        ...(address && { "x-wallet-address": address }),
+      };
+      const response = await fetchApi(`/get-sessions`, {
         method: "POST",
         headers: myHeaders,
         body: JSON.stringify({
@@ -116,7 +116,7 @@ function UserSessions({
   ]);
 
   useEffect(() => {
-    if (selfDelegate === true && searchParams.get("session") === "schedule") {
+    if (selfDelegate === false && searchParams.get("session") === "schedule") {
       router.replace(path + "?active=sessions&session=attending");
     }
   }, [selfDelegate]);

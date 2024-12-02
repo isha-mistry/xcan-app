@@ -1,6 +1,6 @@
 "use client";
 import Image from "next/image";
-import React, { use, useEffect, useState } from "react";
+import React, { use, useEffect, useRef, useState } from "react";
 import user from "@/assets/images/daos/profile.png";
 import {
   FaXTwitter,
@@ -60,6 +60,11 @@ import { getChainAddress, getDaoName } from "@/utils/chainUtils";
 import { optimism, arbitrum } from "viem/chains";
 import RewardButton from "../ClaimReward/RewardButton";
 import MobileResponsiveMessage from "../MobileResponsiveMessage/MobileResponsiveMessage";
+import { fetchApi } from "@/utils/api";
+import { ChevronDownIcon } from "lucide-react";
+import Heading from "../ComponentUtils/Heading";
+import { useApiData } from "@/contexts/ApiDataContext";
+import { calculateTempCpi } from "@/actions/calculatetempCpi";
 
 interface Type {
   daoDelegates: string;
@@ -107,6 +112,83 @@ function SpecificDelegate({ props }: { props: Type }) {
   const [confettiVisible, setConfettiVisible] = useState(false);
   const network = useAccount().chain;
   const { publicClient, walletClient } = WalletAndPublicClient();
+  const dropdownRef = useRef<HTMLDivElement | null>(null);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [selectedTab, setSelectedTab] = useState("Info");
+  const [copiedAddress, setCopiedAddress] = useState<string | null>(null);
+  const [tempCpi, setTempCpi] = useState();
+  const [tempCpiCalling, setTempCpiCalling] = useState(true);
+
+  const handleCopy = (addr: string) => {
+    copy(addr);
+    toast("Address Copied");
+    setCopiedAddress(addr);
+    setTimeout(() => {
+      setCopiedAddress(null);
+    }, 4000);
+  };
+
+  const tabs = [
+    { name: "Info", value: "info" },
+    { name: "Past Votes", value: "pastVotes" },
+    { name: "Sessions", value: "delegatesSession" },
+    { name: "Office Hours", value: "officeHours" },
+  ];
+
+  const handleTabChange = (tabValue: string) => {
+    console.log(tabValue);
+    const selected = tabs.find((tab) => tab.value === tabValue);
+    console.log(selected);
+    if (selected) {
+      setSelectedTab(selected.name);
+      setIsDropdownOpen(false);
+      if (tabValue === "pastVotes") {
+        router.push(path + "?active=pastVotes");
+      } else if (tabValue === "sessions") {
+        router.push(path + "?active=delegatesSession&session=book");
+      } else if (tabValue === "officeHours") {
+        router.push(path + `?active=${tabValue}&hours=ongoing`);
+      } else {
+        router.push(path + `?active=${tabValue}`);
+      }
+    }
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  const handleMouseEnter = () => {
+    setIsDropdownOpen(true);
+  };
+
+  const handleMouseLeave = () => {
+    setTimeout(() => {
+      if (!dropdownRef.current?.matches(":hover")) {
+        setIsDropdownOpen(false);
+      }
+    }, 100);
+  };
+
+  useEffect(() => {
+    const activeTab = searchParams.get("active");
+    if (activeTab) {
+      const tab = tabs.find((t) => t.value === activeTab);
+      setSelectedTab(tab?.name || "Info");
+    }
+  }, [searchParams, tabs]);
 
   const handleDelegateModal = async () => {
     if (!isConnected) {
@@ -114,6 +196,8 @@ function SpecificDelegate({ props }: { props: Type }) {
         openConnectModal();
       }
     } else {
+      const delegatorAddress = address;
+      const toAddress = props.individualDelegate;
       setDelegateOpen(true);
       setLoading(true);
       try {
@@ -122,6 +206,23 @@ function SpecificDelegate({ props }: { props: Type }) {
           data = await op_client.query(DELEGATE_CHANGED_QUERY, {
             delegator: address,
           });
+
+          try {
+            setTempCpiCalling(true);
+            const result = await calculateTempCpi(
+              delegatorAddress,
+              toAddress,
+              address
+            );
+            console.log("result:::::::::", result);
+            if (result?.data?.results[0].cpi) {
+              const data = result?.data?.results[0].cpi;
+              setTempCpi(data);
+              setTempCpiCalling(false);
+            }
+          } catch (error) {
+            console.log("Error in calculating temp CPI", error);
+          }
         } else {
           data = await arb_client.query(DELEGATE_CHANGED_QUERY, {
             delegator: address,
@@ -344,33 +445,22 @@ function SpecificDelegate({ props }: { props: Type }) {
     }
   };
 
-  const handleCopy = (addr: string) => {
-    copy(addr);
-    toast("Address Copied");
-  };
-
   const fetchDelegateData = async () => {
+    console.log("458...");
     setIsFollowStatusLoading(true);
 
-    const myHeaders = new Headers();
-    myHeaders.append("Content-Type", "application/json");
-    if (address) {
-      myHeaders.append("x-wallet-address", address);
-    }
-    const raw = JSON.stringify({
-      address: props.individualDelegate,
+    const headers = new Headers({
+      "Content-Type": "application/json",
     });
-
     const requestOptions: any = {
-      method: "POST",
-      headers: myHeaders,
-      body: raw,
-      redirect: "follow",
+      method: "GET",
+      headers,
     };
 
     try {
-      const resp = await fetch(
-        `/api/delegate-follow/savefollower`,
+      // Add delegate address as query parameter
+      const resp = await fetchApi(
+        `/delegate-follow/savefollower?address=${props.individualDelegate}`,
         requestOptions
       );
 
@@ -382,6 +472,7 @@ function SpecificDelegate({ props }: { props: Type }) {
 
       if (!data.success || !data.data || data.data.length === 0) {
         console.log("No data returned from API");
+        setFollowers(0); // Show 0 if no data
         return;
       }
 
@@ -392,23 +483,20 @@ function SpecificDelegate({ props }: { props: Type }) {
       );
 
       if (daoFollowers) {
-        // Update follower count
         const followerCount = daoFollowers.follower.filter(
           (f: any) => f.isFollowing
         ).length;
+
         setFollowers(followerCount);
         setFollowerCountLoading(false);
 
-        // Update follow and notification status
-        // const address = await walletClient.getAddresses();
-        // const address_user = address[0].toLowerCase();
-        const userFollow = daoFollowers.follower.find(
-          (f: any) => f.address.toLowerCase() === address?.toLowerCase()
-        );
+        if (address) {
+          const userFollow = daoFollowers.follower.find(
+            (f: any) => f.address.toLowerCase() === address.toLowerCase()
+          );
 
-        if (userFollow) {
-          setIsFollowing(userFollow.isFollowing);
-          isNotification(userFollow.isNotification);
+          setIsFollowing(userFollow?.isFollowing ?? false);
+          isNotification(userFollow?.isNotification ?? false);
         } else {
           setIsFollowing(false);
           isNotification(false);
@@ -417,14 +505,12 @@ function SpecificDelegate({ props }: { props: Type }) {
         setFollowers(0);
         setIsFollowing(false);
         isNotification(false);
-        setFollowerCountLoading(false);
       }
     } catch (error) {
       console.error("Error in fetchDelegateData:", error);
       setFollowers(0);
       setIsFollowing(false);
       isNotification(false);
-      setFollowerCountLoading(false);
     } finally {
       setFollowerCountLoading(false);
       setIsFollowStatusLoading(false);
@@ -442,13 +528,12 @@ function SpecificDelegate({ props }: { props: Type }) {
 
     if (action == 1) {
       setLoading(true);
-      const myHeaders = new Headers();
-      myHeaders.append("Content-Type", "application/json");
-      if (address) {
-        myHeaders.append("x-wallet-address", address);
-      }
+      const myHeaders: HeadersInit = {
+        "Content-Type": "application/json",
+        ...(address && { "x-wallet-address": address }),
+      };
       try {
-        const response = await fetch("/api/delegate-follow/updatefollower", {
+        const response = await fetchApi("/delegate-follow/updatefollower", {
           method: "PUT",
           headers: myHeaders,
           body: JSON.stringify({
@@ -487,13 +572,12 @@ function SpecificDelegate({ props }: { props: Type }) {
         let updatenotification: boolean;
         updatenotification = !notification;
         setNotificationLoading(true);
-        const myHeaders = new Headers();
-        myHeaders.append("Content-Type", "application/json");
-        if (address) {
-          myHeaders.append("x-wallet-address", address);
-        }
+        const myHeaders: HeadersInit = {
+          "Content-Type": "application/json",
+          ...(address && { "x-wallet-address": address }),
+        };
         try {
-          const response = await fetch("/api/delegate-follow/updatefollower", {
+          const response = await fetchApi("/delegate-follow/updatefollower", {
             method: "PUT",
             headers: myHeaders,
             body: JSON.stringify({
@@ -544,7 +628,7 @@ function SpecificDelegate({ props }: { props: Type }) {
         follower_address = address;
         delegate_address = props.individualDelegate;
         try {
-          const response = await fetch("/api/delegate-follow/savefollower", {
+          const response = await fetchApi("/delegate-follow/savefollower", {
             method: "PUT",
             headers: {
               "Content-Type": "application/json",
@@ -656,8 +740,10 @@ function SpecificDelegate({ props }: { props: Type }) {
 
         // const dbResponse = await axios.get(`/api/profile/${address}`);
 
-        const myHeaders = new Headers();
-        myHeaders.append("Content-Type", "application/json");
+        const myHeaders: HeadersInit = {
+          "Content-Type": "application/json",
+          ...(address && { "x-wallet-address": address }),
+        };
 
         // const raw = JSON.stringify({
         //   address: props.individualDelegate,
@@ -670,8 +756,8 @@ function SpecificDelegate({ props }: { props: Type }) {
           // body: raw,
           redirect: "follow",
         };
-        const res = await fetch(
-          `/api/profile/${props.individualDelegate}`,
+        const res = await fetchApi(
+          `/profile/${props.individualDelegate}`,
           requestOptions
         );
 
@@ -721,7 +807,8 @@ function SpecificDelegate({ props }: { props: Type }) {
             } else {
               // await updateFollowerState();
               // await setFollowerscount();
-              await fetchDelegateData();
+              // await fetchDelegateData();
+              console.log("Followers count!", followers);
             }
             setSocials({
               twitter: item.socialHandles.twitter,
@@ -758,46 +845,51 @@ function SpecificDelegate({ props }: { props: Type }) {
   return (
     <>
       {/* For Mobile Screen */}
-      <MobileResponsiveMessage />
+      {/* <MobileResponsiveMessage /> */}
 
       {/* For Desktop Screen  */}
-      <div className="hidden md:block">
+      <div className="">
+        <div className="lg:hidden pt-2 xs:pt-4 sm:pt-6 px-4 md:px-6 lg:px-14">
+          <Heading />
+        </div>
         {isPageLoading && <MainProfileSkeletonLoader />}
         {!isPageLoading && (isDelegate || selfDelegate) ? (
           <div className="font-poppins">
             {/* {followed && <Confetti recycle={false} numberOfPieces={550} />} */}
-            <div className="flex ps-14 py-5 justify-between">
-              <div className="flex items-center">
+            <div className="flex flex-col md:flex-row pb-5 lg:py-5 px-4 md:px-6 lg:px-14 justify-between items-start">
+              <div className="flex flex-col xs:flex-row xs:items-start xs:justify-start items-center lg:items-start justify-center lg:justify-start w-full lg:w-auto">
                 <div
-                  className="relative object-cover rounded-3xl w-40 h-40 "
+                  className={`${
+                    displayImage ? "h-full" : "h-[80vw] xs:h-auto"
+                  } relative object-cover rounded-3xl w-full xs:w-auto my-4 xs:my-0`}
                   style={{
                     backgroundColor: "#fcfcfc",
                     border: "2px solid #E9E9E9 ",
                   }}
                 >
-                  <div className="w-40 h-40 flex items-center justify-content ">
-                    <div className="flex justify-center items-center w-40 h-40">
-                      <Image
-                        src={
-                          displayImage
-                            ? `https://gateway.lighthouse.storage/ipfs/${displayImage}`
-                            : delegateInfo?.profilePicture ||
-                              (props.daoDelegates === "optimism"
-                                ? OPLogo
-                                : props.daoDelegates === "arbitrum"
-                                ? ArbLogo
-                                : ccLogo)
-                        }
-                        alt="user"
-                        width={300}
-                        height={300}
-                        className={
-                          displayImage || delegateInfo?.profilePicture
-                            ? "w-40 h-40 rounded-3xl"
-                            : "w-20 h-20 rounded-3xl"
-                        }
-                      />
-                    </div>
+                  <div className="w-full h-full xs:w-28 xs:h-28 sm:w-36 sm:h-36 lg:w-40 lg:h-40 flex items-center justify-center ">
+                    {/* <div className="flex justify-center items-center w-40 h-40"> */}
+                    <Image
+                      src={
+                        displayImage
+                          ? `https://gateway.lighthouse.storage/ipfs/${displayImage}`
+                          : delegateInfo?.profilePicture ||
+                            (props.daoDelegates === "optimism"
+                              ? OPLogo
+                              : props.daoDelegates === "arbitrum"
+                              ? ArbLogo
+                              : ccLogo)
+                      }
+                      alt="user"
+                      width={256}
+                      height={256}
+                      className={
+                        displayImage || delegateInfo?.profilePicture
+                          ? "w-full xs:w-28 xs:h-28 sm:w-36 sm:h-36 lg:w-40 lg:h-40 rounded-3xl"
+                          : "w-14 h-14 sm:w-20 sm:h-20 lg:w-20 lg:h-20 rounded-3xl"
+                      }
+                    />
+                    {/* </div> */}
 
                     <Image
                       src={ccLogo}
@@ -812,9 +904,9 @@ function SpecificDelegate({ props }: { props: Type }) {
                     />
                   </div>
                 </div>
-                <div className="px-4">
+                <div className="px-4 mt-4 xs:mt-0 md:mt-2 lg:mt-4 w-full xs:w-auto">
                   <div className=" flex items-center py-1">
-                    <div className="font-bold text-lg pr-4">
+                    <div className="font-bold text-[22px] xs:text-xl sm:text-xl lg:text-[22px] pr-4">
                       {delegateInfo?.ensName ||
                         displayEnsName ||
                         displayName || (
@@ -824,7 +916,7 @@ function SpecificDelegate({ props }: { props: Type }) {
                           </>
                         )}
                     </div>
-                    <div className="flex gap-3">
+                    <div className="flex gap-2 sm:gap-3">
                       {/* {socials.discord + socials.discourse + socials.github + socials.twitter} */}
                       <Link
                         href={
@@ -920,7 +1012,11 @@ function SpecificDelegate({ props }: { props: Type }) {
                     </div>
 
                     <Tooltip
-                      content="Copy"
+                      content={
+                        copiedAddress === props.individualDelegate
+                          ? "Copied!"
+                          : "Copy"
+                      }
                       placement="right"
                       closeDelay={1}
                       showArrow
@@ -928,6 +1024,11 @@ function SpecificDelegate({ props }: { props: Type }) {
                       <span className="px-2 cursor-pointer" color="#3E3D3D">
                         <IoCopy
                           onClick={() => handleCopy(props.individualDelegate)}
+                          className={`transition-colors duration-300 ${
+                            copiedAddress === props.individualDelegate
+                              ? "text-blue-500"
+                              : ""
+                          }`}
                         />
                       </span>
                     </Tooltip>
@@ -939,7 +1040,7 @@ function SpecificDelegate({ props }: { props: Type }) {
                         showArrow
                       >
                         <Button
-                          className="bg-gray-200 hover:bg-gray-300"
+                          className="bg-gray-200 hover:bg-gray-300 text-xs sm:text-sm "
                           onClick={() => {
                             if (typeof window === "undefined") return;
                             navigator.clipboard.writeText(
@@ -959,8 +1060,8 @@ function SpecificDelegate({ props }: { props: Type }) {
                     <div style={{ zIndex: "21474836462" }}></div>
                   </div>
 
-                  <div className="flex gap-4 py-1">
-                    <div className="text-[#4F4F4F] border-[0.5px] border-[#D9D9D9] rounded-md px-3 py-1 flex justify-center items-center w-[109px]">
+                  <div className="flex flex-wrap gap-2 py-1 w-auto lg:w-[310px] xl:w-auto text-sm xl:text-base">
+                    <div className="text-[#4F4F4F] border-[0.5px] border-[#D9D9D9] rounded-md px-3 lg:px-2 xl:px-3 py-1 flex justify-center items-center w-[109px]">
                       {followerCountLoading ? (
                         <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-blue-shade-100"></div>
                       ) : (
@@ -975,7 +1076,7 @@ function SpecificDelegate({ props }: { props: Type }) {
                         </>
                       )}
                     </div>
-                    <div className="text-[#4F4F4F] border-[0.5px] border-[#D9D9D9] rounded-md px-3 py-1">
+                    <div className="text-[#4F4F4F] border-[0.5px] border-[#D9D9D9] rounded-md px-3 lg:px-2 xl:px-3 py-1">
                       <span className="text-blue-shade-200 font-semibold">
                         {props.daoDelegates === "arbitrum"
                           ? votesCount
@@ -988,7 +1089,7 @@ function SpecificDelegate({ props }: { props: Type }) {
                       </span>
                       delegated tokens
                     </div>
-                    <div className="text-[#4F4F4F] border-[0.5px] border-[#D9D9D9] rounded-md px-3 py-1">
+                    <div className="text-[#4F4F4F] border-[0.5px] border-[#D9D9D9] rounded-md px-3 lg:px-2 xl:px-3 py-1">
                       Delegated from
                       <span className="text-blue-shade-200 font-semibold">
                         &nbsp;
@@ -999,9 +1100,9 @@ function SpecificDelegate({ props }: { props: Type }) {
                     </div>
                   </div>
 
-                  <div className="pt-2 flex space-x-4 items-center">
+                  <div className="pt-2 flex flex-col xs:flex-row gap-2 w-full">
                     <button
-                      className="bg-blue-shade-200 font-bold text-white rounded-full px-8 py-[10px]"
+                      className="bg-blue-shade-200 font-bold text-white rounded-full py-[10px] px-6 xs:py-2 xs:px-4 sm:px-6 xs:text-xs sm:text-sm text-sm lg:px-8 lg:py-[10px] w-full xs:w-[112px] md:w-auto"
                       // onClick={() =>
                       //   handleDelegateVotes(`${props.individualDelegate}`)
                       // }
@@ -1011,96 +1112,100 @@ function SpecificDelegate({ props }: { props: Type }) {
                       Delegate
                     </button>
 
-                    <button
-                      className={`font-bold text-white rounded-full w-[138.5px] h-[44px] py-[10px] flex justify-center items-center ${
-                        isFollowing ? "bg-blue-shade-200" : "bg-black"
-                      }`}
-                      onClick={handleFollow}
-                    >
-                      {isFollowStatusLoading ? (
-                        <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white"></div>
-                      ) : loading ? (
-                        <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white"></div>
-                      ) : isFollowing ? (
-                        "Following"
-                      ) : (
-                        "Follow"
-                      )}
-                    </button>
-
-                    <Tooltip
-                      content={
-                        notification
-                          ? "Click to mute delegate activity alerts."
-                          : "Don't miss out! Click to get alerts on delegate activity."
-                      }
-                      placement="top"
-                      closeDelay={1}
-                      showArrow
-                    >
-                      <div
-                        className={`border  rounded-full flex items-center justify-center size-10  ${
-                          isFollowing
-                            ? "cursor-pointer border-blue-shade-200"
-                            : "cursor-not-allowed border-gray-200"
+                    <div className="flex gap-2 w-full">
+                      <button
+                        className={`font-bold xs:text-xs sm:text-sm text-sm text-white rounded-full w-full xs:w-[112px] md:w-[128px] h-[40px] lg:py-[10px] py-[10px] xs:py-2 flex justify-center items-center ${
+                          isFollowing ? "bg-blue-shade-200" : "bg-black"
                         }`}
-                        onClick={() =>
-                          isFollowing &&
-                          !notificationLoading &&
-                          handleConfirm(2)
-                        }
+                        onClick={handleFollow}
                       >
-                        {notificationLoading ? (
-                          <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-blue-shade-100"></div>
+                        {isFollowStatusLoading ? (
+                          <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white"></div>
+                        ) : loading ? (
+                          <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white"></div>
                         ) : isFollowing ? (
-                          notification ? (
-                            <IoMdNotifications className="text-blue-shade-200 size-6" />
-                          ) : (
-                            <IoMdNotificationsOff className="text-blue-shade-200 size-6" />
-                          )
+                          "Following"
                         ) : (
-                          <IoMdNotifications className="text-gray-200 size-6" />
+                          "Follow"
                         )}
-                      </div>
-                    </Tooltip>
+                      </button>
+
+                      <Tooltip
+                        content={
+                          notification
+                            ? "Click to mute delegate activity alerts."
+                            : "Don't miss out! Click to get alerts on delegate activity."
+                        }
+                        placement="top"
+                        closeDelay={1}
+                        showArrow
+                      >
+                        <div
+                          className={`border  rounded-full flex items-center justify-center p-[7px] xs:p-0 size-10  ${
+                            isFollowing
+                              ? "cursor-pointer border-blue-shade-200"
+                              : "cursor-not-allowed border-gray-200"
+                          }`}
+                          onClick={() =>
+                            isFollowing &&
+                            !notificationLoading &&
+                            handleConfirm(2)
+                          }
+                        >
+                          {notificationLoading ? (
+                            <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-blue-shade-100"></div>
+                          ) : isFollowing ? (
+                            notification ? (
+                              <IoMdNotifications className="text-blue-shade-200 size-6" />
+                            ) : (
+                              <IoMdNotificationsOff className="text-blue-shade-200 size-6" />
+                            )
+                          ) : (
+                            <IoMdNotifications className="text-gray-200 size-6" />
+                          )}
+                        </div>
+                      </Tooltip>
+                    </div>
 
                     {isOpenunfollow && (
-                      <div className="font-poppins z-[70] fixed inset-0 flex items-center justify-center backdrop-blur-md">
-                        <div className="bg-white rounded-[41px] overflow-hidden shadow-lg w-1/2">
+                      <div className="font-poppins z-[70] fixed inset-0 flex items-center justify-center backdrop-blur-md p-4">
+                        <div className="bg-white rounded-3xl overflow-hidden shadow-lg w-full max-w-lg mx-4 md:mx-auto md:w-2/3 lg:w-1/2">
                           <div className="relative">
-                            <div className="flex flex-col gap-1 text-white bg-[#292929] p-4 py-7">
-                              <h2 className="text-lg font-semibold mx-4">
+                            <div className="flex flex-col gap-1 text-white bg-[#292929] p-3 sm:p-4 md:py-7">
+                              <h2 className="text-base sm:text-lg font-semibold mx-2 sm:mx-4 text-center md:text-left">
                                 Are you sure you want to unfollow this delegate?
                               </h2>
                             </div>
-                            <div className="px-8 py-4">
-                              <p className="mt-4 text-center">
+                            <div className="px-4 sm:px-6 md:px-8 py-3 sm:py-4">
+                              <p className="mt-2 sm:mt-4 text-center text-sm sm:text-base">
                                 By unfollowing, you will miss out on important
                                 updates, exclusive alerts of delegate. Stay
                                 connected to keep up with all the latest
                                 activities!
                               </p>
                             </div>
-                            <div className="flex justify-center px-8 py-4">
+                            <div className="flex justify-center gap-2 xs:gap-3 px-4 sm:px-6 md:px-8 py-3 sm:py-4">
                               <button
-                                className="bg-gray-300 text-gray-700 px-8 py-3 font-semibold rounded-full mr-4"
+                                className="bg-gray-300 text-gray-700 px-6 xs:px-8 py-3 text-sm xs:text-base font-semibold rounded-full order-2 xs:order-1"
                                 onClick={() => setUnfollowmodel(false)}
                               >
                                 Cancel
                               </button>
                               <button
-                                className="bg-red-500 text-white px-8 py-3 font-semibold rounded-full"
+                                className="bg-red-500 text-white px-6 xs:px-8 py-3 text-sm xs:text-base font-semibold rounded-full order-1 sm:order-2"
                                 onClick={() => handleConfirm(1)}
                               >
                                 {loading ? (
-                                  <Oval
-                                    visible={true}
-                                    height="20"
-                                    width="20"
-                                    color="white"
-                                    secondaryColor="#cdccff"
-                                    ariaLabel="oval-loading"
-                                  />
+                                  <div className="flex justify-center">
+                                    <Oval
+                                      visible={true}
+                                      height="20"
+                                      width="20"
+                                      color="white"
+                                      secondaryColor="#cdccff"
+                                      ariaLabel="oval-loading"
+                                    />
+                                  </div>
                                 ) : (
                                   "Unfollow"
                                 )}
@@ -1113,15 +1218,53 @@ function SpecificDelegate({ props }: { props: Type }) {
                   </div>
                 </div>
               </div>
-              <div className="pr-[2.2rem]">
-                <div className="flex gap-1 xs:gap-2 items-center">
-                  <RewardButton />
-                  <ConnectWalletWithENS />
+              <div className="hidden lg:flex gap-1 xs:gap-2 items-center">
+                <RewardButton />
+                <ConnectWalletWithENS />
+              </div>
+            </div>
+
+            <div
+              className="md:hidden mt-4 px-8 xs:px-4 sm:px-8 py-2 sm:py-[10px] bg-[#D9D9D945]"
+              ref={dropdownRef}
+              onMouseLeave={handleMouseLeave}
+            >
+              <div
+                className="w-full flex justify-between items-center text-left font-normal rounded-full capitalize text-lg text-blue-shade-100 bg-white px-4 py-2 cursor-pointer"
+                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                onMouseEnter={handleMouseEnter}
+              >
+                <span>{selectedTab}</span>
+                <ChevronDownIcon
+                  className={`w-4 h-4 transition-transform duration-700 ${
+                    isDropdownOpen ? "rotate-180" : ""
+                  }`}
+                />
+              </div>
+              <div
+                className={`w-[calc(100vw-3rem)] mt-1 overflow-hidden transition-all duration-700 ease-in-out ${
+                  isDropdownOpen
+                    ? "max-h-[500px] opacity-100"
+                    : "max-h-0 opacity-0"
+                }`}
+              >
+                <div className="p-2 border border-white-shade-100 rounded-xl bg-white shadow-md">
+                  {tabs.map((tab, index) => (
+                    <React.Fragment key={tab.value}>
+                      <div
+                        onClick={() => handleTabChange(tab.value)}
+                        className="px-3 py-2 rounded-lg transition duration-300 ease-in-out hover:bg-gray-100 capitalize text-base cursor-pointer"
+                      >
+                        {tab.name}
+                      </div>
+                      {index !== tabs.length - 1 && <hr className="my-1" />}
+                    </React.Fragment>
+                  ))}
                 </div>
               </div>
             </div>
 
-            <div className="flex gap-12 bg-[#D9D9D945] pl-16">
+            <div className="hidden md:flex gap-12 bg-[#D9D9D945] pl-16">
               <button
                 className={`border-b-2 py-4 px-2  ${
                   searchParams.get("active") === "info"
@@ -1168,7 +1311,7 @@ function SpecificDelegate({ props }: { props: Type }) {
               </button>
             </div>
 
-            <div className="py-6 ps-16">
+            <div className="pt-2 xs:pt-4 sm:pt-6 px-4 md:px-6 lg:px-14">
               {searchParams.get("active") === "info" && (
                 <DelegateInfo props={props} desc={description} />
               )}
@@ -1196,6 +1339,8 @@ function SpecificDelegate({ props }: { props: Type }) {
         )}
         {delegateOpen && (
           <DelegateTileModal
+            tempCpi={tempCpi}
+            tempCpiCalling={tempCpiCalling}
             isOpen={delegateOpen}
             closeModal={handleCloseDelegateModal}
             handleDelegateVotes={() =>

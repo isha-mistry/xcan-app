@@ -1,7 +1,6 @@
 import { connectDB } from "@/config/connectDB";
 import { NextApiRequest, NextApiResponse } from "next";
 import { NextResponse, NextRequest } from "next/server";
-import { sendMail, compileBookedSessionTemplate } from "@/libs/mail";
 import { io } from "socket.io-client";
 import { BASE_URL, SOCKET_BASE_URL } from "@/config/constants";
 import {
@@ -10,6 +9,7 @@ import {
 } from "@/utils/NotificationUtils";
 import { imageCIDs } from "@/config/staticDataUtils";
 import { SessionInterface } from "@/types/MeetingTypes";
+import { compileBookedSessionTemplate, sendMail } from "@/lib/mail";
 
 function getRandomElementFromArray(arr: any[]) {
   const randomIndex = Math.floor(Math.random() * arr.length);
@@ -100,16 +100,12 @@ export async function POST(req: NextRequest) {
           notificationToGuest,
         ]);
 
-        console.log("notificationResults", notificationResults);
-
         if (notificationResults.insertedCount === 2) {
           const insertedNotifications = await notificationCollection
             .find({
               _id: { $in: Object.values(notificationResults.insertedIds) },
             })
             .toArray();
-
-          console.log("insertedNotifications", insertedNotifications);
         }
         const dataToSendHost = {
           ...notificationToHost,
@@ -121,9 +117,6 @@ export async function POST(req: NextRequest) {
         };
 
         const attendee_address = guestAddress;
-
-        console.log("dataToSendHost", dataToSendHost);
-        console.log("dataToSendGuest", dataToSendGuest);
 
         const socket = io(`${SOCKET_BASE_URL}`, {
           withCredentials: true,
@@ -166,9 +159,6 @@ export async function POST(req: NextRequest) {
             }
           }
         }
-        // }
-
-        // if (session_type === "session") {
 
         const documentsForUserEmail = await delegateCollection
           .find({ address: guestAddress })

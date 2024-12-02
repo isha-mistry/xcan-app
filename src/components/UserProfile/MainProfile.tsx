@@ -55,6 +55,7 @@ import MobileResponsiveMessage from "../MobileResponsiveMessage/MobileResponsive
 import RewardButton from "../ClaimReward/RewardButton";
 import Heading from "../ComponentUtils/Heading";
 import { ChevronDownIcon } from "lucide-react";
+import { fetchApi } from "@/utils/api";
 
 function MainProfile() {
   const { isConnected, address, chain } = useAccount();
@@ -109,6 +110,7 @@ function MainProfile() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [selectedTab, setSelectedTab] = useState("Info");
   const dropdownRef = useRef<HTMLDivElement | null>(null);
+  const [copiedAddress, setCopiedAddress] = useState<string | null>(null);
 
   const tabs = [
     { name: "Info", value: "info" },
@@ -301,6 +303,10 @@ function MainProfile() {
   const handleCopy = (addr: string) => {
     copy(addr);
     toast("Address Copied");
+    setCopiedAddress(addr);
+    setTimeout(() => {
+      setCopiedAddress(null);
+    }, 4000);
   };
   const handleUpdateFollowings = async (
     daoname: string,
@@ -309,11 +315,10 @@ function MainProfile() {
   ) => {
     setLoading(true);
     setIsModalLoading(true);
-    const myHeaders = new Headers();
-    myHeaders.append("Content-Type", "application/json");
-    if (address) {
-      myHeaders.append("x-wallet-address", address);
-    }
+    const myHeaders: HeadersInit = {
+      "Content-Type": "application/json",
+      ...(address && { "x-wallet-address": address }),
+    };
 
     const raw = JSON.stringify({
       address: address,
@@ -326,10 +331,7 @@ function MainProfile() {
       body: raw,
       redirect: "follow",
     };
-    const res = await fetch(
-      `/api/delegate-follow/savefollower`,
-      requestOptions
-    );
+    const res = await fetchApi(`/delegate-follow/savefollower`, requestOptions);
 
     const dbResponse = await res.json();
 
@@ -376,14 +378,13 @@ function MainProfile() {
 
     if (!userupdate.isFollowing) {
       setFollowings(followings + 1);
-      const myHeaders = new Headers();
-      myHeaders.append("Content-Type", "application/json");
-      if (address) {
-        myHeaders.append("x-wallet-address", address);
-      }
+      const myHeaders: HeadersInit = {
+        "Content-Type": "application/json",
+        ...(address && { "x-wallet-address": address }),
+      };
 
       try {
-        const response = await fetch("/api/delegate-follow/savefollower", {
+        const response = await fetchApi("/delegate-follow/savefollower", {
           method: "PUT",
           headers: myHeaders,
           body: JSON.stringify({
@@ -411,12 +412,11 @@ function MainProfile() {
       setLoading(true);
       // settoaster(true);
       try {
-        const myHeaders = new Headers();
-        myHeaders.append("Content-Type", "application/json");
-        if (address) {
-          myHeaders.append("x-wallet-address", address);
-        }
-        const response = await fetch("/api/delegate-follow/updatefollower", {
+        const myHeaders: HeadersInit = {
+          "Content-Type": "application/json",
+          ...(address && { "x-wallet-address": address }),
+        };
+        const response = await fetchApi("/delegate-follow/updatefollower", {
           method: "PUT",
           headers: myHeaders,
           body: JSON.stringify({
@@ -456,12 +456,11 @@ function MainProfile() {
     // settoaster(true);
 
     try {
-      const myHeaders = new Headers();
-      myHeaders.append("Content-Type", "application/json");
-      if (address) {
-        myHeaders.append("x-wallet-address", address);
-      }
-      const response = await fetch("/api/delegate-follow/updatefollower", {
+      const myHeaders: HeadersInit = {
+        "Content-Type": "application/json",
+        ...(address && { "x-wallet-address": address }),
+      };
+      const response = await fetchApi("/delegate-follow/updatefollower", {
         method: "PUT",
         headers: myHeaders,
         body: JSON.stringify({
@@ -537,11 +536,10 @@ function MainProfile() {
     setIsLoading(true);
     const isEmailVisible = !isToggled;
     try {
-      const myHeaders = new Headers();
-      myHeaders.append("Content-Type", "application/json");
-      if (address) {
-        myHeaders.append("x-wallet-address", address);
-      }
+      const myHeaders: HeadersInit = {
+        "Content-Type": "application/json",
+        ...(address && { "x-wallet-address": address }),
+      };
       const raw = JSON.stringify({
         address: address,
         isEmailVisible: isEmailVisible,
@@ -553,7 +551,7 @@ function MainProfile() {
         body: raw,
         redirect: "follow",
       };
-      const response = await fetch("/api/profile/emailstatus", requestOptions);
+      const response = await fetchApi("/profile/emailstatus", requestOptions);
 
       if (!response.ok) {
         throw new Error("Failed to toggle");
@@ -578,11 +576,10 @@ function MainProfile() {
         // const dbResponse = await axios.get(`/api/profile/${address}`);
 
         let dao = getDaoName(chain?.name);
-        const myHeaders = new Headers();
-        myHeaders.append("Content-Type", "application/json");
-        if (address) {
-          myHeaders.append("x-wallet-address", address);
-        }
+        const myHeaders: HeadersInit = {
+          "Content-Type": "application/json",
+          ...(address && { "x-wallet-address": address }),
+        };
 
         const raw = JSON.stringify({
           address: address,
@@ -595,7 +592,7 @@ function MainProfile() {
           body: raw,
           redirect: "follow",
         };
-        const res = await fetch(`/api/profile/${address}`, requestOptions);
+        const res = await fetchApi(`/profile/${address}`, requestOptions);
 
         const dbResponse = await res.json();
 
@@ -724,11 +721,10 @@ function MainProfile() {
       // Make a request to your backend API to check if the address exists
       // console.log("Checking");
 
-      const myHeaders = new Headers();
-      myHeaders.append("Content-Type", "application/json");
-      if (address) {
-        myHeaders.append("x-wallet-address", address);
-      }
+      const myHeaders: HeadersInit = {
+        "Content-Type": "application/json",
+        ...(address && { "x-wallet-address": address }),
+      };
 
       const raw = JSON.stringify({
         address: address,
@@ -741,7 +737,7 @@ function MainProfile() {
         body: raw,
         redirect: "follow",
       };
-      const res = await fetch(`/api/profile/${address}`, requestOptions);
+      const res = await fetchApi(`/profile/${address}`, requestOptions);
 
       const response = await res.json();
 
@@ -768,11 +764,10 @@ function MainProfile() {
       // Call the POST API function for adding a new delegate
       console.log("Adding the delegate..");
 
-      const myHeaders = new Headers();
-      myHeaders.append("Content-Type", "application/json");
-      if (address) {
-        myHeaders.append("x-wallet-address", address);
-      }
+      const myHeaders: HeadersInit = {
+        "Content-Type": "application/json",
+        ...(address && { "x-wallet-address": address }),
+      };
 
       const raw = JSON.stringify({
         address: address,
@@ -803,7 +798,7 @@ function MainProfile() {
         redirect: "follow",
       };
 
-      const response = await fetch("/api/profile/", requestOptions);
+      const response = await fetchApi("/profile/", requestOptions);
       console.log("Response Add", response);
 
       if (response.status === 200) {
@@ -831,47 +826,43 @@ function MainProfile() {
   // Function to handle updating an existing delegate
   const handleUpdate = async (newDescription?: string) => {
     try {
-      // console.log("Updating");
-      // console.log("Inside Updating Description", newDescription);
-      // console.log("Updating");
-      // console.log("Inside Updating Description", newDescription);
-      // const myHeaders = new Headers();
-      // myHeaders.append("Content-Type", "application/json");
-      // if (address) {
-      //   myHeaders.append("x-wallet-address", address);
-      // }
-      const response: any = await axios.put(
-        "/api/profile",
-        {
-          address: address,
-          image: modalData.displayImage,
-          isDelegate: true,
-          displayName: modalData.displayName,
-          emailId: modalData.emailId,
-          socialHandles: {
-            twitter: modalData.twitter,
-            discord: modalData.discord,
-            github: modalData.github,
-          },
-          networks: [
-            {
-              dao_name: daoName,
-              network: chain?.name,
-              discourse: modalData.discourse,
-              description: newDescription,
-            },
-          ],
+      const myHeaders: HeadersInit = {
+        "Content-Type": "application/json",
+        ...(address && { "x-wallet-address": address }),
+      };
+      const raw = JSON.stringify({
+        address: address,
+        image: modalData.displayImage,
+        isDelegate: true,
+        displayName: modalData.displayName,
+        emailId: modalData.emailId,
+        socialHandles: {
+          twitter: modalData.twitter,
+          discord: modalData.discord,
+          github: modalData.github,
         },
-        {
-          headers: {
-            "Content-Type": "application/json",
-            ...(address && { "x-wallet-address": address }),
+        networks: [
+          {
+            dao_name: daoName,
+            network: chain?.name,
+            discourse: modalData.discourse,
+            description: newDescription,
           },
-        }
-      );
-      // console.log("response", response);
+        ],
+      });
+
+      const requestOptions: any = {
+        method: "PUT",
+        headers: myHeaders,
+        body: raw,
+        redirect: "follow",
+      };
+      const response = await fetchApi("/profile", requestOptions);
+      console.log("response", response);
+      const result = await response.json();
+      console.log("result", result);
       // Handle response from the PUT API function
-      if (response.data.success) {
+      if (result.data.success) {
         // Delegate updated successfully
         // console.log("Delegate updated successfully");
         setIsLoading(false);
@@ -884,7 +875,7 @@ function MainProfile() {
           github: modalData.github,
         });
       } else {
-        console.error("Failed to update delegate:", response.error);
+        console.error("Failed to update delegate:", result.error);
         setIsLoading(false);
       }
     } catch (error) {
@@ -1066,7 +1057,12 @@ function MainProfile() {
                     showArrow
                   >
                     <span className="px-2 cursor-pointer" color="#3E3D3D">
-                      <IoCopy onClick={() => handleCopy(`${address}`)} />
+                      <IoCopy
+                        onClick={() => handleCopy(`${address}`)}
+                        className={`transition-colors duration-300 ${
+                          copiedAddress === `${address}` ? "text-blue-500" : ""
+                        }`}
+                      />
                     </span>
                   </Tooltip>
                   <div className="flex space-x-2">
@@ -1187,7 +1183,7 @@ function MainProfile() {
                 />
               </div>
               <div
-                className={`w-[calc(100vw-2rem)] mt-1 overflow-hidden transition-all duration-700 ease-in-out ${
+                className={`w-[calc(100vw-3rem)] mt-1 overflow-hidden transition-all duration-700 ease-in-out ${
                   isDropdownOpen
                     ? "max-h-[500px] opacity-100"
                     : "max-h-0 opacity-0"

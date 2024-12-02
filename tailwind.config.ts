@@ -11,14 +11,20 @@ const config: Config = {
   theme: {
     extend: {
       screens: {
+        "0.2xs": "370px",
+        "0.5xs": "400px",
+        "0.7xs": "420px",
         "2.5xl": "2100px",
         "1.5xl": "1350px",
         "1.7xl": "1450px",
         "1.5lg": "1200px",
+        "1.7lg": "1250px",
         "1.3lg": "1100px",
         xm: "550px",
         xs: "470px",
         "2md": "950px",
+        "2sm": "670px",
+        "1.5md": "830px",
       },
       backgroundImage: {
         "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
@@ -68,9 +74,16 @@ const config: Config = {
           "0%": { opacity: "0", transform: "translateY(-20px)" },
           "100%": { opacity: "1", transform: "translateY(0)" },
         },
+        "spin-subtle": {
+          "0%": { transform: "rotate(0deg) scale(1)" },
+          "50%": { transform: "rotate(180deg) scale(1.1)" },
+          "100%": { transform: "rotate(360deg) scale(1)" },
+        },
+        
       },
       animation: {
         fadeIn: "fadeIn 1s ease-out",
+        "spin-subtle": "spin-subtle 3s ease-in-out infinite",
       },
     },
   },

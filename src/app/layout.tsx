@@ -5,7 +5,7 @@ import "./globals.css";
 // import { NextUIProvider } from "@nextui-org/react";
 import SidebarMain from "@/components/MainSidebar/SidebarMain";
 import RootProviders from "./providers/root-providers";
-import HuddleContextProvider from "@/context/HuddleContextProvider";
+// import HuddleContextProvider from "@/context/HuddleContextProvider";
 import { Suspense, useEffect } from "react";
 import FeedbackTile from "@/components/ComponentUtils/FeedbackTile";
 import Script from "next/script";
@@ -13,6 +13,7 @@ import ProgressBarProvider from "@/components/ProgressBarProvider/ProgressBarPro
 import MobileResponsiveMessage from "@/components/MobileResponsiveMessage/MobileResponsiveMessage";
 import { GoogleTagManager } from "@next/third-parties/google";
 import SidebarMainMobile from "@/components/MainSidebar/SidebarMainMobile";
+import { ApiDataProvider } from "@/contexts/ApiDataContext";
 const poppins = Poppins({
   subsets: ["latin"],
   weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
@@ -111,7 +112,7 @@ export default function RootLayout({
         <ProgressBarProvider>
           <Suspense>
             <RootProviders>
-              <HuddleContextProvider>
+              <ApiDataProvider>
                 <div className="flex">
                   <div className="hidden lg:block fixed w-[6%] bg-blue-shade-100 h-screen z-10">
                     <SidebarMain />
@@ -119,12 +120,12 @@ export default function RootLayout({
                   <div className="lg:hidden fixed z-10 w-full bg-white border border-b-0">
                     <SidebarMainMobile />
                   </div>
-                  <div className="w-[100%] lg:w-[94%] ml-auto mt-[78px] sm:mt-[64px] lg:mt-0">
+                  <div className="w-[100%] lg:w-[94%] ml-auto mt-[78px] sm:mt-[64px] lg:mt-0 z-0">
                     <FeedbackTile />
                     <div>{children}</div>
                   </div>
                 </div>
-              </HuddleContextProvider>
+              </ApiDataProvider>
             </RootProviders>
           </Suspense>
         </ProgressBarProvider>

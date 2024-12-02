@@ -25,6 +25,7 @@ import { RiErrorWarningLine } from "react-icons/ri";
 import { TimeoutError } from "viem";
 import { SessionInterface } from "@/types/MeetingTypes";
 import { CiSearch } from "react-icons/ci";
+import { fetchApi } from "@/utils/api";
 
 function DelegatesSession({ props }: { props: string }) {
   const [searchQuery, setSearchQuery] = useState("");
@@ -42,11 +43,10 @@ function DelegatesSession({ props }: { props: string }) {
   const fetchData = async () => {
     try {
       setDataLoading(true);
-      const myHeaders = new Headers();
-      myHeaders.append("Content-Type", "application/json");
-      if (address) {
-        myHeaders.append("x-wallet-address", address);
-      }
+      const myHeaders: HeadersInit = {
+        "Content-Type": "application/json",
+        ...(address && { "x-wallet-address": address }),
+      };
       const requestOptions: any = {
         method: "POST",
         headers: myHeaders,
@@ -118,11 +118,10 @@ function DelegatesSession({ props }: { props: string }) {
           dao_name: dao_name,
         });
 
-        const myHeaders = new Headers();
-        myHeaders.append("Content-Type", "application/json");
-        if (address) {
-          myHeaders.append("x-wallet-address", address);
-        }
+        const myHeaders: HeadersInit = {
+          "Content-Type": "application/json",
+          ...(address && { "x-wallet-address": address }),
+        };
 
         const requestOptions: any = {
           method: "POST",
@@ -130,7 +129,7 @@ function DelegatesSession({ props }: { props: string }) {
           body: raw,
           redirect: "follow",
         };
-        const res = await fetch(`/api/search-session/${query}`, requestOptions);
+        const res = await fetchApi(`/search-session/${query}`, requestOptions);
         if (!res.ok) {
           throw new Error(`HTTP error! status: ${res.status}`);
         }
@@ -211,19 +210,19 @@ function DelegatesSession({ props }: { props: string }) {
         </span>
       </div> */}
       <div
-          className={`flex items-center rounded-full shadow-lg bg-gray-100 text-black cursor-pointer my-4 w-[300px] xs:w-[365px]`}
-        >
-          <CiSearch
-            className={`text-base transition-all duration-700 ease-in-out ml-3`}
-          />
-          <input
-            type="text"
-            placeholder="Search by title and host address"
-            className="w-[100%] pl-2 pr-4 py-1.5 font-poppins md:py-2 text-sm bg-transparent outline-none"
-            value={searchQuery}
-            onChange={(e) => handleSearchChange(e.target.value)}
-          />
-        </div>
+        className={`flex items-center rounded-full shadow-lg bg-gray-100 text-black cursor-pointer my-4 w-[300px] xs:w-[365px]`}
+      >
+        <CiSearch
+          className={`text-base transition-all duration-700 ease-in-out ml-3`}
+        />
+        <input
+          type="text"
+          placeholder="Search by title and host address"
+          className="w-[100%] pl-2 pr-4 py-1.5 font-poppins md:py-2 text-sm bg-transparent outline-none"
+          value={searchQuery}
+          onChange={(e) => handleSearchChange(e.target.value)}
+        />
+      </div>
 
       <div className=" pt-3">
         <div className="flex w-fit gap-16 border-1 border-[#7C7C7C] px-6 rounded-xl text-sm">

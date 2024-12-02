@@ -19,6 +19,7 @@ import { AbiEncodingLengthMismatchError } from "viem";
 import { all } from "axios";
 import { fetchEnsNameAndAvatar } from "@/utils/ENSUtils";
 import { headers } from "next/headers";
+import { fetchApi } from "@/utils/api";
 
 interface dataToStore {
   userAddress: `0x${string}` | undefined | null;
@@ -162,11 +163,10 @@ function ScheduledUserSessions({ daoName }: { daoName: string }) {
 
   const checkUser = async () => {
     try {
-      const myHeaders = new Headers();
-      myHeaders.append("Content-Type", "application/json");
-      if (address) {
-        myHeaders.append("x-wallet-address", address);
-      }
+      const myHeaders: HeadersInit = {
+        "Content-Type": "application/json",
+        ...(address && { "x-wallet-address": address }),
+      };
 
       const raw = JSON.stringify({
         address: address,
@@ -179,7 +179,7 @@ function ScheduledUserSessions({ daoName }: { daoName: string }) {
         body: raw,
         redirect: "follow",
       };
-      const response = await fetch(`/api/profile/${address}`, requestOptions);
+      const response = await fetchApi(`/profile/${address}`, requestOptions);
       const result = await response.json();
       console.log("result", result);
       if (Array.isArray(result.data) && result.data.length > 0) {
@@ -297,11 +297,10 @@ function ScheduledUserSessions({ daoName }: { daoName: string }) {
     setFinalData(dataToStore);
 
     console.log("dataToStore", dataToStore);
-    const myHeaders = new Headers();
-    myHeaders.append("Content-Type", "application/json");
-    if (address) {
-      myHeaders.append("x-wallet-address", address);
-    }
+    const myHeaders: HeadersInit = {
+      "Content-Type": "application/json",
+      ...(address && { "x-wallet-address": address }),
+    };
     const requestOptions: any = {
       method: "POST",
       headers: myHeaders,
@@ -312,7 +311,7 @@ function ScheduledUserSessions({ daoName }: { daoName: string }) {
     try {
       console.log("storing....");
       setCreateSessionLoading(true);
-      const response = await fetch("/api/store-availability", requestOptions);
+      const response = await fetchApi("/store-availability", requestOptions);
       const result = await response.json();
       console.log(result);
       if (result.success) {
@@ -324,12 +323,11 @@ function ScheduledUserSessions({ daoName }: { daoName: string }) {
 
         //calling api endpoint for sending mail to user who follow this delegate
         try {
-          const myHeaders = new Headers();
-          myHeaders.append("Content-Type", "application/json");
-          if (address) {
-            myHeaders.append("x-wallet-address", address);
-          }
-          const response = await fetch("/api/delegate-follow/send-mails", {
+          const myHeaders: HeadersInit = {
+            "Content-Type": "application/json",
+            ...(address && { "x-wallet-address": address }),
+          };
+          const response = await fetchApi("/delegate-follow/send-mails", {
             method: "PUT",
             headers: myHeaders,
             body: JSON.stringify({
@@ -561,11 +559,10 @@ function ScheduledUserSessions({ daoName }: { daoName: string }) {
         if (isValidEmail) {
           try {
             setAddingEmail(true);
-            const myHeaders = new Headers();
-            myHeaders.append("Content-Type", "application/json");
-            if (address) {
-              myHeaders.append("x-wallet-address", address);
-            }
+            const myHeaders: HeadersInit = {
+              "Content-Type": "application/json",
+              ...(address && { "x-wallet-address": address }),
+            };
 
             const raw = JSON.stringify({
               address: address,
@@ -580,7 +577,7 @@ function ScheduledUserSessions({ daoName }: { daoName: string }) {
               redirect: "follow",
             };
 
-            const response = await fetch("/api/profile", requestOptions);
+            const response = await fetchApi("/profile", requestOptions);
             const result = await response.json();
             if (result.success) {
               setContinueAPICalling(true);

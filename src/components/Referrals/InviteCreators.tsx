@@ -21,16 +21,16 @@ function InviteCreators({ userAddress }: { userAddress: any }) {
   const [showComingSoon, setShowComingSoon] = useState(true);
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(`${BASE_URL}invite/${userAddress}`);
+    navigator.clipboard.writeText(`${BASE_URL}/invite/${userAddress}`);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000); // Reset the copied state after 2 seconds
   };
 
-  const url = encodeURIComponent(`${BASE_URL}invite/${userAddress}`);
+  const url = encodeURIComponent(`${BASE_URL}/invite/${userAddress}`);
   const text = encodeURIComponent(`Join me on Chora Club`);
 
   const shareOn = (platform: any) => {
-    const url = encodeURIComponent(`${BASE_URL}invite/${userAddress}`);
+    const url = encodeURIComponent(`${BASE_URL}/invite/${userAddress}`);
     const text = encodeURIComponent(
       `Join me on Chora Club and let's revolutionize Web3 together! 🚀`
     );
@@ -54,7 +54,7 @@ function InviteCreators({ userAddress }: { userAddress: any }) {
   return (
     <>
       <div className="min-h-screen h-full bg-gradient-to-br from-blue-50 to-purple-50 ">
-        <div className="relative container mx-auto px-4 py-8">
+        <div className="relative mx-auto px-4 md:px-6 lg:px-16 py-8">
           <Heading />
 
           <main className="container mx-auto px-4 py-8">
@@ -62,7 +62,7 @@ function InviteCreators({ userAddress }: { userAddress: any }) {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
-              className="bg-white rounded-lg shadow-xl p-8"
+              className="bg-white rounded-lg shadow-xl p-4 sm:p-8"
             >
               <h1 className="text-3xl font-bold text-gray-800 mb-6">
                 Welcome,{" "}
@@ -89,7 +89,7 @@ function InviteCreators({ userAddress }: { userAddress: any }) {
                 </Link>
               </div>
 
-              <div className="bg-gradient-to-r from-blue-100 via-purple-100 to-pink-100 rounded-lg p-6 mb-8">
+              <div className="bg-gradient-to-r from-blue-100 via-purple-100 to-pink-100 rounded-lg p-4 xm:p-6 mb-8">
                 <div className="flex items-center justify-center mb-4">
                   <Image
                     src={
@@ -115,16 +115,16 @@ function InviteCreators({ userAddress }: { userAddress: any }) {
                 <p className="text-center text-gray-700 mb-2">
                   Your unique invite link:
                 </p>
-                <div className="flex items-center bg-white rounded-md overflow-hidden">
+                <div className="flex flex-col xm:flex-row items-stretch bg-white rounded-md overflow-hidden shadow-sm">
                   <input
                     type="text"
-                    value={`${BASE_URL}invite/${userAddress}`}
+                    value={`${BASE_URL}/invite/${userAddress}`}
                     readOnly
-                    className="flex-grow p-3 text-gray-700 focus:outline-none"
+                    className="flex-grow p-3 text-gray-700 focus:outline-none text-sm sm:text-base w-full min-w-0 overflow-x-auto"
                   />
                   <button
                     onClick={handleCopy}
-                    className={`px-4 py-3 font-semibold transition-colors duration-200 ${
+                    className={`px-4 py-3 font-semibold transition-colors duration-200 whitespace-nowrap ${
                       copied
                         ? "bg-green-500 text-white"
                         : "bg-blue-600 text-white hover:bg-blue-700"
@@ -178,7 +178,7 @@ function InviteCreators({ userAddress }: { userAddress: any }) {
                 </div>
               </div>
 
-              <div className="bg-gradient-to-r from-yellow-100 to-orange-100 rounded-lg p-6">
+              <div className="bg-gradient-to-r from-yellow-100 to-orange-100 rounded-lg p-[10px] 0.5xs:p-4 xm:p-6">
                 <h3 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
                   <FaFire className="text-orange-500 mr-2" /> Your Earnings
                   {showComingSoon && (
@@ -196,7 +196,10 @@ function InviteCreators({ userAddress }: { userAddress: any }) {
                         />
                       </svg>
                       <p className="text-sm text-yellow-700 mx-2">
-                        Claiming feature coming soon
+                        <span className="hidden sm:block">
+                          Claiming feature
+                        </span>{" "}
+                        coming soon
                       </p>
                       <button
                         onClick={() => setShowComingSoon(false)}
@@ -208,10 +211,10 @@ function InviteCreators({ userAddress }: { userAddress: any }) {
                   )}
                 </h3>
                 <div className="flex justify-between items-center">
-                  <p className="text-gray-700">
+                  <p className="text-gray-700 text-sm xm:text-base">
                     Total earnings from referrals:
                   </p>
-                  <p className="text-2xl font-bold text-green-600">
+                  <p className="text-sm 0.5xs:text-xl xm:text-2xl font-bold text-green-600">
                     {earnings} ETH
                   </p>
                 </div>

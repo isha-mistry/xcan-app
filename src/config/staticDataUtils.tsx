@@ -59,7 +59,7 @@ export const opBlock = [
     link: "https://twitter.com/Optimism",
   },
   {
-    title: "Optimism DAO Twitter Profile",
+    title: "Optimism Collective Twitter Profile",
     link: "https://twitter.com/OptimismGov",
   },
 ];

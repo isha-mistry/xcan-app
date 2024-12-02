@@ -8,6 +8,8 @@ import { Oval, TailSpin } from "react-loader-spinner";
 import MobileResponsiveMessage from "../MobileResponsiveMessage/MobileResponsiveMessage";
 import ConnectYourWallet from "../ComponentUtils/ConnectYourWallet";
 import { useConnection } from "@/app/hooks/useConnection";
+import { RotatingLines } from "react-loader-spinner";
+
 function ReferralsMain() {
   const { address } = useAccount();
   const { isConnected, isLoading, isSessionLoading, isPageLoading, isReady } =
@@ -17,15 +19,13 @@ function ReferralsMain() {
     if (isPageLoading) {
       return (
         <div className="flex items-center justify-center h-screen">
-          <TailSpin
+          <RotatingLines
+            strokeColor="#0356fc"
+            strokeWidth="5"
+            animationDuration="0.75"
+            width="60"
             visible={true}
-            height="40"
-            width="40"
-            color="#0356fc"
-            ariaLabel="tail-spin-loading"
-            radius="1"
           />
-          <p className="ml-4 text-black">Loading...</p>
         </div>
       );
     }
@@ -33,15 +33,13 @@ function ReferralsMain() {
     if (isSessionLoading) {
       return (
         <div className="flex items-center justify-center h-screen">
-          <Oval
+          <RotatingLines
+            strokeColor="#0356fc"
+            strokeWidth="5"
+            animationDuration="0.75"
+            width="60"
             visible={true}
-            height="40"
-            width="40"
-            color="#0500FF"
-            secondaryColor="#cdccff"
-            ariaLabel="oval-loading"
           />
-          <p className="ml-4 text-black">Loading...</p>
         </div>
       );
     }
@@ -61,8 +59,7 @@ function ReferralsMain() {
 
   return (
     <>
-      <MobileResponsiveMessage />
-      <div className="hidden md:block font-poppins">{renderContent()}</div>
+      <div className="font-poppins">{renderContent()}</div>
     </>
   );
 }

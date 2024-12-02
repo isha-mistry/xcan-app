@@ -9,9 +9,10 @@ import {
 } from "react-icons/bs";
 import { PiVideoFill } from "react-icons/pi";
 import { GiChaingun } from "react-icons/gi";
-import { BASE_URL } from "@/config/constants";
+import { MEETING_BASE_URL } from "@/config/constants";
 import { useAccount } from "wagmi";
 import { useNotificationStudioState } from "@/store/notificationStudioState";
+import { fetchApi } from "@/utils/api";
 
 export const getBackgroundColor = (data: any) => {
   if (data?.notification_type === "newBooking") {
@@ -73,11 +74,12 @@ export const markAsRead = async (data: any): Promise<void> => {
   const { setNotifications, updateCombinedNotifications } =
     useNotificationStudioState.getState();
   try {
-    const myHeaders = new Headers();
-    myHeaders.append("Content-Type", "application/json");
-    if (data.receiver_address) {
-      myHeaders.append("x-wallet-address", data.receiver_address);
-    }
+    const myHeaders: HeadersInit = {
+      "Content-Type": "application/json",
+      ...(data.receiver_address && {
+        "x-wallet-address": data.receiver_address,
+      }),
+    };
 
     const raw = JSON.stringify({
       id: data?._id,
@@ -89,8 +91,8 @@ export const markAsRead = async (data: any): Promise<void> => {
       headers: myHeaders,
       body: raw,
     };
-    const response = await fetch(
-      "/api/notifications/mark-as-read",
+    const response = await fetchApi(
+      "/notifications/mark-as-read",
       requestOptions
     );
     const result = await response.json();
@@ -127,9 +129,13 @@ export const handleRedirection = async (
         `/profile/${data.receiver_address}?active=sessions&session=attending`
       );
     } else if (data.notification_name === "sessionStartedByHost") {
-      router.push(`/meeting/session/${data.additionalData.meetingId}/lobby`);
+      router.push(
+        `${MEETING_BASE_URL}/meeting/session/${data.additionalData.meetingId}/lobby`
+      );
     } else if (data.notification_name === "sessionStartedByGuest") {
-      router.push(`/meeting/session/${data.additionalData.meetingId}/lobby`);
+      router.push(
+        `${MEETING_BASE_URL}/meeting/session/${data.additionalData.meetingId}/lobby`
+      );
     }
   } else if (data.notification_type === "attestation") {
     if (data.additionalData.notification_user_role === "session_hosted") {

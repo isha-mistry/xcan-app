@@ -13,6 +13,7 @@ import Image from "next/image";
 import PageNotFound from "../PageNotFound/PageNotFound";
 import { IoClose } from "react-icons/io5";
 import SessionHostedModal from "../ComponentUtils/SessionHostedModal";
+import { fetchApi } from "@/utils/api";
 
 function UpdateSessionDetails({ roomId }: { roomId: string }) {
   // useEffect(() => {
@@ -90,11 +91,10 @@ function UpdateSessionDetails({ roomId }: { roomId: string }) {
     try {
       if (address?.toLowerCase() === data.host_address.toLowerCase()) {
         setLoading(true);
-        const myHeaders = new Headers();
-        myHeaders.append("Content-Type", "application/json");
-        if (address) {
-          myHeaders.append("x-wallet-address", address);
-        }
+        const myHeaders: HeadersInit = {
+          "Content-Type": "application/json",
+          ...(address && { "x-wallet-address": address }),
+        };
 
         const raw = JSON.stringify({
           meetingId: roomId,
@@ -110,12 +110,14 @@ function UpdateSessionDetails({ roomId }: { roomId: string }) {
           body: raw,
           redirect: "follow",
         };
-        const response = await fetch(
-          `/api/update-recorded-session`,
+        const response = await fetchApi(
+          `/update-recorded-session`,
           requestOptions
         );
+        console.log("response::::::", response);
+        const responseData = await response.json();
+        console.log("responseData::::::", responseData);
         if (response) {
-          const responseData = await response.json();
           setLoading(false);
           setShowHostPopup(true);
           // router.push(`/profile/${address}?active=sessions&session=hosted`);

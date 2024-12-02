@@ -85,6 +85,7 @@ function TotalRewards() {
       setEthToUsdConversionRate(coingeckoData.ethereum.usd);
       if (data.data.rewardsPerUsers.length < 1) {
         setTotalRewards({ amount: "0.0 ", value: "$0.0" });
+        setFetchingReward(false);
         return;
       }
       const total =
@@ -195,7 +196,7 @@ function TotalRewards() {
 
   return (
     <>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6 font-poppins">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:py-6 font-poppins">
         <div className="bg-gradient-to-br from-blue-500 to-purple-600 text-white rounded-lg overflow-hidden shadow-lg transition-all duration-300 hover:shadow-xl">
           <div className="p-6">
             <h2 className="text-2xl font-bold flex items-center mb-4">
@@ -203,10 +204,10 @@ function TotalRewards() {
               Total Rewards
             </h2>
             <div className="mt-4">
-              <span className="text-4xl font-extrabold">
+              <span className="text-3xl font-bold">
                 {totalRewards?.amount} ETH
               </span>
-              <p className="text-lg opacity-80 mt-2">
+              <p className="text-base opacity-80 mt-2">
                 ≈ {totalRewards?.value} USD
               </p>
             </div>
@@ -214,7 +215,7 @@ function TotalRewards() {
         </div>
 
         <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-          <div className="p-6">
+          <div className="p-4 xm:p-6">
             <h2 className="text-2xl font-bold mb-4">Claim Rewards</h2>
             {fetchingReward ? (
               <div className="flex flex-col items-center justify-center py-2">
@@ -226,8 +227,9 @@ function TotalRewards() {
                 {nonZeroRewards.map((reward, index) => (
                   <div
                     key={index}
-                    className="flex items-center justify-between border-b pb-4 last:border-b-0 last:pb-0"
+                    className="flex flex-col xm:flex-row md:flex-col 1.7lg:flex-row  items-center justify-between border-b pb-4 last:border-b-0 last:pb-0 gap-4"
                   >
+                    <div className="flex items-center gap-4 0.2xs:gap-6 md:gap-4 1.7lg:gap-6 justify-between">
                     <div className="flex items-center space-x-2">
                       <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
                         <Image
@@ -236,15 +238,16 @@ function TotalRewards() {
                           className="w-8 h-8 object-contain"
                         />
                       </div>
-                      <span className="font-medium">{displayEnsName}</span>
+                      <span className="font-medium text-xs xm:text-base md:text-xs 1.7lg:text-base">{displayEnsName}</span>
                     </div>
                     <div>
-                      <div className="font-semibold text-lg">
+                      <div className="font-semibold text-sm xm:text-lg md:text-sm 1.7lg:text-lg">
                         {rewardBalanceInETH} ETH
                       </div>
-                      <div className="text-sm text-gray-500">
+                      <div className="text-xs xm:text-sm md:text-xs 1.7lg:text-sm text-gray-500">
                         ≈ ${rewardBalanceInUSD} USD
                       </div>
+                    </div>
                     </div>
                     <button
                       onClick={handleClaim}
