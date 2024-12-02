@@ -10,6 +10,12 @@ import { HiOutlineExternalLink } from "react-icons/hi";
 import { ThreeDots } from "react-loader-spinner";
 import Confetti from "react-confetti";
 import { useApiData } from "@/contexts/ApiDataContext";
+import op from "@/assets/images/daos/op.png";
+import arb from "@/assets/images/daos/arb.png";
+import { useAccount, useReadContract } from "wagmi";
+import dao_abi from "../../artifacts/Dao.sol/GovernanceToken.json";
+import { Address } from "viem";
+import { useRouter } from "next/router";
 
 interface delegate {
   isOpen: boolean;
@@ -40,15 +46,34 @@ function DelegateTileModal({
   tempCpi,
   tempCpiCalling,
 }: delegate) {
+  const { isConnected, address, chain } = useAccount();
   const { apiData: cpiData, loading, error: errorApi } = useApiData();
   const actualCpi = cpiData?.data?.results[0].cpi;
   console.log("cpiData::::", cpiData);
   const [isLoading, setIsLoading] = useState(true);
   const [isHovering, setIsHovering] = useState(false);
+  const [tokenImage, setTokenImage] = useState(op);
+
+  useEffect(() => {
+    const pathname = window.location.pathname;
+    if (pathname.includes("arbitrum")) {
+      setTokenImage(arb);
+    } else {
+      setTokenImage(op);
+    }
+  }, []);
+
   const handleMouseEnter = () => {
     setIsHovering(true);
   };
-
+  const { data: accountBalance }: any = useReadContract({
+    abi: dao_abi.abi,
+    address: "0x4200000000000000000000000000000000000042",
+    functionName: "balanceOf",
+    // args:['0x6eda5acaff7f5964e1ecc3fd61c62570c186ca0c' as Address]
+    args: [address as Address],
+  });
+  console.log(accountBalance, "acc balance", typeof accountBalance);
   const handleMouseLeave = () => {
     setIsHovering(false);
   };
@@ -90,7 +115,28 @@ function DelegateTileModal({
             address
           </p>
 
-          <div className="mt-6 w-full">
+          <div className="bg-gradient-to-br from-gray-100 to-gray-200 border-2 border-gray-300 flex justify-center items-center py-6 rounded-3xl w-full flex-col mt-4 shadow-md">
+            <p className="text-black font-medium text-sm tracking-wide uppercase mb-3">
+              Total Delegatable Votes
+            </p>
+            <div className="flex items-center space-x-1">
+              <span className="text-4xl font-bold text-black tracking-tighter">
+                {accountBalance === BigInt(0) || accountBalance === undefined
+                  ? "0.00"
+                  : Number(accountBalance / BigInt(Math.pow(10, 18))).toFixed(
+                      2
+                    )}
+              </span>
+              <div className=" rounded-full p-2 ">
+                <Image
+                  src={tokenImage}
+                  alt="OP Token"
+                  className="w-10 h-10 object-contain"
+                />
+              </div>
+            </div>
+          </div>
+          <div className="mt-4 w-full">
             <div className="flex items-center rounded-3xl border-[2.5px] border-white bg-[#F4F4F4] pt-3 pb-5 xs:pt-4">
               <Image src={user} alt="" className="size-[46px] mx-5" />
               <div className="">
@@ -137,12 +183,12 @@ function DelegateTileModal({
           </div>
 
           {daoName === "optimism" && (
-            <div className="flex items-center justify-between w-full max-w-md bg-gradient-to-br from-[#000000d0] to-[#4f4f4f] rounded-xl p-4 my-4 shadow-md border ">
+            <div className="flex items-center justify-between w-full max-w-md bg-gradient-to-br from-gray-100 to-gray-200 border-2 border-gray-300 rounded-3xl px-6 py-4 mt-4 shadow-md  ">
               <div className="flex flex-col items-center">
-                <span className="text-sm text-white/80 mb-2 font-bold">
+                <span className="text-black font-medium text-sm tracking-wide uppercase mb-2">
                   Current CPI
                 </span>
-                <div className="text-lg font-semibold text-white bg-white/20 px-3 py-1 rounded-lg">
+                <div className="text-lg font-semibold text-black bg-white px-3 py-1 rounded-lg">
                   {actualCpi ? (
                     Number(actualCpi).toFixed(2)
                   ) : (
@@ -150,26 +196,30 @@ function DelegateTileModal({
                       visible={true}
                       height="30"
                       width="40"
-                      color="white"
+                      color="black"
                       ariaLabel="oval-loading"
                     />
                   )}
                 </div>
               </div>
               <div className="flex flex-col items-center">
-                <span className="text-sm text-white/80 mb-2 font-bold">
+                <span className="text-black font-medium text-sm tracking-wide uppercase mb-2">
                   CPI if you delegate
                 </span>
-                <div className="text-lg font-semibold text-white bg-white/20 px-3 py-1 rounded-lg">
+                <div
+                  className={`${
+                    tempCpi <= actualCpi ? "text-[#1c8e1c]" : "text-red-600"
+                  } text-lg font-semibold bg-white px-3 py-1 rounded-lg`}
+                >
                   {!tempCpiCalling && tempCpi ? (
                     Number(tempCpi).toFixed(2)
                   ) : (
-                    <span className="text-white/70 italic">
+                    <span className="text-gray-500 italic">
                       <ThreeDots
                         visible={true}
                         height="30"
                         width="40"
-                        color="white"
+                        color="black"
                         ariaLabel="oval-loading"
                       />
                     </span>
@@ -180,7 +230,7 @@ function DelegateTileModal({
           )}
 
           <button
-            className={`rounded-full py-3 xs:py-5 font-semibold font-poppins w-full text-base ${
+            className={`rounded-full py-3 xs:py-5 font-semibold font-poppins w-full text-base mt-4 ${
               addressCheck
                 ? "bg-grey-shade-50 text-grey"
                 : "bg-black text-white hover:bg-blue-shade-100"
