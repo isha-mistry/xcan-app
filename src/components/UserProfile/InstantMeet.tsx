@@ -39,22 +39,21 @@ interface instantMeetProps {
   daoName: string;
 }
 
-function  InstantMeet({ isDelegate, selfDelegate, daoName }: instantMeetProps) {
+function InstantMeet({ isDelegate, selfDelegate, daoName }: instantMeetProps) {
   const [modalData, setModalData] = useState({
     title: "",
     description: "",
   });
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [confirmSave, setConfirmSave] = useState(false);
-  const { address,isConnected } = useAccount();
-  const {walletAddress}=useWalletAddress();
+  const { address, isConnected } = useAccount();
+  const { walletAddress } = useWalletAddress();
   const { chain } = useAccount();
   const [isScheduling, setIsScheduling] = useState(false);
-  const { user, ready, getAccessToken,authenticated } = usePrivy();
-  // const [daoName, setDaoName] = useState<string>();
+  const { user, ready, getAccessToken, authenticated } = usePrivy();
+  const token = getAccessToken();
   const router = useRouter();
 
- 
   const handleModalInputChange = (
     e:
       | React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -89,7 +88,6 @@ function  InstantMeet({ isDelegate, selfDelegate, daoName }: instantMeetProps) {
     // Convert the local date and time to the specified format (YYYY-MM-DDTHH:mm:ss.sssZ)
     let dateInfo = localDateTime.toISOString();
 
-
     const requestData = {
       dao_name: daoName,
       slot_time: dateInfo,
@@ -102,14 +100,13 @@ function  InstantMeet({ isDelegate, selfDelegate, daoName }: instantMeetProps) {
       attendees: [],
     };
 
-
-    const myHeaders = new Headers();
-    const token = await getAccessToken();
-    myHeaders.append("Content-Type", "application/json");
-    if (walletAddress) {
-      myHeaders.append("x-wallet-address", walletAddress);
-      myHeaders.append("Authorization", `Bearer ${token}`);
-    }
+    const myHeaders: HeadersInit = {
+      "Content-Type": "application/json",
+      ...(walletAddress && {
+        "x-wallet-address": walletAddress,
+        Authorization: `Bearer ${token}`,
+      }),
+    };
 
     const requestOptions: any = {
       method: "POST",

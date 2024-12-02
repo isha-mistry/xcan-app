@@ -9,7 +9,7 @@ export async function GET(req: NextRequest, context: { params: Params }) {
   const url = new URL(req.url);
   const daoName = url.searchParams.get("dao_name");
   const host_address = context.params.hostAddress;
-  console.log("host_address:::", host_address);
+  // console.log("host_address:::", host_address);
   try {
     // Connect to MongoDB
     const client = await connectDB();
@@ -45,7 +45,7 @@ export async function GET(req: NextRequest, context: { params: Params }) {
 
 export async function POST(req: NextRequest, context: { params: Params }) {
   const host_address = context.params.hostAddress;
-  console.log("host_address:::", host_address);
+  // console.log("host_address:::", host_address);
   try {
     // Connect to MongoDB
     const client = await connectDB();

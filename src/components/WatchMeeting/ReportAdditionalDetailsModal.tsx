@@ -24,13 +24,13 @@ function ReportAdditionalDetailsModal({
   const { address, isConnected } = useAccount();
   const [details, setDetails] = useState("");
   const [isLoading, setIsLoading] = useState<boolean>();
-  const { ready, authenticated, login, logout,getAccessToken,user } = usePrivy();
-  const {walletAddress}=useWalletAddress();
+  const { ready, authenticated, login, logout, getAccessToken, user } =
+    usePrivy();
+  const { walletAddress } = useWalletAddress();
+  const token = getAccessToken();
   const toggleModal = () => {
     onClose();
   };
-
-
 
   function dateToUnixEpoch(date: Date) {
     // Get the timestamp in milliseconds
@@ -47,13 +47,13 @@ function ReportAdditionalDetailsModal({
     video_reports: any
   ) => {
     setIsLoading(true);
-    const myHeaders = new Headers();
-    const token=await getAccessToken();
-    myHeaders.append("Content-Type", "application/json");
-    if (walletAddress) {
-      myHeaders.append("x-wallet-address", walletAddress);
-      myHeaders.append("Authorization",`Bearer ${token}`);
-    }
+    const myHeaders: HeadersInit = {
+      "Content-Type": "application/json",
+      ...(walletAddress && {
+        "x-wallet-address": walletAddress,
+        Authorization: `Bearer ${token}`,
+      }),
+    };
     const requestOptions = {
       method: "POST",
       headers: myHeaders,
@@ -124,7 +124,7 @@ function ReportAdditionalDetailsModal({
     } else {
       if (!authenticated) {
         // openConnectModal();
-        login()
+        login();
       }
     }
   };
@@ -134,13 +134,15 @@ function ReportAdditionalDetailsModal({
       <div className="fixed inset-0 z-50 flex items-center justify-center font-poppins">
         <div
           className="absolute inset-0 backdrop-blur-md"
-          onClick={toggleModal}></div>
+          onClick={toggleModal}
+        ></div>
         <div className="z-50 bg-white p-6 rounded-3xl shadow-lg w-[28rem]">
           <div className="flex justify-between items-center">
             <div className="text-xl font-bold text-gray-900">Report video</div>
             <button
               className="text-gray-500 hover:text-gray-800"
-              onClick={toggleModal}>
+              onClick={toggleModal}
+            >
               <RxCross2 size={20} />
             </button>
           </div>
@@ -156,14 +158,16 @@ function ReportAdditionalDetailsModal({
             <button
               type="button"
               onClick={toggleModal}
-              className="ps-4 text-gray-700 rounded hover:text-gray-800 font-semibold">
+              className="ps-4 text-gray-700 rounded hover:text-gray-800 font-semibold"
+            >
               Cancel
             </button>
             <button
               type="button"
               onClick={handleReport}
               className="ps-4 text-red-500 hover:text-red-600 font-semibold"
-              disabled={isLoading}>
+              disabled={isLoading}
+            >
               {isLoading ? <>Submitting...</> : <> Report</>}
             </button>
           </div>

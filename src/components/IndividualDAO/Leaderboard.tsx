@@ -203,7 +203,9 @@ function Leaderboard({ props }: { props: string }) {
     <>
       <div className="container mx-auto xs:p-4 font-poppins">
         <div className="max-w-5xl flex flex-grow mx-auto justify-between items-center mb-4">
-          <div className="font-semibold text-[22px] hidden lg:block">Leaderboard</div>
+          <div className="font-semibold text-[22px] hidden lg:block">
+            Delegate&apos;s Leaderboard
+          </div>
           <div className="flex flex-col xs:flex-row xs:justify-end gap-2 xs:gap-4 w-full items-center">
             <div className="relative w-full xm:w-auto">
               <input
@@ -351,20 +353,26 @@ function Leaderboard({ props }: { props: string }) {
                             {delegate.ensName}
                           </Link>
                           <Tooltip
-                  content={copiedAddress === delegate.address ? "Copied!" : "Copy"}
-                  placement="right"
-                  closeDelay={1}
-                  showArrow
-                >
-                  <span className="cursor-pointer text-xs">
-                    <IoCopy
-                      onClick={() => handleCopy(delegate.address)}
-                      className={`transition-colors duration-300 ${
-                        copiedAddress === delegate.address ? 'text-blue-500' : ''
-                      }`}
-                    />
-                  </span>
-                </Tooltip>
+                            content={
+                              copiedAddress === delegate.address
+                                ? "Copied!"
+                                : "Copy"
+                            }
+                            placement="right"
+                            closeDelay={1}
+                            showArrow
+                          >
+                            <span className="cursor-pointer text-xs">
+                              <IoCopy
+                                onClick={() => handleCopy(delegate.address)}
+                                className={`transition-colors duration-300 ${
+                                  copiedAddress === delegate.address
+                                    ? "text-blue-500"
+                                    : ""
+                                }`}
+                              />
+                            </span>
+                          </Tooltip>
                         </div>
                       </div>
                     </div>
@@ -464,48 +472,46 @@ function Leaderboard({ props }: { props: string }) {
                           </p>
                         </div>
 
-                        
-
-                      <div className="bg-gray-50 rounded-xl p-4 mt-2 shadow-sm">
-                        <p className="text-gray-500 text-sm mb-2">Ratings</p>
-                        <div className="flex items-center gap-1 xs:gap-3">
-                          <div className="flex gap-0.5 0.5xs:gap-1">
-                            {[...Array(5)].map((_, starIndex) => {
-                              const starValue = starIndex + 1;
-                              if (starValue <= delegate.averageRating) {
-                                return (
-                                  <FaStar
-                                    key={starIndex}
-                                    className="size-3 0.5xs:size-4 xs:size-5 text-yellow-400 drop-shadow-sm"
-                                  />
-                                );
-                              } else if (
-                                starValue - 0.5 <=
-                                delegate.averageRating
-                              ) {
-                                return (
-                                  <FaStarHalfAlt
-                                    key={starIndex}
-                                    className="size-3 0.5xs:size-4 xs:size-5 text-yellow-400 drop-shadow-sm"
-                                  />
-                                );
-                              } else {
-                                return (
-                                  <FaRegStar
-                                    key={starIndex}
-                                    className="size-3 0.5xs:size-4 xs:size-5 text-gray-300"
-                                  />
-                                );
-                              }
-                            })}
+                        <div className="bg-gray-50 rounded-xl p-4 mt-2 shadow-sm">
+                          <p className="text-gray-500 text-sm mb-2">Ratings</p>
+                          <div className="flex items-center gap-1 xs:gap-3">
+                            <div className="flex gap-0.5 0.5xs:gap-1">
+                              {[...Array(5)].map((_, starIndex) => {
+                                const starValue = starIndex + 1;
+                                if (starValue <= delegate.averageRating) {
+                                  return (
+                                    <FaStar
+                                      key={starIndex}
+                                      className="size-3 0.5xs:size-4 xs:size-5 text-yellow-400 drop-shadow-sm"
+                                    />
+                                  );
+                                } else if (
+                                  starValue - 0.5 <=
+                                  delegate.averageRating
+                                ) {
+                                  return (
+                                    <FaStarHalfAlt
+                                      key={starIndex}
+                                      className="size-3 0.5xs:size-4 xs:size-5 text-yellow-400 drop-shadow-sm"
+                                    />
+                                  );
+                                } else {
+                                  return (
+                                    <FaRegStar
+                                      key={starIndex}
+                                      className="size-3 0.5xs:size-4 xs:size-5 text-gray-300"
+                                    />
+                                  );
+                                }
+                              })}
+                            </div>
+                            <span className="text-xs xs:text-sm text-gray-400">
+                              ({delegate.averageRating.toFixed(1)})
+                            </span>
                           </div>
-                          <span className="text-xs xs:text-sm text-gray-400">
-                            ({delegate.averageRating.toFixed(1)})
-                          </span>
                         </div>
-                      </div>
 
-                      <div className="bg-gray-50 rounded-xl col-span-2 p-4 shadow-sm">
+                        <div className="bg-gray-50 rounded-xl col-span-2 p-4 shadow-sm">
                           <p className="text-gray-500 text-sm mb-1">CC Score</p>
                           <p
                             className={`${delegate.textColor} text-xl font-bold`}

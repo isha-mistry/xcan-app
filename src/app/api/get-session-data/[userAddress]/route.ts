@@ -19,12 +19,11 @@ export async function POST(req: NextRequest, res: NextResponse) {
     const collection = db.collection("meetings");
 
     const currentTimeISO = new Date().toISOString();
-    console.log("currentTimeISO", currentTimeISO);
 
     let currentTime = new Date();
     currentTime.setMinutes(currentTime.getMinutes() - 30);
     const updatedTimeISO = currentTime.toISOString();
-    console.log("updatedTimeISO", updatedTimeISO);
+
     // Find documents based on user_address
     // console.log("Finding documents for user:", user_address);
     const documents = await collection

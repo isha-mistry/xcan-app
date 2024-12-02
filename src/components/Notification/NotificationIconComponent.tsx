@@ -26,12 +26,12 @@ function NotificationIconComponent() {
   const hoverRef = useRef<HTMLDivElement>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const socket = useSocket();
-  const { address,isConnected } = useAccount();
-  const { user, ready, getAccessToken,authenticated } = usePrivy();
+  const { address, isConnected } = useAccount();
+  const { user, ready, getAccessToken, authenticated } = usePrivy();
   const [socketId, setSocketId] = useState<string | null>(null);
   const [isAPILoading, setIsAPILoading] = useState<boolean>();
   const { data: session } = useSession();
-  const {walletAddress}=useWalletAddress();
+  const { walletAddress } = useWalletAddress();
   const {
     notifications,
     newNotifications,
@@ -47,12 +47,11 @@ function NotificationIconComponent() {
 
   const lastFetchTime = useRef<number>(0);
   const cacheDuration = 60000; // 1 minute cache
-
- 
+  const token = getAccessToken();
 
   useEffect(() => {
     setCanFetch(!!walletAddress);
-  }, [address,walletAddress,setCanFetch]);
+  }, [address, walletAddress, setCanFetch]);
 
   useEffect(() => {
     return () => {
@@ -71,14 +70,13 @@ function NotificationIconComponent() {
     if (now - lastFetchTime.current > cacheDuration) {
       setIsAPILoading(true);
       try {
-        const myHeaders = new Headers();
-        const token=await getAccessToken();
-        myHeaders.append("Content-Type", "application/json");
-        if (walletAddress) {
-          myHeaders.append("x-wallet-address", walletAddress);
-          myHeaders.append("Authorization",`Bearer ${token}`);
-        }
-
+        const myHeaders: HeadersInit = {
+          "Content-Type": "application/json",
+          ...(walletAddress && {
+            "x-wallet-address": walletAddress,
+            Authorization: `Bearer ${token}`,
+          }),
+        };
         const raw = JSON.stringify({ walletAddress });
 
         const requestOptions: RequestInit = {
@@ -118,7 +116,7 @@ function NotificationIconComponent() {
         setIsAPILoading(false);
       }
     }
-  }, [address,walletAddress, setNotifications, setHasAnyUnreadNotification]);
+  }, [address, walletAddress, setNotifications, setHasAnyUnreadNotification]);
 
   const handleMouseEnter = useCallback(() => {
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
@@ -139,7 +137,7 @@ function NotificationIconComponent() {
   }, [socket]);
 
   useEffect(() => {
-    if (socket && walletAddress!=null && socketId) {
+    if (socket && walletAddress != null && socketId) {
       socket.emit("register_host", { hostAddress: walletAddress, socketId });
 
       socket.on("new_notification", (message: Notification) => {

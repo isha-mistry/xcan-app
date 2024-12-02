@@ -24,6 +24,7 @@ const routeConfig = {
     ],
     // Routes that only need API key
     apiKeyOnly: [
+      "/calculate-cpi",
       // ... add other routes that only need API key
     ],
     // Public routes that need no authentication
@@ -35,15 +36,13 @@ const routeConfig = {
 
 export async function middleware(request: NextRequest) {
   // console.log("Request in APP Middleware:::", request);
+  const headers = request.headers;
   const origin = request.nextUrl.origin;
   const pathname = request.nextUrl.pathname;
   const apiKey = request.headers.get("x-api-key");
-
-  // console.log("Line 41",apiKey);
-  // console.log("Allowed Origins from Middle Ware",allowedOrigins)
-  // console.log("Origins",origin)
   // CORS check
   if (!origin || !allowedOrigins.includes(origin)) {
+    console.log("origin Error");
     return new NextResponse(
       JSON.stringify({ error: "Unknown origin request. Forbidden" }),
       {
@@ -72,78 +71,67 @@ export async function middleware(request: NextRequest) {
 
   const routeName = pathname.split("/").pop() || "";
   const isProxyRoute = pathname.startsWith("/api/proxy/");
+  const isApiKeyOnlyRoute = routeConfig.proxy.apiKeyOnly.some((route) =>
+    pathname.includes(route)
+  );
 
   // Token validation
   const authHeader = request.headers.get("Authorization");
   const privyToken = authHeader?.replace("Bearer ", "");
 
-
   if (isProxyRoute) {
-    // if (!token) {
-    //   return new NextResponse(
-    //     JSON.stringify({ error: "Authentication required" }),
-    //     { status: 401 }
-    //   );
-    // }
-
-    if (request.method === "GET") {
+    if (request.method === "GET" || isApiKeyOnlyRoute) {
       return NextResponse.next();
+    } else {
+      if (!privyToken) {
+        return new NextResponse(
+          JSON.stringify({ error: "Authentication required" }),
+          {
+            status: 401,
+            headers: { "Content-Type": "application/json" },
+          }
+        );
+      }
+
+      const walletAddress = request.headers.get("x-wallet-address");
+      const verifiedUser = await privyClient.verifyAuthToken(privyToken);
+      const user = await privyClient.getUserById(verifiedUser.userId);
+      // const userAddress = token.sub;
+
+      if (!walletAddress) {
+        return new NextResponse(
+          JSON.stringify({ error: "Wallet address not provided" }),
+          {
+            status: 400,
+            headers: { "Content-Type": "application/json" },
+          }
+        );
+      }
+
+      // Find linked wallet that matches the provided address
+      const linkedWallet = user.linkedAccounts
+        .filter((account) => account.type === "wallet")
+        .find(
+          (wallet) =>
+            wallet.address?.toLowerCase() === walletAddress.toLowerCase()
+        );
+
+      if (!linkedWallet) {
+        console.log(
+          `Forbidden access attempt: Wallet address ${walletAddress} not linked to user ${verifiedUser.userId}`
+        );
+        return new NextResponse(
+          JSON.stringify({ error: "Invalid wallet address" }),
+          {
+            status: 403,
+            headers: { "Content-Type": "application/json" },
+          }
+        );
+      }
     }
-
-    if (!privyToken) {
-      return new NextResponse(
-        JSON.stringify({ error: "Authentication required" }),
-        {
-          status: 401,
-          headers: { "Content-Type": "application/json" },
-        }
-      );
-    }
-
-    const walletAddress = request.headers.get("x-wallet-address");
-    const verifiedUser = await privyClient.verifyAuthToken(privyToken);
-    const user = await privyClient.getUserById(verifiedUser.userId);
-    // const userAddress = token.sub;
-
-    if (!walletAddress) {
-      return new NextResponse(
-        JSON.stringify({ error: "Wallet address not provided" }),
-        {
-          status: 400,
-          headers: { "Content-Type": "application/json" },
-        }
-      );
-    }
-
-    // Find linked wallet that matches the provided address
-    const linkedWallet = user.linkedAccounts
-      .filter((account) => account.type === "wallet")
-      .find(
-        (wallet) =>
-          wallet.address?.toLowerCase() === walletAddress.toLowerCase()
-      );
-
-    if (!linkedWallet) {
-      console.log(
-        `Forbidden access attempt: Wallet address ${walletAddress} not linked to user ${verifiedUser.userId}`
-      );
-      return new NextResponse(
-        JSON.stringify({ error: "Invalid wallet address" }),
-        {
-          status: 403,
-          headers: { "Content-Type": "application/json" },
-        }
-      );
-    }
-
-    // if (walletAddress && userAddress !== walletAddress) {
-    //   return new NextResponse(
-    //     JSON.stringify({ error: "Invalid wallet address" }),
-    //     { status: 403 }
-    //   );
-    // }
   } else {
     if (!apiKey || apiKey !== process.env.CHORA_CLUB_API_KEY) {
+      console.log("Direct API access not allowed");
       return new NextResponse(
         JSON.stringify({ error: "Direct API access not allowed" }),
         { status: 403 }
@@ -174,6 +162,8 @@ export const config = {
     "/api/proxy/:path*",
     "/api/attest-onchain/:path*",
     "/api/book-slot/:path*",
+    "/api/calculate-cpi/:path*",
+    "/api/calculate-temp-cpi/:path*",
     "/api/delegate-follow/:path*",
     "/api/edit-office-hours/:path*",
     "/api/get-attendee-individual/:path*",

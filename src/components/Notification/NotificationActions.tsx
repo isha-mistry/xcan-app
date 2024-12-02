@@ -74,14 +74,15 @@ export const getIcon = (data: any) => {
 export const markAsRead = async (data: any): Promise<void> => {
   const { setNotifications, updateCombinedNotifications } =
     useNotificationStudioState.getState();
+  const token = await getAccessToken();
   try {
-    const myHeaders = new Headers();
-    const token=await getAccessToken();
-    myHeaders.append("Content-Type", "application/json");
-    if (data.receiver_address) {
-      myHeaders.append("x-wallet-address", data.receiver_address);
-      myHeaders.append("Authorization",`Bearer ${token}`);
-    }
+    const myHeaders: HeadersInit = {
+      "Content-Type": "application/json",
+      ...(data.receiver_address && {
+        "x-wallet-address": data.receiver_address,
+        Authorization: `Bearer ${token}`,
+      }),
+    };
 
     const raw = JSON.stringify({
       id: data?._id,

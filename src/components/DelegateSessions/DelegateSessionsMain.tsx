@@ -27,30 +27,6 @@ function DelegateSessionsMain() {
         <div className="flex md:gap-12 bg-[#D9D9D945] md:pl-6 lg:pl-14 font-poppins">
           <button
             className={`w-1/2 md:w-auto border-b-2 py-3 md:py-4 px-2 ${
-              searchParams.get("active") === "recordedSessions"
-                ? " border-blue-shade-200 text-blue-shade-200 font-semibold"
-                : "border-transparent"
-            }`}
-            onClick={() => router.push(path + "?active=recordedSessions")}
-          >
-            <Tooltip
-              showArrow
-              content={
-                <div className="font-poppins">
-                  Browse previously recorded sessions.
-                </div>
-              }
-              placement="right"
-              className="rounded-md bg-opacity-90 max-w-96"
-              closeDelay={1}
-            >
-              <div className="text-sm md:text-base whitespace-nowrap">
-                Recorded
-              </div>
-            </Tooltip>
-          </button>
-          <button
-            className={`w-1/2 md:w-auto border-b-2 py-3 md:py-4 px-2 ${
               searchParams.get("active") === "availableDelegates"
                 ? "text-blue-shade-200 font-semibold border-blue-shade-200"
                 : "border-transparent"
@@ -72,6 +48,30 @@ function DelegateSessionsMain() {
               <div className="text-sm md:text-base whitespace-nowrap">
                 {" "}
                 Available Delegates
+              </div>
+            </Tooltip>
+          </button>
+          <button
+            className={`w-1/2 md:w-auto border-b-2 py-3 md:py-4 px-2 ${
+              searchParams.get("active") === "recordedSessions"
+                ? " border-blue-shade-200 text-blue-shade-200 font-semibold"
+                : "border-transparent"
+            }`}
+            onClick={() => router.push(path + "?active=recordedSessions")}
+          >
+            <Tooltip
+              showArrow
+              content={
+                <div className="font-poppins">
+                  Browse previously recorded sessions.
+                </div>
+              }
+              placement="right"
+              className="rounded-md bg-opacity-90 max-w-96"
+              closeDelay={1}
+            >
+              <div className="text-sm md:text-base whitespace-nowrap">
+                Recorded
               </div>
             </Tooltip>
           </button>

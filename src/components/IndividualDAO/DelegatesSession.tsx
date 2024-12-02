@@ -1,28 +1,11 @@
 "use client";
-import Image from "next/image";
+
 import React, { useState, useEffect } from "react";
-import search from "@/assets/images/daos/search.png";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useRouter } from "next-nprogress-bar";
-import Tile from "../ComponentUtils/Tile";
-import SessionTile from "../ComponentUtils/SessionTiles";
-import { Oval } from "react-loader-spinner";
 import RecordedSessionsTile from "../ComponentUtils/RecordedSessionsTile";
-import {
-  Modal,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-  Button,
-  useDisclosure,
-} from "@nextui-org/react";
-import AttestationModal from "../ComponentUtils/AttestationModal";
 import RecordedSessionsSkeletonLoader from "../SkeletonLoader/RecordedSessionsSkeletonLoader";
 import ErrorDisplay from "../ComponentUtils/ErrorDisplay";
-import { useAccount } from "wagmi";
-import { RiErrorWarningLine } from "react-icons/ri";
-import { TimeoutError } from "viem";
 import { SessionInterface } from "@/types/MeetingTypes";
 import { CiSearch } from "react-icons/ci";
 import { usePrivy } from "@privy-io/react-auth";
@@ -38,20 +21,21 @@ function DelegatesSession({ props }: { props: string }) {
   const [sessionDetails, setSessionDetails] = useState([]);
   const [tempSession, setTempSession] = useState([]);
   const [dataLoading, setDataLoading] = useState(true);
-  const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure();
   const [error, setError] = useState<string | null>(null);
-  const { address, isConnected } = useAccount();
   const { user, ready, getAccessToken, authenticated } = usePrivy();
   const { walletAddress } = useWalletAddress();
+  const token = getAccessToken();
 
   const fetchData = async () => {
     try {
       setDataLoading(true);
-      const myHeaders = new Headers();
-      myHeaders.append("Content-Type", "application/json");
-      if (walletAddress) {
-        myHeaders.append("x-wallet-address", walletAddress);
-      }
+      const myHeaders: HeadersInit = {
+        "Content-Type": "application/json",
+        ...(walletAddress && {
+          "x-wallet-address": walletAddress,
+          Authorization: `Bearer ${token}`,
+        }),
+      };
       const requestOptions: any = {
         method: "POST",
         headers: myHeaders,
@@ -122,13 +106,13 @@ function DelegatesSession({ props }: { props: string }) {
           dao_name: dao_name,
         });
 
-        const myHeaders = new Headers();
-        const token = await getAccessToken();
-        myHeaders.append("Content-Type", "application/json");
-        if (walletAddress) {
-          myHeaders.append("x-wallet-address", walletAddress);
-          myHeaders.append("Authorization", `Bearer ${token}`);
-        }
+        const myHeaders: HeadersInit = {
+          "Content-Type": "application/json",
+          ...(walletAddress && {
+            "x-wallet-address": walletAddress,
+            Authorization: `Bearer ${token}`,
+          }),
+        };
 
         const requestOptions: any = {
           method: "POST",

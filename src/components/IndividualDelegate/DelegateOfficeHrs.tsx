@@ -1,14 +1,10 @@
 import React, { useState, useEffect, useRef } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useRouter } from "next-nprogress-bar";
-import text1 from "@/assets/images/daos/texture1.png";
-import Tile from "../ComponentUtils/Tile";
-import { Oval } from "react-loader-spinner";
-import SessionTileSkeletonLoader from "../SkeletonLoader/SessionTileSkeletonLoader";
-import {useAccount} from "wagmi";
 import { usePrivy } from "@privy-io/react-auth";
 import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 import { fetchApi } from "@/utils/api";
+import OfficeHoursAlertMessage from "../AlertMessage/OfficeHoursAlertMessage";
 
 interface Type {
   daoDelegates: string;
@@ -31,11 +27,8 @@ function DelegateOfficeHrs({ props }: { props: Type }) {
   const router = useRouter();
   const path = usePathname();
   const searchParams = useSearchParams();
-  const {address,isConnected}=useAccount();
-  const { user, ready, getAccessToken,authenticated } = usePrivy();
-  const {walletAddress}=useWalletAddress();
-
-
+  const { user, ready, getAccessToken, authenticated } = usePrivy();
+  const { walletAddress } = useWalletAddress();
   const [sessionDetails, setSessionDetails] = useState([]);
   const [dataLoading, setDataLoading] = useState(true);
   const dao_name = props.daoDelegates;
@@ -43,6 +36,7 @@ function DelegateOfficeHrs({ props }: { props: Type }) {
   const [showLeftShadow, setShowLeftShadow] = useState(false);
   const [showRightShadow, setShowRightShadow] = useState(false);
   // props.daoDelegates.charAt(0).toUpperCase() + props.daoDelegates.slice(1);
+  const token = getAccessToken();
 
   useEffect(() => {
     const checkForOverflow = () => {
@@ -53,8 +47,8 @@ function DelegateOfficeHrs({ props }: { props: Type }) {
     };
 
     checkForOverflow();
-    window.addEventListener('resize', checkForOverflow);
-    return () => window.removeEventListener('resize', checkForOverflow);
+    window.addEventListener("resize", checkForOverflow);
+    return () => window.removeEventListener("resize", checkForOverflow);
   }, []);
 
   const handleScroll = () => {
@@ -71,13 +65,13 @@ function DelegateOfficeHrs({ props }: { props: Type }) {
     const fetchData = async () => {
       try {
         setDataLoading(true);
-        const myHeaders = new Headers();
-        const token=await getAccessToken();
-        myHeaders.append("Content-Type", "application/json");
-        if (walletAddress) {
-          myHeaders.append("x-wallet-address", walletAddress);
-          myHeaders.append("Authorization",`Bearer ${token}`);
-        }
+        const myHeaders: HeadersInit = {
+          "Content-Type": "application/json",
+          ...(walletAddress && {
+            "x-wallet-address": walletAddress,
+            Authorization: `Bearer ${token}`,
+          }),
+        };
 
         const raw = JSON.stringify({
           address: props.individualDelegate,
@@ -145,10 +139,9 @@ function DelegateOfficeHrs({ props }: { props: Type }) {
       }
     };
 
-    if(walletAddress!=null){
+    if (walletAddress != null) {
       fetchData();
     }
-
   }, [searchParams.get("hours")]); // Re-fetch data when filter changes
 
   useEffect(() => {
@@ -160,8 +153,11 @@ function DelegateOfficeHrs({ props }: { props: Type }) {
   return (
     <div>
       <div className="pt-3">
-        <div className="flex gap-10 sm:gap-16 border-1 border-[#7C7C7C] px-6 rounded-xl text-sm overflow-x-auto whitespace-nowrap relative" ref={scrollContainerRef}
-        onScroll={handleScroll}>
+        <div
+          className="flex gap-10 sm:gap-16 border-1 border-[#7C7C7C] px-6 rounded-xl text-sm overflow-x-auto whitespace-nowrap relative"
+          ref={scrollContainerRef}
+          onScroll={handleScroll}
+        >
           <button
             className={`py-2  ${
               searchParams.get("hours") === "ongoing"
@@ -170,7 +166,8 @@ function DelegateOfficeHrs({ props }: { props: Type }) {
             }`}
             onClick={() =>
               router.push(path + "?active=officeHours&hours=ongoing")
-            }>
+            }
+          >
             Ongoing
           </button>
           <button
@@ -181,7 +178,8 @@ function DelegateOfficeHrs({ props }: { props: Type }) {
             }`}
             onClick={() =>
               router.push(path + "?active=officeHours&hours=upcoming")
-            }>
+            }
+          >
             Upcoming
           </button>
           <button
@@ -192,7 +190,8 @@ function DelegateOfficeHrs({ props }: { props: Type }) {
             }`}
             onClick={() =>
               router.push(path + "?active=officeHours&hours=hosted")
-            }>
+            }
+          >
             Hosted
           </button>
           <button
@@ -203,12 +202,13 @@ function DelegateOfficeHrs({ props }: { props: Type }) {
             }`}
             onClick={() =>
               router.push(path + "?active=officeHours&hours=attended")
-            }>
+            }
+          >
             Attended
           </button>
         </div>
 
-        <div className="py-10">
+        {/* <div className="py-10">
           {searchParams.get("hours") === "ongoing" &&
             (dataLoading ? (
               <SessionTileSkeletonLoader />
@@ -253,6 +253,10 @@ function DelegateOfficeHrs({ props }: { props: Type }) {
                 isOfficeHour={true}
               />
             ))}
+        </div> */}
+
+        <div className="py-10">
+          <OfficeHoursAlertMessage />
         </div>
       </div>
     </div>

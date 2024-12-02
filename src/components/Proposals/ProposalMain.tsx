@@ -125,13 +125,14 @@ function ProposalMain({ props }: { props: Props }) {
   const { chain } = useAccount();
   // const { openChainModal } = useChainModal();
   const [isVotingOpen, setIsVotingOpen] = useState(false);
-  const { address,isConnected } = useAccount();
+  const { address, isConnected } = useAccount();
   const contentRef = useRef<HTMLDivElement>(null);
   const [isExpanded, setIsExpanded] = useState(false);
   const [hasVoted, setHasVoted] = useState(false);
   const chartContainerRef = useRef<HTMLDivElement | null>(null);
-  const { user, ready, getAccessToken,authenticated } = usePrivy();
-  const {walletAddress}=useWalletAddress();
+  const { user, ready, getAccessToken, authenticated } = usePrivy();
+  const { walletAddress } = useWalletAddress();
+  const token = getAccessToken();
 
   interface VoteData {
     address: string;
@@ -140,8 +141,6 @@ function ProposalMain({ props }: { props: Props }) {
     votingPower?: number;
     network: string;
   }
-
-
 
   const getContractAddress = async (txHash: `0x${string}`) => {
     try {
@@ -164,14 +163,13 @@ function ProposalMain({ props }: { props: Props }) {
   const StoreData = async (voteData: VoteData) => {
     // Make the API call to submit the vote
 
-    const myHeaders = new Headers();
-    const token=await getAccessToken();
-    myHeaders.append("Content-Type", "application/json");
-    if (walletAddress) {
-      myHeaders.append("x-wallet-address", walletAddress);
-      myHeaders.append("Authorization",`Bearer ${token}`);
-    }
-
+    const myHeaders: HeadersInit = {
+      "Content-Type": "application/json",
+      ...(walletAddress && {
+        "x-wallet-address": walletAddress,
+        Authorization: `Bearer ${token}`,
+      }),
+    };
     const response = await fetchApi("/submit-vote", {
       method: "PUT",
       headers: myHeaders,
@@ -527,255 +525,253 @@ function ProposalMain({ props }: { props: Props }) {
     fetchDescription();
   }, [props]);
 
-//   const fetchVotes = useCallback(async () => {
-//     let allVotes: VoteCast[] = [];
-//     let blockTimestamp = "0";
-//     const first = 1000; // Batch size
+  //   const fetchVotes = useCallback(async () => {
+  //     let allVotes: VoteCast[] = [];
+  //     let blockTimestamp = "0";
+  //     const first = 1000; // Batch size
 
-//     try {
-//       while (true) {
-//         const response = await fetch(
-//           `/api/get-voters?proposalId=${props.id}&blockTimestamp=${blockTimestamp}&first=${first}&dao=${props.daoDelegates}`
-//         );
-//         const data = await response.json();
-//         console.log('response', data) 
-//         const newVoteCastWithParams = data?.voteCastWithParams || [];
-//         const newVoteCasts = data?.voteCasts || [];
+  //     try {
+  //       while (true) {
+  //         const response = await fetch(
+  //           `/api/get-voters?proposalId=${props.id}&blockTimestamp=${blockTimestamp}&first=${first}&dao=${props.daoDelegates}`
+  //         );
+  //         const data = await response.json();
+  //         console.log('response', data)
+  //         const newVoteCastWithParams = data?.voteCastWithParams || [];
+  //         const newVoteCasts = data?.voteCasts || [];
 
-//         if (newVoteCastWithParams.length === 0 && newVoteCasts.length === 0) {
-//           break;
-//         }
+  //         if (newVoteCastWithParams.length === 0 && newVoteCasts.length === 0) {
+  //           break;
+  //         }
 
-//         // Combine new votes
-//         const allVotes = [...newVoteCasts, ...newVoteCastWithParams];
-// console.log('alll votes', allVotes)
-//         if (allVotes.length === 0) {
-//           return { votes: [], nextBlockNumber: null };
-//         }
-//         // Find the highest block number from the new votes
-//         const blockNumbers = newVoteCasts.map((vote: VoteCast) =>
-//           typeof vote.blockTimestamp === "string"
-//             ? BigInt(vote.blockTimestamp)
-//             : BigInt((vote.blockTimestamp as string | number).toString())
-//         );
-// console.log(blockNumbers)
-//         // if (blockNumbers.length > 0) {
-//           // Convert to BigInt for safe comparison of large numbers
-//           const maxBlock = blockNumbers.reduce((a:any, b:any) => (a > b ? a : b));
-//           // Add 1 to ensure we don't duplicate the last block
-//           blockTimestamp = (maxBlock + BigInt(1)).toString();
-//         // }
-//       }
+  //         // Combine new votes
+  //         const allVotes = [...newVoteCasts, ...newVoteCastWithParams];
+  // console.log('alll votes', allVotes)
+  //         if (allVotes.length === 0) {
+  //           return { votes: [], nextBlockNumber: null };
+  //         }
+  //         // Find the highest block number from the new votes
+  //         const blockNumbers = newVoteCasts.map((vote: VoteCast) =>
+  //           typeof vote.blockTimestamp === "string"
+  //             ? BigInt(vote.blockTimestamp)
+  //             : BigInt((vote.blockTimestamp as string | number).toString())
+  //         );
+  // console.log(blockNumbers)
+  //         // if (blockNumbers.length > 0) {
+  //           // Convert to BigInt for safe comparison of large numbers
+  //           const maxBlock = blockNumbers.reduce((a:any, b:any) => (a > b ? a : b));
+  //           // Add 1 to ensure we don't duplicate the last block
+  //           blockTimestamp = (maxBlock + BigInt(1)).toString();
+  //         // }
+  //       }
 
-//       // Sort by weight (descending)
-//       allVotes.sort((a, b) => {
-//         const weightA = BigInt(a.weight);
-//         const weightB = BigInt(b.weight);
-//         return weightB > weightA ? 1 : -1;
-//       });
+  //       // Sort by weight (descending)
+  //       allVotes.sort((a, b) => {
+  //         const weightA = BigInt(a.weight);
+  //         const weightB = BigInt(b.weight);
+  //         return weightB > weightA ? 1 : -1;
+  //       });
 
-//       // Update voter list state
-//       setVoterList(allVotes);
-//       setIsLoading(false);
+  //       // Update voter list state
+  //       setVoterList(allVotes);
+  //       setIsLoading(false);
 
-//       // Calculate weights
-//       let s0Weight = 0;
-//       let s1Weight = 0;
-//       let s2Weight = 0;
+  //       // Calculate weights
+  //       let s0Weight = 0;
+  //       let s1Weight = 0;
+  //       let s2Weight = 0;
 
-//       allVotes.forEach((vote: VoteCast) => {
-//         const weightInEther = weiToEther(vote.weight);
-//         if (vote.support === 0) {
-//           s0Weight += weightInEther;
-//         } else if (vote.support === 1) {
-//           s1Weight += weightInEther;
-//         } else if (vote.support === 2) {
-//           s2Weight += weightInEther;
-//         }
-//       });
+  //       allVotes.forEach((vote: VoteCast) => {
+  //         const weightInEther = weiToEther(vote.weight);
+  //         if (vote.support === 0) {
+  //           s0Weight += weightInEther;
+  //         } else if (vote.support === 1) {
+  //           s1Weight += weightInEther;
+  //         } else if (vote.support === 2) {
+  //           s2Weight += weightInEther;
+  //         }
+  //       });
 
-//       // Update support weight states
-//       setSupport0Weight(s0Weight);
-//       setSupport1Weight(s1Weight);
+  //       // Update support weight states
+  //       setSupport0Weight(s0Weight);
+  //       setSupport1Weight(s1Weight);
 
-//       return {
-//         support0Weight: s0Weight,
-//         support1Weight: s1Weight,
-//         support2Weight: s2Weight,
-//         votersCount: allVotes.length,
-//         votesLoaded: true,
-//       };
-//     } catch (err: any) {
-//       console.error("Error fetching votes:", err);
-//       setIsLoading(false);
-//       throw err;
-//     }
-//   }, [props.id, props.daoDelegates]);
+  //       return {
+  //         support0Weight: s0Weight,
+  //         support1Weight: s1Weight,
+  //         support2Weight: s2Weight,
+  //         votersCount: allVotes.length,
+  //         votesLoaded: true,
+  //       };
+  //     } catch (err: any) {
+  //       console.error("Error fetching votes:", err);
+  //       setIsLoading(false);
+  //       throw err;
+  //     }
+  //   }, [props.id, props.daoDelegates]);
 
-//   useEffect(() => {
-//     fetchVotes();
-//   }, [support0Weight, support1Weight]);
+  //   useEffect(() => {
+  //     fetchVotes();
+  //   }, [support0Weight, support1Weight]);
 
+  // ----2nd
 
-// ----2nd
+  const fetchVotePage = async (blockTimestamp: string, first: number) => {
+    const response = await fetch(
+      `/api/get-voters?proposalId=${props.id}&blockTimestamp=${blockTimestamp}&first=${first}&dao=${props.daoDelegates}`
+    );
 
-const fetchVotePage = async (blockTimestamp: string, first: number) => {
-  const response = await fetch(
-    `/api/get-voters?proposalId=${props.id}&blockTimestamp=${blockTimestamp}&first=${first}&dao=${props.daoDelegates}`
-  );
-  
-  if (!response.ok) {
-    throw new Error(`HTTP error! status: ${response.status}`);
-  }
-  
-  const data = await response.json();
-  
-  return data;
-};
-
-const fetchVotes = useCallback(async () => {
-  setIsLoading(true);
-  setError(null);
-
-  let accumulatedVotes: VoteCast[] = [];
-  let blockTimestamp = "0";
-  const BATCH_SIZE = 1000;
-  const MAX_RETRIES = 3;
-  const MAX_PAGES = 50; // Safety limit
-  let pageCount = 0;
-
-  try {
-    while (pageCount < MAX_PAGES) {
-      pageCount++;
-
-      // Implement retry logic
-      let retryCount = 0;
-      let pageData = null;
-
-      while (retryCount < MAX_RETRIES && !pageData) {
-        try {
-          pageData = await fetchVotePage(blockTimestamp, BATCH_SIZE);
-        } catch (err) {
-          retryCount++;
-          if (retryCount === MAX_RETRIES) throw err;
-          await new Promise(resolve => setTimeout(resolve, 2000 * retryCount));
-        }
-      }
-
-      if (!pageData) {
-        throw new Error('Failed to fetch page after retries');
-      }
-
-      const newVoteCastWithParams = pageData?.voteCastWithParams || [];
-      const newVoteCasts = pageData?.voteCasts || [];
-      const newVotes = [...newVoteCasts, ...newVoteCastWithParams];
-
-
-      // Break if no new votes
-      if (newVotes.length === 0) {
-        break;
-      }
-
-      // Add new votes to accumulated votes
-      accumulatedVotes = [...accumulatedVotes, ...newVotes];
-
-      // Find the highest block number from the new votes
-      const blockTimestamps = newVoteCasts
-        .map((vote:any) => {
-          try {
-            return BigInt(vote.blockTimestamp.toString());
-          } catch (err) {
-            console.error('Error parsing blockTimestamp:', err);
-            return BigInt(0);
-          }
-        })
-        .filter((num:any) => num > 0);
-
-      if (blockTimestamps.length === 0) {
-        break;
-      }
-
-      const maxBlock = blockTimestamps.reduce((a:any, b:any) => (a > b ? a : b));
-      const nextBlockTimestamp = (maxBlock + BigInt(1)).toString();
-
-      // Break if we're not making progress
-      if (nextBlockTimestamp === blockTimestamp) {
-        break;
-      }
-
-      blockTimestamp = nextBlockTimestamp;
-
-      // Add delay between requests to prevent rate limiting
-      await new Promise(resolve => setTimeout(resolve, 500));
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
 
+    const data = await response.json();
 
-    // Remove duplicates based on voter and blockTimestamp
-    const uniqueVotes = Array.from(
-      new Map(
-        accumulatedVotes.map(vote => [
-          `${vote.voter}-${vote.blockTimestamp}`,
-          vote
-        ])
-      ).values()
-    );
+    return data;
+  };
 
+  const fetchVotes = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
 
-    // Sort by weight (descending)
-    uniqueVotes.sort((a, b) => {
-      try {
-        const weightA = BigInt(a.weight);
-        const weightB = BigInt(b.weight);
-        return weightB > weightA ? 1 : -1;
-      } catch {
-        return 0;
+    let accumulatedVotes: VoteCast[] = [];
+    let blockTimestamp = "0";
+    const BATCH_SIZE = 1000;
+    const MAX_RETRIES = 3;
+    const MAX_PAGES = 50; // Safety limit
+    let pageCount = 0;
+
+    try {
+      while (pageCount < MAX_PAGES) {
+        pageCount++;
+
+        // Implement retry logic
+        let retryCount = 0;
+        let pageData = null;
+
+        while (retryCount < MAX_RETRIES && !pageData) {
+          try {
+            pageData = await fetchVotePage(blockTimestamp, BATCH_SIZE);
+          } catch (err) {
+            retryCount++;
+            if (retryCount === MAX_RETRIES) throw err;
+            await new Promise((resolve) =>
+              setTimeout(resolve, 2000 * retryCount)
+            );
+          }
+        }
+
+        if (!pageData) {
+          throw new Error("Failed to fetch page after retries");
+        }
+
+        const newVoteCastWithParams = pageData?.voteCastWithParams || [];
+        const newVoteCasts = pageData?.voteCasts || [];
+        const newVotes = [...newVoteCasts, ...newVoteCastWithParams];
+
+        // Break if no new votes
+        if (newVotes.length === 0) {
+          break;
+        }
+
+        // Add new votes to accumulated votes
+        accumulatedVotes = [...accumulatedVotes, ...newVotes];
+
+        // Find the highest block number from the new votes
+        const blockTimestamps = newVoteCasts
+          .map((vote: any) => {
+            try {
+              return BigInt(vote.blockTimestamp.toString());
+            } catch (err) {
+              console.error("Error parsing blockTimestamp:", err);
+              return BigInt(0);
+            }
+          })
+          .filter((num: any) => num > 0);
+
+        if (blockTimestamps.length === 0) {
+          break;
+        }
+
+        const maxBlock = blockTimestamps.reduce((a: any, b: any) =>
+          a > b ? a : b
+        );
+        const nextBlockTimestamp = (maxBlock + BigInt(1)).toString();
+
+        // Break if we're not making progress
+        if (nextBlockTimestamp === blockTimestamp) {
+          break;
+        }
+
+        blockTimestamp = nextBlockTimestamp;
+
+        // Add delay between requests to prevent rate limiting
+        await new Promise((resolve) => setTimeout(resolve, 500));
       }
-    });
 
-    // Calculate weights
-    const weights = uniqueVotes.reduce(
-      (acc, vote) => {
-        const weightInEther = weiToEther(vote.weight);
-        if (vote.support === 0) acc.s0Weight += weightInEther;
-        else if (vote.support === 1) acc.s1Weight += weightInEther;
-        else if (vote.support === 2) acc.s2Weight += weightInEther;
-        return acc;
-      },
-      { s0Weight: 0, s1Weight: 0, s2Weight: 0 }
-    );
+      // Remove duplicates based on voter and blockTimestamp
+      const uniqueVotes = Array.from(
+        new Map(
+          accumulatedVotes.map((vote) => [
+            `${vote.voter}-${vote.blockTimestamp}`,
+            vote,
+          ])
+        ).values()
+      );
 
-    // Update all states
-    setVoterList(uniqueVotes);
-    setSupport0Weight(weights.s0Weight);
-    setSupport1Weight(weights.s1Weight);
-    setSupport2Weight(weights.s2Weight);
+      // Sort by weight (descending)
+      uniqueVotes.sort((a, b) => {
+        try {
+          const weightA = BigInt(a.weight);
+          const weightB = BigInt(b.weight);
+          return weightB > weightA ? 1 : -1;
+        } catch {
+          return 0;
+        }
+      });
 
-    return {
-      support0Weight: weights.s0Weight,
-      support1Weight: weights.s1Weight,
-      support2Weight: weights.s2Weight,
-      votersCount: uniqueVotes.length,
-      votesLoaded: true,
-    };
+      // Calculate weights
+      const weights = uniqueVotes.reduce(
+        (acc, vote) => {
+          const weightInEther = weiToEther(vote.weight);
+          if (vote.support === 0) acc.s0Weight += weightInEther;
+          else if (vote.support === 1) acc.s1Weight += weightInEther;
+          else if (vote.support === 2) acc.s2Weight += weightInEther;
+          return acc;
+        },
+        { s0Weight: 0, s1Weight: 0, s2Weight: 0 }
+      );
 
-  } catch (err: any) {
-    console.error("Error fetching votes:", err);
-    setError(err.message);
-    throw err;
-  } finally {
-    setIsLoading(false);
-  }
-}, [props.id, props.daoDelegates]);
+      // Update all states
+      setVoterList(uniqueVotes);
+      setSupport0Weight(weights.s0Weight);
+      setSupport1Weight(weights.s1Weight);
+      setSupport2Weight(weights.s2Weight);
 
-useEffect(() => {
-  // Only fetch if we haven't loaded votes yet
-  if (!voterList?.length && isLoading) {
-    fetchVotes().catch(err => {
-      console.error("Error in vote fetching effect:", err);
-    });
-  }
-}, [fetchVotes]); // Remove support0Weight and support1Weight from dependencies
+      return {
+        support0Weight: weights.s0Weight,
+        support1Weight: weights.s1Weight,
+        support2Weight: weights.s2Weight,
+        votersCount: uniqueVotes.length,
+        votesLoaded: true,
+      };
+    } catch (err: any) {
+      console.error("Error fetching votes:", err);
+      setError(err.message);
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  }, [props.id, props.daoDelegates]);
 
+  useEffect(() => {
+    // Only fetch if we haven't loaded votes yet
+    if (!voterList?.length && isLoading) {
+      fetchVotes().catch((err) => {
+        console.error("Error in vote fetching effect:", err);
+      });
+    }
+  }, [fetchVotes]); // Remove support0Weight and support1Weight from dependencies
 
   const formatDate = (timestamp: number): string => {
     const milliseconds = timestamp * 1000;
@@ -1159,7 +1155,8 @@ useEffect(() => {
         </div>
       </div>
 
-      <div className={`rounded-[1rem] mx-4 md:mx-6 px-4 lg:mx-16 pb-6 pt-16 transition-shadow duration-300 ease-in-out shadow-xl bg-gray-50 font-poppins relative ${
+      <div
+        className={`rounded-[1rem] mx-4 md:mx-6 px-4 lg:mx-16 pb-6 pt-16 transition-shadow duration-300 ease-in-out shadow-xl bg-gray-50 font-poppins relative ${
           isExpanded ? "h-fit" : "h-fit"
         }`}
       >

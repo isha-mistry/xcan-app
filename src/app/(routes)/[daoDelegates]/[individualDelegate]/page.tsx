@@ -28,26 +28,10 @@ export async function generateMetadata({
     params.individualDelegate
   );
 
-  // const ensOrTruncatedAddress = await processAddressOrEnsName(
-  //   params.individualDelegate
-  // );
-
   const ensOrTruncatedAddress = await getMetaAddressOrEnsName(
     params.daoDelegates,
     params.individualDelegate
   );
-
-  // const avatar = (await fetchEnsNameAndAvatar(params.individualDelegate)) || IMAGE_URL;
-  // const [avatar] = await Promise.all([
-  //   fetchEnsNameAndAvatar(params.individualDelegate),
-  // ]);
-  // const dao_name = params.daoDelegates;
-  // const tokenName = "Optimism";
-
-  // const imgParams = [
-  //   avatar ? `avatar=${encodeURIComponent(avatar.avatar)}` : null,
-  //   dao_name ? `dao_name=${encodeURIComponent(dao_name)}` : null,
-  // ].filter((param): param is string => param !== null);
 
   const defaultAvatar = IMAGE_URL; // Provide a default value for avatar
   const [avatar] = await Promise.all([
@@ -63,7 +47,6 @@ export async function generateMetadata({
     dao_name ? `dao_name=${encodeURIComponent(dao_name)}` : null,
   ].filter((param): param is string => param !== null);
 
-  // .filter(Boolean);
 
   const preview = `${BASE_URL}/api/images/og/ccTest?${imgParams.join(
     "&"

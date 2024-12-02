@@ -108,6 +108,10 @@ SessionTileProps) {
   });
   const { user, ready, getAccessToken, authenticated } = usePrivy();
   const { walletAddress } = useWalletAddress();
+  const [pageLoading, setPageLoading] = useState(true);
+  const [applyStyles, setApplyStyles] = useState(true);
+  const [expanded, setExpanded] = useState<{ [index: number]: boolean }>({});
+  const token = getAccessToken();
 
   const handleEditModal = (index: number) => {
     setSelectedTileIndex(index);
@@ -144,10 +148,6 @@ SessionTileProps) {
     setSelectedTileIndex(null);
   };
 
-  const [pageLoading, setPageLoading] = useState(true);
-  const [applyStyles, setApplyStyles] = useState(true);
-  const [expanded, setExpanded] = useState<{ [index: number]: boolean }>({});
-
   const handleDescription = () => {
     setApplyStyles(!applyStyles);
   };
@@ -166,34 +166,33 @@ SessionTileProps) {
   }: AttestationDataParams) => {
     setIsClaiming((prev: any) => ({ ...prev, [index]: true }));
 
-   
-    let token = "";
+    let daoToken = "";
     let EASContractAddress = "";
 
     if (dao === "optimism") {
-      token = "OP";
+      daoToken = "OP";
       EASContractAddress = "0x4200000000000000000000000000000000000021";
     } else if (dao === "arbitrum") {
-      token = "ARB";
+      daoToken = "ARB";
       EASContractAddress = "0xbD75f629A22Dc1ceD33dDA0b68c546A1c035c458";
     }
 
     const data = {
       recipient: address,
-      meetingId: `${meetingId}/${token}`,
+      meetingId: `${meetingId}/${daoToken}`,
       meetingType: meetingType,
       startTime: meetingStartTime,
       endTime: meetingEndTime,
       daoName: dao,
     };
 
-    const myHeaders = new Headers();
-    const Clienttoken = await getAccessToken();
-    myHeaders.append("Content-Type", "application/json");
-    if (walletAddress) {
-      myHeaders.append("x-wallet-address", walletAddress);
-      myHeaders.append("Authorization", `Bearer ${Clienttoken}`);
-    }
+    const myHeaders: HeadersInit = {
+      "Content-Type": "application/json",
+      ...(walletAddress && {
+        "x-wallet-address": walletAddress,
+        Authorization: `Bearer ${token}`,
+      }),
+    };
 
     // Configure the request options
     const requestOptions = {
@@ -239,14 +238,13 @@ SessionTileProps) {
 
       if (newAttestationUID) {
         try {
-          const myHeaders = new Headers();
-          const token = await getAccessToken();
-          myHeaders.append("Content-Type", "application/json");
-          if (walletAddress) {
-            myHeaders.append("x-wallet-address", walletAddress);
-            myHeaders.append("Authorization", `Bearer ${token}`);
-          }
-
+          const myHeaders: HeadersInit = {
+            "Content-Type": "application/json",
+            ...(walletAddress && {
+              "x-wallet-address": walletAddress,
+              Authorization: `Bearer ${token}`,
+            }),
+          };
           const raw = JSON.stringify({
             meetingId: meetingId,
             meetingType: meetingType,
@@ -338,13 +336,13 @@ SessionTileProps) {
       if (formData.image === "") {
         imageCid = sessionData.thumbnail_image;
       }
-      const myHeaders = new Headers();
-      const token = await getAccessToken();
-      myHeaders.append("Content-Type", "application/json");
-      if (walletAddress) {
-        myHeaders.append("x-wallet-address", walletAddress);
-        myHeaders.append("Authorization", `Bearer ${token}`);
-      }
+      const myHeaders: HeadersInit = {
+        "Content-Type": "application/json",
+        ...(walletAddress && {
+          "x-wallet-address": walletAddress,
+          Authorization: `Bearer ${token}`,
+        }),
+      };
 
       const raw = JSON.stringify({
         meetingId: sessionData.meetingId,

@@ -242,8 +242,12 @@ function UserInfo({
           setSessionAttendCount(
             currentDaoRecords?.sessionAttended?.onchainCounts || 0
           );
-          setOfficehoursHostCount(currentDaoRecords?.officeHoursHosted?.onchainCounts || 0);
-          setOfficehoursAttendCount(currentDaoRecords?.officeHoursAttended?.onchainCounts || 0);
+          setOfficehoursHostCount(
+            currentDaoRecords?.officeHoursHosted?.onchainCounts || 0
+          );
+          setOfficehoursAttendCount(
+            currentDaoRecords?.officeHoursAttended?.onchainCounts || 0
+          );
         } else if (buttonType === "offchain") {
           setSessionHostCount(
             currentDaoRecords?.sessionHosted?.offchainCounts || 0
@@ -251,8 +255,12 @@ function UserInfo({
           setSessionAttendCount(
             currentDaoRecords?.sessionAttended?.offchainCounts || 0
           );
-          setOfficehoursHostCount(currentDaoRecords?.officeHoursHosted?.offchainCounts || 0);
-          setOfficehoursAttendCount(currentDaoRecords?.officeHoursAttended?.offchainCounts || 0);
+          setOfficehoursHostCount(
+            currentDaoRecords?.officeHoursHosted?.offchainCounts || 0
+          );
+          setOfficehoursAttendCount(
+            currentDaoRecords?.officeHoursAttended?.offchainCounts || 0
+          );
         }
       }
     } catch (e) {

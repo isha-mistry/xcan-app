@@ -67,6 +67,8 @@ import { BrowserProvider, Contract, JsonRpcSigner } from "ethers";
 import { ChevronDownIcon } from "lucide-react";
 import Heading from "../ComponentUtils/Heading";
 import { MeetingRecords } from "@/types/UserProfileTypes";
+import { useApiData } from "@/contexts/ApiDataContext";
+import { calculateTempCpi } from "@/actions/calculatetempCpi";
 
 interface Type {
   daoDelegates: string;
@@ -107,12 +109,12 @@ function SpecificDelegate({ props }: { props: Type }) {
 
   const [delegateOpen, setDelegateOpen] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
-  // const address = useAccount();
+
   const [followerCountLoading, setFollowerCountLoading] = useState(true);
   const [notificationLoading, setNotificationLoading] = useState(false);
   const [isFollowStatusLoading, setIsFollowStatusLoading] = useState(true);
   const [delegatingToAddr, setDelegatingToAddr] = useState(false);
-  const { isConnected, address } = useAccount();
+  const { isConnected } = useAccount();
   const [confettiVisible, setConfettiVisible] = useState(false);
   const network = useAccount().chain;
   const { publicClient, walletClient } = WalletAndPublicClient();
@@ -125,6 +127,9 @@ function SpecificDelegate({ props }: { props: Type }) {
   const [selectedTab, setSelectedTab] = useState("Info");
 
   const [copiedAddress, setCopiedAddress] = useState<string | null>(null);
+  const [tempCpi, setTempCpi] = useState();
+  const [tempCpiCalling, setTempCpiCalling] = useState(true);
+  const token = getAccessToken();
 
   const handleCopy = (addr: string) => {
     copy(addr);
@@ -205,6 +210,8 @@ function SpecificDelegate({ props }: { props: Type }) {
         login();
       }
     } else {
+      const delegatorAddress = walletAddress;
+      const toAddress = props.individualDelegate;
       setDelegateOpen(true);
       setLoading(true);
       try {
@@ -213,6 +220,23 @@ function SpecificDelegate({ props }: { props: Type }) {
           data = await op_client.query(DELEGATE_CHANGED_QUERY, {
             delegator: walletAddress,
           });
+
+          try {
+            setTempCpiCalling(true);
+            const result = await calculateTempCpi(
+              delegatorAddress,
+              toAddress,
+              walletAddress
+            );
+            console.log("result:::::::::", result);
+            if (result?.data?.results[0].cpi) {
+              const data = result?.data?.results[0].cpi;
+              setTempCpi(data);
+              setTempCpiCalling(false);
+            }
+          } catch (error) {
+            console.log("Error in calculating temp CPI", error);
+          }
         } else {
           data = await arb_client.query(DELEGATE_CHANGED_QUERY, {
             delegator: walletAddress,
@@ -393,26 +417,26 @@ function SpecificDelegate({ props }: { props: Type }) {
   }, [props.daoDelegates, props.individualDelegate, walletAddress]);
 
   // For Optimism Governance Token
-const optimismTokenAddress = '0x4200000000000000000000000000000000000042';
+  const optimismTokenAddress = "0x4200000000000000000000000000000000000042";
 
-// Alternative read method
-// const checkOptimismDelegate = async () => {
-//   try {
-//     // Additional check using lower-level method
-//     const delegateData = await publicClient.call({
-//       to: optimismTokenAddress,
-//       data: encodeFunctionData({
-//         abi: dao_abi.abi,
-//         functionName: 'delegates',
-//         args: [props.individualDelegate]
-//       })
-//     });
+  // Alternative read method
+  // const checkOptimismDelegate = async () => {
+  //   try {
+  //     // Additional check using lower-level method
+  //     const delegateData = await publicClient.call({
+  //       to: optimismTokenAddress,
+  //       data: encodeFunctionData({
+  //         abi: dao_abi.abi,
+  //         functionName: 'delegates',
+  //         args: [props.individualDelegate]
+  //       })
+  //     });
 
-//     console.log('Raw Delegate Data:', delegateData);
-//   } catch (error) {
-//     console.error('Low-level delegate check failed:', error);
-//   }
-// };
+  //     console.log('Raw Delegate Data:', delegateData);
+  //   } catch (error) {
+  //     console.error('Low-level delegate check failed:', error);
+  //   }
+  // };
 
   useEffect(() => {
     const checkDelegateStatus = async () => {
@@ -432,7 +456,7 @@ const optimismTokenAddress = '0x4200000000000000000000000000000000000042';
           address: contractAddress,
           abi: dao_abi.abi,
           functionName: "delegates",
-          args: [props.individualDelegate], 
+          args: [props.individualDelegate],
           // account: address1,
         });
         delegateTxAddr = delegateTx;
@@ -460,97 +484,6 @@ const optimismTokenAddress = '0x4200000000000000000000000000000000000042';
       return number;
     }
   };
-
-  // const handleCopy = (addr: string) => {
-  //   copy(addr);
-  //   toast("Address Copied");
-  // };
-
-  // const fetchDelegateData = async () => {
-  //   if (!walletAddress) {
-  //     return;
-  //   }
-  //   setIsFollowStatusLoading(true);
-
-  //   const myHeaders = new Headers();
-  //   const token = await getAccessToken();
-  //   myHeaders.append("Content-Type", "application/json");
-  //   if (walletAddress) {
-  //     myHeaders.append("x-wallet-address", walletAddress);
-  //     myHeaders.append("Authorization",`Bearer ${token}`);
-  //   }
-  //   const raw = JSON.stringify({
-  //     address: props.individualDelegate,
-  //   });
-
-  //   const requestOptions: any = {
-  //     method: "POST",
-  //     headers: myHeaders,
-  //     body: raw,
-  //     redirect: "follow",
-  //   };
-
-  //   try {
-  //     const resp = await fetchApi(
-  //       `/delegate-follow/savefollower`,
-  //       requestOptions
-  //     );
-
-  //     if (!resp.ok) {
-  //       throw new Error("Failed to fetch delegate data");
-  //     }
-
-  //     const data = await resp.json();
-
-  //     if (!data.success || !data.data || data.data.length === 0) {
-  //       return;
-  //     }
-
-  //     const followerData = data.data[0];
-  //     const currentDaoName = props.daoDelegates.toLowerCase();
-  //     const daoFollowers = followerData.followers.find(
-  //       (dao: any) => dao.dao_name.toLowerCase() === currentDaoName
-  //     );
-
-  //     if (daoFollowers) {
-  //       // Update follower count
-  //       const followerCount = daoFollowers.follower.filter(
-  //         (f: any) => f.isFollowing
-  //       ).length;
-  //       setFollowers(followerCount);
-  //       setFollowerCountLoading(false);
-
-  //       // Update follow and notification status
-  //       // const address = await walletClient.getAddresses();
-  //       // const address_user = address[0].toLowerCase();
-  //       const userFollow = daoFollowers.follower.find(
-  //         (f: any) => f.address.toLowerCase() === walletAddress?.toLowerCase()
-  //       );
-
-  //       if (userFollow) {
-  //         setIsFollowing(userFollow.isFollowing);
-  //         isNotification(userFollow.isNotification);
-  //       } else {
-  //         setIsFollowing(false);
-  //         isNotification(false);
-  //       }
-  //     } else {
-  //       setFollowers(0);
-  //       setIsFollowing(false);
-  //       isNotification(false);
-  //       setFollowerCountLoading(false);
-  //     }
-  //   } catch (error) {
-  //     console.error("Error in fetchDelegateData:", error);
-  //     setFollowers(0);
-  //     setIsFollowing(false);
-  //     isNotification(false);
-  //     setFollowerCountLoading(false);
-  //   } finally {
-  //     setFollowerCountLoading(false);
-  //     setIsFollowStatusLoading(false);
-  //   }
-  // };
 
   const fetchDelegateData = async () => {
     setIsFollowStatusLoading(true);
@@ -587,10 +520,14 @@ const optimismTokenAddress = '0x4200000000000000000000000000000000000042';
         (dao: any) => dao.dao_name.toLowerCase() === currentDaoName
       );
 
+      console.log("daoFollowersdaoFollowers: ", daoFollowers);
+
       if (daoFollowers) {
-        const followerCount = daoFollowers.follower.filter(
+        const followerCount = daoFollowers?.follower?.filter(
           (f: any) => f.isFollowing
         ).length;
+
+        console.log("followerCountfollowerCount: ", followerCount);
 
         setFollowers(followerCount);
         setFollowerCountLoading(false);
@@ -608,6 +545,7 @@ const optimismTokenAddress = '0x4200000000000000000000000000000000000042';
         }
       } else {
         setFollowers(0);
+        setFollowerCountLoading(false);
         setIsFollowing(false);
         isNotification(false);
       }
@@ -633,13 +571,13 @@ const optimismTokenAddress = '0x4200000000000000000000000000000000000042';
 
     if (action == 1) {
       setLoading(true);
-      const myHeaders = new Headers();
-      const token = await getAccessToken();
-      myHeaders.append("Content-Type", "application/json");
-      if (walletAddress) {
-        myHeaders.append("x-wallet-address", walletAddress);
-        myHeaders.append("Authorization", `Bearer ${token}`);
-      }
+      const myHeaders: HeadersInit = {
+        "Content-Type": "application/json",
+        ...(walletAddress && {
+          "x-wallet-address": walletAddress,
+          Authorization: `Bearer ${token}`,
+        }),
+      };
       try {
         const response = await fetchApi("/delegate-follow/updatefollower", {
           method: "PUT",
@@ -680,13 +618,13 @@ const optimismTokenAddress = '0x4200000000000000000000000000000000000042';
         let updatenotification: boolean;
         updatenotification = !notification;
         setNotificationLoading(true);
-        const myHeaders = new Headers();
-        const token = await getAccessToken();
-        myHeaders.append("Content-Type", "application/json");
-        if (walletAddress) {
-          myHeaders.append("x-wallet-address", walletAddress);
-          myHeaders.append("Authorization", `Bearer ${token}`);
-        }
+        const myHeaders: HeadersInit = {
+          "Content-Type": "application/json",
+          ...(walletAddress && {
+            "x-wallet-address": walletAddress,
+            Authorization: `Bearer ${token}`,
+          }),
+        };
         try {
           const response = await fetchApi("/delegate-follow/updatefollower", {
             method: "PUT",
@@ -734,7 +672,6 @@ const optimismTokenAddress = '0x4200000000000000000000000000000000000042';
         let delegate_address: string;
         let follower_address: any;
         let dao: string;
-        // alert(props.daoDelegates);
         dao = props.daoDelegates;
         // let address = await walletClient.getAddresses();
         follower_address = walletAddress;
@@ -936,8 +873,13 @@ const optimismTokenAddress = '0x4200000000000000000000000000000000000042';
 
         // const dbResponse = await axios.get(`/api/profile/${address}`);
 
-        const myHeaders = new Headers();
-        myHeaders.append("Content-Type", "application/json");
+        const myHeaders: HeadersInit = {
+          "Content-Type": "application/json",
+          ...(walletAddress && {
+            "x-wallet-address": walletAddress,
+            Authorization: `Bearer ${token}`,
+          }),
+        };
 
         // const raw = JSON.stringify({
         //   address: props.individualDelegate,
@@ -1001,6 +943,10 @@ const optimismTokenAddress = '0x4200000000000000000000000000000000000042';
             } else {
               // await updateFollowerState();
               // await setFollowerscount();
+              // await fetchDelegateData();
+              console.log("Followers count!", followers);
+              setFollowerCountLoading(false);
+              setIsFollowStatusLoading(false);
             }
             setSocials({
               twitter: item.socialHandles.twitter,
@@ -1012,13 +958,15 @@ const optimismTokenAddress = '0x4200000000000000000000000000000000000042';
             //   break;
             // }
           }
-        } 
-        // else {
-        //   console.log(
-        //     "Data not found in the database, fetching from third-party API"
-        //   );
+        } else {
+          console.log(
+            "Data not found in the database, fetching from third-party API"
+          );
+          setFollowerCountLoading(false);
+          setIsFollowStatusLoading(false);
           // Data not found in the database, fetch data from the third-party API
-        // }
+          // }
+        }
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -1536,6 +1484,8 @@ const optimismTokenAddress = '0x4200000000000000000000000000000000000042';
         )}
         {delegateOpen && (
           <DelegateTileModal
+            tempCpi={tempCpi}
+            tempCpiCalling={tempCpiCalling}
             isOpen={delegateOpen}
             closeModal={handleCloseDelegateModal}
             handleDelegateVotes={() =>

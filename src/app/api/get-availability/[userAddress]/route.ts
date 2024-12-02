@@ -8,23 +8,19 @@ type Params = {
 export async function GET(request: NextRequest, context: { params: Params }) {
   const url = new URL(request.url);
   const daoName = url.searchParams.get("dao_name");
-  console.log("daoName:::", daoName);
   const userAddress = context.params.userAddress;
-  console.log("userAddress::", userAddress);
   try {
     const client = await connectDB();
 
     const db = client.db();
     const collection = db.collection("scheduling");
 
-    // console.log("Finding documents for user:", userAddress);
     const documents = await collection
       .find({
         userAddress: { $regex: new RegExp(`^${userAddress}$`, "i") },
         dao_name: daoName,
       })
       .toArray();
-    console.log("Documents found:", documents);
 
     client.close();
     // console.log("MongoDB connection closed");

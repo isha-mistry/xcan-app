@@ -231,7 +231,6 @@ function DelegateInfo({
     fetchData();
   }, [props.individualDelegate, props.daoDelegates]);
 
-
   return (
     <div className="pt-4">
       <div className="flex w-fit gap-16 border-1 border-[#7C7C7C] px-6 rounded-xl text-sm mb-6 mx-4 xs:mx-0 sm:mx-4 md:mx-16 lg:mx-0">

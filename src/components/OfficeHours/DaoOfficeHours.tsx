@@ -23,6 +23,7 @@ import { CiSearch } from "react-icons/ci";
 import { usePrivy } from "@privy-io/react-auth";
 import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 import { fetchApi } from "@/utils/api";
+import OfficeHoursAlertMessage from "../AlertMessage/OfficeHoursAlertMessage";
 interface Type {
   img: StaticImageData;
   title: string;
@@ -55,103 +56,100 @@ function DaoOfficeHours() {
   const [dataLoading, setDataLoading] = useState(true);
   const [showComingSoon, setShowComingSoon] = useState(true);
   const { user, ready, getAccessToken, authenticated } = usePrivy();
-  const { address, isConnected } = useAccount();
   const { walletAddress } = useWalletAddress();
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setDataLoading(true);
-        const myHeaders = new Headers();
-        myHeaders.append("Content-Type", "application/json");
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     try {
+  //       setDataLoading(true);
+  //       const myHeaders = new Headers();
+  //       myHeaders.append("Content-Type", "application/json");
 
-        const requestOptions: RequestInit = {
-          method: "GET",
-          headers: myHeaders,
-        };
+  //       const requestOptions: RequestInit = {
+  //         method: "GET",
+  //         headers: myHeaders,
+  //       };
 
-        const response = await fetchApi(
-          "/get-specific-officehours",
-          requestOptions
-        );
-        const result = await response.json();
+  //       const response = await fetchApi(
+  //         "/get-specific-officehours",
+  //         requestOptions
+  //       );
+  //       const result = await response.json();
+  //       console.log(result);
 
-        // Filter sessions based on meeting_status
-        const filteredSessions = result.filter((session: Session) => {
-          if (searchParams.get("hours") === "ongoing") {
-            return session.meeting_status === "ongoing";
-          } else if (searchParams.get("hours") === "upcoming") {
-            return session.meeting_status === "active";
-          } else if (searchParams.get("hours") === "recorded") {
-            return session.meeting_status === "inactive";
-          }
-        });
+  //       // Filter sessions based on meeting_status
+  //       const filteredSessions = result.filter((session: Session) => {
+  //         if (searchParams.get("hours") === "ongoing") {
+  //           return session.meeting_status === "ongoing";
+  //         } else if (searchParams.get("hours") === "upcoming") {
+  //           return session.meeting_status === "active";
+  //         } else if (searchParams.get("hours") === "recorded") {
+  //           return session.meeting_status === "inactive";
+  //         }
+  //       });
 
-        setSessionDetails(filteredSessions);
-        setDataLoading(false);
-      } catch (error) {
-        console.error(error);
-      }
-    };
+  //       setSessionDetails(filteredSessions);
+  //       setDataLoading(false);
+  //     } catch (error) {
+  //       console.error(error);
+  //     }
+  //   };
 
-    if (walletAddress != null) {
-      fetchData();
-    }
-  }, [searchParams.get("hours")]); // Re-fetch data when filter changes
+  //   fetchData();
+  // }, [searchParams.get("hours")]); // Re-fetch data when filter changes
 
-  useEffect(() => {
-    // Set initial session details
-    setSessionDetails([]);
-    setDataLoading(true);
-  }, []);
+  // useEffect(() => {
+  //   // Set initial session details
+  //   setSessionDetails([]);
+  //   setDataLoading(true);
+  // }, []);
 
-  const handleSearchChange = async (query: string) => {
-    setSearchQuery(query);
+  // const handleSearchChange = async (query: string) => {
+  //   setSearchQuery(query);
 
-    if (query.length > 0) {
-      setDataLoading(true);
+  //   if (query.length > 0) {
+  //     setDataLoading(true);
 
-      const myHeaders = new Headers();
-      const token = await getAccessToken();
-      myHeaders.append("Content-Type", "application/json");
-      if (walletAddress) {
-        myHeaders.append("x-wallet-address", walletAddress);
-        myHeaders.append("Authorization", `Bearer ${token}`);
-      }
+  //     const myHeaders = new Headers();
+  //     myHeaders.append("Content-Type", "application/json");
+  //     if (address) {
+  //       myHeaders.append("x-wallet-address", address);
+  //     }
 
-      const requestOptions: any = {
-        method: "POST",
-        headers: myHeaders,
-        body: JSON.stringify({
-          dao_name: null,
-        }),
-        redirect: "follow",
-      };
-      const res = await fetchApi(
-        `/search-officehours/${query}`,
-        requestOptions
-      );
-      const result = await res.json();
-      const resultData = await result.data;
+  //     const requestOptions: any = {
+  //       method: "POST",
+  //       headers: myHeaders,
+  //       body: JSON.stringify({
+  //         dao_name: null,
+  //       }),
+  //       redirect: "follow",
+  //     };
+  //     const res = await fetchApi(
+  //       `/search-officehours/${query}`,
+  //       requestOptions
+  //     );
+  //     const result = await res.json();
+  //     const resultData = await result.data;
 
-      if (result.success) {
-        const filtered: any = resultData.filter((session: Session) => {
-          if (searchParams.get("hours") === "ongoing") {
-            return session.meeting_status === "ongoing";
-          } else if (searchParams.get("hours") === "upcoming") {
-            return session.meeting_status === "active";
-          } else if (searchParams.get("hours") === "recorded") {
-            return session.meeting_status === "inactive";
-          }
-        });
-        setSessionDetails(filtered);
-        setDataLoading(false);
-      }
-    } else {
-      // setSessionDetails(tempDetails);
-      setDataLoading(false);
-    }
-  };
+  //     if (result.success) {
+  //       const filtered: any = resultData.filter((session: Session) => {
+  //         if (searchParams.get("hours") === "ongoing") {
+  //           return session.meeting_status === "ongoing";
+  //         } else if (searchParams.get("hours") === "upcoming") {
+  //           return session.meeting_status === "active";
+  //         } else if (searchParams.get("hours") === "recorded") {
+  //           return session.meeting_status === "inactive";
+  //         }
+  //       });
+  //       console.log("filtered: ", filtered);
+  //       setSessionDetails(filtered);
+  //       setDataLoading(false);
+  //     }
+  //   } else {
+  //     // setSessionDetails(tempDetails);
+  //     setDataLoading(false);
+  //   }
+  // };
 
   return (
     <>
@@ -256,45 +254,46 @@ function DaoOfficeHours() {
               placeholder="Search by title or host address"
               className="w-[100%] pl-2 pr-4 py-1.5 font-poppins md:py-2 text-sm bg-transparent outline-none"
               value={searchQuery}
-              onChange={(e) => handleSearchChange(e.target.value)}
+              // onChange={(e) => handleSearchChange(e.target.value)}
             />
           </div>
 
-          <div className="py-5">
-            {searchParams.get("hours") === "ongoing" &&
-              (dataLoading ? (
-                <SessionTileSkeletonLoader />
-              ) : (
-                <Tile
-                  sessionDetails={sessionDetails}
-                  dataLoading={dataLoading}
-                  isEvent="Ongoing"
-                  isOfficeHour={true}
-                />
-              ))}
-            {searchParams.get("hours") === "upcoming" &&
-              (dataLoading ? (
-                <SessionTileSkeletonLoader />
-              ) : (
-                <Tile
-                  sessionDetails={sessionDetails}
-                  dataLoading={dataLoading}
-                  isEvent="Upcoming"
-                  isOfficeHour={true}
-                />
-              ))}
-            {searchParams.get("hours") === "recorded" &&
-              (dataLoading ? (
-                <SessionTileSkeletonLoader />
-              ) : (
-                <Tile
-                  sessionDetails={sessionDetails}
-                  dataLoading={dataLoading}
-                  isEvent="Recorded"
-                  isOfficeHour={true}
-                />
-              ))}
-          </div>
+          {/* <div className="py-5">
+          {searchParams.get("hours") === "ongoing" &&
+            (dataLoading ? (
+              <SessionTileSkeletonLoader />
+            ) : (
+              <Tile
+                sessionDetails={sessionDetails}
+                dataLoading={dataLoading}
+                isEvent="Ongoing"
+                isOfficeHour={true}
+              />
+            ))}
+          {searchParams.get("hours") === "upcoming" &&
+            (dataLoading ? (
+              <SessionTileSkeletonLoader />
+            ) : (
+              <Tile
+                sessionDetails={sessionDetails}
+                dataLoading={dataLoading}
+                isEvent="Upcoming"
+                isOfficeHour={true}
+              />
+            ))}
+          {searchParams.get("hours") === "recorded" &&
+            (dataLoading ? (
+              <SessionTileSkeletonLoader />
+            ) : (
+              <Tile
+                sessionDetails={sessionDetails}
+                dataLoading={dataLoading}
+                isEvent="Recorded"
+                isOfficeHour={true}
+              />
+            ))}
+        </div> */}
+          <OfficeHoursAlertMessage />
         </div>
       </div>
     </>

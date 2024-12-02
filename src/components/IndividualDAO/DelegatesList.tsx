@@ -32,6 +32,7 @@ import { usePrivy,useWallets } from "@privy-io/react-auth";
 import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 import { BrowserProvider, Contract, JsonRpcSigner } from 'ethers';
 import { motion } from "framer-motion";
+import { calculateTempCpi } from "@/actions/calculatetempCpi";
 
 const DELEGATES_PER_PAGE = 20;
 const DEBOUNCE_DELAY = 500;
@@ -64,6 +65,8 @@ function DelegatesList({ props }: { props: string }) {
   const { publicClient, walletClient } = WalletAndPublicClient();
   const { ready, authenticated, login, logout,user } = usePrivy();
   const {walletAddress}=useWalletAddress();
+  const [tempCpi, setTempCpi] = useState();
+  const [tempCpiCalling, setTempCpiCalling] = useState(true);
 
   const fetchDelegates = useCallback(async () => {
     setIsAPICalling(true);
@@ -162,6 +165,8 @@ function DelegatesList({ props }: { props: string }) {
       login()
       return;
     }
+    const delegatorAddress = address;
+    const toAddress = delegateObject.delegate;
 
     setDelegateOpen(true);
     try {
@@ -178,6 +183,25 @@ function DelegatesList({ props }: { props: string }) {
       setDelegateDetails(delegate);
     } catch (err) {
       console.error(err);
+    }
+
+    if (props === "optimism") {
+      try {
+        setTempCpiCalling(true);
+        const result = await calculateTempCpi(
+          delegatorAddress,
+          toAddress,
+          address
+        );
+        console.log("result:::::::::", result);
+        if (result?.data?.results[0].cpi) {
+          const data = result?.data?.results[0].cpi;
+          setTempCpi(data);
+          setTempCpiCalling(false);
+        }
+      } catch (error) {
+        console.log("Error in calculating temp CPI", error);
+      }
     }
   };
   // const handleDelegateVotes = async (to: string) => {
@@ -441,6 +465,8 @@ function DelegatesList({ props }: { props: string }) {
 
       {delegateOpen && selectedDelegate && (
         <DelegateTileModal
+          tempCpi={tempCpi}
+          tempCpiCalling={tempCpiCalling}
           isOpen={delegateOpen}
           closeModal={() => setDelegateOpen(false)}
           handleDelegateVotes={() =>

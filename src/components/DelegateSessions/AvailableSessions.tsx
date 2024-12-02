@@ -37,6 +37,7 @@ import user2 from "@/assets/images/user/user2.svg";
 import user3 from "@/assets/images/user/user8.svg";
 import user4 from "@/assets/images/user/user9.svg";
 import user5 from "@/assets/images/user/user4.svg";
+import toast from "react-hot-toast";
 
 interface Type {
   ensName: string;
@@ -80,7 +81,7 @@ function AvailableSessions() {
   const [showFilterOptions, setShowFilterOptions] = useState(false);
   // const { openConnectModal } = useConnectModal();
   const { ready, authenticated, login, logout, user } = usePrivy();
-  const {walletAddress}=useWalletAddress();
+  const { walletAddress } = useWalletAddress();
 
   const [tooltipContent, setTooltipContent] = useState("Copy");
   const [animatingButtons, setAnimatingButtons] = useState<{
@@ -135,20 +136,18 @@ function AvailableSessions() {
   }, []);
 
   const handleBookSession = (daoName: string, userAddress: string) => {
-    if (isConnected) {
+    if (authenticated) {
       router.push(
         `/${daoName}/${userAddress}?active=delegatesSession&session=book`
       );
+    } else if (!authenticated) {
+      // openConnectModal();
+      login();
     } else {
-      if (!authenticated) {
-        // openConnectModal();
-        login()
-      } else {
-        console.error("Connect modal is not available");
-        alert(
-          "Wallet connection is not available. Please check your wallet configuration."
-        );
-      }
+      console.error("Connect modal is not available");
+      alert(
+        "Wallet connection is not available. Please check your wallet configuration."
+      );
     }
   };
 
@@ -178,11 +177,10 @@ function AvailableSessions() {
     setIsPageLoading(true);
     setError(null);
     try {
-      const myHeaders = new Headers();
-      myHeaders.append("Content-Type", "application/json");
-      if (walletAddress) {
-        myHeaders.append("x-wallet-address", walletAddress);
-      }
+      const myHeaders: HeadersInit = {
+        "Content-Type": "application/json",
+        ...(address && { "x-wallet-address": address }),
+      };
 
       const currentDate = new Date();
       let newDate = currentDate.toLocaleDateString();
@@ -828,7 +826,7 @@ function AvailableSessions() {
                                 .map((date: string, index: number) => (
                                   <>
                                     <Link
-                                      href={`/${daos.session.dao_name}/${daos.session.userAddress}?active=info`}
+                                      href={`/${daos.session.dao_name}/${daos.session.userAddress}?active=delegatesSession&session=book`}
                                       key={index}
                                       className="flex-shrink-0 group relative"
                                     >

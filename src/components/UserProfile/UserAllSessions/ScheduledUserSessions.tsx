@@ -32,14 +32,10 @@ interface dataToStore {
 }
 
 function ScheduledUserSessions({ daoName }: { daoName: string }) {
-  const { address,isConnected } = useAccount();
+  const { address, isConnected } = useAccount();
   const [timeSlotSizeMinutes, setTimeSlotSizeMinutes] = useState(30);
   const [selectedDate, setSelectedDate] = useState<any>("");
   const [dateAndRanges, setDateAndRanges] = useState<any>([]);
-  const [startHour, setStartHour] = useState("");
-  const [startMinute, setStartMinute] = useState("");
-  const [endHour, setEndHour] = useState("");
-  const [endMinute, setEndMinute] = useState("");
   const [allowedDates, setAllowedDates] = useState<any>([]);
   const { chain } = useAccount();
   const [utcStartTime, setUtcStartTime] = useState("");
@@ -52,8 +48,9 @@ function ScheduledUserSessions({ daoName }: { daoName: string }) {
   const [selectedEndTime, setSelectedEndTime] = useState("");
   const [successModalOpen, setSuccessModalOpen] = useState(false);
   const [finalData, setFinalData] = useState<dataToStore>();
-  const { ready, authenticated, login, logout,getAccessToken,user } = usePrivy();
-  const {walletAddress}=useWalletAddress();
+  const { ready, authenticated, login, logout, getAccessToken, user } =
+    usePrivy();
+  const { walletAddress } = useWalletAddress();
 
   const [mailId, setMailId] = useState<string>();
   const [hasEmailID, setHasEmailID] = useState<Boolean>();
@@ -76,7 +73,7 @@ function ScheduledUserSessions({ daoName }: { daoName: string }) {
     minute: "00",
     ampm: "AM",
   });
-
+  const token = getAccessToken();
   const isTimeslotInPast = (date: any, time: any) => {
     const now = new Date();
     const slotDateTime = new Date(`${date} ${time}`);
@@ -145,7 +142,6 @@ function ScheduledUserSessions({ daoName }: { daoName: string }) {
     while (current < end) {
       slots.push(new Date(current));
       current.setMinutes(current.getMinutes() + 30);
-
     }
 
     setTimeSlots(slots);
@@ -161,13 +157,13 @@ function ScheduledUserSessions({ daoName }: { daoName: string }) {
 
   const checkUser = async () => {
     try {
-      const myHeaders = new Headers();
-      const token=await getAccessToken();
-      myHeaders.append("Content-Type", "application/json");
-      if (walletAddress) {
-        myHeaders.append("x-wallet-address", walletAddress);
-        myHeaders.append("Authorization",`Bearer ${token}`);
-      }
+      const myHeaders: HeadersInit = {
+        "Content-Type": "application/json",
+        ...(walletAddress && {
+          "x-wallet-address": walletAddress,
+          Authorization: `Bearer ${token}`,
+        }),
+      };
 
       const raw = JSON.stringify({
         address: walletAddress,
@@ -180,7 +176,10 @@ function ScheduledUserSessions({ daoName }: { daoName: string }) {
         body: raw,
         redirect: "follow",
       };
-      const response = await fetchApi(`/profile/${walletAddress}`, requestOptions);
+      const response = await fetchApi(
+        `/profile/${walletAddress}`,
+        requestOptions
+      );
       const result = await response.json();
       if (Array.isArray(result.data) && result.data.length > 0) {
         // Iterate over each item in the response data array
@@ -220,17 +219,19 @@ function ScheduledUserSessions({ daoName }: { daoName: string }) {
 
   useEffect(() => {
     const fetchEnsName = async () => {
-      const ensName = await fetchEnsNameAndAvatar(walletAddress ? walletAddress : "");
+      const ensName = await fetchEnsNameAndAvatar(
+        walletAddress ? walletAddress : ""
+      );
       if (ensName) {
         setDisplayEnsName(ensName?.ensName);
       } else {
         setDisplayEnsName("");
       }
     };
-    if(walletAddress!=null){
+    if (walletAddress != null) {
       fetchEnsName();
     }
-  }, [chain, walletAddress,address]);
+  }, [chain, walletAddress, address]);
 
   useEffect(() => {
     const hasRejected = JSON.parse(
@@ -271,7 +272,6 @@ function ScheduledUserSessions({ daoName }: { daoName: string }) {
   };
 
   const handleApplyButtonClick = async () => {
-
     const dataToStore: dataToStore = {
       userAddress: walletAddress as `0x${string}`,
       timeSlotSizeMinutes: timeSlotSizeMinutes,
@@ -281,13 +281,13 @@ function ScheduledUserSessions({ daoName }: { daoName: string }) {
     };
     setFinalData(dataToStore);
 
-    const myHeaders = new Headers();
-    const token=await getAccessToken();
-    myHeaders.append("Content-Type", "application/json");
-    if (walletAddress) {
-      myHeaders.append("x-wallet-address", walletAddress);
-      myHeaders.append("Authorization",`Bearer ${token}`);
-    }
+    const myHeaders: HeadersInit = {
+      "Content-Type": "application/json",
+      ...(walletAddress && {
+        "x-wallet-address": walletAddress,
+        Authorization: `Bearer ${token}`,
+      }),
+    };
     const requestOptions: any = {
       method: "POST",
       headers: myHeaders,
@@ -308,13 +308,13 @@ function ScheduledUserSessions({ daoName }: { daoName: string }) {
 
         //calling api endpoint for sending mail to user who follow this delegate
         try {
-          const myHeaders = new Headers();
-          const token=await getAccessToken();
-          myHeaders.append("Content-Type", "application/json");
-          if (walletAddress) {
-            myHeaders.append("x-wallet-address", walletAddress);
-            myHeaders.append("Authorization",`Bearer ${token}`);
-          }
+          const myHeaders: HeadersInit = {
+            "Content-Type": "application/json",
+            ...(walletAddress && {
+              "x-wallet-address": walletAddress,
+              Authorization: `Bearer ${token}`,
+            }),
+          };
           const response = await fetchApi("/delegate-follow/send-mails", {
             method: "PUT",
             headers: myHeaders,
@@ -543,13 +543,13 @@ function ScheduledUserSessions({ daoName }: { daoName: string }) {
         if (isValidEmail) {
           try {
             setAddingEmail(true);
-            const myHeaders = new Headers();
-            const token=await getAccessToken();
-            myHeaders.append("Content-Type", "application/json");
-            if (walletAddress) {
-              myHeaders.append("x-wallet-address", walletAddress);
-              myHeaders.append("Authorization",`Bearer ${token}`)
-            }
+            const myHeaders: HeadersInit = {
+              "Content-Type": "application/json",
+              ...(walletAddress && {
+                "x-wallet-address": walletAddress,
+                Authorization: `Bearer ${token}`,
+              }),
+            };
 
             const raw = JSON.stringify({
               address: walletAddress,

@@ -38,7 +38,7 @@ const ClaimButton: React.FC<ClaimButtonProps> = ({
   const [isClaiming, setIsClaiming] = useState(false);
   const [isClaimed, setIsClaimed] = useState(!!onChainId);
   const { user, ready, getAccessToken } = usePrivy();
-
+  const token = getAccessToken();
   useEffect(() => {
     setIsClaimed(!!onChainId);
   }, [onChainId]);
@@ -94,14 +94,13 @@ const ClaimButton: React.FC<ClaimButtonProps> = ({
     };
 
     try {
-      const myHeaders = new Headers();
-      const token = await getAccessToken();
-      myHeaders.append("Content-Type", "application/json");
-      if (address) {
-        myHeaders.append("x-wallet-address", address);
-        myHeaders.append("Authorization",`Bearer ${token}`);
-      }
-
+      const myHeaders: HeadersInit = {
+        "Content-Type": "application/json",
+        ...(address && {
+          "x-wallet-address": address,
+          Authorization: `Bearer ${token}`,
+        }),
+      };
       // Configure the request options
       const requestOptions = {
         method: "POST",
@@ -151,7 +150,7 @@ const ClaimButton: React.FC<ClaimButtonProps> = ({
             meetingType: meetingType,
             uidOnchain: newAttestationUID,
             address: address,
-            daoName: dao
+            daoName: dao,
           }),
         });
         const updateData = await updateResponse.json();

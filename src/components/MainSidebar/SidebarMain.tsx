@@ -375,7 +375,7 @@ function Sidebar() {
             >
               {/* <Link href={"/sessions?active=recordedSessions"}> */}
               <Link
-                href={"/sessions?active=recordedSessions"}
+                href={"/sessions?active=availableDelegates"}
                 className={`session cursor-pointer xl:w-11 xl:h-11 2xl:w-12 2xl:h-12 2.5xl:w-14 2.5xl:h-14 rounded-full flex items-center justify-center border border-white bg-blue-shade-800 w-10 h-10 ${
                   styles.icon3d
                 } ${

@@ -45,17 +45,12 @@ function UserUpcomingHours() {
   const [loading, setLoading] = useState(false); // Loading state
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
   const [pageLoading, setPageLoading] = useState(true);
-
-  const { address,isConnected } = useAccount();
-  const {walletAddress}=useWalletAddress();
-  const { getAccessToken,authenticated,user } = usePrivy();
-
-
-
+  const { walletAddress } = useWalletAddress();
+  const { getAccessToken, authenticated, user } = usePrivy();
   const [selectedDate, setSelectedDate] = useState<string>("");
   const [selectedTime, setSelectedTime] = useState<string>("");
   const [startLoading, setStartLoading] = useState(false);
-
+  const token = getAccessToken();
 
   const handleTimeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setSelectedTime(e.target.value);
@@ -95,7 +90,6 @@ function UserUpcomingHours() {
 
     const selectedDateUTC = new Date(selectedDateTime);
     const utcFormattedDate = selectedDateUTC.toISOString();
-
 
     // Create updated form data with UTC formatted date
     const updatedFormData = { ...formData, officeHoursSlot: utcFormattedDate };
@@ -139,15 +133,14 @@ function UserUpcomingHours() {
     onOpenChange();
   };
 
-  const updateOfficeHours = async(data: any) => {
-    const myHeaders = new Headers();
-    const token=await getAccessToken();
-    myHeaders.append("Content-Type", "application/json");
-    if (walletAddress) {
-      myHeaders.append("x-wallet-address", walletAddress);
-      myHeaders.append("Authorization",`Bearer ${token}`);
-    }
-
+  const updateOfficeHours = (data: any) => {
+    const myHeaders: HeadersInit = {
+      "Content-Type": "application/json",
+      ...(walletAddress && {
+        "x-wallet-address": walletAddress,
+        Authorization: `Bearer ${token}`,
+      }),
+    };
     const raw = JSON.stringify({
       office_hours_slot: data.officeHoursSlot,
       title: data.title,
@@ -165,15 +158,15 @@ function UserUpcomingHours() {
       .catch((error) => console.log("error", error));
   };
 
-  const handleDelete = async(index: number) => {
+  const handleDelete = async (index: number) => {
     const session = sessionDetails[index];
-    const myHeaders = new Headers();
-    const token=await getAccessToken();
-    myHeaders.append("Content-Type", "application/json");
-    if (walletAddress) {
-      myHeaders.append("x-wallet-address", walletAddress);
-      myHeaders.append("Authorization",`Bearer ${token}`);
-    }
+    const myHeaders: HeadersInit = {
+      "Content-Type": "application/json",
+      ...(walletAddress && {
+        "x-wallet-address": walletAddress,
+        Authorization: `Bearer ${token}`,
+      }),
+    };
     const requestOptions = {
       method: "DELETE",
       headers: myHeaders,
@@ -216,7 +209,6 @@ function UserUpcomingHours() {
     formattedDate = `${year}-${month}-${day}`;
   }
 
-
   return (
     <div>
       <div className="space-y-6">
@@ -229,7 +221,8 @@ function UserUpcomingHours() {
               className="flex p-5 rounded-[2rem] justify-between"
               style={{
                 boxShadow: "0px 4px 26.7px 0px rgba(0, 0, 0, 0.10)",
-              }}>
+              }}
+            >
               <div className="flex">
                 <Image
                   src={data.img}
@@ -275,7 +268,8 @@ function UserUpcomingHours() {
                       style={{
                         backgroundColor: "rgba(217, 217, 217, 0.42)",
                       }}
-                      onClick={() => null}>
+                      onClick={() => null}
+                    >
                       <FaRegShareFromSquare color="#3e3d3d" size={13} />
                     </span>
                   </Tooltip>
@@ -285,7 +279,8 @@ function UserUpcomingHours() {
                       style={{
                         backgroundColor: "rgba(217, 217, 217, 0.42)",
                       }}
-                      onClick={onOpen}>
+                      onClick={onOpen}
+                    >
                       <FiEdit color="#3e3d3d" size={13} />
                     </span>
                   </Tooltip>
@@ -296,7 +291,8 @@ function UserUpcomingHours() {
                       style={{
                         backgroundColor: "rgba(217, 217, 217, 0.42)",
                       }}
-                      onClick={() => handleDelete(index)}>
+                      onClick={() => handleDelete(index)}
+                    >
                       <RiDeleteBin5Line color="#3e3d3d" size={13} />
                     </span>
                   </Tooltip>
@@ -305,7 +301,8 @@ function UserUpcomingHours() {
                   <a
                     href={`/meeting/officehours/${data.meetingId}/lobby`}
                     rel="noopener noreferrer"
-                    onClick={() => setStartLoading(true)}>
+                    onClick={() => setStartLoading(true)}
+                  >
                     {startLoading ? (
                       <>
                         <Oval
@@ -327,7 +324,8 @@ function UserUpcomingHours() {
                 isOpen={isOpen}
                 onOpenChange={onOpenChange}
                 className="font-poppins"
-                size="3xl">
+                size="3xl"
+              >
                 <ModalContent>
                   {(onClose) => (
                     <>
@@ -371,7 +369,8 @@ function UserUpcomingHours() {
                           <select
                             value={selectedTime || "Time"}
                             onChange={handleTimeChange}
-                            className="outline-none bg-[#D9D9D945] rounded-md px-2 py-2 text-sm ml-1 w-1/5">
+                            className="outline-none bg-[#D9D9D945] rounded-md px-2 py-2 text-sm ml-1 w-1/5"
+                          >
                             <option disabled>Time</option>
                             {timeOptions.map((time) => (
                               <option key={time} value={time}>

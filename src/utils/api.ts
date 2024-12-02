@@ -1,5 +1,3 @@
-// utils/api.ts
-
 type HttpMethod = "GET" | "POST" | "PUT" | "DELETE";
 
 interface RequestOptions extends RequestInit {
@@ -12,12 +10,11 @@ export async function fetchApi(
   endpoint: string,
   options: RequestOptions | RequestInit = {}
 ) {
-  
   const { method = "GET", body, headers = {}, ...otherOptions } = options;
 
   // Convert Headers object to plain object if needed
   let headersObject: Record<string, string> = {};
-  
+
   if (headers instanceof Headers) {
     // Convert Headers object to plain object
     Array.from(headers.entries()).forEach(([key, value]) => {
@@ -43,7 +40,6 @@ export async function fetchApi(
     headers: mergedHeaders,
     ...otherOptions,
   };
-
   if (body) {
     if (typeof body === "string") {
       fetchOptions.body = body;

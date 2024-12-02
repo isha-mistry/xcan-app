@@ -13,6 +13,7 @@ import SessionTileSkeletonLoader from "../SkeletonLoader/SessionTileSkeletonLoad
 import { usePrivy } from "@privy-io/react-auth";
 import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 import { fetchApi } from "@/utils/api";
+import OfficeHoursAlertMessage from "../AlertMessage/OfficeHoursAlertMessage";
 
 interface UserOfficeHoursProps {
   isDelegate: boolean | undefined;
@@ -46,19 +47,19 @@ function UserOfficeHours({
   const [showComingSoon, setShowComingSoon] = useState(true);
   const { user, ready, getAccessToken, authenticated } = usePrivy();
   const { walletAddress } = useWalletAddress();
+  const token = getAccessToken();
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         setDataLoading(true);
-        const myHeaders = new Headers();
-        const token = await getAccessToken();
-        myHeaders.append("Content-Type", "application/json");
-        if (walletAddress) {
-          myHeaders.append("x-wallet-address", walletAddress);
-          myHeaders.append("Authorization", `Bearer ${token}`);
-        }
-
+        const myHeaders: HeadersInit = {
+          "Content-Type": "application/json",
+          ...(walletAddress && {
+            "x-wallet-address": walletAddress,
+            Authorization: `Bearer ${token}`,
+          }),
+        };
         const raw = JSON.stringify({
           address: walletAddress,
         });
@@ -153,20 +154,6 @@ function UserOfficeHours({
 
   return (
     <div>
-      {showComingSoon && (
-        <div className="flex items-center w-fit bg-yellow-100 border border-yellow-400 rounded-full px-3 py-1 font-poppins">
-          <p className="text-sm text-yellow-700 mr-2">
-            Office hours are currently being developed. In the meantime, please
-            enjoy our 1:1 sessions.
-          </p>
-          <button
-            onClick={() => setShowComingSoon(false)}
-            className="text-yellow-700 hover:text-yellow-800 ps-3"
-          >
-            <RxCross2 size={18} />
-          </button>
-        </div>
-      )}
       <div className="pt-3">
         <div className="flex w-fit gap-14 border-1 border-[#7C7C7C] px-6 rounded-xl text-sm">
           {selfDelegate === true && (
@@ -226,7 +213,7 @@ function UserOfficeHours({
           </button>
         </div>
 
-        <div className="py-10">
+        {/* <div className="py-10">
           {selfDelegate === true &&
             searchParams.get("hours") === "schedule" && (
               <UserScheduledHours daoName={daoName} />
@@ -256,6 +243,10 @@ function UserOfficeHours({
                 isOfficeHour={true}
               />
             ))}
+        </div> */}
+
+        <div className="py-10">
+          <OfficeHoursAlertMessage />
         </div>
       </div>
     </div>

@@ -39,13 +39,13 @@ function UpdateSessionDetails({ roomId }: { roomId: string }) {
   const [viewMode, setViewMode] = useState<"edit" | "preview">("edit");
   const [loading, setLoading] = useState(false);
   const [dataLoading, setDataLoading] = useState(true);
-  const { address,isConnected } = useAccount();
+  const { address, isConnected } = useAccount();
   const router = useRouter();
   const [showPopup, setShowPopup] = useState(true);
   const [showHostPopup, setShowHostPopup] = useState(false);
-  const { user, ready, getAccessToken,authenticated } = usePrivy();
-  const {walletAddress}=useWalletAddress();
-
+  const { user, ready, getAccessToken, authenticated } = usePrivy();
+  const { walletAddress } = useWalletAddress();
+  const token = getAccessToken();
 
   useEffect(() => {
     async function fetchData() {
@@ -96,14 +96,13 @@ function UpdateSessionDetails({ roomId }: { roomId: string }) {
     try {
       if (walletAddress?.toLowerCase() === data.host_address.toLowerCase()) {
         setLoading(true);
-        const myHeaders = new Headers();
-        const token=await getAccessToken();
-        myHeaders.append("Content-Type", "application/json");
-        if (walletAddress) {
-          myHeaders.append("x-wallet-address", walletAddress);
-          myHeaders.append("Authorization",`Bearer ${token}`);
-        }
-
+        const myHeaders: HeadersInit = {
+          "Content-Type": "application/json",
+          ...(walletAddress && {
+            "x-wallet-address": walletAddress,
+            Authorization: `Bearer ${token}`,
+          }),
+        };
         const raw = JSON.stringify({
           meetingId: roomId,
           host_address: data.host_address,

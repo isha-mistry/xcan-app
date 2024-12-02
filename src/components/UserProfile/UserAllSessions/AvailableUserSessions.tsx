@@ -28,29 +28,30 @@ function AvailableUserSessions({
   setSessionCreated,
 }: AvailableUserSessionsProps) {
   const { address, isConnected } = useAccount();
-  const {walletAddress}=useWalletAddress();
+  const { walletAddress } = useWalletAddress();
   const { ready, authenticated, login, logout, user } = usePrivy();
   const { chain } = useAccount();
   const [data, setData] = useState([]);
   const [dataLoading, setDataLoading] = useState<Boolean>(false);
   const [updateTrigger, setUpdateTrigger] = useState(0);
-
-
+  const token = getAccessToken();
 
   useEffect(() => {
     const fetchData = async () => {
       if (!daoName) return;
       setDataLoading(true);
       try {
-        const myHeaders = new Headers();
-        myHeaders.append("Content-Type", "application/json");
-        if (walletAddress) {
-          myHeaders.append("x-wallet-address", walletAddress);
-        }
+        const myHeaders: HeadersInit = {
+          "Content-Type": "application/json",
+          ...(walletAddress && {
+            "x-wallet-address": walletAddress,
+            Authorization: `Bearer ${token}`,
+          }),
+        };
 
         const raw = JSON.stringify({
           dao_name: daoName,
-          userAddress: walletAddress
+          userAddress: walletAddress,
         });
 
         const requestOptions = {
@@ -73,7 +74,7 @@ function AvailableUserSessions({
         toast.error("Failed to fetch data.");
       }
     };
-    if(walletAddress!=null){
+    if (walletAddress != null) {
       fetchData();
     }
   }, [
@@ -118,7 +119,7 @@ function AvailableUserSessions({
             <TimeSlotTable
               title="30 Minutes"
               slotSize={30}
-               // address={walletAddress}
+              // address={walletAddress}
               dao_name={daoName}
               data={data.filter((item: any) => item.timeSlotSizeMinutes === 30)}
               setData={setData}
@@ -129,7 +130,7 @@ function AvailableUserSessions({
             <TimeSlotTable
               title="45 Minutes"
               slotSize={45}
-               // address={walletAddress}
+              // address={walletAddress}
               dao_name={daoName}
               data={data.filter((item: any) => item.timeSlotSizeMinutes === 45)}
               setData={setData}
@@ -170,7 +171,8 @@ function TimeSlotTable({
   triggerUpdate,
 }: any) {
   const [deleting, setDeleting] = useState<string | null>(null);
-  const {walletAddress}=useWalletAddress();
+  const { walletAddress } = useWalletAddress();
+  const token = getAccessToken();
 
   const handleButtonClick = () => {
     toast("Coming soon 🚀");
@@ -178,19 +180,16 @@ function TimeSlotTable({
 
   const handleDeleteButtonClick = async ({ date, startTime, endTime }: any) => {
     setDeleting(date);
-    
-    // Add logging to understand the current state
-    // console.log('Current walletAddress:', walletAddress);
-    console.log('Is walletAddress null or undefined?', walletAddress == null);
-  
+
     try {
-      // Ensure we have a valid wallet address before proceeding
-      const token = await getAccessToken();
-      const myHeaders = new Headers();
-      myHeaders.append("Content-Type", "application/json");
-      myHeaders.append("x-wallet-address", walletAddress?walletAddress:'');
-      myHeaders.append("Authorization", `Bearer ${token}`);
-  
+      const myHeaders: HeadersInit = {
+        "Content-Type": "application/json",
+        ...(walletAddress && {
+          "x-wallet-address": walletAddress,
+          Authorization: `Bearer ${token}`,
+        }),
+      };
+
       const raw = JSON.stringify({
         dao_name: dao_name,
         userAddress: walletAddress,
@@ -199,17 +198,17 @@ function TimeSlotTable({
         startTime: startTime,
         endTime: endTime,
       });
-  
+
       const requestOptions: any = {
         method: "PUT",
         headers: myHeaders,
         body: raw,
         redirect: "follow",
       };
-  
+
       const response = await fetchApi("/get-availability", requestOptions);
       const result = await response.json();
-      
+
       if (result.success) {
         toast.success("Deleted successfully!");
         setData((prevData: any) =>
@@ -229,13 +228,15 @@ function TimeSlotTable({
               })),
             }))
             .filter((item: any) =>
-              item.dateAndRanges.some((range: any) => range.timeRanges.length > 0)
+              item.dateAndRanges.some(
+                (range: any) => range.timeRanges.length > 0
+              )
             )
         );
       }
       triggerUpdate();
     } catch (error) {
-      console.error('Delete error:', error);
+      console.error("Delete error:", error);
       toast.error("Failed to delete.");
     } finally {
       setDeleting(null);

@@ -13,6 +13,7 @@ import ProgressBarProvider from "@/components/ProgressBarProvider/ProgressBarPro
 import MobileResponsiveMessage from "@/components/MobileResponsiveMessage/MobileResponsiveMessage";
 import { GoogleTagManager } from "@next/third-parties/google";
 import SidebarMainMobile from "@/components/MainSidebar/SidebarMainMobile";
+import { ApiDataProvider } from "@/contexts/ApiDataContext";
 const poppins = Poppins({
   subsets: ["latin"],
   weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
@@ -111,7 +112,7 @@ export default function RootLayout({
         <ProgressBarProvider>
           <Suspense>
             <RootProviders>
-              {/* <HuddleContextProvider> */}
+              <ApiDataProvider>
                 <div className="flex">
                   <div className="hidden lg:block fixed w-[6%] bg-blue-shade-100 h-screen z-10">
                     <SidebarMain />
@@ -124,7 +125,7 @@ export default function RootLayout({
                     <div>{children}</div>
                   </div>
                 </div>
-              {/* </HuddleContextProvider> */}
+              </ApiDataProvider>
             </RootProviders>
           </Suspense>
         </ProgressBarProvider>

@@ -16,7 +16,13 @@ export async function sendMail({
 }) {
   const { SMTP_EMAIL, SMTP_PASSWORD } = process.env;
 
+  // console.log("SMTP_EMAIL", SMTP_EMAIL);
+  // console.log("SMTP_PASSWORD", SMTP_PASSWORD);
 
+  console.log("to", to);
+  console.log("name", name);
+  // console.log("subject", subject);
+  // console.log("body", body);
 
   const transport = nodemailer.createTransport({
     host: "smtpout.secureserver.net",
@@ -36,6 +42,7 @@ export async function sendMail({
 
   try {
     const testResult = await transport.verify();
+    console.log("testResult", testResult);
   } catch (error) {
     console.log(error);
     return;
@@ -52,6 +59,7 @@ export async function sendMail({
       },
     });
 
+    console.log("sendResult", sendResult);
   } catch (error) {
     console.log(error);
   }

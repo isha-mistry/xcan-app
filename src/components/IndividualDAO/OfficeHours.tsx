@@ -13,6 +13,7 @@ import { CiSearch } from "react-icons/ci";
 import { usePrivy } from "@privy-io/react-auth";
 import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 import { fetchApi } from "@/utils/api";
+import OfficeHoursAlertMessage from "../AlertMessage/OfficeHoursAlertMessage";
 
 interface Session {
   _id: string;
@@ -31,8 +32,8 @@ function OfficeHours({ props }: { props: string }) {
   const path = usePathname();
   const searchParams = useSearchParams();
   const dao_name = props;
-  const { address,isConnected } = useAccount();
-  const { user, ready, getAccessToken,authenticated } = usePrivy();
+  const { address, isConnected } = useAccount();
+  const { user, ready, getAccessToken, authenticated } = usePrivy();
   // const dao_name = props.charAt(0).toUpperCase() + props.slice(1);
 
   const [sessionDetails, setSessionDetails] = useState([]);
@@ -40,18 +41,19 @@ function OfficeHours({ props }: { props: string }) {
   const [dataLoading, setDataLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [noResults, setNoResults] = useState(false);
-  const {walletAddress}=useWalletAddress();
+  const { walletAddress } = useWalletAddress();
+  const token = getAccessToken();
 
   const fetchData = async () => {
     try {
       setDataLoading(true);
-      const myHeaders = new Headers();
-      const token=await getAccessToken();
-      myHeaders.append("Content-Type", "application/json");
-      if (walletAddress) {
-        myHeaders.append("x-wallet-address", walletAddress);
-        myHeaders.append("Authorization",`Bearer ${token}`);
-      }
+      const myHeaders: HeadersInit = {
+        "Content-Type": "application/json",
+        ...(walletAddress && {
+          "x-wallet-address": walletAddress,
+          Authorization: `Bearer ${token}`,
+        }),
+      };
 
       const raw = JSON.stringify({
         dao_name: dao_name,
@@ -107,15 +109,15 @@ function OfficeHours({ props }: { props: string }) {
   };
 
   useEffect(() => {
-    if(walletAddress!=null){
+    if (walletAddress != null) {
       fetchData();
     }
   }, [searchParams.get("hours")]); // Re-fetch data when filter changes
 
-  useEffect(() => {
-    // Set initial session details
-    setSessionDetails([]);
-  }, [props]);
+  // useEffect(() => {
+  //   // Set initial session details
+  //   setSessionDetails([]);
+  // }, [props]);
 
   const handleSearchChange = async (query: string) => {
     setSearchQuery(query);
@@ -129,13 +131,13 @@ function OfficeHours({ props }: { props: string }) {
           dao_name: dao_name,
         });
 
-        const myHeaders = new Headers();
-        const token=await getAccessToken();
-        myHeaders.append("Content-Type", "application/json");
-        if (walletAddress) {
-          myHeaders.append("x-wallet-address", walletAddress);
-          myHeaders.append("Authorization",`Bearer ${token}`);
-        }
+        const myHeaders: HeadersInit = {
+          "Content-Type": "application/json",
+          ...(walletAddress && {
+            "x-wallet-address": walletAddress,
+            Authorization: `Bearer ${token}`,
+          }),
+        };
 
         const requestOptions: any = {
           method: "POST",
@@ -227,19 +229,19 @@ function OfficeHours({ props }: { props: string }) {
         </span>
       </div> */}
       <div
-          className={`flex items-center rounded-full shadow-lg my-4 bg-gray-100 text-black cursor-pointer w-[300px] xs:w-[365px]`}
-        >
-          <CiSearch
-            className={`text-base transition-all duration-700 ease-in-out ml-3`}
-          />
-          <input
-            type="text"
-            placeholder="Search by title and host address"
-            className="w-[100%] pl-2 pr-4 py-1.5 font-poppins md:py-2 text-sm bg-transparent outline-none"
-            value={searchQuery}
-            onChange={(e) => handleSearchChange(e.target.value)}
-          />
-        </div>
+        className={`flex items-center rounded-full shadow-lg my-4 bg-gray-100 text-black cursor-pointer w-[300px] xs:w-[365px]`}
+      >
+        <CiSearch
+          className={`text-base transition-all duration-700 ease-in-out ml-3`}
+        />
+        <input
+          type="text"
+          placeholder="Search by title and host address"
+          className="w-[100%] pl-2 pr-4 py-1.5 font-poppins md:py-2 text-sm bg-transparent outline-none"
+          value={searchQuery}
+          // onChange={(e) => handleSearchChange(e.target.value)}
+        />
+      </div>
 
       <div className="pr-36 pt-3">
         <div className="flex gap-16 border-1 border-[#7C7C7C] pl-6 rounded-xl text-sm">
@@ -281,7 +283,7 @@ function OfficeHours({ props }: { props: string }) {
           </button>
         </div>
 
-        <div className="py-10">
+        {/* <div className="py-10">
           {noResults ? (
             <div className="flex flex-col justify-center items-center pt-10">
               <div className="text-5xl">☹️</div>
@@ -330,6 +332,10 @@ function OfficeHours({ props }: { props: string }) {
                 ))}
             </>
           )}
+        </div> */}
+
+        <div className="py-10">
+          <OfficeHoursAlertMessage />
         </div>
       </div>
     </div>

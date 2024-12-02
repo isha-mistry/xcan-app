@@ -61,7 +61,7 @@ function NotificationMain() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [selectedTab, setSelectedTab] = useState("Info");
   const dropdownRef = useRef<HTMLDivElement | null>(null);
-
+  const token = getAccessToken();
   const tabs = [
     { name: "All", value: "all" },
     // { name: "Past Votes", value: "votes" },
@@ -154,16 +154,15 @@ function NotificationMain() {
     if (!canFetch) return;
     setIsLoading(true);
     try {
-      const myHeaders = new Headers();
-      const token = await getAccessToken();
-      myHeaders.append("Content-Type", "application/json");
-      if (walletAddress) {
-        myHeaders.append("x-wallet-address", walletAddress);
-        myHeaders.append("Authorization", `Bearer ${token}`);
-      }
+      const myHeaders: HeadersInit = {
+        "Content-Type": "application/json",
+        ...(walletAddress && {
+          "x-wallet-address": walletAddress,
+          Authorization: `Bearer ${token}`,
+        }),
+      };
 
       const raw = JSON.stringify({ address: walletAddress });
-
 
       const requestOptions: RequestInit = {
         method: "POST",
@@ -261,13 +260,13 @@ function NotificationMain() {
     setButtonText("Marking...");
     setMarkAllReadCalling(true);
     try {
-      const myHeaders = new Headers();
-      const token = await getAccessToken();
-      myHeaders.append("Content-Type", "application/json");
-      if (walletAddress) {
-        myHeaders.append("x-wallet-address", walletAddress);
-        myHeaders.append("Authorization", `Bearer ${token}`);
-      }
+      const myHeaders: HeadersInit = {
+        "Content-Type": "application/json",
+        ...(walletAddress && {
+          "x-wallet-address": walletAddress,
+          Authorization: `Bearer ${token}`,
+        }),
+      };
 
       const raw = JSON.stringify({
         markAll: true,

@@ -93,6 +93,7 @@ function MainProfile() {
   const [isModalLoading, setIsModalLoading] = useState(false);
   const { ready, authenticated, login, logout, getAccessToken, user } =
     usePrivy();
+  const token = getAccessToken();
   const [isspin, setSpin] = useState(false);
   // const [walletAddress, setWalletAddress] = useState<string | null>(null);
   const { walletAddress } = useWalletAddress();
@@ -408,13 +409,14 @@ function MainProfile() {
   ) => {
     setLoading(true);
     setIsModalLoading(true);
-    const myHeaders = new Headers();
-    const token = await getAccessToken();
-    myHeaders.append("Content-Type", "application/json");
-    if (walletAddress) {
-      myHeaders.append("x-wallet-address", walletAddress);
-      myHeaders.append("Authorization", `Bearer ${token}`);
-    }
+
+    const myHeaders: HeadersInit = {
+      "Content-Type": "application/json",
+      ...(walletAddress && {
+        "x-wallet-address": walletAddress,
+        Authorization: `Bearer ${token}`,
+      }),
+    };
 
     const raw = JSON.stringify({
       address: walletAddress,
@@ -465,7 +467,6 @@ function MainProfile() {
     userupdate: any,
     unfollowDao: any
   ) => {
-    // alert(unfollowDao);
     setUserFollowings((prevUsers) =>
       prevUsers.map((user, i) =>
         i === index ? { ...user, isFollowing: !user.isFollowing } : user
@@ -474,14 +475,14 @@ function MainProfile() {
 
     if (!userupdate.isFollowing) {
       setFollowings(followings + 1);
-      const myHeaders = new Headers();
-      const token = await getAccessToken();
-      myHeaders.append("Content-Type", "application/json");
-      if (walletAddress) {
-        myHeaders.append("x-wallet-address", walletAddress);
-        myHeaders.append("Authorization", `Bearer ${token}`);
-      }
 
+      const myHeaders: HeadersInit = {
+        "Content-Type": "application/json",
+        ...(walletAddress && {
+          "x-wallet-address": walletAddress,
+          Authorization: `Bearer ${token}`,
+        }),
+      };
       try {
         const response = await fetchApi("/delegate-follow/savefollower", {
           method: "PUT",
@@ -510,13 +511,13 @@ function MainProfile() {
       setLoading(true);
       // settoaster(true);
       try {
-        const myHeaders = new Headers();
-        const token = await getAccessToken();
-        myHeaders.append("Content-Type", "application/json");
-        if (walletAddress) {
-          myHeaders.append("x-wallet-address", walletAddress);
-          myHeaders.append("Authorization", `Bearer ${token}`);
-        }
+        const myHeaders: HeadersInit = {
+          "Content-Type": "application/json",
+          ...(walletAddress && {
+            "x-wallet-address": walletAddress,
+            Authorization: `Bearer ${token}`,
+          }),
+        };
         const response = await fetchApi("/delegate-follow/updatefollower", {
           method: "PUT",
           headers: myHeaders,
@@ -556,13 +557,13 @@ function MainProfile() {
     // settoaster(true);
 
     try {
-      const myHeaders = new Headers();
-      const token = await getAccessToken();
-      myHeaders.append("Content-Type", "application/json");
-      if (walletAddress) {
-        myHeaders.append("x-wallet-address", walletAddress);
-        myHeaders.append("Authorization", `Bearer ${token}`);
-      }
+      const myHeaders: HeadersInit = {
+        "Content-Type": "application/json",
+        ...(walletAddress && {
+          "x-wallet-address": walletAddress,
+          Authorization: `Bearer ${token}`,
+        }),
+      };
       const response = await fetchApi("/delegate-follow/updatefollower", {
         method: "PUT",
         headers: myHeaders,
@@ -630,7 +631,6 @@ function MainProfile() {
       (f: any) => f.isFollowing
     ).length;
 
-    // alert(followerCount);
     setFollowers(followerCount);
   };
 
@@ -638,13 +638,13 @@ function MainProfile() {
     setIsLoading(true);
     const isEmailVisible = !isToggled;
     try {
-      const myHeaders = new Headers();
-      const token = await getAccessToken();
-      myHeaders.append("Content-Type", "application/json");
-      if (walletAddress) {
-        myHeaders.append("x-wallet-address", walletAddress);
-        myHeaders.append("Authorization", `Bearer ${token}`);
-      }
+      const myHeaders: HeadersInit = {
+        "Content-Type": "application/json",
+        ...(walletAddress && {
+          "x-wallet-address": walletAddress,
+          Authorization: `Bearer ${token}`,
+        }),
+      };
       const raw = JSON.stringify({
         address: walletAddress,
         isEmailVisible: isEmailVisible,
@@ -677,14 +677,15 @@ function MainProfile() {
       try {
         // Fetch data from your backend API to check if the address exists
         // const dbResponse = await axios.get(`/api/profile/${address}`);
-        const token = await getAccessToken();
+
         let dao = getDaoName(chain?.name);
-        const myHeaders = new Headers();
-        myHeaders.append("Content-Type", "application/json");
-        myHeaders.append("Authorization", `Bearer ${token}`);
-        if (walletAddress) {
-          myHeaders.append("x-wallet-address", walletAddress);
-        }
+        const myHeaders: HeadersInit = {
+          "Content-Type": "application/json",
+          ...(walletAddress && {
+            "x-wallet-address": walletAddress,
+            Authorization: `Bearer ${token}`,
+          }),
+        };
 
         const raw = JSON.stringify({
           address: walletAddress,
@@ -829,13 +830,13 @@ function MainProfile() {
     try {
       // Make a request to your backend API to check if the address exists
 
-      const myHeaders = new Headers();
-      const token = await getAccessToken();
-      myHeaders.append("Content-Type", "application/json");
-      if (address) {
-        myHeaders.append("x-wallet-address", address);
-        myHeaders.append("Authorization", `Bearer ${token}`);
-      }
+      const myHeaders: HeadersInit = {
+        "Content-Type": "application/json",
+        ...(walletAddress && {
+          "x-wallet-address": walletAddress,
+          Authorization: `Bearer ${token}`,
+        }),
+      };
 
       const raw = JSON.stringify({
         address: address,
@@ -875,14 +876,13 @@ function MainProfile() {
     try {
       // Call the POST API function for adding a new delegate
 
-      const myHeaders = new Headers();
-      const token = await getAccessToken();
-      myHeaders.append("Content-Type", "application/json");
-      if (walletAddress) {
-        myHeaders.append("x-wallet-address", walletAddress);
-        myHeaders.append("Authorization", `Bearer ${token}`);
-      }
-
+      const myHeaders: HeadersInit = {
+        "Content-Type": "application/json",
+        ...(walletAddress && {
+          "x-wallet-address": walletAddress,
+          Authorization: `Bearer ${token}`,
+        }),
+      };
       const raw = JSON.stringify({
         address: walletAddress,
         image: modalData.displayImage,
@@ -938,18 +938,13 @@ function MainProfile() {
   // Function to handle updating an existing delegate
   const handleUpdate = async (newDescription?: string) => {
     try {
-      const token = await getAccessToken();
-      // const myHeaders = new Headers();
-      // myHeaders.append("Content-Type", "application/json");
-      // if (address) {
-      //   myHeaders.append("x-wallet-address", address);
-      // }
-      const myHeaders = new Headers();
-      myHeaders.append("Content-Type", "application/json");
-      if (walletAddress) {
-        myHeaders.append("x-wallet-address", walletAddress);
-        myHeaders.append("Authorization", `Bearer ${token}`);
-      }
+      const myHeaders: HeadersInit = {
+        "Content-Type": "application/json",
+        ...(walletAddress && {
+          "x-wallet-address": walletAddress,
+          Authorization: `Bearer ${token}`,
+        }),
+      };
       const raw = JSON.stringify({
         address: walletAddress,
         image: modalData.displayImage,

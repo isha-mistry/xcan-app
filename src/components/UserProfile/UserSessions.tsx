@@ -41,6 +41,7 @@ function UserSessions({
   const [showRightShadow, setShowRightShadow] = useState(false);
   const { user, ready, getAccessToken, authenticated } = usePrivy();
   const { walletAddress } = useWalletAddress();
+  const token = getAccessToken();
 
   const handleRetry = () => {
     setError(null);
@@ -75,13 +76,13 @@ function UserSessions({
     setDataLoading(true);
     try {
       // setDataLoading(true);
-      const myHeaders = new Headers();
-      const token = await getAccessToken();
-      myHeaders.append("Content-Type", "application/json");
-      if (walletAddress) {
-        myHeaders.append("x-wallet-address", walletAddress);
-        myHeaders.append("Authorization", `Bearer ${token}`);
-      }
+      const myHeaders: HeadersInit = {
+        "Content-Type": "application/json",
+        ...(walletAddress && {
+          "x-wallet-address": walletAddress,
+          Authorization: `Bearer ${token}`,
+        }),
+      };
       const response = await fetchApi(`/get-sessions`, {
         method: "POST",
         headers: myHeaders,

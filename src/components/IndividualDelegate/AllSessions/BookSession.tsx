@@ -39,7 +39,7 @@ function BookSession({ props }: { props: Type }) {
   // const host_address = "0x3013bb4E03a7B81106D69C10710EaE148C8410E1";
   const daoName = props.daoDelegates;
   const host_address = props.individualDelegate;
-  const { isConnected, address } = useAccount();
+  // const { isConnected, address } = useAccount();
   const { data: session, status } = useSession();
   const loading = status === "loading";
   const [isScheduling, setIsScheduling] = useState(false);
@@ -72,6 +72,7 @@ function BookSession({ props }: { props: Type }) {
   const { ready, authenticated, login, logout, getAccessToken, user } =
     usePrivy();
   const { walletAddress } = useWalletAddress();
+  const token = getAccessToken();
   const styles = `
   .calendar-container > div > ul {
     height: auto;
@@ -117,7 +118,7 @@ function BookSession({ props }: { props: Type }) {
     return () => {
       clearTimeout(loadingTimeout);
     };
-  }, [address, isConnected, session]);
+  }, [walletAddress, authenticated, session]);
 
   const getAvailability = async () => {
     try {
@@ -199,7 +200,7 @@ function BookSession({ props }: { props: Type }) {
   };
 
   const handleScheduled = async (data: any) => {
-    if (isConnected) {
+    if (authenticated) {
       if (host_address === walletAddress) {
         toast("Delegates can not book their own sessions!");
       } else {
@@ -231,13 +232,13 @@ function BookSession({ props }: { props: Type }) {
 
   const checkUser = async () => {
     try {
-      const myHeaders = new Headers();
-      const token = await getAccessToken();
-      myHeaders.append("Content-Type", "application/json");
-      if (walletAddress) {
-        myHeaders.append("x-wallet-address", walletAddress);
-        myHeaders.append("Authorization", `Bearer ${token}`);
-      }
+      const myHeaders: HeadersInit = {
+        "Content-Type": "application/json",
+        ...(walletAddress && {
+          "x-wallet-address": walletAddress,
+          Authorization: `Bearer ${token}`,
+        }),
+      };
 
       const raw = JSON.stringify({
         address: walletAddress,
@@ -337,13 +338,13 @@ function BookSession({ props }: { props: Type }) {
       host_joined_status: "Pending",
     };
 
-    const myHeaders = new Headers();
-    const token = await getAccessToken();
-    myHeaders.append("Content-Type", "application/json");
-    if (walletAddress) {
-      myHeaders.append("x-wallet-address", walletAddress);
-      myHeaders.append("Authorization", `Bearer ${token}`);
-    }
+    const myHeaders: HeadersInit = {
+      "Content-Type": "application/json",
+      ...(walletAddress && {
+        "x-wallet-address": walletAddress,
+        Authorization: `Bearer ${token}`,
+      }),
+    };
 
     const requestOptions: any = {
       method: "POST",
@@ -491,12 +492,13 @@ function BookSession({ props }: { props: Type }) {
         if (isValidEmail) {
           try {
             setAddingEmail(true);
-            const myHeaders = new Headers();
-            myHeaders.append("Content-Type", "application/json");
-            if (walletAddress) {
-              myHeaders.append("x-wallet-address", walletAddress);
-            }
-
+            const myHeaders: HeadersInit = {
+              "Content-Type": "application/json",
+              ...(walletAddress && {
+                "x-wallet-address": walletAddress,
+                Authorization: `Bearer ${token}`,
+              }),
+            };
             const raw = JSON.stringify({
               address: walletAddress,
               emailId: mailId,

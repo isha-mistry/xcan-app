@@ -65,11 +65,11 @@ const WatchFreeCollect = ({
 }) => {
   const chainId = useChainId();
   // const { openConnectModal } = useConnectModal();
-  const { ready, authenticated, login, logout,user } = usePrivy();
+  const { ready, authenticated, login, logout, user } = usePrivy();
   const { switchChain } = useSwitchChain();
   const publicClient = usePublicClient()!;
-  const { address, chain,isConnected } = useAccount();
-  const {walletAddress}=useWalletAddress();
+  const { chain, isConnected } = useAccount();
+  const { walletAddress } = useWalletAddress();
   const { data: session } = useSession();
   const searchParams = useSearchParams();
   const { writeContractAsync, writeContract } = useWriteContract();
@@ -95,10 +95,9 @@ const WatchFreeCollect = ({
     useState("0 USD");
   const [mintComment, setMintComment] = useState("");
   const [mintReferral, setMintReferral] = useState<string>("");
+  const token = getAccessToken();
   let contractMetadataURI: any;
   let tokenDataURI: any;
-
-
 
   useEffect(() => {
     setMeetingInfo(data);
@@ -107,8 +106,7 @@ const WatchFreeCollect = ({
       setHasDeployedContractAddress(true);
     }
     setMintReferral(searchParams.get("referrer") || "");
-  }, [data, searchParams, address,walletAddress, session]);
-  
+  }, [data, searchParams, walletAddress, session]);
 
   useEffect(() => {
     const fetchEthToUsdRate = async () => {
@@ -170,11 +168,11 @@ const WatchFreeCollect = ({
       if (switchChain) {
         try {
           setIsLoading(true);
-          toast('Switching to Arbitrum Sepolia network,try again!');
+          toast("Switching to Arbitrum Sepolia network,try again!");
           await switchChain({ chainId: TARGET_CHAIN_ID });
         } catch (error) {
           console.error("Failed to switch network:", error);
-          alert(
+          toast(
             "Please switch to Arbitrum Sepolia network in your wallet and try again."
           );
           return false;
@@ -182,7 +180,7 @@ const WatchFreeCollect = ({
           setIsLoading(false);
         }
       } else {
-        alert(
+        toast(
           "Network switching is not supported. Please manually switch to Arbitrum Sepolia network in your wallet and try again."
         );
         return false;
@@ -195,7 +193,7 @@ const WatchFreeCollect = ({
     if (!walletAddress && !authenticated) {
       toast("Wallet not connected");
       // openConnectModal?.();
-      login()
+      login();
       return;
     }
 
@@ -230,13 +228,11 @@ const WatchFreeCollect = ({
   };
 
   const handleContractSubmit = async (contractAddress: string) => {
-    const myHeaders = new Headers();
-    const token=await getAccessToken();
-    myHeaders.append("Content-Type", "application/json");
-    if (walletAddress) {
-      myHeaders.append("x-wallet-address", walletAddress);
-      myHeaders.append("Authorization",`Bearer ${token}`);
-    }
+    const myHeaders: HeadersInit = {
+      "Content-Type": "application/json",
+      ...(walletAddress && { "x-wallet-address": walletAddress , 
+      "Authorization": `Bearer ${token}`}),
+    };
 
     const raw = JSON.stringify({
       meetingId: data.meetingId,
@@ -264,7 +260,6 @@ const WatchFreeCollect = ({
         description: data.description,
         imageCid: data?.nft_image,
       };
-
 
       const tokenMetadata = {
         name: data.title,
@@ -338,7 +333,7 @@ const WatchFreeCollect = ({
       tokenDataURI = `ipfs://${tokenMetadataJsonCid}`;
     } catch (error) {
       console.error("Error uploading to Lighthouse:", error);
-      alert("Error uploading data. Please try again.");
+      toast("Error uploading data. Please try again.");
     } finally {
     }
   };
@@ -346,7 +341,7 @@ const WatchFreeCollect = ({
   const handleFirstMinter = async () => {
     if (!authenticated) {
       toast("Wallet not connected");
-      login()
+      login();
       return;
     }
 

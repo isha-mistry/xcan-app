@@ -11,9 +11,10 @@ const UserScheduledHours = ({ daoName }: { daoName: string }) => {
   const [description, setDescription] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
-  const { address,isConnected } = useAccount();
-  const { user, ready, getAccessToken,authenticated } = usePrivy();
-  const {walletAddress}=useWalletAddress();
+  const { address, isConnected } = useAccount();
+  const { user, ready, getAccessToken, authenticated } = usePrivy();
+  const { walletAddress } = useWalletAddress();
+  const token = getAccessToken();
 
   const [selectedTime, setSelectedTime] = useState<string>("");
 
@@ -46,13 +47,13 @@ const UserScheduledHours = ({ daoName }: { daoName: string }) => {
       const selectedDateUTC = new Date(selectedDateTime);
       const utcFormattedDate = selectedDateUTC.toISOString();
 
-      const myHeaders = new Headers();
-      const token=await getAccessToken();
-      myHeaders.append("Content-Type", "application/json");
-      if (walletAddress) {
-        myHeaders.append("x-wallet-address", walletAddress);
-        myHeaders.append("Authorization",`Bearer ${token}`);
-      }
+      const myHeaders: HeadersInit = {
+        "Content-Type": "application/json",
+        ...(walletAddress && {
+          "x-wallet-address": walletAddress,
+          Authorization: `Bearer ${token}`,
+        }),
+      };
 
       const response = await fetchApi("/office-hours", {
         method: "POST",
@@ -112,8 +113,6 @@ const UserScheduledHours = ({ daoName }: { daoName: string }) => {
     const day = String(currentDate.getDate()).padStart(2, "0");
     formattedDate = `${year}-${month}-${day}`;
   }
-
-
 
   return (
     <div className="ps-4 font-poppins">

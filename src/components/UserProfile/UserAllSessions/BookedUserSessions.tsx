@@ -23,6 +23,7 @@ function BookedUserSessions({ daoName }: { daoName: string }) {
   const [pageLoading, setPageLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { walletAddress } = useWalletAddress();
+  const token = getAccessToken();
 
   const handleRetry = () => {
     setError(null);
@@ -32,13 +33,13 @@ function BookedUserSessions({ daoName }: { daoName: string }) {
 
   const getMeetingData = async () => {
     try {
-      const myHeaders = new Headers();
-      const token = await getAccessToken();
-      myHeaders.append("Content-Type", "application/json");
-      if (walletAddress) {
-        myHeaders.append("x-wallet-address", walletAddress);
-        myHeaders.append("Authorization", `Bearer ${token}`);
-      }
+      const myHeaders: HeadersInit = {
+        "Content-Type": "application/json",
+        ...(walletAddress && {
+          "x-wallet-address": walletAddress,
+          Authorization: `Bearer ${token}`,
+        }),
+      };
 
       const raw = JSON.stringify({
         address: walletAddress,

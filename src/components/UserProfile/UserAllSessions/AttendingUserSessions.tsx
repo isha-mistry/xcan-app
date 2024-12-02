@@ -21,13 +21,12 @@ function AttendingUserSessions({ daoName }: { daoName: string }) {
   const router = useRouter();
   const path = usePathname();
   const searchParams = useSearchParams();
-  const { address,isConnected } = useAccount();
   const [sessionDetails, setSessionDetails] = useState<any[]>([]);
   const [pageLoading, setPageLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { user, ready, getAccessToken,authenticated } = usePrivy();
-  const {walletAddress}=useWalletAddress();
-
+  const { user, ready, getAccessToken, authenticated } = usePrivy();
+  const { walletAddress } = useWalletAddress();
+  const token = getAccessToken();
   const handleRetry = () => {
     setError(null);
     getUserMeetingData();
@@ -37,13 +36,13 @@ function AttendingUserSessions({ daoName }: { daoName: string }) {
   const getUserMeetingData = async () => {
     try {
       setPageLoading(true);
-      const myHeaders = new Headers();
-      const token=await getAccessToken();
-      myHeaders.append("Content-Type", "application/json");
-      if (walletAddress) {
-        myHeaders.append("x-wallet-address", walletAddress);
-        myHeaders.append("Authorization",`Bearer ${token}`);
-      }
+      const myHeaders: HeadersInit = {
+        "Content-Type": "application/json",
+        ...(walletAddress && {
+          "x-wallet-address": walletAddress,
+          Authorization: `Bearer ${token}`,
+        }),
+      };
       const response = await fetchApi(`/get-session-data/${walletAddress}`, {
         method: "POST",
         headers: myHeaders,
@@ -66,7 +65,7 @@ function AttendingUserSessions({ daoName }: { daoName: string }) {
   };
 
   useEffect(() => {
-    if(walletAddress!=null){
+    if (walletAddress != null) {
       getUserMeetingData();
     }
   }, [searchParams.get("session")]);
