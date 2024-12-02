@@ -26,7 +26,6 @@ function NotificationIconComponent() {
   const hoverRef = useRef<HTMLDivElement>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const socket = useSocket();
-  const { address, isConnected } = useAccount();
   const { user, ready, getAccessToken, authenticated } = usePrivy();
   const [socketId, setSocketId] = useState<string | null>(null);
   const [isAPILoading, setIsAPILoading] = useState<boolean>();
@@ -51,7 +50,7 @@ function NotificationIconComponent() {
 
   useEffect(() => {
     setCanFetch(!!walletAddress);
-  }, [address, walletAddress, setCanFetch]);
+  }, [walletAddress, setCanFetch]);
 
   useEffect(() => {
     return () => {
@@ -77,7 +76,7 @@ function NotificationIconComponent() {
             Authorization: `Bearer ${token}`,
           }),
         };
-        const raw = JSON.stringify({ walletAddress });
+        const raw = JSON.stringify({ address: walletAddress });
 
         const requestOptions: RequestInit = {
           method: "POST",
@@ -116,7 +115,7 @@ function NotificationIconComponent() {
         setIsAPILoading(false);
       }
     }
-  }, [address, walletAddress, setNotifications, setHasAnyUnreadNotification]);
+  }, [ walletAddress, setNotifications, setHasAnyUnreadNotification]);
 
   const handleMouseEnter = useCallback(() => {
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
