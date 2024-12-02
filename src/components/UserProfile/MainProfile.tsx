@@ -315,11 +315,10 @@ function MainProfile() {
   ) => {
     setLoading(true);
     setIsModalLoading(true);
-    const myHeaders = new Headers();
-    myHeaders.append("Content-Type", "application/json");
-    if (address) {
-      myHeaders.append("x-wallet-address", address);
-    }
+    const myHeaders: HeadersInit = {
+      "Content-Type": "application/json",
+      ...(address && { "x-wallet-address": address }),
+    };
 
     const raw = JSON.stringify({
       address: address,
@@ -370,7 +369,6 @@ function MainProfile() {
     userupdate: any,
     unfollowDao: any
   ) => {
-    // alert(unfollowDao);
     setUserFollowings((prevUsers) =>
       prevUsers.map((user, i) =>
         i === index ? { ...user, isFollowing: !user.isFollowing } : user
@@ -379,11 +377,10 @@ function MainProfile() {
 
     if (!userupdate.isFollowing) {
       setFollowings(followings + 1);
-      const myHeaders = new Headers();
-      myHeaders.append("Content-Type", "application/json");
-      if (address) {
-        myHeaders.append("x-wallet-address", address);
-      }
+      const myHeaders: HeadersInit = {
+        "Content-Type": "application/json",
+        ...(address && { "x-wallet-address": address }),
+      };
 
       try {
         const response = await fetchApi("/delegate-follow/savefollower", {
@@ -414,11 +411,10 @@ function MainProfile() {
       setLoading(true);
       // settoaster(true);
       try {
-        const myHeaders = new Headers();
-        myHeaders.append("Content-Type", "application/json");
-        if (address) {
-          myHeaders.append("x-wallet-address", address);
-        }
+        const myHeaders: HeadersInit = {
+          "Content-Type": "application/json",
+          ...(address && { "x-wallet-address": address }),
+        };
         const response = await fetchApi("/delegate-follow/updatefollower", {
           method: "PUT",
           headers: myHeaders,
@@ -459,11 +455,10 @@ function MainProfile() {
     // settoaster(true);
 
     try {
-      const myHeaders = new Headers();
-      myHeaders.append("Content-Type", "application/json");
-      if (address) {
-        myHeaders.append("x-wallet-address", address);
-      }
+      const myHeaders: HeadersInit = {
+        "Content-Type": "application/json",
+        ...(address && { "x-wallet-address": address }),
+      };
       const response = await fetchApi("/delegate-follow/updatefollower", {
         method: "PUT",
         headers: myHeaders,
@@ -532,7 +527,6 @@ function MainProfile() {
       (f: any) => f.isFollowing
     ).length;
 
-    // alert(followerCount);
     setFollowers(followerCount);
   };
 
@@ -540,11 +534,10 @@ function MainProfile() {
     setIsLoading(true);
     const isEmailVisible = !isToggled;
     try {
-      const myHeaders = new Headers();
-      myHeaders.append("Content-Type", "application/json");
-      if (address) {
-        myHeaders.append("x-wallet-address", address);
-      }
+      const myHeaders: HeadersInit = {
+        "Content-Type": "application/json",
+        ...(address && { "x-wallet-address": address }),
+      };
       const raw = JSON.stringify({
         address: address,
         isEmailVisible: isEmailVisible,
@@ -581,11 +574,10 @@ function MainProfile() {
         // const dbResponse = await axios.get(`/api/profile/${address}`);
 
         let dao = getDaoName(chain?.name);
-        const myHeaders = new Headers();
-        myHeaders.append("Content-Type", "application/json");
-        if (address) {
-          myHeaders.append("x-wallet-address", address);
-        }
+        const myHeaders: HeadersInit = {
+          "Content-Type": "application/json",
+          ...(address && { "x-wallet-address": address }),
+        };
 
         const raw = JSON.stringify({
           address: address,
@@ -727,11 +719,10 @@ function MainProfile() {
       // Make a request to your backend API to check if the address exists
       // console.log("Checking");
 
-      const myHeaders = new Headers();
-      myHeaders.append("Content-Type", "application/json");
-      if (address) {
-        myHeaders.append("x-wallet-address", address);
-      }
+      const myHeaders: HeadersInit = {
+        "Content-Type": "application/json",
+        ...(address && { "x-wallet-address": address }),
+      };
 
       const raw = JSON.stringify({
         address: address,
@@ -771,11 +762,10 @@ function MainProfile() {
       // Call the POST API function for adding a new delegate
       console.log("Adding the delegate..");
 
-      const myHeaders = new Headers();
-      myHeaders.append("Content-Type", "application/json");
-      if (address) {
-        myHeaders.append("x-wallet-address", address);
-      }
+      const myHeaders: HeadersInit = {
+        "Content-Type": "application/json",
+        ...(address && { "x-wallet-address": address }),
+      };
 
       const raw = JSON.stringify({
         address: address,
@@ -834,20 +824,10 @@ function MainProfile() {
   // Function to handle updating an existing delegate
   const handleUpdate = async (newDescription?: string) => {
     try {
-      // console.log("Updating");
-      // console.log("Inside Updating Description", newDescription);
-      // console.log("Updating");
-      // console.log("Inside Updating Description", newDescription);
-      // const myHeaders = new Headers();
-      // myHeaders.append("Content-Type", "application/json");
-      // if (address) {
-      //   myHeaders.append("x-wallet-address", address);
-      // }
-      const myHeaders = new Headers();
-      myHeaders.append("Content-Type", "application/json");
-      if (address) {
-        myHeaders.append("x-wallet-address", address);
-      }
+      const myHeaders: HeadersInit = {
+        "Content-Type": "application/json",
+        ...(address && { "x-wallet-address": address }),
+      };
       const raw = JSON.stringify({
         address: address,
         image: modalData.displayImage,

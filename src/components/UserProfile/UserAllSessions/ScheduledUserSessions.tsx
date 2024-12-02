@@ -163,11 +163,10 @@ function ScheduledUserSessions({ daoName }: { daoName: string }) {
 
   const checkUser = async () => {
     try {
-      const myHeaders = new Headers();
-      myHeaders.append("Content-Type", "application/json");
-      if (address) {
-        myHeaders.append("x-wallet-address", address);
-      }
+      const myHeaders: HeadersInit = {
+        "Content-Type": "application/json",
+        ...(address && { "x-wallet-address": address }),
+      };
 
       const raw = JSON.stringify({
         address: address,
@@ -298,11 +297,10 @@ function ScheduledUserSessions({ daoName }: { daoName: string }) {
     setFinalData(dataToStore);
 
     console.log("dataToStore", dataToStore);
-    const myHeaders = new Headers();
-    myHeaders.append("Content-Type", "application/json");
-    if (address) {
-      myHeaders.append("x-wallet-address", address);
-    }
+    const myHeaders: HeadersInit = {
+      "Content-Type": "application/json",
+      ...(address && { "x-wallet-address": address }),
+    };
     const requestOptions: any = {
       method: "POST",
       headers: myHeaders,
@@ -325,11 +323,10 @@ function ScheduledUserSessions({ daoName }: { daoName: string }) {
 
         //calling api endpoint for sending mail to user who follow this delegate
         try {
-          const myHeaders = new Headers();
-          myHeaders.append("Content-Type", "application/json");
-          if (address) {
-            myHeaders.append("x-wallet-address", address);
-          }
+          const myHeaders: HeadersInit = {
+            "Content-Type": "application/json",
+            ...(address && { "x-wallet-address": address }),
+          };
           const response = await fetchApi("/delegate-follow/send-mails", {
             method: "PUT",
             headers: myHeaders,
@@ -562,11 +559,10 @@ function ScheduledUserSessions({ daoName }: { daoName: string }) {
         if (isValidEmail) {
           try {
             setAddingEmail(true);
-            const myHeaders = new Headers();
-            myHeaders.append("Content-Type", "application/json");
-            if (address) {
-              myHeaders.append("x-wallet-address", address);
-            }
+            const myHeaders: HeadersInit = {
+              "Content-Type": "application/json",
+              ...(address && { "x-wallet-address": address }),
+            };
 
             const raw = JSON.stringify({
               address: address,

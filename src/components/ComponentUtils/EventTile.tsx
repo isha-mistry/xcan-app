@@ -141,7 +141,7 @@ function EventTile({ tileIndex, data: initialData, isEvent }: TileProps) {
     };
 
     fetchEnsData();
-  }, [data.host_address, data.attendees[0].attendee_address]);
+  }, [data.host_address, data.attendees[0]?.attendee_address]);
 
   useEffect(() => {
     setIsPageLoading(false);
@@ -161,7 +161,7 @@ function EventTile({ tileIndex, data: initialData, isEvent }: TileProps) {
   const confirmSlot = async (data: SessionInterface, status: any) => {
     const id = data._id;
     const host_address = data.host_address;
-    const attendee_address = data.attendees[0].attendee_address;
+    const attendee_address = data.attendees[0]?.attendee_address;
     setStartLoading(true);
     try {
       setIsConfirmSlotLoading(true);
@@ -175,11 +175,10 @@ function EventTile({ tileIndex, data: initialData, isEvent }: TileProps) {
         attendee_joined_status = "Not Joined";
       }
 
-      const myHeaders = new Headers();
-      myHeaders.append("Content-Type", "application/json");
-      if (address) {
-        myHeaders.append("x-wallet-address", address);
-      }
+      const myHeaders: HeadersInit = {
+        "Content-Type": "application/json",
+        ...(address && { "x-wallet-address": address }),
+      };
 
       const raw = await JSON.stringify({
         id: id,

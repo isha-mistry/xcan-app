@@ -23,9 +23,10 @@ function ConnectWalletWithENS() {
     const fetchUserProfile = async () => {
       if (address && isConnected) {
         try {
-          const myHeaders = new Headers();
-          myHeaders.append("Content-Type", "application/json");
-          myHeaders.append("x-wallet-address", address);
+          const myHeaders: HeadersInit = {
+            "Content-Type": "application/json",
+            ...(address && { "x-wallet-address": address }),
+          };
 
           const raw = JSON.stringify({ address: address });
 
@@ -103,7 +104,7 @@ function ConnectWalletWithENS() {
         //   const name = fetchEnsName(account?.address, account?.displayName);
         //   setDisplayAddress(name);
         // }, []);
-        console.log("account: ", account?.address);
+        // console.log("account: ", account?.address);
 
         if (account) {
           (async () => {

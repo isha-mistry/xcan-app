@@ -63,6 +63,8 @@ import MobileResponsiveMessage from "../MobileResponsiveMessage/MobileResponsive
 import { fetchApi } from "@/utils/api";
 import { ChevronDownIcon } from "lucide-react";
 import Heading from "../ComponentUtils/Heading";
+import { useApiData } from "@/contexts/ApiDataContext";
+import { calculateTempCpi } from "@/actions/calculatetempCpi";
 
 interface Type {
   daoDelegates: string;
@@ -114,6 +116,8 @@ function SpecificDelegate({ props }: { props: Type }) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [selectedTab, setSelectedTab] = useState("Info");
   const [copiedAddress, setCopiedAddress] = useState<string | null>(null);
+  const [tempCpi, setTempCpi] = useState();
+  const [tempCpiCalling, setTempCpiCalling] = useState(true);
 
   const handleCopy = (addr: string) => {
     copy(addr);
@@ -192,6 +196,8 @@ function SpecificDelegate({ props }: { props: Type }) {
         openConnectModal();
       }
     } else {
+      const delegatorAddress = address;
+      const toAddress = props.individualDelegate;
       setDelegateOpen(true);
       setLoading(true);
       try {
@@ -200,6 +206,23 @@ function SpecificDelegate({ props }: { props: Type }) {
           data = await op_client.query(DELEGATE_CHANGED_QUERY, {
             delegator: address,
           });
+
+          try {
+            setTempCpiCalling(true);
+            const result = await calculateTempCpi(
+              delegatorAddress,
+              toAddress,
+              address
+            );
+            console.log("result:::::::::", result);
+            if (result?.data?.results[0].cpi) {
+              const data = result?.data?.results[0].cpi;
+              setTempCpi(data);
+              setTempCpiCalling(false);
+            }
+          } catch (error) {
+            console.log("Error in calculating temp CPI", error);
+          }
         } else {
           data = await arb_client.query(DELEGATE_CHANGED_QUERY, {
             delegator: address,
@@ -422,90 +445,7 @@ function SpecificDelegate({ props }: { props: Type }) {
     }
   };
 
-  // const fetchDelegateData = async () => {
-  //   setIsFollowStatusLoading(true);
-
-  //   const myHeaders = new Headers();
-  //   myHeaders.append("Content-Type", "application/json");
-  //   if (address) {
-  //     myHeaders.append("x-wallet-address", address);
-  //   }
-  //   const raw = JSON.stringify({
-  //     address: props.individualDelegate,
-  //   });
-
-  //   const requestOptions: any = {
-  //     method: "POST",
-  //     headers: myHeaders,
-  //     body: raw,
-  //     redirect: "follow",
-  //   };
-
-  //   try {
-  //     const resp = await fetchApi(
-  //       `/delegate-follow/savefollower`,
-  //       requestOptions
-  //     );
-
-  //     if (!resp.ok) {
-  //       throw new Error("Failed to fetch delegate data");
-  //     }
-
-  //     const data = await resp.json();
-
-  //     if (!data.success || !data.data || data.data.length === 0) {
-  //       console.log("No data returned from API");
-  //       return;
-  //     }
-
-  //     const followerData = data.data[0];
-  //     const currentDaoName = props.daoDelegates.toLowerCase();
-  //     const daoFollowers = followerData.followers.find(
-  //       (dao: any) => dao.dao_name.toLowerCase() === currentDaoName
-  //     );
-
-  //     if (daoFollowers) {
-  //       // Update follower count
-  //       const followerCount = daoFollowers.follower.filter(
-  //         (f: any) => f.isFollowing
-  //       ).length;
-  //       setFollowers(followerCount);
-  //       setFollowerCountLoading(false);
-
-  //       // Update follow and notification status
-  //       // const address = await walletClient.getAddresses();
-  //       // const address_user = address[0].toLowerCase();
-  //       const userFollow = daoFollowers.follower.find(
-  //         (f: any) => f.address.toLowerCase() === address?.toLowerCase()
-  //       );
-
-  //       if (userFollow) {
-  //         setIsFollowing(userFollow.isFollowing);
-  //         isNotification(userFollow.isNotification);
-  //       } else {
-  //         setIsFollowing(false);
-  //         isNotification(false);
-  //       }
-  //     } else {
-  //       setFollowers(0);
-  //       setIsFollowing(false);
-  //       isNotification(false);
-  //       setFollowerCountLoading(false);
-  //     }
-  //   } catch (error) {
-  //     console.error("Error in fetchDelegateData:", error);
-  //     setFollowers(0);
-  //     setIsFollowing(false);
-  //     isNotification(false);
-  //     setFollowerCountLoading(false);
-  //   } finally {
-  //     setFollowerCountLoading(false);
-  //     setIsFollowStatusLoading(false);
-  //   }
-  // };
-
   const fetchDelegateData = async () => {
-    console.log("458...");
     setIsFollowStatusLoading(true);
 
     const headers = new Headers({
@@ -592,11 +532,10 @@ function SpecificDelegate({ props }: { props: Type }) {
 
     if (action == 1) {
       setLoading(true);
-      const myHeaders = new Headers();
-      myHeaders.append("Content-Type", "application/json");
-      if (address) {
-        myHeaders.append("x-wallet-address", address);
-      }
+      const myHeaders: HeadersInit = {
+        "Content-Type": "application/json",
+        ...(address && { "x-wallet-address": address }),
+      };
       try {
         const response = await fetchApi("/delegate-follow/updatefollower", {
           method: "PUT",
@@ -637,11 +576,10 @@ function SpecificDelegate({ props }: { props: Type }) {
         let updatenotification: boolean;
         updatenotification = !notification;
         setNotificationLoading(true);
-        const myHeaders = new Headers();
-        myHeaders.append("Content-Type", "application/json");
-        if (address) {
-          myHeaders.append("x-wallet-address", address);
-        }
+        const myHeaders: HeadersInit = {
+          "Content-Type": "application/json",
+          ...(address && { "x-wallet-address": address }),
+        };
         try {
           const response = await fetchApi("/delegate-follow/updatefollower", {
             method: "PUT",
@@ -688,7 +626,6 @@ function SpecificDelegate({ props }: { props: Type }) {
         let delegate_address: string;
         let follower_address: any;
         let dao: string;
-        // alert(props.daoDelegates);
         dao = props.daoDelegates;
         // let address = await walletClient.getAddresses();
         follower_address = address;
@@ -806,8 +743,10 @@ function SpecificDelegate({ props }: { props: Type }) {
 
         // const dbResponse = await axios.get(`/api/profile/${address}`);
 
-        const myHeaders = new Headers();
-        myHeaders.append("Content-Type", "application/json");
+        const myHeaders: HeadersInit = {
+          "Content-Type": "application/json",
+          ...(address && { "x-wallet-address": address }),
+        };
 
         // const raw = JSON.stringify({
         //   address: props.individualDelegate,
@@ -1407,6 +1346,8 @@ function SpecificDelegate({ props }: { props: Type }) {
         )}
         {delegateOpen && (
           <DelegateTileModal
+            tempCpi={tempCpi}
+            tempCpiCalling={tempCpiCalling}
             isOpen={delegateOpen}
             closeModal={handleCloseDelegateModal}
             handleDelegateVotes={() =>
