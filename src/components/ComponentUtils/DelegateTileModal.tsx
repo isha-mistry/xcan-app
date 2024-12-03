@@ -183,9 +183,9 @@ function DelegateTileModal({
           </div>
 
           {daoName === "optimism" && (
-            <div className="flex items-center justify-between w-full max-w-md bg-gradient-to-br from-gray-100 to-gray-200 border-2 border-gray-300 rounded-3xl px-6 py-4 mt-4 shadow-md  ">
+            <div className="flex items-center justify-between w-full max-w-md bg-gradient-to-br from-gray-100 to-gray-200 border-2 border-gray-300 rounded-3xl px-4 0.7xs:px-6 py-4 mt-4 shadow-md  ">
               <div className="flex flex-col items-center">
-                <span className="text-black font-medium text-sm tracking-wide uppercase mb-2">
+                <span className="text-black font-medium text-xs 0.7xs:text-sm tracking-wide uppercase mb-2">
                   Current CPI
                 </span>
                 <div className="text-lg font-semibold text-black bg-white px-3 py-1 rounded-lg">
@@ -203,7 +203,7 @@ function DelegateTileModal({
                 </div>
               </div>
               <div className="flex flex-col items-center">
-                <span className="text-black font-medium text-sm tracking-wide uppercase mb-2">
+                <span className="text-black font-medium text-xs 0.7xs:text-sm tracking-wide uppercase mb-2">
                   CPI if you delegate
                 </span>
                 <div
