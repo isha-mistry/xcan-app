@@ -5,6 +5,7 @@ import { useRouter } from "next-nprogress-bar";
 import NotificationAll from "./NotificationAll";
 import SessionBookings from "./SessionBookings";
 import RecordedSessions from "./RecordedSessions";
+import ProposalVote from "./ProposalVote";
 import Followers from "./Followers";
 import Attestation from "./Attestation";
 import ConnectWalletWithENS from "../ConnectWallet/ConnectWalletWithENS";
@@ -19,7 +20,7 @@ import toast from "react-hot-toast";
 import { useNotificationStudioState } from "@/store/notificationStudioState";
 import MobileResponsiveMessage from "../MobileResponsiveMessage/MobileResponsiveMessage";
 import Heading from "../ComponentUtils/Heading";
-import NotificationSkeletonLoader from '../SkeletonLoader/NotificationSkeletonLoader';
+import NotificationSkeletonLoader from "../SkeletonLoader/NotificationSkeletonLoader";
 
 function NotificationMain() {
   const { data: session } = useSession();
@@ -124,6 +125,7 @@ function NotificationMain() {
           notification_title: message.notification_title,
           additionalData: message?.additionalData,
         };
+        console.log("New notification received:", notificationData);
         addNotification(notificationData);
         updateCombinedNotifications();
       });
@@ -151,6 +153,7 @@ function NotificationMain() {
       recordedSessions: "recordedSession",
       followers: "newFollower",
       attestations: "attestation",
+      proposalVote: "proposalVote",
     };
     return combinedNotifications.filter(
       (item) => item.notification_type === typeMap[type as keyof typeof typeMap]
@@ -265,6 +268,7 @@ function NotificationMain() {
       recordedSessions: RecordedSessions,
       followers: Followers,
       attestations: Attestation,
+      proposalVote: ProposalVote,
     };
     const Component =
       components[activeTab as keyof typeof components] || NotificationAll;
@@ -272,83 +276,93 @@ function NotificationMain() {
   };
 
   return (
-<>
-{/* For Mobile Screen */}
-<MobileResponsiveMessage/>
+    <>
+      {/* For Mobile Screen */}
+      <MobileResponsiveMessage />
 
-{/* For Desktop Screen  */}
-    <div className="hidden md:block font-poppins mb-12">
+      {/* For Desktop Screen  */}
+      <div className="hidden md:block font-poppins mb-12">
         <div className="pt-2 xs:pt-4 sm:pt-6 px-4 md:px-6 lg:px-14">
-          <Heading/>
+          <Heading />
         </div>
-      <div className="flex bg-[#D9D9D945]">
-        <div className="flex gap-12 pl-16">
-          <button
-            className={`py-4 px-2 outline-none ${
-              searchParams.get("active") === "all"
-                ? "text-blue-shade-200 font-semibold border-b-2 border-blue-shade-200"
-                : "border-transparent"
-            }`}
-            onClick={() => router.push(path + "?active=all")}
-          >
-            All
-          </button>
-          <button
-            className={`py-4 px-2 outline-none ${
-              searchParams.get("active") === "sessionBookings"
-                ? "text-blue-shade-200 font-semibold border-b-2 border-blue-shade-200"
-                : "border-transparent"
-            }`}
-            onClick={() => router.push(path + "?active=sessionBookings")}
-          >
-            Meetings
-          </button>
-          <button
-            className={`py-4 px-2 outline-none ${
-              searchParams.get("active") === "recordedSessions"
-                ? "text-blue-shade-200 font-semibold border-b-2 border-blue-shade-200"
-                : "border-transparent"
-            }`}
-            // onClick={() => router.push(path + "?active=recordedSessions")}
-            onClick={() => toast("Coming Soon 🚀")}
-          >
-            Recorded Sessions
-          </button>
-          <button
-            className={`py-4 px-2 outline-none ${
-              searchParams.get("active") === "followers"
-                ? "text-blue-shade-200 font-semibold border-b-2 border-blue-shade-200"
-                : "border-transparent"
-            }`}
-            // onClick={() => router.push(path + "?active=followers")}
-            onClick={() => toast("Coming Soon 🚀")}
-          >
-            Followers
-          </button>
-          <button
-            className={`py-4 px-2 outline-none ${
-              searchParams.get("active") === "attestations"
-                ? "text-blue-shade-200 font-semibold border-b-2 border-blue-shade-200"
-                : "border-transparent"
-            }`}
-            onClick={() => router.push(path + "?active=attestations")}
-          >
-            Attestations
-          </button>
+        <div className="flex bg-[#D9D9D945]">
+          <div className="flex gap-12 pl-16">
+            <button
+              className={`py-4 px-2 outline-none ${
+                searchParams.get("active") === "all"
+                  ? "text-blue-shade-200 font-semibold border-b-2 border-blue-shade-200"
+                  : "border-transparent"
+              }`}
+              onClick={() => router.push(path + "?active=all")}
+            >
+              All
+            </button>
+            <button
+              className={`py-4 px-2 outline-none ${
+                searchParams.get("active") === "sessionBookings"
+                  ? "text-blue-shade-200 font-semibold border-b-2 border-blue-shade-200"
+                  : "border-transparent"
+              }`}
+              onClick={() => router.push(path + "?active=sessionBookings")}
+            >
+              Meetings
+            </button>
+            <button
+              className={`py-4 px-2 outline-none ${
+                searchParams.get("active") === "recordedSessions"
+                  ? "text-blue-shade-200 font-semibold border-b-2 border-blue-shade-200"
+                  : "border-transparent"
+              }`}
+              // onClick={() => router.push(path + "?active=recordedSessions")}
+              onClick={() => toast("Coming Soon 🚀")}
+            >
+              Recorded Sessions
+            </button>
+            <button
+              className={`py-4 px-2 outline-none ${
+                searchParams.get("active") === "followers"
+                  ? "text-blue-shade-200 font-semibold border-b-2 border-blue-shade-200"
+                  : "border-transparent"
+              }`}
+              // onClick={() => router.push(path + "?active=followers")}
+              onClick={() => toast("Coming Soon 🚀")}
+            >
+              Followers
+            </button>
+            <button
+              className={`py-4 px-2 outline-none ${
+                searchParams.get("active") === "attestations"
+                  ? "text-blue-shade-200 font-semibold border-b-2 border-blue-shade-200"
+                  : "border-transparent"
+              }`}
+              onClick={() => router.push(path + "?active=attestations")}
+            >
+              Attestations
+            </button>
+            <button
+              className={`py-4 px-2 outline-none ${
+                searchParams.get("active") === "proposalVote"
+                  ? "text-blue-shade-200 font-semibold border-b-2 border-blue-shade-200"
+                  : "border-transparent"
+              }`}
+              onClick={() => router.push(path + "?active=proposalVote")}
+            >
+              ProposalVote
+            </button>
+          </div>
+          <div className="ml-auto pe-16">
+            <button
+              className="my-4 py-2 px-4 border w-52 border-blue-shade-100 text-blue-shade-100 rounded-xl flex items-center shadow-md hover:bg-blue-shade-100 hover:text-white transition duration-300 ease-in-out font-bold"
+              onClick={handleMarkAllAsRead}
+              disabled={markAllReadCalling}
+            >
+              <PiEnvelopeOpen className="h-5 w-5 mr-2" />
+              {buttonText}
+            </button>
+          </div>
         </div>
-        <div className="ml-auto pe-16">
-          <button
-            className="my-4 py-2 px-4 border w-52 border-blue-shade-100 text-blue-shade-100 rounded-xl flex items-center shadow-md hover:bg-blue-shade-100 hover:text-white transition duration-300 ease-in-out font-bold"
-            onClick={handleMarkAllAsRead}
-            disabled={markAllReadCalling}
-          >
-            <PiEnvelopeOpen className="h-5 w-5 mr-2" />
-            {buttonText}
-          </button>
-        </div>
+        <div className="flex flex-col pt-7 pl-10 pr-16">{renderContent()}</div>
       </div>
-      <div className="flex flex-col pt-7 pl-10 pr-16">{renderContent()}</div>
-    </div>
     </>
   );
 }
