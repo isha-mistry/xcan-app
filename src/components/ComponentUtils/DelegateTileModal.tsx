@@ -207,9 +207,10 @@ function DelegateTileModal({
                   CPI if you delegate
                 </span>
                 <div
-                  className={`${
-                    tempCpi <= actualCpi ? "text-[#1c8e1c]" : "text-red-600"
-                  } text-lg font-semibold bg-white px-3 py-1 rounded-lg`}
+                className={`${
+                  Number(tempCpi?.toFixed(2)) <= Number(actualCpi?.toFixed(2)) ? "text-[#1c8e1c]" : "text-red-600"
+                } text-lg font-semibold bg-white px-3 py-1 rounded-lg`}
+                
                 >
                   {!tempCpiCalling && tempCpi ? (
                     Number(tempCpi).toFixed(2)
