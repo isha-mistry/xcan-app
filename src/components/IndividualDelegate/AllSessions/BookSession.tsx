@@ -25,15 +25,11 @@ import AddEmailModal from "@/components/ComponentUtils/AddEmailModal";
 import { RxCross2 } from "react-icons/rx";
 import { MdCancel } from "react-icons/md";
 import { useRouter } from "next-nprogress-bar";
+import { fetchApi } from "@/utils/api";
 interface Type {
   daoDelegates: string;
   individualDelegate: string;
 }
-const StyledTimePickerContainer = styled.div`
-  div > ul {
-    height: 400px;
-  }
-`;
 
 function BookSession({ props }: { props: Type }) {
   const router = useRouter();
@@ -71,6 +67,29 @@ function BookSession({ props }: { props: Type }) {
   const [continueAPICalling, setContinueAPICalling] = useState<Boolean>(false);
   const [userRejected, setUserRejected] = useState<Boolean>();
   const [addingEmail, setAddingEmail] = useState<boolean>();
+
+  const styles = `
+  .calendar-container > div > ul {
+    height: auto;
+    min-height: 300px;
+    max-height: 400px;
+    overflow-y: auto;
+  }
+
+  @media (max-width: 640px) {
+    .calendar-container > div > ul {
+      min-height: 250px;
+      max-height: 350px;
+    }
+  }
+
+  @media (max-width: 380px) {
+    .calendar-container > div > ul {
+      min-height: 200px;
+      max-height: 300px;
+    }
+  }
+`;
 
   useEffect(() => {
     if (isOpen) {
@@ -118,8 +137,8 @@ function BookSession({ props }: { props: Type }) {
 
   const getSlotTimeAvailability = async () => {
     try {
-      const response = await fetch(
-        `/api/get-meeting/${host_address}?dao_name=${daoName}`,
+      const response = await fetchApi(
+        `/get-meeting/${host_address}?dao_name=${daoName}`,
         {
           method: "GET",
           headers: {
@@ -207,11 +226,10 @@ function BookSession({ props }: { props: Type }) {
 
   const checkUser = async () => {
     try {
-      const myHeaders = new Headers();
-      myHeaders.append("Content-Type", "application/json");
-      if (address) {
-        myHeaders.append("x-wallet-address", address);
-      }
+      const myHeaders: HeadersInit = {
+        "Content-Type": "application/json",
+        ...(address && { "x-wallet-address": address }),
+      };
 
       const raw = JSON.stringify({
         address: address,
@@ -223,7 +241,7 @@ function BookSession({ props }: { props: Type }) {
         body: raw,
         redirect: "follow",
       };
-      const response = await fetch(`/api/profile/${address}`, requestOptions);
+      const response = await fetchApi(`/profile/${address}`, requestOptions);
       const result = await response.json();
       if (Array.isArray(result.data) && result.data.length > 0) {
         for (const item of result.data) {
@@ -308,11 +326,10 @@ function BookSession({ props }: { props: Type }) {
       host_joined_status: "Pending",
     };
 
-    const myHeaders = new Headers();
-    myHeaders.append("Content-Type", "application/json");
-    if (address) {
-      myHeaders.append("x-wallet-address", address);
-    }
+    const myHeaders: HeadersInit = {
+      "Content-Type": "application/json",
+      ...(address && { "x-wallet-address": address }),
+    };
 
     const requestOptions: any = {
       method: "POST",
@@ -323,7 +340,7 @@ function BookSession({ props }: { props: Type }) {
 
     try {
       setConfirmSave(true);
-      const response = await fetch("/api/book-slot", requestOptions);
+      const response = await fetchApi("/book-slot", requestOptions);
       const result = await response.json();
       if (result.success) {
         setIsScheduled(true);
@@ -464,11 +481,10 @@ function BookSession({ props }: { props: Type }) {
         if (isValidEmail) {
           try {
             setAddingEmail(true);
-            const myHeaders = new Headers();
-            myHeaders.append("Content-Type", "application/json");
-            if (address) {
-              myHeaders.append("x-wallet-address", address);
-            }
+            const myHeaders: HeadersInit = {
+              "Content-Type": "application/json",
+              ...(address && { "x-wallet-address": address }),
+            };
 
             const raw = JSON.stringify({
               address: address,
@@ -482,7 +498,7 @@ function BookSession({ props }: { props: Type }) {
               redirect: "follow",
             };
 
-            const response = await fetch("/api/profile", requestOptions);
+            const response = await fetchApi("/profile", requestOptions);
             const result = await response.json();
             if (result.success) {
               setContinueAPICalling(true);
@@ -526,17 +542,9 @@ function BookSession({ props }: { props: Type }) {
           />
         </div>
       ) : (
-        <div className="flex justify-center">
-          <div
-            className="rounded-2xl"
-            style={{
-              margin: "0 auto",
-              marginTop: "2rem",
-              boxShadow: "0px 4px 50.8px 0px rgba(0, 0, 0, 0.11)",
-              width: "fit-content",
-            }}
-          >
-            <StyledTimePickerContainer>
+        <div className="flex justify-center w-full px-4 sm:px-6 md:px-8">
+          <div className="w-full max-w-md mx-auto mt-8 rounded-2xl shadow-lg bg-white">
+            <div className="calendar-container">
               <DayTimeScheduler
                 allowedDates={allowedDates}
                 timeSlotSizeMinutes={timeSlotSizeMinutes}
@@ -548,7 +556,7 @@ function BookSession({ props }: { props: Type }) {
                   timeSlotValidator(slotTime, dateAndRanges, bookedSlots)
                 }
               />
-            </StyledTimePickerContainer>
+            </div>
           </div>
         </div>
       )}
@@ -558,27 +566,31 @@ function BookSession({ props }: { props: Type }) {
           className="font-poppins z-[70] fixed inset-0 flex items-center justify-center backdrop-blur-md"
           style={{ boxShadow: " 0px 0px 45px -17px rgba(0,0,0,0.75)" }}
         >
-          <div className="bg-white rounded-[41px] overflow-hidden shadow-lg w-1/2">
+          <div className="bg-white rounded-[41px] overflow-hidden shadow-lg w-full max-w-lg mx-4">
             <div className="relative">
               <div className="flex flex-col gap-1 text-white bg-[#292929] p-4 py-7">
-                <h2 className="text-lg font-semibold mx-4">
-                  Book your slot for{" "}
-                  {props.daoDelegates.charAt(0).toUpperCase() +
-                    props.daoDelegates.slice(1)}
+                <div className="flex items-center justify-between mx-4">
+                  <h2 className="text-base sm:text-lg font-semibold pr-8 break-words">
+                    Book your slot for{" "}
+                    {props.daoDelegates.charAt(0).toUpperCase() +
+                      props.daoDelegates.slice(1)}
+                  </h2>
                   <button
-                    className="absolute right-7"
+                    className="flex-shrink-0"
                     onClick={() => {
                       onClose();
                       setIsScheduling(false);
                     }}
                   >
-                    <MdCancel size={28} color="white" />
+                    <MdCancel className="w-6 h-6 sm:w-7 sm:h-7" />
                   </button>
-                </h2>
+                </div>
               </div>
-              <div className="px-8 py-4">
+              <div className="px-4 sm:px-8 py-4">
                 <div className="mt-4">
-                  <label className="block mb-2 font-semibold">Title:</label>
+                  <label className="block mb-2 font-semibold text-sm sm:text-base">
+                    Title:
+                  </label>
                   <input
                     disabled={confirmSave}
                     type="text"
@@ -586,12 +598,12 @@ function BookSession({ props }: { props: Type }) {
                     value={modalData.title}
                     onChange={handleModalInputChange}
                     placeholder="Explain Governance"
-                    className="w-full px-4 py-2 border rounded-xl bg-[#D9D9D945]"
+                    className="w-full px-3 sm:px-4 text-sm sm:text-base py-2 border rounded-xl bg-[#D9D9D945]"
                     required
                   />
                 </div>
                 <div className="mt-4">
-                  <label className="block mb-2 font-semibold">
+                  <label className="block mb-2 font-semibold text-sm sm:text-base">
                     Description:
                   </label>
                   <textarea
@@ -600,42 +612,42 @@ function BookSession({ props }: { props: Type }) {
                     value={modalData.description}
                     onChange={handleModalInputChange}
                     placeholder="Please share anything that will help prepare for our meeting."
-                    className="w-full px-4 py-2 border rounded-xl bg-[#D9D9D945]"
+                    className="w-full px-3 sm:px-4 py-2 border rounded-xl bg-[#D9D9D945] min-h-[100px] text-sm sm:text-base"
                     required
                   />
                 </div>
 
                 {showGetMailModal && (
-                  <div className="mt-4 border rounded-xl p-4 relative">
+                  <div className="mt-4 border rounded-xl p-3 sm:p-4 relative">
                     <button
-                      className="absolute top-2 right-3"
+                      className="absolute top-2 right-2 sm:top-3 sm:right-3"
                       onClick={handleGetMailModalClose}
                       disabled={addingEmail}
                     >
-                      <MdCancel size={25} />
+                      <MdCancel className="w-5 h-5 sm:w-6 sm:h-6" />
                     </button>
-                    <h2 className="text-blue-shade-200 font-semibold text-base">
+                    <h2 className="text-blue-shade-200 font-semibold text-sm sm:text-base pr-8">
                       Get Notified About Your Session Request
                     </h2>
-                    <p className="text-gray-500 text-sm">
+                    <p className="text-gray-500 text-xs sm:text-sm mt-2">
                       Add your email address to get notified when the delegate
                       approves or rejects your session request.
                     </p>
-                    <div className="mt-2 flex rounded-3xl p-2 bg-[#D9D9D945]">
+                    <div className="mt-3 sm:mt-4 flex flex-col sm:flex-row gap-2">
                       <input
                         type="text"
                         value={mailId || ""}
                         placeholder="Enter email address"
                         onChange={(e) => handleEmailChange(e.target.value)}
-                        className="flex-1 px-4 py-2 rounded-3xl bg-transparent mr-1"
+                        className="flex-1 px-4 py-2 rounded-3xl bg-[#D9D9D945] text-sm sm:text-base"
                       />
                       <button
                         onClick={handleSubmit}
-                        className="bg-black text-white px-8 py-3 rounded-3xl hover:bg-gray-900"
+                        className="w-full sm:w-auto bg-black text-white px-6 sm:px-8 py-2 sm:py-3 rounded-3xl hover:bg-gray-900 text-sm sm:text-base"
                         disabled={addingEmail}
                       >
                         {addingEmail ? (
-                          <div className="flex items-center justify-center px-3 py-[0.15rem]">
+                          <div className="flex items-center justify-center ">
                             <ThreeDots
                               visible={true}
                               height="20"
@@ -659,17 +671,14 @@ function BookSession({ props }: { props: Type }) {
                   </div>
                 )}
               </div>
-              <div className="flex justify-center px-8 py-4 ">
-                {/* <button className="text-gray-600" onClick={onClose}>
-                Cancel
-              </button> */}
+              <div className="flex justify-center px-4 sm:px-8 py-4">
                 <button
-                  className="bg-blue-shade-200 text-white px-8 py-3 font-semibold rounded-full"
+                  className="bg-blue-shade-200 text-white px-6 sm:px-8 py-2 sm:py-3 font-semibold rounded-full text-sm sm:text-base w-full sm:w-auto"
                   onClick={checkBeforeApiCall}
                   disabled={confirmSave}
                 >
                   {confirmSave ? (
-                    <div className="flex items-center">
+                    <div className="flex items-center justify-center">
                       <Oval
                         visible={true}
                         height="20"
@@ -680,7 +689,7 @@ function BookSession({ props }: { props: Type }) {
                       />
                     </div>
                   ) : (
-                    <>Save</>
+                    "Save"
                   )}
                 </button>
               </div>

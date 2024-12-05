@@ -361,7 +361,7 @@ function ProposalVoted({ daoName, address }: any) {
                   key={index}
                   className={`flex flex-col xm:flex-row justify-between border border-[#7C7C7C] text-sm px-3 py-2 rounded-lg items-end xm:items-center my-3 `}
                 >
-                  <div className="w-full xm:w-3/5 break-words">
+                  <div className="w-full xm:w-[56%] break-words">
                     <div className={`${openDesc[index] ? "" : styles.desc}`}>
                       {filterDescription(proposal.proposal.description)}
                     </div>

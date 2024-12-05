@@ -5,6 +5,7 @@ import { RxCross2 } from "react-icons/rx";
 import { v4 as uuidv4 } from "uuid";
 import { useAccount } from "wagmi";
 import { Toaster, toast } from "react-hot-toast";
+import { fetchApi } from "@/utils/api";
 
 function ReportAdditionalDetailsModal({
   data,
@@ -40,11 +41,10 @@ function ReportAdditionalDetailsModal({
     video_reports: any
   ) => {
     setIsLoading(true);
-    const myHeaders = new Headers();
-    myHeaders.append("Content-Type", "application/json");
-    if (address) {
-      myHeaders.append("x-wallet-address", address);
-    }
+    const myHeaders: HeadersInit = {
+      "Content-Type": "application/json",
+      ...(address && { "x-wallet-address": address }),
+    };
     const requestOptions = {
       method: "POST",
       headers: myHeaders,
@@ -56,7 +56,7 @@ function ReportAdditionalDetailsModal({
     };
 
     try {
-      const response = await fetch("/api/report-session", requestOptions);
+      const response = await fetchApi("/report-session", requestOptions);
       const data = await response.json();
 
       return data;

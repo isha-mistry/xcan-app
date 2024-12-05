@@ -20,6 +20,7 @@ import { Oval } from "react-loader-spinner";
 import toast, { Toaster } from "react-hot-toast";
 import SessionTileSkeletonLoader from "@/components/SkeletonLoader/SessionTileSkeletonLoader";
 import { headers } from "next/headers";
+import { fetchApi } from "@/utils/api";
 
 interface SessionDetail {
   img: any;
@@ -54,7 +55,7 @@ function UserUpcomingHours() {
   };
 
   useEffect(() => {
-    fetch(`/api/update-office-hours/${address}`)
+    fetchApi(`/update-office-hours/${address}`)
       .then((response) => response.json()) // Parse response JSON
       .then((data: any[]) => {
         const mappedData: SessionDetail[] = data.map((item) => ({
@@ -100,7 +101,7 @@ function UserUpcomingHours() {
     updateOfficeHours(updatedFormData)
       .then(() => {
         // Update frontend data
-        fetch(`/api/update-office-hours/${address}`)
+        fetchApi(`/update-office-hours/${address}`)
           .then((response) => response.json())
           .then((data: any[]) => {
             const mappedData: SessionDetail[] = data.map((item) => ({
@@ -133,11 +134,10 @@ function UserUpcomingHours() {
   };
 
   const updateOfficeHours = (data: any) => {
-    const myHeaders = new Headers();
-    myHeaders.append("Content-Type", "application/json");
-    if (address) {
-      myHeaders.append("x-wallet-address", address);
-    }
+    const myHeaders: HeadersInit = {
+      "Content-Type": "application/json",
+      ...(address && { "x-wallet-address": address }),
+    };
 
     const raw = JSON.stringify({
       office_hours_slot: data.officeHoursSlot,
@@ -150,7 +150,7 @@ function UserUpcomingHours() {
       headers: myHeaders,
       body: raw,
     };
-    return fetch(`/api/edit-office-hours/${address}`, requestOptions)
+    return fetchApi(`/edit-office-hours/${address}`, requestOptions)
       .then((response) => response.text())
       .then((result) => console.log(result))
       .catch((error) => console.log("error", error));
@@ -158,16 +158,15 @@ function UserUpcomingHours() {
 
   const handleDelete = (index: number) => {
     const session = sessionDetails[index];
-    const myHeaders = new Headers();
-    myHeaders.append("Content-Type", "application/json");
-    if (address) {
-      myHeaders.append("x-wallet-address", address);
-    }
+    const myHeaders: HeadersInit = {
+      "Content-Type": "application/json",
+      ...(address && { "x-wallet-address": address }),
+    };
     const requestOptions = {
       method: "DELETE",
       headers: myHeaders,
     };
-    fetch(`/api/edit-office-hours/${address}`, requestOptions)
+    fetchApi(`/edit-office-hours/${address}`, requestOptions)
       .then((response) => response.text())
       .then((result) => {
         console.log(result);

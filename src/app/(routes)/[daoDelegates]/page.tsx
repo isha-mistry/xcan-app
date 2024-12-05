@@ -3,12 +3,13 @@ import PageNotFound from "@/components/PageNotFound/PageNotFound";
 import React from "react";
 import type { Metadata, ResolvingMetadata } from "next";
 import { DEFAULT_METADATA } from "@/utils/metadataUtils";
+import { ApiDataProvider } from "@/contexts/ApiDataContext";
 
 const metadataConfig: any = {
   optimism: {
-    title: "Optimism DAO",
+    title: "Optimism Collective",
     description:
-      "Explore Optimism DAO's delegates list on Chora Club. Connect with experienced Web3 delegates on the Optimism network, book sessions, and grow your knowledge in the decentralized ecosystem.",
+      "Explore Optimism Collective's delegates list on Chora Club. Connect with experienced Web3 delegates on the Optimism network, book sessions, and grow your knowledge in the decentralized ecosystem.",
     image:
       "https://gateway.lighthouse.storage/ipfs/QmcgZPNuhxxfxgrB78cLb4nYCJhYpSPFsJKvj3Z5AY5kKe",
   },

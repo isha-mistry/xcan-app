@@ -69,12 +69,6 @@ export async function PUT(req: NextRequest) {
   try {
     const { delegate_address, follower_address, dao } = await req.json();
 
-    console.log("Received follower details:", {
-      delegate_address,
-      follower_address,
-      dao,
-    });
-
     // console.log("Connecting to MongoDB...");
     const client = await connectDB();
     // console.log("Connected to MongoDB");
@@ -207,7 +201,7 @@ export async function PUT(req: NextRequest) {
           );
 
           if (existingFollowingIndex !== -1) {
-            console.log("Updating existing following for DAO");
+            // console.log("Updating existing following for DAO");
             const updateQuery = {
               $set: {
                 [`followings.${existingDaoIndex}.following.${existingFollowingIndex}.isFollowing`]:
@@ -285,7 +279,7 @@ export async function PUT(req: NextRequest) {
         await collection.updateOne({ address: document.address }, updateQuery);
       }
     } else {
-      console.log("Creating new document with address and following");
+      // console.log("Creating new document with address and following");
       const newDocument = {
         address: follower_address,
         followings: [
@@ -306,7 +300,7 @@ export async function PUT(req: NextRequest) {
     }
 
     await client.close();
-    console.log("MongoDB connection closed");
+    // console.log("MongoDB connection closed");
 
     return NextResponse.json(
       {
@@ -320,6 +314,44 @@ export async function PUT(req: NextRequest) {
     console.error("Error updating delegate:", error);
     return NextResponse.json(
       { error: "Internal Server Error" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function GET(req: Request) {
+  try {
+    const client = await connectDB();
+    const db = client.db();
+    const collection = db.collection("delegate_follow");
+
+    // Extract the address from query params
+    const url = new URL(req.url);
+    const address = url.searchParams.get("address");
+
+    if (!address) {
+      return NextResponse.json(
+        { success: false, error: "Address is required" },
+        { status: 400 }
+      );
+    }
+
+    const documents = await collection
+      .find({
+        address: { $regex: `^${address}$`, $options: "i" },
+      })
+      .toArray();
+
+    client.close();
+
+    return NextResponse.json(
+      { success: true, data: documents },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error("Error retrieving data in profile:", error);
+    return NextResponse.json(
+      { success: false, error: "Internal Server Error" },
       { status: 500 }
     );
   }

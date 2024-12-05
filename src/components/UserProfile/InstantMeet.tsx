@@ -27,6 +27,9 @@ import screenImghover from "@/assets/images/instant-meet/screenImghover.svg";
 import chatImg from "@/assets/images/instant-meet/chat.png";
 import chatImghover from "@/assets/images/instant-meet/chatImghover.svg";
 import heroImg from "@/assets/images/instant-meet/instant-meet-hero.svg";
+import { MEETING_BASE_URL } from "@/config/constants";
+import { redirectionInNewTab } from "@/utils/meetingUtils";
+import { fetchApi } from "@/utils/api";
 
 interface instantMeetProps {
   isDelegate: boolean;
@@ -99,11 +102,10 @@ function InstantMeet({ isDelegate, selfDelegate, daoName }: instantMeetProps) {
 
     console.log("requestData", requestData);
 
-    const myHeaders = new Headers();
-    myHeaders.append("Content-Type", "application/json");
-    if (address) {
-      myHeaders.append("x-wallet-address", address);
-    }
+    const myHeaders: HeadersInit = {
+      "Content-Type": "application/json",
+      ...(address && { "x-wallet-address": address }),
+    };
 
     const requestOptions: any = {
       method: "POST",
@@ -114,14 +116,24 @@ function InstantMeet({ isDelegate, selfDelegate, daoName }: instantMeetProps) {
 
     try {
       // console.log("calling.......");
-      const response = await fetch("/api/book-slot", requestOptions);
+      const response = await fetchApi("/book-slot", requestOptions);
       const result = await response.json();
       console.log("result:", result);
       if (result.success) {
         // setIsScheduled(true);
         setConfirmSave(false);
-        router.push(`/meeting/session/${roomId}/lobby`);
+
+        // if (roomId) {
+        //   redirectionInNewTab(
+        //     `${MEETING_BASE_URL}/meeting/session/${roomId}/lobby`
+        //   );
+        // }
+
+        router.push(`${MEETING_BASE_URL}/meeting/session/${roomId}/lobby`);
         onClose();
+      }
+      if (result.error) {
+        setConfirmSave(false);
       }
     } catch (error) {
       setConfirmSave(false);

@@ -51,6 +51,8 @@ function FollowingModal({
   const [activeButton, setActiveButton] = useState("");
   const router = useRouter();
   const [isButtonLoading, setIsButtonLoading] = useState(false);
+  const [tooltipContent, setTooltipContent] = useState('Copy');
+  const [animatingAddresses, setAnimatingAddresses] = useState<{ [key: string]: boolean }>({});
 
   const handleChainChange = async (chain: string) => {
     setActiveButton(chain);
@@ -62,9 +64,14 @@ function FollowingModal({
 
   const handleCopy = (addr: string) => {
     copy(addr);
-    toast("Address Copied");
-    // console.log("user followings", userFollowings)
-    // console.log("chain name",chainName)
+    setTooltipContent('Copied');
+    // Set animation state for specific address
+    setAnimatingAddresses(prev => ({ ...prev, [addr]: true }));
+
+    setTimeout(() => {
+      setTooltipContent('Copy');
+      setAnimatingAddresses(prev => ({ ...prev, [addr]: false }));
+    }, 4000);
   };
 
   const handleRedirect = (address: string) => {
@@ -161,7 +168,7 @@ function FollowingModal({
             >
               <div className="flex ml-7 xm:ml-10 mt-5 gap-3 xm:gap-5 ">
                 <button
-                  className={`border border-[#CCCCCC] px-2 xm:px-4 py-1 rounded-lg text-base xm:text-lg flex w-[125px] xm:w-[141px] items-center justify-center gap-1.5 ${
+                  className={`border border-[#CCCCCC] px-2 xm:px-4 py-1 rounded-lg text-base xm:text-lg flex w-[190px] xm:w-[223px] items-center justify-center gap-1.5 ${
                     activeButton === "optimism"
                       ? "bg-[#8E8E8E] text-white"
                       : "bg-[#F5F5F5] text-[#3E3D3D]"
@@ -174,7 +181,7 @@ function FollowingModal({
                   ) : (
                     <>
                       <Image src={oplogo} alt="optimism" width={23} />
-                      Optimism
+                      Optimism Collective
                     </>
                   )}
                 </button>
@@ -233,7 +240,7 @@ function FollowingModal({
                                   user.follower_address.slice(-4)}
                             </div>
                             <IoCopy
-                              className="size-3 xs:size-4 hover:text-blue-shade-100 cursor-pointer"
+                              className={`${animatingAddresses[user.follower_address] ? 'text-blue-500' : 'text-gray-400 hover:text-gray-600'} size-3 xs:size-4 hover:text-blue-shade-100 cursor-pointer`}
                               onClick={(event) => {
                                 event.stopPropagation();
                                 handleCopy(`${user.follower_address}`);

@@ -11,6 +11,7 @@ import {
 import styles from "./DelegateInfo.module.css";
 import { marked } from "marked";
 import { useAccount } from "wagmi";
+import { fetchApi } from "@/utils/api";
 
 interface Type {
   daoDelegates: string;
@@ -67,8 +68,8 @@ function DelegateInfo({ props, desc }: { props: Type; desc: string }) {
 
     const sessionHosted = async () => {
       try {
-        const response = await fetch(
-          `/api/get-meeting/${props.individualDelegate}?dao_name=${props.daoDelegates}`,
+        const response = await fetchApi(
+          `/get-meeting/${props.individualDelegate}?dao_name=${props.daoDelegates}`,
           {
             method: "GET",
             headers: {
@@ -94,18 +95,18 @@ function DelegateInfo({ props, desc }: { props: Type; desc: string }) {
         }
       } catch (e) {
         console.log("Error: ", e);
+        setSessionHostedLoading(false);
       }
     };
 
     const sessionAttended = async () => {
       try {
-        const myHeaders = new Headers();
-        myHeaders.append("Content-Type", "application/json");
-        if (address) {
-          myHeaders.append("x-wallet-address", address);
-        }
-        const response = await fetch(
-          `/api/get-session-data/${props.individualDelegate}`,
+        const myHeaders: HeadersInit = {
+          "Content-Type": "application/json",
+          ...(address && { "x-wallet-address": address }),
+        };
+        const response = await fetchApi(
+          `/get-session-data/${props.individualDelegate}`,
           {
             method: "POST",
             headers: myHeaders,
@@ -132,17 +133,17 @@ function DelegateInfo({ props, desc }: { props: Type; desc: string }) {
         }
       } catch (e) {
         console.log("Error: ", e);
+        setSessionAttendedLoading(false);
       }
     };
 
     const officeHoursHosted = async () => {
       try {
-        const myHeaders = new Headers();
-        myHeaders.append("Content-Type", "application/json");
-        if (address) {
-          myHeaders.append("x-wallet-address", address);
-        }
-        const response = await fetch(`/api/get-officehours-address`, {
+        const myHeaders: HeadersInit = {
+          "Content-Type": "application/json",
+          ...(address && { "x-wallet-address": address }),
+        };
+        const response = await fetchApi(`/get-officehours-address`, {
           method: "POST",
           headers: myHeaders,
           body: JSON.stringify({
@@ -169,17 +170,17 @@ function DelegateInfo({ props, desc }: { props: Type; desc: string }) {
         }
       } catch (e) {
         console.log("Error: ", e);
+        setOfficeHoursHostedLoading(false);
       }
     };
 
     const officeHoursAttended = async () => {
       try {
-        const myHeaders = new Headers();
-        myHeaders.append("Content-Type", "application/json");
-        if (address) {
-          myHeaders.append("x-wallet-address", address);
-        }
-        const response = await fetch(`/api/get-attendee-individual`, {
+        const myHeaders: HeadersInit = {
+          "Content-Type": "application/json",
+          ...(address && { "x-wallet-address": address }),
+        };
+        const response = await fetchApi(`/get-attendee-individual`, {
           method: "POST",
           headers: myHeaders,
           body: JSON.stringify({
@@ -206,6 +207,7 @@ function DelegateInfo({ props, desc }: { props: Type; desc: string }) {
         }
       } catch (e) {
         console.log("Error: ", e);
+        setOfficeHoursAttendedLoading(false);
       }
     };
 
@@ -331,8 +333,8 @@ function DelegateInfo({ props, desc }: { props: Type; desc: string }) {
   console.log("desc from db: ", desc);
 
   return (
-    <div>
-      <div className="flex w-fit gap-16 border-1 border-[#7C7C7C] px-6 rounded-xl text-sm mb-6">
+    <div className="pt-4">
+      <div className="flex w-fit gap-16 border-1 border-[#7C7C7C] px-6 rounded-xl text-sm mb-6 mx-4 xs:mx-0 sm:mx-4 md:mx-16 lg:mx-0">
         <button
           className={`py-2 ${
             activeButton === "onchain"
@@ -354,12 +356,12 @@ function DelegateInfo({ props, desc }: { props: Type; desc: string }) {
           Offchain
         </button>
       </div>
-      <div className="grid grid-cols-4 pe-32 gap-10">
+      <div className="grid xs:grid-cols-2 lg:grid-cols-4 gap-2 md:gap-5 mx-4 xs:mx-0 sm:mx-4 md:mx-16 lg:mx-0">
         {details.length > 0 ? (
           details.map((key, index) => (
             <div
               key={index}
-              className="bg-[#3E3D3D] text-white rounded-2xl px-3 py-5 cursor-pointer"
+              className="bg-[#3E3D3D] text-white rounded-2xl px-3 py-7 cursor-pointer"
               onClick={() => router.push(`${key.ref}`)}
             >
               <div className="font-semibold text-3xl text-center pb-2">
@@ -389,7 +391,7 @@ function DelegateInfo({ props, desc }: { props: Type; desc: string }) {
 
       <div
         style={{ boxShadow: "0px 4px 30.9px 0px rgba(0, 0, 0, 0.12)" }}
-        className={`rounded-xl my-7 me-32 py-6 px-7 text-sm ${
+        className={`rounded-xl my-7 py-6 px-7 text-sm ${
           desc && loadingKarma && loadingOpAgora ? "" : "min-h-52"
         }`}
       >
@@ -413,7 +415,7 @@ function DelegateInfo({ props, desc }: { props: Type; desc: string }) {
         ) : convertedDescription ? (
           <div
             dangerouslySetInnerHTML={{ __html: convertedDescription }}
-            className={`${styles.delegateStatement} rounded-xl me-32 py-6 px-7 text-sm`}
+            className={`${styles.delegateStatement} rounded-xl py-6 text-sm`}
           />
         ) : (
           <div className="font-semibold text-base flex justify-center items-center mt-7">

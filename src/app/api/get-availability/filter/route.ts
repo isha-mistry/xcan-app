@@ -22,13 +22,6 @@ export async function POST(req: NextRequest, res: NextResponse<Type[]>) {
   try {
     const { dao_name, date, startTime, endTime } = await req.json();
 
-    console.log("Initial Data start=========");
-    console.log("dao_name", dao_name);
-    console.log("date", date);
-    console.log("startTime", startTime);
-    console.log("endTime", endTime);
-    console.log("Initial Data end=========");
-
     const client = await connectDB();
 
     const db = client.db();
@@ -46,7 +39,7 @@ export async function POST(req: NextRequest, res: NextResponse<Type[]>) {
       const day = String(currentDate.getDate()).padStart(2, "0");
       newDate = `${year}-${month}-${day}`;
     }
-    console.log("currentDate", newDate);
+    // console.log("currentDate", newDate);
     const startDateTime = startTime
       ? DateTime.fromFormat(
           `${date ? date : newDate} ${startTime}:00`,
@@ -72,14 +65,8 @@ export async function POST(req: NextRequest, res: NextResponse<Type[]>) {
 
     // Check if utcStartDateTime and utcEndDateTime are not null before further processing
     if (utcStartDateTime && utcEndDateTime) {
-      console.log("startDateTime", utcStartDateTime);
-      console.log("endDateTime", utcEndDateTime);
-
       startTimeToSend = utcStartDateTime.split("T")[1].substring(0, 5);
       endTimeToSend = utcEndDateTime.split("T")[1].substring(0, 5);
-
-      console.log("startTimeToSend", startTimeToSend);
-      console.log("endTimeToSend", endTimeToSend);
     }
 
     let query: any = {
@@ -91,7 +78,6 @@ export async function POST(req: NextRequest, res: NextResponse<Type[]>) {
 
     const sessionData = await collection.find(query).toArray();
 
-    console.log("SessionData", sessionData);
 
     sessionData.forEach((session: any) => {
       session.dateAndRanges = session.dateAndRanges.filter((dateRange: any) => {
@@ -104,14 +90,10 @@ export async function POST(req: NextRequest, res: NextResponse<Type[]>) {
       (session) => session.dateAndRanges.length > 0
     );
 
-    console.log("finalSessionData", finalSessionData);
-
     // If both startTime and endTime are provided, apply additional filtering
     if (startTime !== null && endTime !== null) {
-      console.log("when both startTime and endTime is given");
       finalSessionData = finalSessionData.filter((session) => {
         return session.dateAndRanges.some((dateRange: any) => {
-          // console.log(new Date(dateRange.date) >= new Date(newDate));
           return (
             new Date(dateRange.date) >= new Date(date ? date : newDate) &&
             dateRange.utcTime_startTime <= endTime! &&
@@ -122,10 +104,8 @@ export async function POST(req: NextRequest, res: NextResponse<Type[]>) {
     }
 
     if (startTime !== null && endTime === null) {
-      console.log("when only startTime is given");
       finalSessionData = finalSessionData.filter((session) => {
         return session.dateAndRanges.some((dateRange: any) => {
-          // console.log(new Date(dateRange.date) >= new Date(newDate));
           return (
             new Date(dateRange.date) >= new Date(date ? date : newDate) &&
             dateRange.utcTime_startTime <= startTime! &&
@@ -135,10 +115,8 @@ export async function POST(req: NextRequest, res: NextResponse<Type[]>) {
       });
     }
     if (startTime === null && endTime !== null) {
-      console.log("when only endTime is given");
       finalSessionData = finalSessionData.filter((session) => {
         return session.dateAndRanges.some((dateRange: any) => {
-          // console.log(new Date(dateRange.date) >= new Date(newDate));
           return (
             new Date(dateRange.date) >= new Date(date ? date : newDate) &&
             dateRange.utcTime_startTime <= endTime! &&
@@ -147,8 +125,6 @@ export async function POST(req: NextRequest, res: NextResponse<Type[]>) {
         });
       });
     }
-
-    console.log("finalSessionData", finalSessionData);
 
     // Iterate through each meeting document
     const mergedData = await Promise.all(
@@ -160,7 +136,6 @@ export async function POST(req: NextRequest, res: NextResponse<Type[]>) {
         const userInfo = await delegatesCollection
           .find({
             address: userAddress,
-            // daoName: dao_name,
           })
           .toArray();
 

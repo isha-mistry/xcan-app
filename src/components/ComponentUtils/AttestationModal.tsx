@@ -74,8 +74,10 @@ function AttestationModal({
 
   const storeUserFeedback = async () => {
     try {
-      const myHeaders = new Headers();
-      myHeaders.append("Content-Type", "application/json");
+      const myHeaders: HeadersInit = {
+        "Content-Type": "application/json",
+        ...(address && { "x-wallet-address": address }),
+      };
 
       const raw = JSON.stringify({
         address: hostAddress,
@@ -87,10 +89,6 @@ function AttestationModal({
           ratings: rating,
         },
       });
-
-      if (address) {
-        myHeaders.append("x-wallet-address", address);
-      }
 
       const requestOptions: any = {
         method: "POST",

@@ -131,8 +131,8 @@ function WatchSession({
           <div className="text-lg font-semibold pb-3">
             {sessionDetails.title || data.title}
           </div>
-          <div className="flex justify-between text-sm pe-4 pb-4">
-            <div className="flex gap-6">
+          <div className="flex flex-col 2sm:flex-row justify-between text-[9px] 0.5xs:text-xs lg:text-base 1.5lg:text-sm 1.5xl:text-base pb-4">
+            <div className="flex gap-4">
               <div className="flex items-center gap-2 ">
                 <div
                   className="flex gap-2 cursor-pointer"
@@ -271,7 +271,7 @@ function WatchSession({
               </div>
             </div>
 
-            <div className="flex gap-6">
+            <div className="flex gap-[10px]">
               <div className="flex items-center gap-1">
                 <IoMdEye size={20} />
                 <div className="text-[#1E1E1E]">
