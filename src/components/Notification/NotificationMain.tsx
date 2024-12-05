@@ -5,6 +5,7 @@ import { useRouter } from "next-nprogress-bar";
 import NotificationAll from "./NotificationAll";
 import SessionBookings from "./SessionBookings";
 import RecordedSessions from "./RecordedSessions";
+import ProposalVote from "./ProposalVote";
 import Followers from "./Followers";
 import Attestation from "./Attestation";
 import ConnectWalletWithENS from "../ConnectWallet/ConnectWalletWithENS";
@@ -223,6 +224,7 @@ function NotificationMain() {
       recordedSessions: "recordedSession",
       followers: "newFollower",
       attestations: "attestation",
+      proposalVote: "proposalVote",
     };
     return combinedNotifications.filter(
       (item) => item.notification_type === typeMap[type as keyof typeof typeMap]
@@ -521,6 +523,25 @@ function NotificationMain() {
               onClick={() => router.push(path + "?active=attestations")}
             >
               Attestations
+            </button>
+            <button
+
+              className={`py-4 px-2 outline-none ${
+
+                searchParams.get("active") === "proposalVote"
+
+                  ? "text-blue-shade-200 font-semibold border-b-2 border-blue-shade-200"
+
+                  : "border-transparent"
+
+              }`}
+
+              onClick={() => router.push(path + "?active=proposalVote")}
+
+            >
+
+              ProposalVote
+
             </button>
           </div>
           <div className="hidden 2md:block ml-auto 1.5lg:pe-16 pe-8">
