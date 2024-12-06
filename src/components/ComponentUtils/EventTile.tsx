@@ -71,7 +71,6 @@ function EventTile({ tileIndex, data: initialData, isEvent }: TileProps) {
     host: { isAnimating: false, tooltipContent: "Copy" },
     guest: { isAnimating: false, tooltipContent: "Copy" },
   });
-  const token = getAccessToken();
   const handleCopy = (addr: string, type: "host" | "guest") => {
     copy(addr);
 
@@ -157,6 +156,7 @@ function EventTile({ tileIndex, data: initialData, isEvent }: TileProps) {
         attendee_joined_status = "Not Joined";
       }
 
+      const token=await getAccessToken();
       const myHeaders: HeadersInit = {
         "Content-Type": "application/json",
         ...(walletAddress && {

@@ -42,11 +42,11 @@ function OfficeHours({ props }: { props: string }) {
   const [error, setError] = useState<string | null>(null);
   const [noResults, setNoResults] = useState(false);
   const { walletAddress } = useWalletAddress();
-  const token = getAccessToken();
 
   const fetchData = async () => {
     try {
       setDataLoading(true);
+      const token=await getAccessToken();
       const myHeaders: HeadersInit = {
         "Content-Type": "application/json",
         ...(walletAddress && {
@@ -130,7 +130,7 @@ function OfficeHours({ props }: { props: string }) {
         const raw = JSON.stringify({
           dao_name: dao_name,
         });
-
+        const token=await getAccessToken()
         const myHeaders: HeadersInit = {
           "Content-Type": "application/json",
           ...(walletAddress && {

@@ -73,7 +73,6 @@ function ScheduledUserSessions({ daoName }: { daoName: string }) {
     minute: "00",
     ampm: "AM",
   });
-  const token = getAccessToken();
   const isTimeslotInPast = (date: any, time: any) => {
     const now = new Date();
     const slotDateTime = new Date(`${date} ${time}`);
@@ -157,6 +156,7 @@ function ScheduledUserSessions({ daoName }: { daoName: string }) {
 
   const checkUser = async () => {
     try {
+      const token=await getAccessToken();
       const myHeaders: HeadersInit = {
         "Content-Type": "application/json",
         ...(walletAddress && {
@@ -280,7 +280,7 @@ function ScheduledUserSessions({ daoName }: { daoName: string }) {
       dao_name: daoName,
     };
     setFinalData(dataToStore);
-
+    const token=await getAccessToken();
     const myHeaders: HeadersInit = {
       "Content-Type": "application/json",
       ...(walletAddress && {
@@ -308,6 +308,7 @@ function ScheduledUserSessions({ daoName }: { daoName: string }) {
 
         //calling api endpoint for sending mail to user who follow this delegate
         try {
+          const token=await getAccessToken();
           const myHeaders: HeadersInit = {
             "Content-Type": "application/json",
             ...(walletAddress && {
@@ -543,6 +544,7 @@ function ScheduledUserSessions({ daoName }: { daoName: string }) {
         if (isValidEmail) {
           try {
             setAddingEmail(true);
+            const token=await getAccessToken();
             const myHeaders: HeadersInit = {
               "Content-Type": "application/json",
               ...(walletAddress && {

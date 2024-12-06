@@ -50,7 +50,6 @@ function UserUpcomingHours() {
   const [selectedDate, setSelectedDate] = useState<string>("");
   const [selectedTime, setSelectedTime] = useState<string>("");
   const [startLoading, setStartLoading] = useState(false);
-  const token = getAccessToken();
 
   const handleTimeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setSelectedTime(e.target.value);
@@ -133,7 +132,8 @@ function UserUpcomingHours() {
     onOpenChange();
   };
 
-  const updateOfficeHours = (data: any) => {
+  const updateOfficeHours = async(data: any) => {
+    const token=await getAccessToken();
     const myHeaders: HeadersInit = {
       "Content-Type": "application/json",
       ...(walletAddress && {
@@ -160,6 +160,7 @@ function UserUpcomingHours() {
 
   const handleDelete = async (index: number) => {
     const session = sessionDetails[index];
+    const token=await getAccessToken();
     const myHeaders: HeadersInit = {
       "Content-Type": "application/json",
       ...(walletAddress && {
@@ -174,7 +175,7 @@ function UserUpcomingHours() {
     fetch(`/api/edit-office-hours/${walletAddress}`, requestOptions)
       .then((response) => response.text())
       .then((result) => {
-        console.log(result);
+        // console.log(result);
         const updatedSessions = [...sessionDetails];
         updatedSessions.splice(index, 1);
         setSessionDetails(updatedSessions);

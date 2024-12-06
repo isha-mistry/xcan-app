@@ -41,7 +41,6 @@ function UserSessions({
   const [showRightShadow, setShowRightShadow] = useState(false);
   const { user, ready, getAccessToken, authenticated } = usePrivy();
   const { walletAddress } = useWalletAddress();
-  const token = getAccessToken();
 
   const handleRetry = () => {
     setError(null);
@@ -76,6 +75,7 @@ function UserSessions({
     setDataLoading(true);
     try {
       // setDataLoading(true);
+      const token=await getAccessToken();
       const myHeaders: HeadersInit = {
         "Content-Type": "application/json",
         ...(walletAddress && {

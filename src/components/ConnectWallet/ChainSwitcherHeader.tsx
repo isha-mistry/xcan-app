@@ -41,15 +41,7 @@ const ChainSwitcherHeader: React.FC<ChainSwitcherHeaderProps> = ({
       navigator.clipboard.writeText(address);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
-      toast("Copied", {
-        duration: 1500,
-        style: {
-          background: "#333",
-          color: "#fff",
-          borderRadius: "4px",
-          fontSize: "12px",
-        },
-      });
+      toast('Copied');
     }
   };
 
@@ -155,7 +147,19 @@ const ChainSwitcherHeader: React.FC<ChainSwitcherHeaderProps> = ({
           <span className="text-sm text-red-500 ml-1">Wrong</span>
         )}
 
-        <Toaster />
+    <Toaster
+        toastOptions={{
+          style: {
+            fontSize: "14px",
+            backgroundColor: "#3E3D3D",
+            color: "#fff",
+            boxShadow: "none",
+            borderRadius: "50px",
+            padding: "3px 5px",
+          },
+        }}
+      />
+
       </div>
     </div>
   );

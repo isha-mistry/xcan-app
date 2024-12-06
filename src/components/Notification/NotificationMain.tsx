@@ -61,7 +61,6 @@ function NotificationMain() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [selectedTab, setSelectedTab] = useState("Info");
   const dropdownRef = useRef<HTMLDivElement | null>(null);
-  const token = getAccessToken();
   const tabs = [
     { name: "All", value: "all" },
     // { name: "Past Votes", value: "votes" },
@@ -73,9 +72,9 @@ function NotificationMain() {
   ];
 
   const handleTabChange = (tabValue: string) => {
-    console.log(tabValue);
+    // console.log(tabValue);
     const selected = tabs.find((tab) => tab.value === tabValue);
-    console.log(selected);
+    // console.log(selected);
     if (selected) {
       setSelectedTab(selected.name);
       setIsDropdownOpen(false);
@@ -154,6 +153,7 @@ function NotificationMain() {
     if (!canFetch) return;
     setIsLoading(true);
     try {
+      const token=await getAccessToken();
       const myHeaders: HeadersInit = {
         "Content-Type": "application/json",
         ...(walletAddress && {
@@ -260,6 +260,7 @@ function NotificationMain() {
     setButtonText("Marking...");
     setMarkAllReadCalling(true);
     try {
+      const token=await getAccessToken();
       const myHeaders: HeadersInit = {
         "Content-Type": "application/json",
         ...(walletAddress && {

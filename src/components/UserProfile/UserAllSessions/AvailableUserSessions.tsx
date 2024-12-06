@@ -34,13 +34,13 @@ function AvailableUserSessions({
   const [data, setData] = useState([]);
   const [dataLoading, setDataLoading] = useState<Boolean>(false);
   const [updateTrigger, setUpdateTrigger] = useState(0);
-  const token = getAccessToken();
 
   useEffect(() => {
     const fetchData = async () => {
       if (!daoName) return;
       setDataLoading(true);
       try {
+        const token=await getAccessToken();
         const myHeaders: HeadersInit = {
           "Content-Type": "application/json",
           ...(walletAddress && {
@@ -172,7 +172,6 @@ function TimeSlotTable({
 }: any) {
   const [deleting, setDeleting] = useState<string | null>(null);
   const { walletAddress } = useWalletAddress();
-  const token = getAccessToken();
 
   const handleButtonClick = () => {
     toast("Coming soon 🚀");
@@ -182,6 +181,7 @@ function TimeSlotTable({
     setDeleting(date);
 
     try {
+      const token=await getAccessToken();
       const myHeaders: HeadersInit = {
         "Content-Type": "application/json",
         ...(walletAddress && {

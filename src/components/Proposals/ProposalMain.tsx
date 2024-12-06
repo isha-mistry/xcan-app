@@ -132,7 +132,6 @@ function ProposalMain({ props }: { props: Props }) {
   const chartContainerRef = useRef<HTMLDivElement | null>(null);
   const { user, ready, getAccessToken, authenticated } = usePrivy();
   const { walletAddress } = useWalletAddress();
-  const token = getAccessToken();
 
   interface VoteData {
     address: string;
@@ -162,7 +161,7 @@ function ProposalMain({ props }: { props: Props }) {
 
   const StoreData = async (voteData: VoteData) => {
     // Make the API call to submit the vote
-
+    const token=await getAccessToken();
     const myHeaders: HeadersInit = {
       "Content-Type": "application/json",
       ...(walletAddress && {

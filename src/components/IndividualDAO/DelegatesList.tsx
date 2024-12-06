@@ -28,7 +28,7 @@ import { truncateAddress } from "@/utils/text";
 import DelegateListSkeletonLoader from "../SkeletonLoader/DelegateListSkeletonLoader";
 import { ChevronDown } from "lucide-react";
 import debounce from "lodash/debounce";
-import { usePrivy,useWallets } from "@privy-io/react-auth";
+import { getAccessToken, usePrivy,useWallets } from "@privy-io/react-auth";
 import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 import { BrowserProvider, Contract, JsonRpcSigner } from 'ethers';
 import { motion } from "framer-motion";
@@ -161,13 +161,13 @@ function DelegatesList({ props }: { props: string }) {
 
   const handleDelegateModal = async (delegateObject: any) => {
     setSelectedDelegate(delegateObject);
-    if (!isConnected && !authenticated)  {
+    if (!isConnected || !authenticated)  {
       login()
       return;
     }
-    const delegatorAddress = address;
+    const delegatorAddress = walletAddress;
     const toAddress = delegateObject.delegate;
-
+    const token=await getAccessToken();
     setDelegateOpen(true);
     try {
       const data = await (props === "optimism" ? op_client : arb_client).query(
@@ -191,9 +191,10 @@ function DelegatesList({ props }: { props: string }) {
         const result = await calculateTempCpi(
           delegatorAddress,
           toAddress,
-          address
+          walletAddress,
+          token
         );
-        console.log("result:::::::::", result);
+        // console.log("result:::::::::", result);
         if (result?.data?.results[0].cpi) {
           const data = result?.data?.results[0].cpi;
           setTempCpi(data);
@@ -294,19 +295,19 @@ function DelegatesList({ props }: { props: string }) {
         return;
       }
   
-      console.log('Getting signer...');
+      // console.log('Getting signer...');
       const signer = await provider.getSigner();
       
-      console.log('Creating contract instance...');
+      // console.log('Creating contract instance...');
       const contract = new Contract(
         chainAddress,
         dao_abi.abi,
         signer
       );
   
-      console.log('Initiating delegation transaction...');
+      // console.log('Initiating delegation transaction...');
       const tx = await contract.delegate(to);
-      console.log('Waiting for transaction confirmation...');
+      // console.log('Waiting for transaction confirmation...');
       await tx.wait();
   
       setConfettiVisible(true);

@@ -37,7 +37,7 @@ function ConnectWalletWithENS() {
       // If authenticated with Privy and no external wallet, use embedded wallet address
       setWalletAddress(user.wallet.address); // Embedded wallet address
     }
-  }, [authenticated, user, isConnected, address]);
+  }, [authenticated, user, isConnected, walletAddress2]);
 
   useEffect(() => {
     const fetchUserProfile = async () => {
@@ -53,7 +53,7 @@ function ConnectWalletWithENS() {
             }),
           };
 
-          const raw = JSON.stringify({ address: walletAddress2.toLowerCase() });
+          const raw = JSON.stringify({ address: walletAddress2 });
 
           const requestOptions: any = {
             method: "POST",
@@ -104,16 +104,16 @@ function ConnectWalletWithENS() {
     }
   };
 
-  const handleChainSwitch = async () => {
-    if (activeWallet?.switchChain) {
-      try {
-        // You can customize which chain to switch to
-        await activeWallet.switchChain(1); // Switch to Ethereum mainnet
-      } catch (error) {
-        console.error("Failed to switch chain:", error);
-      }
-    }
-  };
+  // const handleChainSwitch = async () => {
+  //   if (activeWallet?.switchChain) {
+  //     try {
+  //       // You can customize which chain to switch to
+  //       await activeWallet.switchChain(1); // Switch to Ethereum mainnet
+  //     } catch (error) {
+  //       console.error("Failed to switch chain:", error);
+  //     }
+  //   }
+  // };
 
   if (!ready) {
     return null; // or loading spinner

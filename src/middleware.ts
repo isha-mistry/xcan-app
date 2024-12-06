@@ -3,6 +3,8 @@ import type { NextRequest } from "next/server";
 // import { getToken } from "next-auth/jwt";
 import { PrivyClient } from "@privy-io/server-auth";
 
+
+
 const allowedOrigins = [
   process.env.NEXT_PUBLIC_LOCAL_BASE_URL!,
   process.env.NEXT_PUBLIC_HOSTED_BASE_URL!,
@@ -33,29 +35,26 @@ const routeConfig = {
     ],
   },
 };
+// Set CORS headers
+function setCorsHeaders(response: NextResponse, origin: string | null) {
+  response.headers.set("Access-Control-Allow-Origin", origin || "*");
+  response.headers.set(
+    "Access-Control-Allow-Methods",
+    "GET, POST, PUT, DELETE, OPTIONS"
+  );
+  response.headers.set(
+    "Access-Control-Allow-Headers",
+    "Content-Type, Authorization, x-wallet-address, x-api-key"
+  );
+  response.headers.set("Referrer-Policy", "strict-origin");
+}
 
 export async function middleware(request: NextRequest) {
-  // console.log("Request in APP Middleware:::", request);
-  const headers = request.headers;
-  const origin = request.nextUrl.origin;
-  const pathname = request.nextUrl.pathname;
+  const { origin, pathname } = request.nextUrl;
   const apiKey = request.headers.get("x-api-key");
-  // CORS check
-  if (!origin || !allowedOrigins.includes(origin)) {
-    console.log("origin Error");
-    return new NextResponse(
-      JSON.stringify({ error: "Unknown origin request. Forbidden" }),
-      {
-        status: 403,
-        headers: {
-          "Content-Type": "application/json",
-          "Access-Control-Allow-Origin": origin,
-          "Referrer-Policy": "strict-origin",
-        },
-      }
-    );
-  }
+  const authHeader = request.headers.get("Authorization");
 
+  // CORS preflight request handler
   if (request.method === "OPTIONS") {
     return new NextResponse(null, {
       status: 200,
@@ -69,44 +68,66 @@ export async function middleware(request: NextRequest) {
     });
   }
 
-  const routeName = pathname.split("/").pop() || "";
+  // Origin validation
+  if (!origin || !allowedOrigins.includes(origin)) {
+    return new NextResponse(
+      JSON.stringify({ error: "Unknown origin request. Forbidden" }),
+      {
+        status: 403,
+        headers: {
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": origin,
+          "Referrer-Policy": "strict-origin",
+        },
+      }
+    );
+  }
+
+  // Proxy route authentication
   const isProxyRoute = pathname.startsWith("/api/proxy/");
   const isApiKeyOnlyRoute = routeConfig.proxy.apiKeyOnly.some((route) =>
     pathname.includes(route)
   );
 
-  // Token validation
-  const authHeader = request.headers.get("Authorization");
-  const privyToken = authHeader?.replace("Bearer ", "");
+  if (request.method === "GET" || isApiKeyOnlyRoute) {
+    const response = NextResponse.next();
+    setCorsHeaders(response, origin);
+    return response;
+  }
 
   if (isProxyRoute) {
-    if (request.method === "GET" || isApiKeyOnlyRoute) {
-      return NextResponse.next();
-    } else {
-      if (!privyToken) {
-        return new NextResponse(
-          JSON.stringify({ error: "Authentication required" }),
-          {
-            status: 401,
-            headers: { "Content-Type": "application/json" },
-          }
-        );
-      }
+    // GET requests and API key only routes can pass through
 
-      const walletAddress = request.headers.get("x-wallet-address");
+    // Validate Privy token for other proxy routes
+    const privyToken = authHeader?.replace("Bearer ", "");
+    const walletAddress = request.headers.get("x-wallet-address");
+
+    // Check token presence
+    if (!privyToken) {
+      return new NextResponse(
+        JSON.stringify({ error: "Authentication required" }),
+        {
+          status: 401,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    // Validate wallet address
+    if (!walletAddress) {
+      return new NextResponse(
+        JSON.stringify({ error: "Wallet address not provided" }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    try {
+      // Verify Privy token and get user
       const verifiedUser = await privyClient.verifyAuthToken(privyToken);
       const user = await privyClient.getUserById(verifiedUser.userId);
-      // const userAddress = token.sub;
-
-      if (!walletAddress) {
-        return new NextResponse(
-          JSON.stringify({ error: "Wallet address not provided" }),
-          {
-            status: 400,
-            headers: { "Content-Type": "application/json" },
-          }
-        );
-      }
 
       // Find linked wallet that matches the provided address
       const linkedWallet = user.linkedAccounts
@@ -128,8 +149,18 @@ export async function middleware(request: NextRequest) {
           }
         );
       }
+    } catch (error) {
+      console.error("Authentication error:", error);
+      return new NextResponse(
+        JSON.stringify({ error: "Authentication failed" }),
+        {
+          status: 401,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
     }
   } else {
+    // Non-proxy routes require API key
     if (!apiKey || apiKey !== process.env.CHORA_CLUB_API_KEY) {
       console.log("Direct API access not allowed");
       return new NextResponse(
@@ -139,24 +170,13 @@ export async function middleware(request: NextRequest) {
     }
   }
 
+  // Allow request to proceed
   const response = NextResponse.next();
   setCorsHeaders(response, origin);
   return response;
 }
 
-function setCorsHeaders(response: NextResponse, origin: string | null) {
-  response.headers.set("Access-Control-Allow-Origin", origin || "*");
-  response.headers.set(
-    "Access-Control-Allow-Methods",
-    "GET, POST, PUT, DELETE, OPTIONS"
-  );
-  response.headers.set(
-    "Access-Control-Allow-Headers",
-    "Content-Type, Authorization, x-wallet-address, x-api-key"
-  );
-  response.headers.set("Referrer-Policy", "strict-origin");
-}
-// See "Matching Paths" below to learn more
+
 export const config = {
   matcher: [
     "/api/proxy/:path*",

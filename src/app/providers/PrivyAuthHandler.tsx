@@ -114,9 +114,9 @@ async function createOrVerifyAccount(
     });
 
     const responseText = await response.text();
-    if(localStorage.getItem('persistentWalletAddress')==null){
-      localStorage.setItem("persistentWalletAddress",walletAddress); //Inorder to get accurate wallet addres
-    }
+    // if(localStorage.getItem('persistentWalletAddress')==null){
+    //   localStorage.setItem("persistentWalletAddress",walletAddress); //Inorder to get accurate wallet addres
+    // }
 
     if (response.status === 200) {
       // console.log("Account created successfully");

@@ -46,7 +46,6 @@ function NotificationIconComponent() {
 
   const lastFetchTime = useRef<number>(0);
   const cacheDuration = 60000; // 1 minute cache
-  const token = getAccessToken();
 
   useEffect(() => {
     setCanFetch(!!walletAddress);
@@ -69,6 +68,7 @@ function NotificationIconComponent() {
     if (now - lastFetchTime.current > cacheDuration) {
       setIsAPILoading(true);
       try {
+        const token=await getAccessToken();
         const myHeaders: HeadersInit = {
           "Content-Type": "application/json",
           ...(walletAddress && {

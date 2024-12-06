@@ -64,11 +64,12 @@ import { usePrivy, useWallets } from "@privy-io/react-auth";
 import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 import { fetchApi } from "@/utils/api";
 import { BrowserProvider, Contract, JsonRpcSigner } from "ethers";
-import { ChevronDownIcon } from "lucide-react";
+import { ChevronDownIcon, CloudCog } from "lucide-react";
 import Heading from "../ComponentUtils/Heading";
 import { MeetingRecords } from "@/types/UserProfileTypes";
 import { useApiData } from "@/contexts/ApiDataContext";
 import { calculateTempCpi } from "@/actions/calculatetempCpi";
+import { createPublicClient, http } from "viem";
 
 interface Type {
   daoDelegates: string;
@@ -129,7 +130,6 @@ function SpecificDelegate({ props }: { props: Type }) {
   const [copiedAddress, setCopiedAddress] = useState<string | null>(null);
   const [tempCpi, setTempCpi] = useState();
   const [tempCpiCalling, setTempCpiCalling] = useState(true);
-  const token = getAccessToken();
 
   const handleCopy = (addr: string) => {
     copy(addr);
@@ -148,9 +148,9 @@ function SpecificDelegate({ props }: { props: Type }) {
   ];
 
   const handleTabChange = (tabValue: string) => {
-    console.log(tabValue);
+    // console.log(tabValue);
     const selected = tabs.find((tab) => tab.value === tabValue);
-    console.log(selected);
+    // console.log(selected);
     if (selected) {
       setSelectedTab(selected.name);
       setIsDropdownOpen(false);
@@ -223,12 +223,14 @@ function SpecificDelegate({ props }: { props: Type }) {
 
           try {
             setTempCpiCalling(true);
+            const token=await getAccessToken();
             const result = await calculateTempCpi(
               delegatorAddress,
               toAddress,
-              walletAddress
+              walletAddress,
+              token
             );
-            console.log("result:::::::::", result);
+            // console.log("result:::::::::", result);
             if (result?.data?.results[0].cpi) {
               const data = result?.data?.results[0].cpi;
               setTempCpi(data);
@@ -380,6 +382,7 @@ function SpecificDelegate({ props }: { props: Type }) {
           details.data.delegate.publicAddress.toLowerCase()
         ) {
           setIsDelegate(true);
+          
         }
 
         setKarmaSocials({
@@ -419,25 +422,6 @@ function SpecificDelegate({ props }: { props: Type }) {
   // For Optimism Governance Token
   const optimismTokenAddress = "0x4200000000000000000000000000000000000042";
 
-  // Alternative read method
-  // const checkOptimismDelegate = async () => {
-  //   try {
-  //     // Additional check using lower-level method
-  //     const delegateData = await publicClient.call({
-  //       to: optimismTokenAddress,
-  //       data: encodeFunctionData({
-  //         abi: dao_abi.abi,
-  //         functionName: 'delegates',
-  //         args: [props.individualDelegate]
-  //       })
-  //     });
-
-  //     console.log('Raw Delegate Data:', delegateData);
-  //   } catch (error) {
-  //     console.error('Low-level delegate check failed:', error);
-  //   }
-  // };
-
   useEffect(() => {
     const checkDelegateStatus = async () => {
       setIsPageLoading(true);
@@ -452,13 +436,20 @@ function SpecificDelegate({ props }: { props: Type }) {
           : "";
 
       try {
-        const delegateTx = await publicClient.readContract({
-          address: contractAddress,
+        let delegateTx;
+        //If user is not connected and check delagate session
+        const public_client = createPublicClient({
+          chain: props.daoDelegates === "optimism" ? optimism : arbitrum,
+          transport: http()
+         });
+
+         delegateTx = await public_client.readContract({
+          address: contractAddress as `0x${string}`,
           abi: dao_abi.abi,
           functionName: "delegates",
           args: [props.individualDelegate],
-          // account: address1,
-        });
+         }) as string;
+       
         delegateTxAddr = delegateTx;
         if (
           delegateTxAddr.toLowerCase() ===
@@ -474,6 +465,7 @@ function SpecificDelegate({ props }: { props: Type }) {
     };
     checkDelegateStatus();
   }, [props]);
+
 
   const formatNumber = (number: number) => {
     if (number >= 1000000) {
@@ -520,14 +512,14 @@ function SpecificDelegate({ props }: { props: Type }) {
         (dao: any) => dao.dao_name.toLowerCase() === currentDaoName
       );
 
-      console.log("daoFollowersdaoFollowers: ", daoFollowers);
+      // console.log("daoFollowersdaoFollowers: ", daoFollowers);
 
       if (daoFollowers) {
         const followerCount = daoFollowers?.follower?.filter(
           (f: any) => f.isFollowing
         ).length;
 
-        console.log("followerCountfollowerCount: ", followerCount);
+        // console.log("followerCountfollowerCount: ", followerCount);
 
         setFollowers(followerCount);
         setFollowerCountLoading(false);
@@ -571,6 +563,7 @@ function SpecificDelegate({ props }: { props: Type }) {
 
     if (action == 1) {
       setLoading(true);
+      const token=await getAccessToken();
       const myHeaders: HeadersInit = {
         "Content-Type": "application/json",
         ...(walletAddress && {
@@ -618,6 +611,7 @@ function SpecificDelegate({ props }: { props: Type }) {
         let updatenotification: boolean;
         updatenotification = !notification;
         setNotificationLoading(true);
+        const token=await getAccessToken();
         const myHeaders: HeadersInit = {
           "Content-Type": "application/json",
           ...(walletAddress && {
@@ -873,6 +867,7 @@ function SpecificDelegate({ props }: { props: Type }) {
 
         // const dbResponse = await axios.get(`/api/profile/${address}`);
 
+        const token=await getAccessToken();
         const myHeaders: HeadersInit = {
           "Content-Type": "application/json",
           ...(walletAddress && {

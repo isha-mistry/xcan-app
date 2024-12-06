@@ -4,9 +4,10 @@ import { connectDB } from "@/config/connectDB";
 export const revalidate = 0;
 
 export async function GET(req: NextRequest, res: NextResponse) {
+  let client;
   try {
     // Connect to MongoDB
-    const client = await connectDB();
+   client = await connectDB();
 
     // Access the collections
     const db = client.db();
@@ -79,5 +80,10 @@ export async function GET(req: NextRequest, res: NextResponse) {
       { success: false, error: "Internal Server Error" },
       { status: 500 }
     );
+  }
+  finally{
+    if(client){
+      client.close();
+    }
   }
 }

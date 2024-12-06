@@ -93,7 +93,6 @@ function MainProfile() {
   const [isModalLoading, setIsModalLoading] = useState(false);
   const { ready, authenticated, login, logout, getAccessToken, user } =
     usePrivy();
-  const token = getAccessToken();
   const [isspin, setSpin] = useState(false);
   // const [walletAddress, setWalletAddress] = useState<string | null>(null);
   const { walletAddress } = useWalletAddress();
@@ -136,9 +135,9 @@ function MainProfile() {
   ];
 
   const handleTabChange = (tabValue: string) => {
-    console.log(tabValue);
+    // console.log(tabValue);
     const selected = tabs.find((tab) => tab.value === tabValue);
-    console.log(selected);
+    // console.log(selected);
     if (selected) {
       setSelectedTab(selected.name);
       setIsDropdownOpen(false);
@@ -256,13 +255,15 @@ function MainProfile() {
       try {
         const contractAddress = getChainAddress(chain?.name);
         if (walletAddress) {
-          const delegateTx = await publicClient.readContract({
-            address: contractAddress,
+          const delegateTx = await publicClient?.readContract({
+            address: contractAddress as `0x${string}`,
             abi: dao_abi.abi,
             functionName: "delegates",
-            args: [address],
+            args: [walletAddress],
             // account: address1,
           });
+
+          // console.log("DelegateTx",delegateTx)
 
           const delegateTxAddr = delegateTx.toLowerCase();
 
@@ -409,7 +410,7 @@ function MainProfile() {
   ) => {
     setLoading(true);
     setIsModalLoading(true);
-
+    const token=await getAccessToken();
     const myHeaders: HeadersInit = {
       "Content-Type": "application/json",
       ...(walletAddress && {
@@ -475,7 +476,7 @@ function MainProfile() {
 
     if (!userupdate.isFollowing) {
       setFollowings(followings + 1);
-
+      const token=await getAccessToken();
       const myHeaders: HeadersInit = {
         "Content-Type": "application/json",
         ...(walletAddress && {
@@ -511,6 +512,7 @@ function MainProfile() {
       setLoading(true);
       // settoaster(true);
       try {
+        const token=await getAccessToken();
         const myHeaders: HeadersInit = {
           "Content-Type": "application/json",
           ...(walletAddress && {
@@ -557,6 +559,7 @@ function MainProfile() {
     // settoaster(true);
 
     try {
+      const token=await getAccessToken();
       const myHeaders: HeadersInit = {
         "Content-Type": "application/json",
         ...(walletAddress && {
@@ -638,6 +641,7 @@ function MainProfile() {
     setIsLoading(true);
     const isEmailVisible = !isToggled;
     try {
+      const token=await getAccessToken();
       const myHeaders: HeadersInit = {
         "Content-Type": "application/json",
         ...(walletAddress && {
@@ -677,6 +681,8 @@ function MainProfile() {
       try {
         // Fetch data from your backend API to check if the address exists
         // const dbResponse = await axios.get(`/api/profile/${address}`);
+
+        const token=await getAccessToken();
 
         let dao = getDaoName(chain?.name);
         const myHeaders: HeadersInit = {
@@ -829,7 +835,7 @@ function MainProfile() {
   const checkDelegateExists = async (address: any) => {
     try {
       // Make a request to your backend API to check if the address exists
-
+      const token=await getAccessToken();
       const myHeaders: HeadersInit = {
         "Content-Type": "application/json",
         ...(walletAddress && {
@@ -875,7 +881,7 @@ function MainProfile() {
   const handleAdd = async (newDescription?: string) => {
     try {
       // Call the POST API function for adding a new delegate
-
+      const token=await getAccessToken();
       const myHeaders: HeadersInit = {
         "Content-Type": "application/json",
         ...(walletAddress && {
@@ -938,6 +944,7 @@ function MainProfile() {
   // Function to handle updating an existing delegate
   const handleUpdate = async (newDescription?: string) => {
     try {
+      const token=await getAccessToken();
       const myHeaders: HeadersInit = {
         "Content-Type": "application/json",
         ...(walletAddress && {

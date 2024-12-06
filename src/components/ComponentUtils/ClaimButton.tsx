@@ -38,7 +38,6 @@ const ClaimButton: React.FC<ClaimButtonProps> = ({
   const [isClaiming, setIsClaiming] = useState(false);
   const [isClaimed, setIsClaimed] = useState(!!onChainId);
   const { user, ready, getAccessToken } = usePrivy();
-  const token = getAccessToken();
   useEffect(() => {
     setIsClaimed(!!onChainId);
   }, [onChainId]);
@@ -93,12 +92,14 @@ const ClaimButton: React.FC<ClaimButtonProps> = ({
       daoName: dao,
     };
 
+    const ClientToken=await getAccessToken();
+
     try {
       const myHeaders: HeadersInit = {
         "Content-Type": "application/json",
         ...(address && {
           "x-wallet-address": address,
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${ClientToken}`,
         }),
       };
       // Configure the request options

@@ -47,12 +47,12 @@ function UserOfficeHours({
   const [showComingSoon, setShowComingSoon] = useState(true);
   const { user, ready, getAccessToken, authenticated } = usePrivy();
   const { walletAddress } = useWalletAddress();
-  const token = getAccessToken();
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         setDataLoading(true);
+        const token=await getAccessToken();
         const myHeaders: HeadersInit = {
           "Content-Type": "application/json",
           ...(walletAddress && {

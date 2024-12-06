@@ -33,7 +33,7 @@ async function handler(
     );
 
     // const headers = Object.fromEntries(request.headers);
-    console.log("header from incoming request::", headers);
+    // console.log("header from incoming request::", headers);
 
     const url = `${BASE_URL}/api/${path}${
       searchParams ? `?${searchParams}` : ""

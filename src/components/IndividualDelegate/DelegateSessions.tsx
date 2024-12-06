@@ -33,7 +33,6 @@ function DelegateSessions({ props }: { props: Type }) {
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
   const [showLeftShadow, setShowLeftShadow] = useState(false);
   const [showRightShadow, setShowRightShadow] = useState(false);
-  const token = getAccessToken();
 
   useEffect(() => {
     const checkForOverflow = () => {
@@ -63,6 +62,7 @@ function DelegateSessions({ props }: { props: Type }) {
   const getMeetingData = async () => {
     setDataLoading(true);
     try {
+      const token=await getAccessToken();
       const myHeaders: HeadersInit = {
         "Content-Type": "application/json",
         ...(walletAddress && {

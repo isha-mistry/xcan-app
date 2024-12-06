@@ -51,7 +51,6 @@ function InstantMeet({ isDelegate, selfDelegate, daoName }: instantMeetProps) {
   const { chain } = useAccount();
   const [isScheduling, setIsScheduling] = useState(false);
   const { user, ready, getAccessToken, authenticated } = usePrivy();
-  const token = getAccessToken();
   const router = useRouter();
 
   const handleModalInputChange = (
@@ -99,7 +98,7 @@ function InstantMeet({ isDelegate, selfDelegate, daoName }: instantMeetProps) {
       meeting_status: "Ongoing",
       attendees: [],
     };
-
+    const token=await getAccessToken();
     const myHeaders: HeadersInit = {
       "Content-Type": "application/json",
       ...(walletAddress && {

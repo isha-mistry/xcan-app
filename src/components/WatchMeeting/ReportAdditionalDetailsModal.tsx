@@ -27,7 +27,6 @@ function ReportAdditionalDetailsModal({
   const { ready, authenticated, login, logout, getAccessToken, user } =
     usePrivy();
   const { walletAddress } = useWalletAddress();
-  const token = getAccessToken();
   const toggleModal = () => {
     onClose();
   };
@@ -47,6 +46,7 @@ function ReportAdditionalDetailsModal({
     video_reports: any
   ) => {
     setIsLoading(true);
+    const token=await getAccessToken();
     const myHeaders: HeadersInit = {
       "Content-Type": "application/json",
       ...(walletAddress && {

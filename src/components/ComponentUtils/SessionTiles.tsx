@@ -111,7 +111,6 @@ SessionTileProps) {
   const [pageLoading, setPageLoading] = useState(true);
   const [applyStyles, setApplyStyles] = useState(true);
   const [expanded, setExpanded] = useState<{ [index: number]: boolean }>({});
-  const token = getAccessToken();
 
   const handleEditModal = (index: number) => {
     setSelectedTileIndex(index);
@@ -186,6 +185,7 @@ SessionTileProps) {
       daoName: dao,
     };
 
+    const token=await getAccessToken();
     const myHeaders: HeadersInit = {
       "Content-Type": "application/json",
       ...(walletAddress && {
@@ -238,6 +238,7 @@ SessionTileProps) {
 
       if (newAttestationUID) {
         try {
+          const token=await getAccessToken();
           const myHeaders: HeadersInit = {
             "Content-Type": "application/json",
             ...(walletAddress && {
@@ -306,8 +307,8 @@ SessionTileProps) {
   const handleSave = async (sessionData: any) => {
     // Handle save logic here, such as making an API call
     setLoading(true);
-    console.log(formData);
-    console.log(sessionData);
+    // console.log(formData);
+    // console.log(sessionData);
     // Close the modal after saving
     const progressCallback = async (progressData: any) => {
       let percentageDone =
@@ -315,7 +316,7 @@ SessionTileProps) {
         (
           ((progressData?.total as any) / progressData?.uploaded) as any
         )?.toFixed(2);
-      console.log(percentageDone);
+      // console.log(percentageDone);
     };
 
     const apiKey = LIGHTHOUSE_BASE_API_KEY ? LIGHTHOUSE_BASE_API_KEY : "";
@@ -336,6 +337,7 @@ SessionTileProps) {
       if (formData.image === "") {
         imageCid = sessionData.thumbnail_image;
       }
+      const token=await getAccessToken();
       const myHeaders: HeadersInit = {
         "Content-Type": "application/json",
         ...(walletAddress && {

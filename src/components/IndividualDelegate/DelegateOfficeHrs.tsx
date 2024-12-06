@@ -36,7 +36,6 @@ function DelegateOfficeHrs({ props }: { props: Type }) {
   const [showLeftShadow, setShowLeftShadow] = useState(false);
   const [showRightShadow, setShowRightShadow] = useState(false);
   // props.daoDelegates.charAt(0).toUpperCase() + props.daoDelegates.slice(1);
-  const token = getAccessToken();
 
   useEffect(() => {
     const checkForOverflow = () => {
@@ -65,6 +64,7 @@ function DelegateOfficeHrs({ props }: { props: Type }) {
     const fetchData = async () => {
       try {
         setDataLoading(true);
+        const token=await getAccessToken();
         const myHeaders: HeadersInit = {
           "Content-Type": "application/json",
           ...(walletAddress && {
@@ -106,7 +106,7 @@ function DelegateOfficeHrs({ props }: { props: Type }) {
           requestOption
         );
         const resultData = await responseData.json();
-        console.log(resultData);
+        // console.log(resultData);
 
         if (
           searchParams.get("hours") === "ongoing" ||

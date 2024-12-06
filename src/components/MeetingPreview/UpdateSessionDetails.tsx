@@ -45,7 +45,6 @@ function UpdateSessionDetails({ roomId }: { roomId: string }) {
   const [showHostPopup, setShowHostPopup] = useState(false);
   const { user, ready, getAccessToken, authenticated } = usePrivy();
   const { walletAddress } = useWalletAddress();
-  const token = getAccessToken();
 
   useEffect(() => {
     async function fetchData() {
@@ -96,6 +95,7 @@ function UpdateSessionDetails({ roomId }: { roomId: string }) {
     try {
       if (walletAddress?.toLowerCase() === data.host_address.toLowerCase()) {
         setLoading(true);
+        const token=await getAccessToken();
         const myHeaders: HeadersInit = {
           "Content-Type": "application/json",
           ...(walletAddress && {

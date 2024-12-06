@@ -14,7 +14,6 @@ const UserScheduledHours = ({ daoName }: { daoName: string }) => {
   const { address, isConnected } = useAccount();
   const { user, ready, getAccessToken, authenticated } = usePrivy();
   const { walletAddress } = useWalletAddress();
-  const token = getAccessToken();
 
   const [selectedTime, setSelectedTime] = useState<string>("");
 
@@ -46,7 +45,7 @@ const UserScheduledHours = ({ daoName }: { daoName: string }) => {
 
       const selectedDateUTC = new Date(selectedDateTime);
       const utcFormattedDate = selectedDateUTC.toISOString();
-
+      const token=await getAccessToken();
       const myHeaders: HeadersInit = {
         "Content-Type": "application/json",
         ...(walletAddress && {

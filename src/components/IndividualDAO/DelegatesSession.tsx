@@ -24,11 +24,11 @@ function DelegatesSession({ props }: { props: string }) {
   const [error, setError] = useState<string | null>(null);
   const { user, ready, getAccessToken, authenticated } = usePrivy();
   const { walletAddress } = useWalletAddress();
-  const token = getAccessToken();
 
   const fetchData = async () => {
     try {
       setDataLoading(true);
+      const token=await getAccessToken();
       const myHeaders: HeadersInit = {
         "Content-Type": "application/json",
         ...(walletAddress && {
@@ -106,6 +106,7 @@ function DelegatesSession({ props }: { props: string }) {
           dao_name: dao_name,
         });
 
+        const token=await getAccessToken();
         const myHeaders: HeadersInit = {
           "Content-Type": "application/json",
           ...(walletAddress && {

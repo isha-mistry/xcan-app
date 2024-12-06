@@ -26,7 +26,6 @@ function AttendingUserSessions({ daoName }: { daoName: string }) {
   const [error, setError] = useState<string | null>(null);
   const { user, ready, getAccessToken, authenticated } = usePrivy();
   const { walletAddress } = useWalletAddress();
-  const token = getAccessToken();
   const handleRetry = () => {
     setError(null);
     getUserMeetingData();
@@ -36,6 +35,7 @@ function AttendingUserSessions({ daoName }: { daoName: string }) {
   const getUserMeetingData = async () => {
     try {
       setPageLoading(true);
+      const token=await getAccessToken();
       const myHeaders: HeadersInit = {
         "Content-Type": "application/json",
         ...(walletAddress && {

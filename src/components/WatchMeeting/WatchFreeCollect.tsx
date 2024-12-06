@@ -95,7 +95,6 @@ const WatchFreeCollect = ({
     useState("0 USD");
   const [mintComment, setMintComment] = useState("");
   const [mintReferral, setMintReferral] = useState<string>("");
-  const token = getAccessToken();
   let contractMetadataURI: any;
   let tokenDataURI: any;
 
@@ -228,6 +227,7 @@ const WatchFreeCollect = ({
   };
 
   const handleContractSubmit = async (contractAddress: string) => {
+    const token=await getAccessToken();
     const myHeaders: HeadersInit = {
       "Content-Type": "application/json",
       ...(walletAddress && { "x-wallet-address": walletAddress , 

@@ -72,7 +72,7 @@ function BookSession({ props }: { props: Type }) {
   const { ready, authenticated, login, logout, getAccessToken, user } =
     usePrivy();
   const { walletAddress } = useWalletAddress();
-  const token = getAccessToken();
+  const { chain } = useAccount();
   const styles = `
   .calendar-container > div > ul {
     height: auto;
@@ -232,6 +232,7 @@ function BookSession({ props }: { props: Type }) {
 
   const checkUser = async () => {
     try {
+      const token = await getAccessToken();
       const myHeaders: HeadersInit = {
         "Content-Type": "application/json",
         ...(walletAddress && {
@@ -250,8 +251,8 @@ function BookSession({ props }: { props: Type }) {
         body: raw,
         redirect: "follow",
       };
-      const response = await fetch(
-        `/api/profile/${walletAddress}`,
+      const response = await fetchApi(
+        `/profile/${walletAddress}`,
         requestOptions
       );
       const result = await response.json();
@@ -279,7 +280,7 @@ function BookSession({ props }: { props: Type }) {
       }
     } catch (error) {
       toast.error("An error occurred while checking user information");
-      setHasEmailID(false);
+      // setHasEmailID(false);
       setContinueAPICalling(false);
       return false;
     }
@@ -320,6 +321,19 @@ function BookSession({ props }: { props: Type }) {
     return roomId;
   };
   const apiCall = async () => {
+    const ChainName = chain?.name === "OP Mainnet" ? "optimism" : "arbitrum";
+
+    if (props.daoDelegates !== ChainName) {
+      toast("Please switch to the correct network to book your session seamlessly.");
+      setIsLoading(false);
+      setConfirmSave(false);
+      setIsScheduling(false);
+      setContinueAPICalling(false);
+      modalData.title='';
+      modalData.description='';
+      return;
+    }
+
     let roomId = await createRandomRoom();
 
     const requestData = {
@@ -338,6 +352,7 @@ function BookSession({ props }: { props: Type }) {
       host_joined_status: "Pending",
     };
 
+    const token = await getAccessToken();
     const myHeaders: HeadersInit = {
       "Content-Type": "application/json",
       ...(walletAddress && {
@@ -492,6 +507,7 @@ function BookSession({ props }: { props: Type }) {
         if (isValidEmail) {
           try {
             setAddingEmail(true);
+            const token = await getAccessToken();
             const myHeaders: HeadersInit = {
               "Content-Type": "application/json",
               ...(walletAddress && {
@@ -580,6 +596,18 @@ function BookSession({ props }: { props: Type }) {
           style={{ boxShadow: " 0px 0px 45px -17px rgba(0,0,0,0.75)" }}
         >
           <div className="bg-white rounded-[41px] overflow-hidden shadow-lg w-full max-w-lg mx-4">
+            <Toaster
+              toastOptions={{
+                style: {
+                  fontSize: "14px",
+                  backgroundColor: "#3E3D3D",
+                  color: "#fff",
+                  boxShadow: "none",
+                  borderRadius: "50px",
+                  padding: "3px 5px",
+                },
+              }}
+            />
             <div className="relative">
               <div className="flex flex-col gap-1 text-white bg-[#292929] p-4 py-7">
                 <div className="flex items-center justify-between mx-4">
@@ -659,7 +687,7 @@ function BookSession({ props }: { props: Type }) {
                         className="w-full sm:w-auto bg-black text-white px-6 sm:px-8 py-2 sm:py-3 rounded-3xl hover:bg-gray-900 text-sm sm:text-base"
                         disabled={addingEmail}
                       >
-                        {addingEmail ? (
+                        {addingEmail && !hasEmailID ? (
                           <div className="flex items-center justify-center ">
                             <ThreeDots
                               visible={true}
