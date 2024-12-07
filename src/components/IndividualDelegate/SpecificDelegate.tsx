@@ -856,10 +856,11 @@ function SpecificDelegate({ props }: { props: Type }) {
             if (!isConnected) {
               setIsFollowing(false);
               isNotification(false);
+              await fetchDelegateData();
             } else {
               // await updateFollowerState();
               // await setFollowerscount();
-              // await fetchDelegateData();
+              await fetchDelegateData();
               console.log("Followers count!", followers);
               setFollowerCountLoading(false);
               setIsFollowStatusLoading(false);

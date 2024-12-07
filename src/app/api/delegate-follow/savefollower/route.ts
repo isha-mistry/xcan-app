@@ -329,6 +329,7 @@ export async function GET(req: Request) {
     const url = new URL(req.url);
     const address = url.searchParams.get("address");
 
+
     if (!address) {
       return NextResponse.json(
         { success: false, error: "Address is required" },
@@ -342,6 +343,7 @@ export async function GET(req: Request) {
       })
       .toArray();
 
+    
     client.close();
 
     return NextResponse.json(
