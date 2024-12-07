@@ -65,6 +65,7 @@ import { ChevronDownIcon } from "lucide-react";
 import Heading from "../ComponentUtils/Heading";
 import { useApiData } from "@/contexts/ApiDataContext";
 import { calculateTempCpi } from "@/actions/calculatetempCpi";
+import { createPublicClient, http } from "viem";
 
 interface Type {
   daoDelegates: string;
@@ -136,7 +137,7 @@ function SpecificDelegate({ props }: { props: Type }) {
   ];
 
   const handleTabChange = (tabValue: string) => {
-    console.log(tabValue);
+    // console.log(tabValue);
     const selected = tabs.find((tab) => tab.value === tabValue);
     console.log(selected);
     if (selected) {
@@ -398,6 +399,47 @@ function SpecificDelegate({ props }: { props: Type }) {
     fetchData();
   }, []);
 
+  // useEffect(() => {
+  //   const checkDelegateStatus = async () => {
+  //     setIsPageLoading(true);
+  //     //   const addr = await walletClient.getAddresses();
+  //     //   const address1 = addr[0];
+  //     let delegateTxAddr = "";
+  //     const contractAddress =
+  //       props.daoDelegates === "optimism"
+  //         ? "0x4200000000000000000000000000000000000042"
+  //         : props.daoDelegates === "arbitrum"
+  //         ? "0x912CE59144191C1204E64559FE8253a0e49E6548"
+  //         : "";
+
+  //     console.log("Line 414:",contractAddress);
+  //     console.log('Line 415:',props.daoDelegates,props.individualDelegate);    
+
+  //     try {
+  //       const delegateTx = await publicClient.readContract({
+  //         address: contractAddress,
+  //         abi: dao_abi.abi,
+  //         functionName: "delegates",
+  //         args: [props.individualDelegate],
+  //         // account: address1,
+  //       });
+  //       console.log("Line 425:",delegateTx);
+  //       delegateTxAddr = delegateTx;
+  //       if (
+  //         delegateTxAddr.toLowerCase() ===
+  //         props.individualDelegate?.toLowerCase()
+  //       ) {
+  //         setSelfDelegate(true);
+  //       }
+  //       setIsPageLoading(false);
+  //     } catch (error) {
+  //       console.error("Error in reading contract", error);
+  //       setIsPageLoading(false);
+  //     }
+  //   };
+  //   checkDelegateStatus();
+  // }, [props]);
+
   useEffect(() => {
     const checkDelegateStatus = async () => {
       setIsPageLoading(true);
@@ -412,13 +454,20 @@ function SpecificDelegate({ props }: { props: Type }) {
           : "";
 
       try {
-        const delegateTx = await publicClient.readContract({
-          address: contractAddress,
+        let delegateTx;
+        //If user is not connected and check delagate session
+        const public_client = createPublicClient({
+          chain: props.daoDelegates === "optimism" ? optimism : arbitrum,
+          transport: http()
+         });
+
+         delegateTx = await public_client.readContract({
+          address: contractAddress as `0x${string}`,
           abi: dao_abi.abi,
           functionName: "delegates",
           args: [props.individualDelegate],
-          // account: address1,
-        });
+         }) as string;
+       
         delegateTxAddr = delegateTx;
         if (
           delegateTxAddr.toLowerCase() ===
