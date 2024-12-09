@@ -67,7 +67,7 @@ function BookSession({ props }: { props: Type }) {
   const [continueAPICalling, setContinueAPICalling] = useState<Boolean>(false);
   const [userRejected, setUserRejected] = useState<Boolean>();
   const [addingEmail, setAddingEmail] = useState<boolean>();
-  const {chain}=useAccount();
+  const { chain } = useAccount();
 
   const styles = `
   .calendar-container > div > ul {
@@ -244,7 +244,6 @@ function BookSession({ props }: { props: Type }) {
       };
       const response = await fetchApi(`/profile/${address}`, requestOptions);
       const result = await response.json();
-      console.log('Line 246:',result);
       if (Array.isArray(result.data) && result.data.length > 0) {
         for (const item of result.data) {
           if (item.address === address) {
@@ -310,20 +309,20 @@ function BookSession({ props }: { props: Type }) {
     return roomId;
   };
   const apiCall = async () => {
-
-     const ChainName = chain?.name === "OP Mainnet" ? "optimism" : "arbitrum";
+    const ChainName = chain?.name === "OP Mainnet" ? "optimism" : "arbitrum";
 
     if (props.daoDelegates !== ChainName) {
-      toast("Please switch to the correct network to book your session seamlessly.");
+      toast(
+        "Please switch to the correct network to book your session seamlessly."
+      );
       setIsLoading(false);
       setConfirmSave(false);
       setIsScheduling(false);
       setContinueAPICalling(false);
-      modalData.title='';
-      modalData.description='';
+      modalData.title = "";
+      modalData.description = "";
       return;
     }
-
 
     let roomId = await createRandomRoom();
 
@@ -560,6 +559,18 @@ function BookSession({ props }: { props: Type }) {
         </div>
       ) : (
         <div className="flex justify-center w-full px-4 sm:px-6 md:px-8">
+          <Toaster
+            toastOptions={{
+              style: {
+                fontSize: "14px",
+                backgroundColor: "#3E3D3D",
+                color: "#fff",
+                boxShadow: "none",
+                borderRadius: "50px",
+                padding: "3px 5px",
+              },
+            }}
+          />
           <div className="w-full max-w-md mx-auto mt-8 rounded-2xl shadow-lg bg-white">
             <div className="calendar-container">
               <DayTimeScheduler
