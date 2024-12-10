@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import DayTimeScheduler from "@captainwalterdev/daytimescheduler";
-import { useAccount } from "wagmi";
+import { useAccount, useSwitchChain } from "wagmi";
 import { DateTime, Duration } from "luxon";
 import { isSameDay } from "date-fns";
 import { useSession } from "next-auth/react";
@@ -73,6 +73,7 @@ function BookSession({ props }: { props: Type }) {
     usePrivy();
   const { walletAddress } = useWalletAddress();
   const { chain } = useAccount();
+  const { switchChain } = useSwitchChain();
   const styles = `
   .calendar-container > div > ul {
     height: auto;
@@ -322,9 +323,12 @@ function BookSession({ props }: { props: Type }) {
   };
   const apiCall = async () => {
     const ChainName = chain?.name === "OP Mainnet" ? "optimism" : "arbitrum";
+    const CHAIN_ID=props.daoDelegates=='optimism'?10:42161;
+    alert(CHAIN_ID);
 
     if (props.daoDelegates !== ChainName) {
-      toast("Please switch to the correct network to book your session seamlessly.");
+      toast("Switching to correct network...");
+      await switchChain({ chainId: CHAIN_ID});
       setIsLoading(false);
       setConfirmSave(false);
       setIsScheduling(false);

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { ChevronDown, Copy, LogOut } from "lucide-react";
 import {
   DropdownMenu,
@@ -12,6 +12,7 @@ import OPLogo from "@/assets/images/daos/op.png";
 import ArbLogo from "@/assets/images/daos/arb.png";
 import { usePrivy } from "@privy-io/react-auth";
 import Image from "next/image";
+import { user } from "@nextui-org/react";
 
 interface ChainSwitcherHeaderProps {
   address?: string;
@@ -27,7 +28,7 @@ const ChainSwitcherHeader: React.FC<ChainSwitcherHeaderProps> = ({
   ensAvatar,
 }) => {
   const [copied, setCopied] = useState(false);
-  const { logout } = usePrivy();
+  const { logout,user,authenticated } = usePrivy();
   const { isConnected } = useAccount();
   const { disconnect } = useDisconnect();
 
@@ -54,6 +55,7 @@ const ChainSwitcherHeader: React.FC<ChainSwitcherHeaderProps> = ({
     { id: 421614, name: "Arbitrum Sepolia", icon: ArbLogo },
   ];
 
+
   const handleLogout = async () => {
     try {
       if (isConnected) disconnect();
@@ -63,6 +65,7 @@ const ChainSwitcherHeader: React.FC<ChainSwitcherHeaderProps> = ({
       console.error("Logout error:", error);
     }
   };
+
 
   const userOnWrongNetwork = !desiredChains.some(
     (chain) => chain.id === currentChainId
@@ -141,7 +144,7 @@ const ChainSwitcherHeader: React.FC<ChainSwitcherHeaderProps> = ({
             <LogOut size={14} className="text-red-500" />
           </button>
         )}
-
+        
         {/* Wrong Network Indicator */}
         {userOnWrongNetwork && (
           <span className="text-sm text-red-500 ml-1">Wrong</span>

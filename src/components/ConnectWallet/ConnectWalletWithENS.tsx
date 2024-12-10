@@ -9,6 +9,7 @@ import ChainSwitcherHeader from "./ChainSwitcherHeader";
 import MobileChainSwitcher from "./MobileChainSwitcher";
 import { fetchApi } from "@/utils/api";
 import toast, { Toaster } from "react-hot-toast";
+import { disconnect } from "process";
 
 function ConnectWalletWithENS() {
   const [userProfileImage, setUserProfileImage] = useState<string | null>(null);
@@ -18,7 +19,7 @@ function ConnectWalletWithENS() {
   const chainId = useChainId();
   const { chains, error: switchNetworkError, switchChain } = useSwitchChain();
   const [walletAddress2, setWalletAddress] = useState<string | null>(null);
-  const { ready, authenticated, login, logout, user } = usePrivy();
+  const { ready, authenticated, login, logout, user,connectWallet } = usePrivy();
   const { wallets } = useWallets();
   const activeWallet = wallets[0]; // Primary wallet
 
@@ -30,13 +31,13 @@ function ConnectWalletWithENS() {
   }, [chain?.id]);
 
   useEffect(() => {
-    // If external wallet (wagmi) is connected, use its address
     if (isConnected && address) {
       setWalletAddress(address); // External wallet address
     } else if (authenticated && user?.wallet?.address) {
       // If authenticated with Privy and no external wallet, use embedded wallet address
       setWalletAddress(user.wallet.address); // Embedded wallet address
     }
+   
   }, [authenticated, user, isConnected, walletAddress2]);
 
   useEffect(() => {
@@ -93,6 +94,7 @@ function ConnectWalletWithENS() {
 
     fetchUserProfile();
   }, [walletAddress2, authenticated]);
+  
 
   const getDisplayImage = () => {
     if (ensAvatar) {
@@ -118,12 +120,22 @@ function ConnectWalletWithENS() {
   if (!ready) {
     return null; // or loading spinner
   }
-
+  const handleLogin = async () => {
+    if (!authenticated) {
+      login();
+    } else {
+      if (!user?.google && !user?.farcaster) {
+        connectWallet();
+      }
+    }
+  };
+  
+  
   return (
     <div className="wallet z-10 font-poppins">
-      {!authenticated ? (
+      {!authenticated || !isConnected? (
         <button
-          onClick={login}
+          onClick={handleLogin}
           type="button"
           className="flex items-center justify-center text-white bg-blue-shade-200 hover:bg-blue-shade-100 border border-white rounded-full p-2 md:px-5 md:py-4 text-xs md:text-sm font-bold transition-transform transform hover:scale-105"
         >
