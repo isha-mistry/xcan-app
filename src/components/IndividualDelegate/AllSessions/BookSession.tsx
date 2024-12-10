@@ -4,7 +4,9 @@ import React, { useState, useEffect } from "react";
 import DayTimeScheduler from "@captainwalterdev/daytimescheduler";
 import { useAccount, useSwitchChain } from "wagmi";
 import { DateTime, Duration } from "luxon";
+
 import { isSameDay } from "date-fns";
+
 import { useSession } from "next-auth/react";
 import { Oval, ThreeDots } from "react-loader-spinner";
 import styled from "styled-components";
@@ -324,17 +326,13 @@ function BookSession({ props }: { props: Type }) {
   const apiCall = async () => {
     const ChainName = chain?.name === "OP Mainnet" ? "optimism" : "arbitrum";
     const CHAIN_ID=props.daoDelegates=='optimism'?10:42161;
-    alert(CHAIN_ID);
-
-    if (props.daoDelegates !== ChainName) {
-      toast("Switching to correct network...");
+   
+    if (props.daoDelegates !== ChainName) {    
       await switchChain({ chainId: CHAIN_ID});
       setIsLoading(false);
       setConfirmSave(false);
       setIsScheduling(false);
       setContinueAPICalling(false);
-      modalData.title='';
-      modalData.description='';
       return;
     }
 
@@ -475,7 +473,7 @@ function BookSession({ props }: { props: Type }) {
       ) {
         const isBooked = bookedSlots.some((bookedSlot: any) => {
           return (
-            isSameDay(startTime, bookedSlot) &&
+          isSameDay(startTime,bookedSlot) &&
             slotTime.getHours() === bookedSlot.getHours() &&
             slotTime.getMinutes() === bookedSlot.getMinutes()
           );
