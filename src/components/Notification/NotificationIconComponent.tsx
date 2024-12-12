@@ -31,6 +31,7 @@ function NotificationIconComponent() {
   const [isAPILoading, setIsAPILoading] = useState<boolean>();
   const { data: session } = useSession();
   const { walletAddress } = useWalletAddress();
+  const {isConnected,address}=useAccount();
   const {
     notifications,
     newNotifications,
@@ -193,8 +194,9 @@ function NotificationIconComponent() {
         </div>
       );
     }
+    
 
-    if (!authenticated) {
+    if (!authenticated ||!isConnected && !address ) {
       return (
         <div className="flex justify-center items-center p-4">
           <p className="text-sm text-gray-500">

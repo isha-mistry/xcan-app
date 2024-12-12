@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { getAccessToken, usePrivy } from "@privy-io/react-auth";
-import { useAccount } from "wagmi";
+import { useAccount, useDisconnect } from "wagmi";
 
 interface WalletAddressHook {
   walletAddress: string | null;
@@ -75,10 +75,11 @@ export const useWalletAddress = (): WalletAddressHook => {
   const [isLoading, setIsLoading] = useState(true);
 
   // Privy hooks
-  const { ready, authenticated, user } = usePrivy();
+  const { ready, authenticated, user,logout } = usePrivy();
 
   // Wagmi hook
   const { address, isConnected } = useAccount();
+  const { disconnect } = useDisconnect();
 
   // Persist wallet address safely
   const persistWalletAddress = useCallback(
@@ -134,6 +135,7 @@ export const useWalletAddress = (): WalletAddressHook => {
       persistWalletAddress(null, null);
     }
   }, [ready, authenticated, user, isConnected, address, persistWalletAddress]);
+
 
   return {
     walletAddress,

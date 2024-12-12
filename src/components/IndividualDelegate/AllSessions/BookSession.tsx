@@ -65,6 +65,7 @@ function BookSession({ props }: { props: Type }) {
   const [modalOpen, setModalOpen] = useState(false);
 
   const [mailId, setMailId] = useState<string>();
+  const [checkUserMail,setCheckUserMail]=useState(false);
   const [hasEmailID, setHasEmailID] = useState<Boolean>();
   const [showGetMailModal, setShowGetMailModal] = useState<Boolean>();
   const [isValidEmail, setIsValidEmail] = useState(true);
@@ -111,72 +112,74 @@ function BookSession({ props }: { props: Type }) {
     };
   }, [isOpen]);
 
-  useEffect(() => {
-    const loadingTimeout = setTimeout(() => {
-      setIsLoading(false);
-    }, 2000);
+  // useEffect(() => {
+  //   const loadingTimeout = setTimeout(() => {
+  //     setIsLoading(false);
+  //   }, 2000);
 
-    getAvailability();
-    getSlotTimeAvailability();
-    return () => {
-      clearTimeout(loadingTimeout);
-    };
-  }, [walletAddress, authenticated, session]);
+  //   getAvailability();
+  //   getSlotTimeAvailability();
+  //   return () => {
+  //     clearTimeout(loadingTimeout);
+  //   };
+  // }, [walletAddress, authenticated, session]);
 
-  const getAvailability = async () => {
-    try {
-      const response = await fetch(
-        `/api/get-availability/${host_address}?dao_name=${daoName}`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
+  // const getAvailability = async () => {
+  //   try {
+  //     const response = await fetch(
+  //       `/api/get-availability/${host_address}?dao_name=${daoName}`,
+  //       {
+  //         method: "GET",
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //         },
+  //       }
+  //     );
 
-      const result = await response.json();
-      if (result.success) {
-        setAPIData(result.data);
-        setIsLoading(false);
-      }
-    } catch (error) {}
-  };
+  //     const result = await response.json();
+  //     if (result.success) {
+  //       setAPIData(result.data);
+  //       setIsLoading(false);
+  //     }
+  //   } catch (error) {}
+  // };
 
-  const getSlotTimeAvailability = async () => {
-    try {
-      const response = await fetchApi(
-        `/get-meeting/${host_address}?dao_name=${daoName}`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
+  
 
-      const result = await response.json();
-      if (result.success) {
-        setAPIBookings(result.data);
-        const extractedSlotTimes = result.data.map(
-          (item: any) => new Date(item.slot_time)
-        );
-        setSlotTimes(extractedSlotTimes);
-        setIsPageLoading(false);
+  // const getSlotTimeAvailability = async () => {
+  //   try {
+  //     const response = await fetchApi(
+  //       `/get-meeting/${host_address}?dao_name=${daoName}`,
+  //       {
+  //         method: "GET",
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //         },
+  //       }
+  //     );
 
-        // Assuming bookedSlots is an array of Date objects
-        const newBookedSlots: any = [
-          ...bookedSlots,
-          ...extractedSlotTimes, // Spread the extractedSlotTimes array
-        ];
+  //     const result = await response.json();
+  //     if (result.success) {
+  //       setAPIBookings(result.data);
+  //       const extractedSlotTimes = result.data.map(
+  //         (item: any) => new Date(item.slot_time)
+  //       );
+  //       setSlotTimes(extractedSlotTimes);
+  //       setIsPageLoading(false);
 
-        setBookedSlots(newBookedSlots);
-        setIsLoading(false);
-      }
-    } catch (error) {
-      setIsPageLoading(false);
-    }
-  };
+  //       // Assuming bookedSlots is an array of Date objects
+  //       const newBookedSlots: any = [
+  //         ...bookedSlots,
+  //         ...extractedSlotTimes, // Spread the extractedSlotTimes array
+  //       ];
+
+  //       setBookedSlots(newBookedSlots);
+  //       setIsLoading(false);
+  //     }
+  //   } catch (error) {
+  //     setIsPageLoading(false);
+  //   }
+  // };
 
   const dataRequest = async (data: any) => {
     setIsScheduling(true);
@@ -191,6 +194,52 @@ function BookSession({ props }: { props: Type }) {
       }, 1000);
     });
   };
+
+
+  useEffect(() => {
+
+    const loadingTimeout = setTimeout(() => {
+      setIsLoading(false);
+    }, 2000)
+
+    const loadData = async () => {
+      try {
+        const [availabilityResponse, slotTimeResponse] = await Promise.all([
+          fetch(`/api/get-availability/${host_address}?dao_name=${daoName}`),
+          fetchApi(`/get-meeting/${host_address}?dao_name=${daoName}`),
+        ]);
+  
+        const availabilityResult = await availabilityResponse.json();
+        const slotTimeResult = await slotTimeResponse.json();
+  
+        if (availabilityResult.success && slotTimeResult.success) {
+          setAPIData(availabilityResult.data);
+          setAPIBookings(slotTimeResult.data);
+          const extractedSlotTimes = slotTimeResult.data.map(
+            (item: any) => new Date(item.slot_time)
+          );
+          setSlotTimes(extractedSlotTimes);
+          setIsPageLoading(false);
+          const newBookedSlots: any = [
+            ...bookedSlots,
+            ...extractedSlotTimes, // Spread the extractedSlotTimes array
+          ];
+  
+          setBookedSlots(newBookedSlots);
+          setIsLoading(false);
+        }
+      } catch (error) {
+        setIsPageLoading(false);
+        setIsLoading(false);
+        // Handle error
+      }
+    };
+  
+    loadData();
+    return () => {
+      clearTimeout(loadingTimeout);
+    };
+  }, [walletAddress, authenticated, session]);
 
   const handleModalInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -233,67 +282,73 @@ function BookSession({ props }: { props: Type }) {
     }
   }, [continueAPICalling]);
 
-  const checkUser = async () => {
-    try {
-      const token = await getAccessToken();
-      const myHeaders: HeadersInit = {
-        "Content-Type": "application/json",
-        ...(walletAddress && {
-          "x-wallet-address": walletAddress,
-          Authorization: `Bearer ${token}`,
-        }),
-      };
-
-      const raw = JSON.stringify({
-        address: walletAddress,
-      });
-
-      const requestOptions: any = {
-        method: "POST",
-        headers: myHeaders,
-        body: raw,
-        redirect: "follow",
-      };
-      const response = await fetchApi(
-        `/profile/${walletAddress}`,
-        requestOptions
-      );
-      const result = await response.json();
-      if (Array.isArray(result.data) && result.data.length > 0) {
-        for (const item of result.data) {
-          if (item.address === walletAddress) {
-            if (item.emailId === null || item.emailId === "") {
-              setHasEmailID(false);
-              return false;
-            } else if (item.emailId) {
-              const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-              const isValid = emailPattern.test(item.emailId);
-              if (isValid) {
-                setMailId(item.emailId);
-                setContinueAPICalling(true);
-                setHasEmailID(true);
-                return true;
-              } else {
-                setContinueAPICalling(false);
+  useEffect(() => {
+    const checkUser = async () => {
+      try {
+        const token = await getAccessToken();
+        const myHeaders: HeadersInit = {
+          "Content-Type": "application/json",
+          ...(walletAddress && {
+            "x-wallet-address": walletAddress,
+            Authorization: `Bearer ${token}`,
+          }),
+        };    
+  
+        const raw = JSON.stringify({
+          address: walletAddress,
+        });
+  
+        const requestOptions: any = {
+          method: "POST",
+          headers: myHeaders,
+          body: raw,
+          redirect: "follow",
+        };
+        const response = await fetchApi(
+          `/profile/${walletAddress}`,
+          requestOptions
+        );
+        const result = await response.json();
+        if (Array.isArray(result.data) && result.data.length > 0) {
+          for (const item of result.data) {
+            if (item.address === walletAddress) {
+              if (item.emailId === null || item.emailId === "") {
+                setHasEmailID(false);
                 return false;
+              } else if (item.emailId) {
+                const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                const isValid = emailPattern.test(item.emailId);
+                if (isValid) {
+                  setMailId(item.emailId);
+                  setHasEmailID(true);
+                  return true;
+                } else {
+                  return false;
+                }
               }
             }
           }
         }
+      } catch (error) {
+        toast.error("An error occurred while checking user information");
+        return false;
       }
-    } catch (error) {
-      toast.error("An error occurred while checking user information");
-      // setHasEmailID(false);
-      setContinueAPICalling(false);
-      return false;
-    }
-  };
+    };
+  
+    const runCheck = async () => {
+      let checkMail = await checkUser();
+      console.log('ChekMail',checkMail);
+      setCheckUserMail(checkMail?checkMail:false);
+    };
+  
+    runCheck(); // Call the async function inside the effect
+  }, [walletAddress]); // Include walletAddress or other dependencies
+  
 
   const checkBeforeApiCall = async () => {
     if (modalData.title.length > 0 && modalData.description.length > 0) {
       try {
         setConfirmSave(true);
-        const checkUserMail = await checkUser();
         const userRejectedLocal: any = await sessionStorage.getItem(
           "bookingMailRejected"
         );
@@ -689,7 +744,7 @@ function BookSession({ props }: { props: Type }) {
                         className="w-full sm:w-auto bg-black text-white px-6 sm:px-8 py-2 sm:py-3 rounded-3xl hover:bg-gray-900 text-sm sm:text-base"
                         disabled={addingEmail}
                       >
-                        {addingEmail && !hasEmailID ? (
+                        {addingEmail ? (
                           <div className="flex items-center justify-center ">
                             <ThreeDots
                               visible={true}

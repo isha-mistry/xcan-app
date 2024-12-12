@@ -938,7 +938,7 @@ function SpecificDelegate({ props }: { props: Type }) {
             } else {
               // await updateFollowerState();
               // await setFollowerscount();
-              // await fetchDelegateData();
+              await fetchDelegateData();
               console.log("Followers count!", followers);
               setFollowerCountLoading(false);
               setIsFollowStatusLoading(false);

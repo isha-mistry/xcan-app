@@ -117,6 +117,8 @@ function ConnectWalletWithENS() {
   //   }
   // };
 
+
+
   if (!ready) {
     return null; // or loading spinner
   }
