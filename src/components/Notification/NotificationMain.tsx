@@ -5,6 +5,7 @@ import { useRouter } from "next-nprogress-bar";
 import NotificationAll from "./NotificationAll";
 import SessionBookings from "./SessionBookings";
 import RecordedSessions from "./RecordedSessions";
+import ProposalVote from "./ProposalVote";
 import Followers from "./Followers";
 import Attestation from "./Attestation";
 import ConnectWalletWithENS from "../ConnectWallet/ConnectWalletWithENS";
@@ -20,7 +21,7 @@ import { useNotificationStudioState } from "@/store/notificationStudioState";
 import MobileResponsiveMessage from "../MobileResponsiveMessage/MobileResponsiveMessage";
 import Heading from "../ComponentUtils/Heading";
 import NotificationSkeletonLoader from "../SkeletonLoader/NotificationSkeletonLoader";
-import { usePrivy } from "@privy-io/react-auth";
+import { usePrivy, useWallets } from "@privy-io/react-auth";
 import { useConnection } from "@/app/hooks/useConnection";
 import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 
@@ -57,6 +58,7 @@ function NotificationMain() {
   const [markAllReadCalling, setMarkAllReadCalling] = useState<boolean>(false);
   const [isPageLoading, setIsPageLoading] = useState<boolean>(true);
   const { walletAddress } = useWalletAddress();
+  const { wallets } = useWallets();
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [selectedTab, setSelectedTab] = useState("Info");
@@ -70,6 +72,23 @@ function NotificationMain() {
     { name: "Attestations", value: "attestations" },
     // { name: "Instant Meet", value: "instant-meet" }
   ];
+
+
+  const isValidAuthentication = () => {
+    // Check if user is authenticated AND has an active wallet
+    const hasActiveWallet = wallets.some(wallet => wallet.address);
+    return authenticated && isConnected && hasActiveWallet;
+  };
+
+  const canAccessProtectedResources = () => {
+    if (!isValidAuthentication()) {
+      return false;
+    }
+    return true;
+  };
+
+  const Isvalid=canAccessProtectedResources();
+
 
   const handleTabChange = (tabValue: string) => {
     // console.log(tabValue);
@@ -239,6 +258,7 @@ function NotificationMain() {
       recordedSessions: "recordedSession",
       followers: "newFollower",
       attestations: "attestation",
+      proposalVote: "proposalVote",
     };
     return combinedNotifications.filter(
       (item) => item.notification_type === typeMap[type as keyof typeof typeMap]
@@ -246,7 +266,7 @@ function NotificationMain() {
   }, [combinedNotifications, searchParams]);
 
   const handleMarkAllAsRead = async () => {
-    if (!walletAddress || !session) return;
+    // if (!walletAddress || !session) return;
 
     const hasUnreadNotifications = combinedNotifications.some(
       (notification) => notification.read_status === false
@@ -300,6 +320,9 @@ function NotificationMain() {
     }
   };
 
+  
+
+
   const handleTabClick = (tab: string) => {
     if (
       tab === "recordedSessions" ||
@@ -317,7 +340,7 @@ function NotificationMain() {
       return <NotificationSkeletonLoader />;
     }
 
-    if (!canFetch) {
+    if (Isvalid==false) {
       return (
         <div className="flex flex-col justify-center items-center min-h-[16rem] px-4 sm:px-6 md:px-8 py-12 sm:py-16 md:py-20 bg-gradient-to-b from-blue-50/50 to-white">
           <div
@@ -435,7 +458,7 @@ function NotificationMain() {
 
   return (
     <>
-      <Toaster
+      {/* <Toaster
         toastOptions={{
           style: {
             fontSize: "14px",
@@ -446,7 +469,7 @@ function NotificationMain() {
             padding: "3px 5px",
           },
         }}
-      />
+      /> */}
       <div className="font-poppins mb-12">
         <div className="pt-2 xs:pt-4 sm:pt-6 px-4 md:px-6 lg:px-14">
           <Heading />
@@ -541,6 +564,25 @@ function NotificationMain() {
               onClick={() => router.push(path + "?active=attestations")}
             >
               Attestations
+            </button>
+            <button
+
+              className={`py-4 px-2 outline-none ${
+
+                searchParams.get("active") === "proposalVote"
+
+                  ? "text-blue-shade-200 font-semibold border-b-2 border-blue-shade-200"
+
+                  : "border-transparent"
+
+              }`}
+
+              onClick={() => router.push(path + "?active=proposalVote")}
+
+            >
+
+              ProposalVote
+
             </button>
           </div>
           <div className="hidden 2md:block ml-auto 1.5lg:pe-16 pe-8">

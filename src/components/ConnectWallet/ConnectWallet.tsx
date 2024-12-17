@@ -7,7 +7,18 @@ import styles from "@/components/MainSidebar/sidebar.module.css";
 import { usePrivy } from "@privy-io/react-auth";
 
 export const ConnectWallet = () => {
-  const {authenticated, login } = usePrivy();
+  const {authenticated, login,user,connectWallet } = usePrivy();
+
+  const handleLogin = async () => {
+    if (!authenticated) {
+      login();
+    } else {
+      if (!user?.google && !user?.farcaster) {
+        connectWallet();
+      }
+    }
+  };
+  
 
   return (
     <div>
@@ -16,7 +27,7 @@ export const ConnectWallet = () => {
         <>
           {/* Large screen button */}
           <button
-            onClick={login}
+            onClick={handleLogin}
             type="button"
             className={`hidden lg:flex cursor-pointer xl:w-11 xl:h-11 2xl:w-12 2xl:h-12 2.5xl:w-14 2.5xl:h-14 rounded-full items-center justify-center bg-white w-10 h-10 ${styles.icon3d} ${styles.whiteBg}`}
           >

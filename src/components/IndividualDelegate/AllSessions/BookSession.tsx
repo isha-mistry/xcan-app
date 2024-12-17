@@ -330,14 +330,14 @@ function BookSession({ props }: { props: Type }) {
           }
         }
       } catch (error) {
-        toast.error("An error occurred while checking user information");
+        // toast.error("An error occurred while checking user information");
         return false;
       }
     };
   
     const runCheck = async () => {
       let checkMail = await checkUser();
-      console.log('ChekMail',checkMail);
+      // console.log('ChekMail',checkMail);
       setCheckUserMail(checkMail?checkMail:false);
     };
   
@@ -629,6 +629,18 @@ function BookSession({ props }: { props: Type }) {
         </div>
       ) : (
         <div className="flex justify-center w-full px-4 sm:px-6 md:px-8">
+          <Toaster
+            toastOptions={{
+              style: {
+                fontSize: "14px",
+                backgroundColor: "#3E3D3D",
+                color: "#fff",
+                boxShadow: "none",
+                borderRadius: "50px",
+                padding: "3px 5px",
+              },
+            }}
+          />
           <div className="w-full max-w-md mx-auto mt-8 rounded-2xl shadow-lg bg-white">
             <div className="calendar-container">
               <DayTimeScheduler

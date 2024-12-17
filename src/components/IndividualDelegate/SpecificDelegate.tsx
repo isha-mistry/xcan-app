@@ -422,6 +422,47 @@ function SpecificDelegate({ props }: { props: Type }) {
   // For Optimism Governance Token
   const optimismTokenAddress = "0x4200000000000000000000000000000000000042";
 
+  // useEffect(() => {
+  //   const checkDelegateStatus = async () => {
+  //     setIsPageLoading(true);
+  //     //   const addr = await walletClient.getAddresses();
+  //     //   const address1 = addr[0];
+  //     let delegateTxAddr = "";
+  //     const contractAddress =
+  //       props.daoDelegates === "optimism"
+  //         ? "0x4200000000000000000000000000000000000042"
+  //         : props.daoDelegates === "arbitrum"
+  //         ? "0x912CE59144191C1204E64559FE8253a0e49E6548"
+  //         : "";
+
+  //     console.log("Line 414:",contractAddress);
+  //     console.log('Line 415:',props.daoDelegates,props.individualDelegate);    
+
+  //     try {
+  //       const delegateTx = await publicClient.readContract({
+  //         address: contractAddress,
+  //         abi: dao_abi.abi,
+  //         functionName: "delegates",
+  //         args: [props.individualDelegate],
+  //         // account: address1,
+  //       });
+  //       console.log("Line 425:",delegateTx);
+  //       delegateTxAddr = delegateTx;
+  //       if (
+  //         delegateTxAddr.toLowerCase() ===
+  //         props.individualDelegate?.toLowerCase()
+  //       ) {
+  //         setSelfDelegate(true);
+  //       }
+  //       setIsPageLoading(false);
+  //     } catch (error) {
+  //       console.error("Error in reading contract", error);
+  //       setIsPageLoading(false);
+  //     }
+  //   };
+  //   checkDelegateStatus();
+  // }, [props]);
+
   useEffect(() => {
     const checkDelegateStatus = async () => {
       setIsPageLoading(true);

@@ -27,7 +27,7 @@ import ArbLogo from "@/assets/images/daos/arb.png";
 import ccLogo from "@/assets/images/daos/CCLogo2.png";
 import { Button, useDisclosure } from "@nextui-org/react";
 // import { ConnectButton } from "@rainbow-me/rainbowkit";
-import { useAccount } from "wagmi";
+import { useAccount, useDisconnect } from "wagmi";
 import WalletAndPublicClient from "@/helpers/signer";
 import dao_abi from "../../artifacts/Dao.sol/GovernanceToken.json";
 import axios from "axios";
@@ -62,7 +62,7 @@ import { BrowserProvider, Contract } from "ethers";
 import { MeetingRecords } from "@/types/UserProfileTypes";
 
 function MainProfile() {
-  const { isConnected, address, chain } = useAccount();
+  const { isConnected, chain } = useAccount();
   // const { isConnected, chain } = useAccount();
   // const address = "0xc622420AD9dE8E595694413F24731Dd877eb84E1";
   const { data: session, status } = useSession();
@@ -91,8 +91,9 @@ function MainProfile() {
   const [isOpentoaster, settoaster] = useState(false);
   const [userFollowings, setUserFollowings] = useState<Following[]>([]);
   const [isModalLoading, setIsModalLoading] = useState(false);
-  const { ready, authenticated, login, logout, getAccessToken, user } =
+  const { ready, authenticated, login, logout, getAccessToken, user,connectWallet } =
     usePrivy();
+  const { disconnect } = useDisconnect();
   const [isspin, setSpin] = useState(false);
   // const [walletAddress, setWalletAddress] = useState<string | null>(null);
   const { walletAddress } = useWalletAddress();
@@ -164,13 +165,30 @@ function MainProfile() {
       ) {
         setIsDropdownOpen(false);
       }
-    };
+    }
 
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
+
+  const handleLogout=async()=>{
+    localStorage.removeItem("persistentWalletAddress"); 
+    await logout();
+    disconnect();
+  }
+
+  useEffect(()=>{
+    const currentWalletAddress = user?.wallet?.address;
+    if (currentWalletAddress && 
+      walletAddress && 
+      currentWalletAddress.toLowerCase() !== walletAddress.toLowerCase()) {
+    
+    handleLogout();
+    login();
+  }
+  },[authenticated,walletAddress])
 
   const handleMouseEnter = () => {
     setIsDropdownOpen(true);
@@ -203,15 +221,16 @@ function MainProfile() {
   }, [chain, chain?.name]);
 
   useEffect(() => {
-    if (isConnected && session && path.includes("profile/undefined")) {
+    if (isConnected && authenticated && path.includes("profile/undefined")) {
       const newPath = path.includes("profile/undefined")
-        ? path.replace("profile/undefined", `profile/${address}?active=info`)
+        ? path.replace("profile/undefined", `profile/${walletAddress}?active=info`)
         : path;
       router.replace(`${newPath}`);
-    } else if (!isConnected && !session) {
+    } else if (!isConnected && !authenticated) {
       if (!authenticated) {
         // openConnectModal();
         login();
+        return;
       } else {
         console.error("openConnectModal is not defined");
       }
@@ -972,6 +991,7 @@ function MainProfile() {
           },
         ],
       });
+
 
       const requestOptions: any = {
         method: "PUT",

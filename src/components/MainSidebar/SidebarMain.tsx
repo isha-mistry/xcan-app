@@ -26,7 +26,7 @@ import { Poppins } from "next/font/google";
 import { MdImportantDevices } from "react-icons/md";
 import NotificationIconComponent from "../Notification/NotificationIconComponent";
 import { IoIosRocket } from "react-icons/io";
-import { FaBusinessTime, FaUser } from "react-icons/fa6";
+import { FaBusinessTime, FaS, FaUser } from "react-icons/fa6";
 import { SiGitbook, SiGoogleclassroom } from "react-icons/si";
 import { PiUsersThreeFill } from "react-icons/pi";
 import { useSidebar } from "../../app/hooks/useSidebar";
@@ -41,7 +41,7 @@ function Sidebar() {
   const [hasSeenTour, setHasSeenTour] = useState(true);
   const [notificationCount, setNotificationCount] = useState(1);
   const [isHovering, setIsHovering] = useState(false);
-  const {authenticated, login } = usePrivy();
+  const {authenticated, login,user,connectWallet } = usePrivy();
   const {
     storedDao,
     handleMouseOver,
@@ -261,7 +261,7 @@ function Sidebar() {
   const sessionLoading = status === "loading";
   useEffect(() => {
     // console.log(session, sessionLoading, isConnected);
-  }, [session, sessionLoading, isConnected, isPageLoading]);
+  }, [sessionLoading, isConnected, isPageLoading]);
 
   const closeTour = () => {
     setIsTourOpen(false);
@@ -276,6 +276,32 @@ function Sidebar() {
       setIsTourOpen(true);
     }
   }, []);
+
+  // const HandleRedirect = async () => {
+  //   if (authenticated && isConnected==false) {
+  //     connectWallet();
+  //   } else {
+  //      router.push(`/profile/${walletAddress}?active=info`)
+  //   }
+  // };
+
+  const HandleRedirect=async()=>{
+    if (!authenticated) {
+      login();
+    } else {
+      if (!user?.google && !user?.farcaster) {
+        if(isConnected==false){
+          connectWallet();
+        }
+        else{
+          router.push(`/profile/${walletAddress}?active=info`)
+        }
+      }
+      else{
+        router.push(`/profile/${walletAddress}?active=info`)
+      }
+    }
+  }
 
   return (
     <>
@@ -525,7 +551,8 @@ function Sidebar() {
               >
                 <div
                   className={`cursor-pointer xl:w-11 xl:h-11 2xl:w-12 2xl:h-12 2.5xl:w-14 2.5xl:h-14 rounded-full flex items-center justify-center bg-white w-10 h-10 ${styles.icon3d} ${styles.whiteBg}`}
-                  onClick={() => router.push(`/profile/${walletAddress}?active=info`)}
+                  // onClick={() => router.push(`/profile/${walletAddress}?active=info`)}
+                  onClick={HandleRedirect}
                 >
                   <FaUser
                     className={`size-5 text-blue-shade-200 ${styles.iconInner}`}

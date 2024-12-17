@@ -24,13 +24,6 @@ function ConnectWalletWithENS() {
   const activeWallet = wallets[0]; // Primary wallet
 
   useEffect(() => {
-    // Check if the current chain is not in supported networks
-    if (chain?.id == undefined) {
-      toast.error("Unsupported network!", { duration: 4000 });
-    }
-  }, [chain?.id]);
-
-  useEffect(() => {
     if (isConnected && address) {
       setWalletAddress(address); // External wallet address
     } else if (authenticated && user?.wallet?.address) {
@@ -131,11 +124,25 @@ function ConnectWalletWithENS() {
       }
     }
   };
+  const isValidAuthentication = () => {
+    // Improved authentication check
+    const hasEmbeddedWallet = user?.google || user?.farcaster;
+    const hasWeb3Wallet = wallets.some(wallet => wallet.address);
+    
+    // Return true if authenticated and has either embedded or web3 wallet
+    return authenticated && (hasEmbeddedWallet || hasWeb3Wallet && isConnected);
+  };
+  
+  const canAccessProtectedResources = () => {
+    return isValidAuthentication();
+  };
+  
+  const isValid = canAccessProtectedResources();
   
   
   return (
     <div className="wallet z-10 font-poppins">
-      {!authenticated || !isConnected? (
+      {!isValid ? (
         <button
           onClick={handleLogin}
           type="button"

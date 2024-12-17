@@ -87,9 +87,10 @@ function DelegatesSession({ props }: { props: string }) {
     }
   };
   useEffect(() => {
-    if (walletAddress != null) {
-      fetchData();
-    }
+    // if (walletAddress != null) {
+    //   fetchData();
+    // }
+    fetchData();
   }, [searchParams.get("session")]);
 
   useEffect(() => {
