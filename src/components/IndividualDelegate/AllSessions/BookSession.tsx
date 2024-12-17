@@ -67,6 +67,7 @@ function BookSession({ props }: { props: Type }) {
   const [continueAPICalling, setContinueAPICalling] = useState<Boolean>(false);
   const [userRejected, setUserRejected] = useState<Boolean>();
   const [addingEmail, setAddingEmail] = useState<boolean>();
+  const { chain } = useAccount();
 
   const styles = `
   .calendar-container > div > ul {
@@ -226,11 +227,10 @@ function BookSession({ props }: { props: Type }) {
 
   const checkUser = async () => {
     try {
-      const myHeaders = new Headers();
-      myHeaders.append("Content-Type", "application/json");
-      if (address) {
-        myHeaders.append("x-wallet-address", address);
-      }
+      const myHeaders: HeadersInit = {
+        "Content-Type": "application/json",
+        ...(address && { "x-wallet-address": address }),
+      };
 
       const raw = JSON.stringify({
         address: address,
@@ -309,6 +309,21 @@ function BookSession({ props }: { props: Type }) {
     return roomId;
   };
   const apiCall = async () => {
+    const ChainName = chain?.name === "OP Mainnet" ? "optimism" : "arbitrum";
+
+    if (props.daoDelegates !== ChainName) {
+      toast(
+        "Please switch to the correct network to book your session seamlessly."
+      );
+      setIsLoading(false);
+      setConfirmSave(false);
+      setIsScheduling(false);
+      setContinueAPICalling(false);
+      modalData.title = "";
+      modalData.description = "";
+      return;
+    }
+
     let roomId = await createRandomRoom();
 
     const requestData = {
@@ -327,11 +342,10 @@ function BookSession({ props }: { props: Type }) {
       host_joined_status: "Pending",
     };
 
-    const myHeaders = new Headers();
-    myHeaders.append("Content-Type", "application/json");
-    if (address) {
-      myHeaders.append("x-wallet-address", address);
-    }
+    const myHeaders: HeadersInit = {
+      "Content-Type": "application/json",
+      ...(address && { "x-wallet-address": address }),
+    };
 
     const requestOptions: any = {
       method: "POST",
@@ -483,11 +497,10 @@ function BookSession({ props }: { props: Type }) {
         if (isValidEmail) {
           try {
             setAddingEmail(true);
-            const myHeaders = new Headers();
-            myHeaders.append("Content-Type", "application/json");
-            if (address) {
-              myHeaders.append("x-wallet-address", address);
-            }
+            const myHeaders: HeadersInit = {
+              "Content-Type": "application/json",
+              ...(address && { "x-wallet-address": address }),
+            };
 
             const raw = JSON.stringify({
               address: address,
@@ -546,6 +559,18 @@ function BookSession({ props }: { props: Type }) {
         </div>
       ) : (
         <div className="flex justify-center w-full px-4 sm:px-6 md:px-8">
+          <Toaster
+            toastOptions={{
+              style: {
+                fontSize: "14px",
+                backgroundColor: "#3E3D3D",
+                color: "#fff",
+                boxShadow: "none",
+                borderRadius: "50px",
+                padding: "3px 5px",
+              },
+            }}
+          />
           <div className="w-full max-w-md mx-auto mt-8 rounded-2xl shadow-lg bg-white">
             <div className="calendar-container">
               <DayTimeScheduler
@@ -620,7 +645,7 @@ function BookSession({ props }: { props: Type }) {
                   />
                 </div>
 
-                {showGetMailModal && (
+                {showGetMailModal && !hasEmailID && (
                   <div className="mt-4 border rounded-xl p-3 sm:p-4 relative">
                     <button
                       className="absolute top-2 right-2 sm:top-3 sm:right-3"

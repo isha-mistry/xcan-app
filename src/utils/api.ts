@@ -1,5 +1,3 @@
-// utils/api.ts
-
 type HttpMethod = "GET" | "POST" | "PUT" | "DELETE";
 
 interface RequestOptions extends RequestInit {
@@ -12,8 +10,6 @@ export async function fetchApi(
   endpoint: string,
   options: RequestOptions | RequestInit = {}
 ) {
-  console.log("endpoint", endpoint);
-  console.log("options", options);
   const { method = "GET", body, headers = {}, ...otherOptions } = options;
 
   const defaultHeaders = {
@@ -25,7 +21,6 @@ export async function fetchApi(
     headers: { ...defaultHeaders, ...headers },
     ...otherOptions,
   };
-
   if (body) {
     if (typeof body === "string") {
       fetchOptions.body = body;
@@ -33,7 +28,7 @@ export async function fetchApi(
       fetchOptions.body = JSON.stringify(body);
     }
   }
-
+  console.log("/api/proxy${endpoint}", endpoint);
   const response = await fetch(`/api/proxy${endpoint}`, fetchOptions);
 
   if (!response.ok) {

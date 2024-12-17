@@ -189,11 +189,10 @@ SessionTileProps) {
       daoName: dao,
     };
 
-    const myHeaders = new Headers();
-    myHeaders.append("Content-Type", "application/json");
-    if (address) {
-      myHeaders.append("x-wallet-address", address);
-    }
+    const myHeaders: HeadersInit = {
+      "Content-Type": "application/json",
+      ...(address && { "x-wallet-address": address }),
+    };
 
     // Configure the request options
     const requestOptions = {
@@ -243,11 +242,10 @@ SessionTileProps) {
 
       if (newAttestationUID) {
         try {
-          const myHeaders = new Headers();
-          myHeaders.append("Content-Type", "application/json");
-          if (address) {
-            myHeaders.append("x-wallet-address", address);
-          }
+          const myHeaders: HeadersInit = {
+            "Content-Type": "application/json",
+            ...(address && { "x-wallet-address": address }),
+          };
 
           const raw = JSON.stringify({
             meetingId: meetingId,
@@ -344,11 +342,10 @@ SessionTileProps) {
       if (formData.image === "") {
         imageCid = sessionData.thumbnail_image;
       }
-      const myHeaders = new Headers();
-      myHeaders.append("Content-Type", "application/json");
-      if (address) {
-        myHeaders.append("x-wallet-address", address);
-      }
+      const myHeaders: HeadersInit = {
+        "Content-Type": "application/json",
+        ...(address && { "x-wallet-address": address }),
+      };
 
       const raw = JSON.stringify({
         meetingId: sessionData.meetingId,

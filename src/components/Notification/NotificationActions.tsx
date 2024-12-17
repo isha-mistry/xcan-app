@@ -74,11 +74,12 @@ export const markAsRead = async (data: any): Promise<void> => {
   const { setNotifications, updateCombinedNotifications } =
     useNotificationStudioState.getState();
   try {
-    const myHeaders = new Headers();
-    myHeaders.append("Content-Type", "application/json");
-    if (data.receiver_address) {
-      myHeaders.append("x-wallet-address", data.receiver_address);
-    }
+    const myHeaders: HeadersInit = {
+      "Content-Type": "application/json",
+      ...(data.receiver_address && {
+        "x-wallet-address": data.receiver_address,
+      }),
+    };
 
     const raw = JSON.stringify({
       id: data?._id,

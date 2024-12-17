@@ -100,16 +100,12 @@ export async function POST(req: NextRequest) {
           notificationToGuest,
         ]);
 
-        console.log("notificationResults", notificationResults);
-
         if (notificationResults.insertedCount === 2) {
           const insertedNotifications = await notificationCollection
             .find({
               _id: { $in: Object.values(notificationResults.insertedIds) },
             })
             .toArray();
-
-          console.log("insertedNotifications", insertedNotifications);
         }
         const dataToSendHost = {
           ...notificationToHost,
@@ -121,9 +117,6 @@ export async function POST(req: NextRequest) {
         };
 
         const attendee_address = guestAddress;
-
-        console.log("dataToSendHost", dataToSendHost);
-        console.log("dataToSendGuest", dataToSendGuest);
 
         const socket = io(`${SOCKET_BASE_URL}`, {
           withCredentials: true,
@@ -166,9 +159,6 @@ export async function POST(req: NextRequest) {
             }
           }
         }
-        // }
-
-        // if (session_type === "session") {
 
         const documentsForUserEmail = await delegateCollection
           .find({ address: guestAddress })

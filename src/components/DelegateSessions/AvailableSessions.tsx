@@ -35,6 +35,7 @@ import user2 from "@/assets/images/user/user2.svg";
 import user3 from "@/assets/images/user/user8.svg";
 import user4 from "@/assets/images/user/user9.svg";
 import user5 from "@/assets/images/user/user4.svg";
+import toast from "react-hot-toast";
 
 interface Type {
   ensName: string;
@@ -155,11 +156,10 @@ function AvailableSessions() {
     setIsPageLoading(true);
     setError(null);
     try {
-      const myHeaders = new Headers();
-      myHeaders.append("Content-Type", "application/json");
-      if (address) {
-        myHeaders.append("x-wallet-address", address);
-      }
+      const myHeaders: HeadersInit = {
+        "Content-Type": "application/json",
+        ...(address && { "x-wallet-address": address }),
+      };
 
       const currentDate = new Date();
       let newDate = currentDate.toLocaleDateString();
@@ -893,7 +893,7 @@ function AvailableSessions() {
                             openConnectModal();
                           } else {
                             console.error("Connect modal is not available");
-                            alert(
+                            toast(
                               "Wallet connection is not available. Please check your wallet configuration."
                             );
                           }

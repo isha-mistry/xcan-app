@@ -3,6 +3,7 @@ import PageNotFound from "@/components/PageNotFound/PageNotFound";
 import React from "react";
 import type { Metadata, ResolvingMetadata } from "next";
 import { DEFAULT_METADATA } from "@/utils/metadataUtils";
+import { ApiDataProvider } from "@/contexts/ApiDataContext";
 
 const metadataConfig: any = {
   optimism: {

@@ -166,7 +166,7 @@ const WatchFreeCollect = ({
           await switchChain({ chainId: TARGET_CHAIN_ID });
         } catch (error) {
           console.error("Failed to switch network:", error);
-          alert(
+          toast(
             "Please switch to Arbitrum Sepolia network in your wallet and try again."
           );
           return false;
@@ -174,7 +174,7 @@ const WatchFreeCollect = ({
           setIsLoading(false);
         }
       } else {
-        alert(
+        toast(
           "Network switching is not supported. Please manually switch to Arbitrum Sepolia network in your wallet and try again."
         );
         return false;
@@ -221,9 +221,10 @@ const WatchFreeCollect = ({
   };
 
   const handleContractSubmit = async (contractAddress: string) => {
-    const myHeaders = new Headers();
-    myHeaders.append("Content-Type", "application/json");
-    if (address) myHeaders.append("x-wallet-address", address);
+    const myHeaders: HeadersInit = {
+      "Content-Type": "application/json",
+      ...(address && { "x-wallet-address": address }),
+    };
 
     const raw = JSON.stringify({
       meetingId: data.meetingId,
@@ -324,7 +325,7 @@ const WatchFreeCollect = ({
       tokenDataURI = `ipfs://${tokenMetadataJsonCid}`;
     } catch (error) {
       console.error("Error uploading to Lighthouse:", error);
-      alert("Error uploading data. Please try again.");
+      toast("Error uploading data. Please try again.");
     } finally {
     }
   };

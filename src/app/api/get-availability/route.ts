@@ -51,10 +51,10 @@ export async function POST(req: NextRequest, res: NextResponse<Type[]>) {
   try {
     const { dao_name, userAddress } = await req.json();
 
-    console.log("Initial Data start=========");
-    console.log("dao_name", dao_name);
-    console.log("userAddress", userAddress);
-    console.log("Initial Data end=========");
+    // console.log("Initial Data start=========");
+    // console.log("dao_name", dao_name);
+    // console.log("userAddress", userAddress);
+    // console.log("Initial Data end=========");
 
     const client = await connectDB();
 
@@ -62,9 +62,9 @@ export async function POST(req: NextRequest, res: NextResponse<Type[]>) {
     const collection = db.collection("scheduling");
 
     const currentDate = new Date();
-    console.log("currentDate", currentDate);
+    // console.log("currentDate", currentDate);
     const currentTime = currentDate.toUTCString().toLocaleString();
-    console.log("currentTime", currentTime);
+    // console.log("currentTime", currentTime);
     let newDate = currentDate.toLocaleDateString();
     if (newDate.length !== 10 || !newDate.match(/^\d{4}-\d{2}-\d{2}$/)) {
       const year = currentDate.getFullYear();
@@ -72,7 +72,7 @@ export async function POST(req: NextRequest, res: NextResponse<Type[]>) {
       const day = String(currentDate.getDate()).padStart(2, "0");
       newDate = `${year}-${month}-${day}`;
     }
-    console.log("newDate", newDate);
+    // console.log("newDate", newDate);
     const query: any = {
       dao_name: dao_name,
       userAddress: userAddress,
@@ -111,7 +111,7 @@ export async function POST(req: NextRequest, res: NextResponse<Type[]>) {
       (session) => session.dateAndRanges.length > 0
     );
 
-    console.log("finalSessionData", finalSessionData);
+    // console.log("finalSessionData", finalSessionData);
 
     client.close();
 
@@ -142,14 +142,14 @@ export async function PUT(req: NextRequest, res: NextResponse<Type[]>) {
       endTime,
     } = await req.json();
 
-    console.log("Initial Data start=========");
-    console.log("dao_name", dao_name);
-    console.log("userAddress", userAddress);
-    console.log("timeSlotSizeMinutes", timeSlotSizeMinutes);
-    console.log("date", date);
-    console.log("startTime", startTime);
-    console.log("endTime", endTime);
-    console.log("Initial Data end=========");
+    // console.log("Initial Data start=========");
+    // console.log("dao_name", dao_name);
+    // console.log("userAddress", userAddress);
+    // console.log("timeSlotSizeMinutes", timeSlotSizeMinutes);
+    // console.log("date", date);
+    // console.log("startTime", startTime);
+    // console.log("endTime", endTime);
+    // console.log("Initial Data end=========");
 
     const client = await connectDB();
     const db = client.db();

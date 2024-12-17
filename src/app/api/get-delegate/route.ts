@@ -78,7 +78,6 @@ export const GET = async (req: NextRequest) => {
       delegate,
       ...data,
     })).slice(0, UNIQUE_DELEGATES_COUNT);
-    console.log("result", result);
     return NextResponse.json({
       delegates: result,
       nextSkip: newSkip,
