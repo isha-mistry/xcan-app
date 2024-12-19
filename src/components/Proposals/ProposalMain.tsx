@@ -49,6 +49,7 @@ import MobileResponsiveMessage from "../MobileResponsiveMessage/MobileResponsive
 import { Transaction } from "ethers";
 import { fetchApi } from "@/utils/api";
 import { GiConsoleController } from "react-icons/gi";
+import { fetchEnsNameAndAvatar, getENSName } from "@/utils/ENSUtils";
 
 // Create a client
 const client = createPublicClient({
@@ -130,6 +131,53 @@ function ProposalMain({ props }: { props: Props }) {
   const [hasVoted, setHasVoted] = useState(false);
   const [dailyVotes, setDailyVotes] = useState<any[]>([]);
   const chartContainerRef = useRef<HTMLDivElement | null>(null);
+  // State to store ENS data for displayed voters only
+  const [ensData, setEnsData] = useState<{ [key: string]: { name: string | null; avatar: string | null } }>({});
+
+  // Fetch ENS data only for displayed voters
+  useEffect(() => {
+    const fetchEnsDataForDisplayed = async () => {
+      const displayedVoters = voterList?.slice(0, displayCount) || [];
+
+      // Fetch ENS data only for addresses we haven't fetched yet
+      const unfetchedVoters = displayedVoters.filter(
+        (voter: any) => !ensData[voter.voter]
+      );
+
+      // Fetch ENS data in parallel for better performance
+      const promises = unfetchedVoters.map(async (voter: any) => {
+        try {
+          const { ensName, avatar } = await fetchEnsNameAndAvatar(voter.voter);
+          return {
+            address: voter.voter,
+            data: { name: ensName, avatar: avatar }
+          };
+        } catch (error) {
+          console.error(`Error fetching ENS data for ${voter.voter}:`, error);
+          return {
+            address: voter.voter,
+            data: { name: null, avatar: null }
+          };
+        }
+      });
+
+      // Update state with new ENS data
+      const results = await Promise.allSettled(promises);
+      const newEnsData: { [key: string]: { name: string | null; avatar: string | null } } = {};
+      results.forEach((result) => {
+        if (result.status === 'fulfilled' && result.value) {
+          newEnsData[result.value.address] = result.value.data;
+        }
+      });
+
+      setEnsData(prev => ({
+        ...prev,
+        ...newEnsData
+      }));
+    };
+
+    fetchEnsDataForDisplayed();
+  }, [voterList, displayCount]); // Dependencies include display parameters
 
   const getContractAddress = async (txHash: `0x${string}`) => {
     try {
@@ -525,7 +573,7 @@ function ProposalMain({ props }: { props: Props }) {
     let pageCount = 0;
 
     try {
-      while (pageCount < MAX_PAGES) {
+      // while (pageCount < MAX_PAGES) {
         pageCount++;
 
         // Implement retry logic
@@ -553,16 +601,16 @@ function ProposalMain({ props }: { props: Props }) {
         const newVotes = [...newVoteCasts];
 
         // Break if no new votes
-        if (newVotes.length == 1000) {
-          break;
-        }
+        // if (newVotes.length == 1000) {
+        //   break;
+        // }
       }
-    } catch (err: any) {
-      console.error("Error fetching votes:", err);
-      setError(err.message);
-      throw err;
-    }
-    finally {
+    // } catch (err: any) {
+    //   console.error("Error fetching votes:", err);
+    //   setError(err.message);
+    //   throw err;
+    // }
+  finally {
       setIsLoading(false);
     }
   }, [props.id, props.daoDelegates]);
@@ -955,10 +1003,10 @@ function ProposalMain({ props }: { props: Props }) {
           <div className="flex-shrink-0">
             <div
               className={`rounded-full flex items-center justify-center text-xs py-1 px-2 font-medium ${status
-                  ? status === "Closed"
-                    ? "bg-[#f4d3f9] border border-[#77367a] text-[#77367a]"
-                    : "bg-[#f4d3f9] border border-[#77367a] text-[#77367a]"
-                  : "bg-gray-200 animate-pulse rounded-full"
+                ? status === "Closed"
+                  ? "bg-[#f4d3f9] border border-[#77367a] text-[#77367a]"
+                  : "bg-[#f4d3f9] border border-[#77367a] text-[#77367a]"
+                : "bg-gray-200 animate-pulse rounded-full"
                 }`}
             >
               {status ? status : <div className="h-4 w-16"></div>}
@@ -1003,8 +1051,8 @@ function ProposalMain({ props }: { props: Props }) {
           ) : (
             <div
               className={`rounded-full flex items-center justify-center text-xs h-fit py-0.5 border font-medium w-24 ${Proposalstatus
-                  ? getStatusColor(Proposalstatus)
-                  : "bg-gray-200 animate-pulse rounded-full"
+                ? getStatusColor(Proposalstatus)
+                : "bg-gray-200 animate-pulse rounded-full"
                 }`}
             >
               {Proposalstatus ? (
@@ -1059,8 +1107,8 @@ function ProposalMain({ props }: { props: Props }) {
             ) : (
               <div
                 className={`flex flex-col gap-2 py-3 pl-2 pr-1 w-full xl:pl-3 xl:pr-2 my-3 border-gray-200 ${voterList?.length > 5
-                    ? `h-[440px] overflow-y-auto ${style.scrollbar}`
-                    : "h-fit"
+                  ? `h-[440px] overflow-y-auto ${style.scrollbar}`
+                  : "h-fit"
                   }`}
               >
                 {voterList && voterList?.length === 0 ? (
@@ -1077,37 +1125,39 @@ function ProposalMain({ props }: { props: Props }) {
                         key={index}
                       >
                         <div className="flex-grow flex items-center space-x-2 1.3lg:space-x-4">
-                          {isArbitrum ? (
+                          {ensData[voter.voter]?.avatar ? (
                             <Image
-                              src={user2}
-                              alt="Profile"
+                              src={ensData[voter.voter].avatar || (isArbitrum ? user2 : user5)}
+                              alt="ENS Avatar"
                               className="xl:w-10 w-8 xl:h-10 h-8 rounded-full"
+                              width={40}
+                              height={40}
                             />
                           ) : (
                             <Image
-                              src={user5}
+                              src={isArbitrum ? user2 : user5}
                               alt="Profile"
-                              className="xl:w-10 w-8 h-10 rounded-full"
+                              className="xl:w-10 w-8 xl:h-10 h-8 rounded-full"
                             />
                           )}
 
-                          <div>
+                          <div className="w-[70%]">
                             <p
                               onClick={() => handleAddressClick(voter.voter)}
-                              className="text-gray-800 xl:text-sm hover:text-blue-600 transition-colors duration-200 cursor-pointer text-xs xs:text-sm 2md:text-xs"
+                              className="text-gray-800 xl:text-sm hover:text-blue-600 transition-colors duration-200 cursor-pointer text-xs xs:text-sm 2md:text-xs overflow-hidden text-ellipsis whitespace-nowrap"
                             >
-                              {voter.voter.slice(0, 6)}...
-                              {voter.voter.slice(-4)}
+                             {ensData[voter.voter]?.name || `${voter.voter.slice(0, 6)}...${voter.voter.slice(-4)}`}
+
                             </p>
                           </div>
                         </div>
                         <div className="flex items-center space-x-1 0.5xs:space-x-2 1.3lg:space-x-4">
                           <div
                             className={`py-1 xs:py-2 rounded-full 1.5lg:text-sm w-24 0.2xs:w-28 xs:w-36 2md:w-28 lg:w-[100px] 1.3lg:w-28 1.5xl:w-36 flex items-center justify-center xl:font-medium text-xs ${voter.support === 1
-                                ? "bg-green-100 text-green-800"
-                                : voter.support === 0
-                                  ? "bg-red-100 text-red-800"
-                                  : "bg-blue-100 text-blue-800"
+                              ? "bg-green-100 text-green-800"
+                              : voter.support === 0
+                                ? "bg-red-100 text-red-800"
+                                : "bg-blue-100 text-blue-800"
                               }`}
                           >
                             {formatWeight(voter.votingPower / 10 ** 18)}
@@ -1163,7 +1213,7 @@ function ProposalMain({ props }: { props: Props }) {
             >
               <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-black-shade-900"></div>
             </div>
-          ) : voterList.length===0 && chartData.length === 0 ? (
+          ) : voterList.length === 0 && chartData.length === 0 ? (
             <div
               className="w-full 2md:w-[60%] h-[500px] flex items-center justify-center bg-gray-50 rounded-2xl"
               style={{ boxShadow: "0px 4px 26.7px 0px rgba(0, 0, 0, 0.10)" }}
