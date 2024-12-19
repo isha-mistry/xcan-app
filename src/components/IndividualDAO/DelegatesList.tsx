@@ -1,7 +1,7 @@
 import Image from "next/image";
 import React, { useEffect, useState, useCallback, useMemo } from "react";
 import { useRouter } from "next-nprogress-bar";
-import toast from "react-hot-toast";
+import toast, { Toaster } from "react-hot-toast";
 // import { useConnectModal, useChainModal } from "@rainbow-me/rainbowkit";
 import { useAccount } from "wagmi";
 import WalletAndPublicClient from "@/helpers/signer";
@@ -280,7 +280,8 @@ function DelegatesList({ props }: { props: string }) {
   
       // Check if we're on the correct network
       if (currentChainId !== chainId) {
-        toast.error(`Please switch to ${network} (Chain ID: ${chainId})`);
+        // toast.error(`Please switch to ${network} (Chain ID: ${chainId})`);
+        toast('Switching to correct netwotk,try again!');
         
         // Try to switch network
         try {
@@ -449,6 +450,18 @@ function DelegatesList({ props }: { props: string }) {
 
   return (
     <div className="container mx-auto px-4 py-8">
+       <Toaster
+                  toastOptions={{
+                    style: {
+                      fontSize: "14px",
+                      backgroundColor: "#3E3D3D",
+                      color: "#fff",
+                      boxShadow: "none",
+                      borderRadius: "50px",
+                      padding: "3px 5px",
+                    },
+                  }}
+                />
       <div className="flex flex-col md:flex-row justify-between items-center mb-8">
         <div className="relative w-full md:w-96 mb-4 md:mb-0">
           <input
