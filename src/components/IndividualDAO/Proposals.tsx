@@ -56,237 +56,132 @@ function Proposals({ props }: { props: string }) {
   const currentCache = isOptimism ? optimismCache : arbitrumCache;
   const [visible, setVisible] = useState(true);
   const [isShowing, setIsShowing] = useState(true);
-  const [fetchingProposalIds, setFetchingProposalIds] = useState<Set<string>>(new Set());
+  const [fetchingProposalIds, setFetchingProposalIds] = useState<Set<string>>(
+    new Set()
+  );
 
-  useEffect(() => {
-    const fetchCanacelledProposals = async () => {
-      const response = await fetchApi(`/get-canceledproposal?dao=${props}`);
-      const result = await response.json();
-      setCanceledProposals(result);
-    };
-    fetchCanacelledProposals();
-  }, []);
+  // useEffect(() => {
+  //   const fetchCanacelledProposals = async () => {
+  //     const response = await fetchApi(`/get-canceledproposal?dao=${props}`);
+  //     const result = await response.json();
+  //     setCanceledProposals(result);
+  //   };
+  //   fetchCanacelledProposals();
+  // }, []);
+  // const fetchCanceledProposals = async () => {
+  //   try {
+  //     const response = await fetch(`/api/get-canceledproposal?dao=${props}`);
+  //     if (!response.ok) {
+  //       throw new Error(`Failed to fetch canceled proposals: ${response.status}`);
+  //     }
+  //     const result = await response.json();
+  //     setCanceledProposals(result);
+  //   } catch (error: any) {
+  //     console.error("Error fetching canceled proposals:", error);
+  //     setError("Failed to fetch canceled proposals. Please try again later.");
+  //   }
+  // };
+
+  // useEffect(() => {
+  //   fetchCanceledProposals();
+  // }, [props]);
+
   const weiToEther = (wei: string): number => {
     return Number(wei) / 1e18;
   };
-  // const fetchVotes = useCallback(
-  //   async (proposal: Proposal): Promise<Proposal> => {
-  //     let allVotes: any[] = [];
-  //     let lastBlockNumber = "0";
-  //     const limit = 1000;
-  //     let hasMore = true;
-
-  //     try {
-  //       while (hasMore) {
-  //         const response = await fetch(
-  //           `/api/get-voters?proposalId=${proposal.proposalId}&blockTimestamp=${lastBlockNumber}&first=${limit}&dao=${props}`
-  //         );
-  //         const data = await response.json();
-
-  //         const newVotes = [
-  //           ...(data?.voteCastWithParams || []),
-  //           ...(data?.voteCasts || []),
-  //         ];
-
-  //         if (newVotes.length <1000) {
-  //           hasMore = false;
-  //         } else {
-  //           allVotes = [...allVotes, ...newVotes];
-  //           console.log('all votes',allVotes);
-  //           console.log('new votes',newVotes);
-  //           // Get the latest block number for the next query
-  //           const blockNumbers = newVotes.map((vote: any) =>
-  //             // Convert block numbers to numbers for comparison
-  //             typeof vote.blockTimestamp === "string"
-  //               ? parseInt(vote.blockTimestamp)
-  //               : vote.blockTimestamp
-  //           );
-  //           console.log(blockNumbers)
-  //           lastBlockNumber = Math.max(...blockNumbers).toString();
-  //         }
-  //       }
-  //       const uniqueVotes = Array.from(
-  //         new Map(allVotes.map(vote => [`${vote.voter}-${vote.blockTimestamp}`, vote])).values()
-  //       );
-  //       let s0Weight = 0;
-  //       let s1Weight = 0;
-  //       let s2Weight = 0;
-
-  //       uniqueVotes.forEach((vote: any) => {
-  //         const weightInEther = weiToEther(vote.weight);
-  //         if (vote.support === 0) {
-  //           s0Weight += weightInEther;
-  //         } else if (vote.support === 1) {
-  //           s1Weight += weightInEther;
-  //         } else if (vote.support === 2) {
-  //           s2Weight += weightInEther;
-  //         }
-  //       });
-
-  //       return {
-  //         ...proposal,
-  //         support0Weight: s0Weight,
-  //         support1Weight: s1Weight,
-  //         support2Weight: s2Weight,
-  //         votersCount: allVotes.length,
-  //         votesLoaded: true,
-  //       };
-  //     } catch (err: any) {
-  //       console.error("Error fetching votes:", err);
-  //       throw err;
-  //     }
-  //   },
-  //   [props]
-  // );
-  // const fetchVotes = useCallback(async (proposal: Proposal): Promise<Proposal> => {
-  //   let allVotes: Vote[] = [];
-  //   let lastBlockNumber = "0";
-  //   const BATCH_SIZE = 1000;
-  //   const MAX_RETRIES = 3;
-  //   const MAX_ITERATIONS = 10; // Prevent infinite loops
-    
-  //   let iterationCount = 0;
-    
-  //   try {
-  //     while (iterationCount < MAX_ITERATIONS) {
-  //       iterationCount++;
-  //       let retryCount = 0;
-  //       let fetchSuccess = false;
-        
-  //       while (retryCount < MAX_RETRIES && !fetchSuccess) {
-  //         try {
-  //           console.log(`Fetching votes for proposal ${proposal.proposalId} - Page ${iterationCount}, LastBlock: ${lastBlockNumber}`);
-            
-  //           const response = await fetch(
-  //             `/api/get-voters?proposalId=${proposal.proposalId}&blockTimestamp=${lastBlockNumber}&first=${BATCH_SIZE}&dao=${props}`
-  //           );
-
-  //           if (!response.ok) {
-  //             throw new Error(`HTTP error! status: ${response.status}`);
-  //           }
-
-  //           const data: FetchVotesResponse = await response.json();
-  //           const newVotes = [...(data?.voteCastWithParams || []), ...(data?.voteCasts || [])];
-            
-  //           // Break if no new votes
-  //           if (newVotes.length === 0) {
-  //             console.log('No more votes to fetch');
-  //             break;
-  //           }
-
-  //           // Update allVotes with new unique votes
-  //           const uniqueNewVotes = newVotes.filter(newVote => 
-  //             !allVotes.some(existingVote => 
-  //               existingVote.voter === newVote.voter && 
-  //               existingVote.blockTimestamp === newVote.blockTimestamp
-  //             )
-  //           );
-            
-  //           allVotes = [...allVotes, ...uniqueNewVotes];
-
-  //           // Update lastBlockNumber using the highest timestamp
-  //           const maxBlockTimestamp = Math.max(
-  //             ...newVotes.map(vote => {
-  //               const timestamp = vote.blockTimestamp;
-  //               return typeof timestamp === "string" ? parseInt(timestamp, 10) : timestamp;
-  //             }).filter(num => !isNaN(num))
-  //           );
-
-  //           if (isFinite(maxBlockTimestamp)) {
-  //             lastBlockNumber = (maxBlockTimestamp + 1).toString();
-  //             console.log('Updated lastBlockNumber:', lastBlockNumber);
-  //           }
-
-  //           fetchSuccess = true;
-
-  //         } catch (fetchError) {
-  //           retryCount++;
-  //           console.error(`Fetch attempt ${retryCount} failed:`, fetchError);
-            
-  //           if (retryCount === MAX_RETRIES) {
-  //             throw new Error(`Failed to fetch after ${MAX_RETRIES} retries`);
-  //           }
-            
-  //           // Exponential backoff with jitter
-  //           const baseDelay = Math.pow(2, retryCount) * 1000;
-  //           const jitter = Math.random() * 1000;
-  //           await new Promise(resolve => setTimeout(resolve, baseDelay + jitter));
-  //         }
-  //       }
-        
-  //       // Break if we got less than BATCH_SIZE votes (indicating we're at the end)
-  //       if (allVotes.length < BATCH_SIZE * iterationCount) {
-  //         break;
-  //       }
-  //     }
-
-  //     // Aggregate vote weights
-  //     const voteWeights = allVotes.reduce((acc: { [key: string]: number }, vote) => {
-  //       const weightInEther = weiToEther(vote.weight);
-  //       (acc[`support${vote.support}Weight`] as number) += weightInEther;
-  //       return acc;
-  //     }, {
-  //       support0Weight: 0,
-  //       support1Weight: 0,
-  //       support2Weight: 0
-  //     });
-
-  //     return {
-  //       ...proposal,
-  //       ...voteWeights,
-  //       votersCount: allVotes.length,
-  //       votesLoaded: true
-  //     };
-
-  //   } catch (err) {
-  //     console.error(`Error fetching votes for proposal ${proposal.proposalId}:`, err);
-  //     throw err;
-  //   }
-  // }, [props]);
-  
+  const formatWeight = (weight: number): string => {
+    if (weight >= 1e9) {
+      return (weight / 1e9).toFixed(2) + "B";
+    } else if (weight >= 1e6) {
+      return (weight / 1e6).toFixed(2) + "M";
+    } else if (weight >= 1e3) {
+      return (weight / 1e3).toFixed(2) + "K";
+    } else {
+      return weight?.toFixed(2);
+    }
+  };
   const fetchProposals = async () => {
     setLoading(true);
     try {
+      // Fetch canceled proposals
+      const canceledResponse = await fetch(`/api/get-canceledproposal?dao=${props}`);
+      if (!canceledResponse.ok) {
+        throw new Error(`Failed to fetch canceled proposals: ${canceledResponse.status}`);
+      }
+      const canceledProposals = await canceledResponse.json();
+      setCanceledProposals(canceledProposals);
+
+      // Check cache
       if (cache[props]) {
+        const filteredCache = cache[props]!.filter(
+          (proposal: Proposal) =>
+            !canceledProposals.some(
+              (canceledProposal: any) =>
+                canceledProposal.proposalId === proposal.proposalId
+            )
+        );
         setAllProposals(cache[props]);
         setDisplayedProposals(cache[props].slice(0, proposalsPerPage));
         setLoading(false);
         return;
       }
-      let response;
-      if (props === "optimism") {
-        response = await fetch("/api/get-proposals");
-      } else {
-        response = await fetch(`/api/get-arbitrumproposals`);
-      }
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const responseData = await response.json();
-      let newProposals;
-      if (props === "optimism") {
-        const {
-          proposalCreated1S,
-          proposalCreated2S,
-          proposalCreated3S,
-          proposalCreateds,
-        } = responseData.data;
 
-        newProposals = [
-          ...proposalCreated1S,
-          ...proposalCreated2S,
-          ...proposalCreated3S,
-          ...proposalCreateds,
-        ].map((p) => ({
-          ...p,
-          votesLoaded: false,
-        }));
-        cache[props] = newProposals;
+      // Fetch proposals and vote summary
+      const [proposalsResponse, voteSummaryResponse] = await Promise.all([
+        fetch(isOptimism ? "/api/get-proposals" : "/api/get-arbitrumproposals"),
+        fetch(`/api/get-vote-summary?dao=${props}`)
+      ]);
+
+      if (!proposalsResponse.ok || !voteSummaryResponse.ok) {
+        throw new Error("Failed to fetch proposals or vote summary");
+      }
+
+      const responseData = await proposalsResponse.json();
+      const voteSummaryData = await voteSummaryResponse.json();
+
+      let newProposals: Proposal[] = [];
+
+      if (isOptimism) {
+        const { proposalCreated1S, proposalCreated2S, proposalCreated3S, proposalCreateds } = responseData.data;
+        newProposals = [...proposalCreated1S, ...proposalCreated2S, ...proposalCreated3S, ...proposalCreateds]
+          // .filter(p => !canceledProposals.some((cp:any) => cp.proposalId === p.proposalId))
+          .map(p => {
+            const voteSummary = voteSummaryData.proposalVoteSummaries.find(
+              (vote: any) => vote.proposalId === p.proposalId
+            );
+            return {
+              ...p,
+              votesLoaded: true,
+              support0Weight: weiToEther(voteSummary?.weightAgainst) || 0,
+              support1Weight: weiToEther(voteSummary?.weightFor) || 0,
+              support2Weight: weiToEther(voteSummary?.weightAbstain) || 0,
+            };
+          });
       } else {
-        newProposals = responseData.data.proposalCreateds;
+        // Arbitrum handling
+        newProposals = responseData.data.proposalCreateds
+          .filter((p:any) => !canceledProposals.some((cp:any) => cp.proposalId === p.proposalId))
+          .map((p:any) => {
+            const voteSummary = voteSummaryData.proposalVoteSummaries.find(
+              (vote: any) => vote.proposalId === p.proposalId
+            );
+            return {
+              ...p,
+              votesLoaded: true,
+              support0Weight: weiToEther(voteSummary?.weightAgainst) || 0,
+              support1Weight: weiToEther(voteSummary?.weightFor) || 0,
+              support2Weight: weiToEther(voteSummary?.weightAbstain) || 0,
+            };
+          });
+
+        // Fetch queue info for Arbitrum
         const queueResponse = await fetch("/api/get-arbitrum-queue-info");
+        if (!queueResponse.ok) {
+          throw new Error("Failed to fetch queue information");
+        }
         const queueData = await queueResponse.json();
-        newProposals = newProposals.map((proposal: Proposal) => {
+        
+        newProposals = newProposals.map(proposal => {
           const queueInfo = queueData.data.proposalQueueds.find(
             (q: any) => q.proposalId === proposal.proposalId
           );
@@ -297,41 +192,25 @@ function Proposals({ props }: { props: string }) {
           };
         });
       }
-      newProposals.sort(
-        (a: any, b: any) => b.blockTimestamp - a.blockTimestamp
-      );
 
+      // Sort proposals by timestamp
+      newProposals.sort((a, b) => b.blockTimestamp - a.blockTimestamp);
+
+      // Update cache and state
       cache[props] = newProposals;
-      setAllProposals((prevProposals) => {
-        const updatedProposals = [...prevProposals, ...newProposals];
-        return updatedProposals.sort(
-          (a, b) => b.blockTimestamp - a.blockTimestamp
-        );
-      });
+      setAllProposals(newProposals);
+      setDisplayedProposals(newProposals.slice(0, proposalsPerPage));
 
-      setDisplayedProposals((prevDisplayed) => {
-        const newDisplayed = [...prevDisplayed, ...newProposals];
-        return newDisplayed.slice(
-          0,
-          Math.min(newDisplayed.length, prevDisplayed.length + proposalsPerPage)
-        );
-      });
     } catch (error: any) {
       console.error("Error fetching data:", error);
       if (error.name === "TypeError" && error.message === "Failed to fetch") {
         setError("Please check your internet connection and try again.");
       } else if (error.name === "TimeoutError") {
-        setError(
-          "The request is taking longer than expected. Please try again."
-        );
+        setError("The request is taking longer than expected. Please try again.");
       } else if (error.name === "SyntaxError") {
-        setError(
-          "We're having trouble processing the data. Please try again later."
-        );
+        setError("We're having trouble processing the data. Please try again later.");
       } else {
-        setError(
-          "We're working to resolve a temporary rate-limit issue affecting data fetching. Thank you for your patience!"
-        );
+        setError("We're experiencing technical difficulties. Please try again later.");
       }
     } finally {
       setLoading(false);
@@ -644,7 +523,8 @@ function Proposals({ props }: { props: string }) {
         setDisplayedProposals(currentCache.updatedProposals);
         setLoading(false);
       } else {
-        await fetchProposals();
+        const allData = await fetchProposals();
+        console.log("allData", allData);
       }
     };
     proposals();
@@ -695,6 +575,48 @@ function Proposals({ props }: { props: string }) {
           : "DEFEATED";
       }
     }
+  };
+  const isProposalCanceled = (proposalId: string, canceledProposals: any[]) => {
+    return Array.isArray(canceledProposals) && 
+      canceledProposals.some(item => item.proposalId === proposalId);
+  };
+  
+  const hasVotingStarted = (proposal: any) => {
+    const currentTime = Math.floor(Date.now() / 1000); // Convert to seconds
+    return currentTime >= proposal.blockTimestamp;
+  };
+  
+  const getProposalStatusYet = (proposal: any, canceledProposals: any[]): { text: string; style: string } => {
+    const noVotes = proposal.support1Weight === 0 && 
+      proposal.support0Weight === 0 && 
+      proposal.support2Weight === 0;
+  
+    if (isProposalCanceled(proposal.proposalId, canceledProposals)) {
+      return {
+        text: proposal.support1Weight! > proposal.support0Weight!
+          ? `${formatWeight(proposal.support1Weight!)} FOR`
+          : `${formatWeight(proposal.support0Weight!)} AGAINST`,
+        style: proposal.support1Weight! > proposal.support0Weight!
+          ? "text-[#639b55] border-[#639b55] bg-[#dbf8d4]"
+          : "bg-[#fa989a] text-[#e13b15] border-[#e13b15]"
+      };
+    }
+  
+    if (noVotes) {
+      return {
+        text: !hasVotingStarted(proposal) ? "Yet to start" : "No votes",
+        style: "bg-[#FFEDD5] border-[#F97316] text-[#F97316]"
+      };
+    }
+  
+    return {
+      text: proposal.support1Weight! > proposal.support0Weight!
+        ? `${formatWeight(proposal.support1Weight!)} FOR`
+        : `${formatWeight(proposal.support0Weight!)} AGAINST`,
+      style: proposal.support1Weight! > proposal.support0Weight!
+        ? "text-[#639b55] border-[#639b55] bg-[#dbf8d4]"
+        : "bg-[#fa989a] text-[#e13b15] border-[#e13b15]"
+    };
   };
 
   const loadMoreProposals = useCallback(() => {
@@ -792,7 +714,7 @@ function Proposals({ props }: { props: string }) {
         <ErrorDisplay message={error} onRetry={handleRetry} />
       </div>
     );
-    
+
   if (!visible) return null;
   const VoteLoader = () => (
     <div className=" flex justify-center items-center w-28 xs:w-32">
@@ -809,19 +731,6 @@ function Proposals({ props }: { props: string }) {
     router.push(`/${props}/proposals/${proposal.proposalId}`);
   };
 
-
-
-  const formatWeight = (weight: number): string => {
-    if (weight >= 1e9) {
-      return (weight / 1e9).toFixed(2) + "B";
-    } else if (weight >= 1e6) {
-      return (weight / 1e6).toFixed(2) + "M";
-    } else if (weight >= 1e3) {
-      return (weight / 1e3).toFixed(2) + "K";
-    } else {
-      return weight?.toFixed(2);
-    }
-  };
   const handleClose = () => {
     setIsShowing(false);
   };
@@ -829,27 +738,29 @@ function Proposals({ props }: { props: string }) {
   return (
     <>
       <div className="rounded-[2rem] mt-4">
-      {isShowing && props ==="arbitrum" && (
-        <div
-          className="bg-yellow-200 border border-gray-300 rounded-md shadow-md text-gray-700 flex items-center p-3 w-100 mb-4"
-          style={{ width: "100%" }}
-        >
-          <span>
-          We&apos;re facing a temporary rate limit issue, which may affect data accuracy. We&apos;re working to resolve it quickly. Thank you for your patience!
-          </span>{" "}
-          &nbsp;
-          <button
-            className="flex ml-auto items-center justify-center p-1 text-gray-500 hover:text-red-500 bg-white border border-gray-300 rounded-md"
-            onClick={handleClose}
+        {isShowing && props === "arbitrum" && (
+          <div
+            className="bg-yellow-200 border border-gray-300 rounded-md shadow-md text-gray-700 flex items-center p-3 w-100 mb-4"
+            style={{ width: "100%" }}
           >
-            Close
-          </button>
-        </div>
-      )}
+            <span>
+              We&apos;re facing a temporary rate limit issue, which may affect
+              data accuracy. We&apos;re working to resolve it quickly. Thank you
+              for your patience!
+            </span>{" "}
+            &nbsp;
+            <button
+              className="flex ml-auto items-center justify-center p-1 text-gray-500 hover:text-red-500 bg-white border border-gray-300 rounded-md"
+              onClick={handleClose}
+            >
+              Close
+            </button>
+          </div>
+        )}
         {displayedProposals.map((proposal: Proposal, index: number) => (
           <div
             key={index}
-            className="flex flex-col 1.5md:flex-row px-2 py-4 0.5xs:p-4 text-lg mb-2 gap-2 1.5md:gap-5 bg-gray-100 hover:bg-gray-50 rounded-3xl transition-shadow duration-300 ease-in-out shadow-lg cursor-pointer 1.5md:items-center"
+            className="flex flex-col 1.5md:flex-row px-2 py-4 0.5xs:p-4 text-lg mb-2 gap-2 1.5md:gap-5 bg-gray-100  hover:bg-gray-50 rounded-3xl transition-shadow duration-300 ease-in-out shadow-lg cursor-pointer 1.5md:items-center group"
             onClick={() => handleClick(proposal)}
           >
             <div className="flex items-center 1.5md:w-[60%]">
@@ -862,7 +773,7 @@ function Proposals({ props }: { props: string }) {
               />
 
               <div>
-                <p className="text-base font-medium">
+                <p className="text-base font-medium group-hover:text-blue-500 transition-colors duration-300">
                   {proposal.proposalId ===
                   "109425185690543736048728494223916696230797128756558452562790432121529327921478"
                     ? `[Cancelled] ${truncateText(
@@ -917,26 +828,26 @@ function Proposals({ props }: { props: string }) {
               ) : (
                 <StatusLoader />
               )}
-
+{/* 
               {proposal.votesLoaded ? (
                 <div
                   className={`py-0.5 rounded-md text-xs xs:text-sm font-medium border flex justify-center items-center w-28 xs:w-32 
-      ${
-        Array.isArray(canceledProposals) &&
-        canceledProposals.some(
-          (item) => item.proposalId === proposal.proposalId
-        )
-          ? proposal.support1Weight! > proposal.support0Weight!
-            ? "text-[#639b55] border-[#639b55] bg-[#dbf8d4]" // Styles for proposals with more 'FOR' votes
-            : "bg-[#fa989a] text-[#e13b15] border-[#e13b15]"
-          : proposal.support1Weight! === 0 &&
-            proposal.support0Weight! === 0 &&
-            proposal.support2Weight! === 0
-          ? "bg-[#FFEDD5] border-[#F97316] text-[#F97316]" // Styles for proposals that haven't started
-          : proposal.support1Weight! > proposal.support0Weight!
-          ? "text-[#639b55] border-[#639b55] bg-[#dbf8d4]" // Styles for proposals with more 'FOR' votes
-          : "bg-[#fa989a] text-[#e13b15] border-[#e13b15]" // Styles for proposals with more 'AGAINST' votes
-      }`}
+                ${
+                  Array.isArray(canceledProposals) &&
+                  canceledProposals.some(
+                    (item) => item.proposalId === proposal.proposalId
+                  )
+                    ? proposal.support1Weight! > proposal.support0Weight!
+                      ? "text-[#639b55] border-[#639b55] bg-[#dbf8d4]" // Styles for proposals with more 'FOR' votes
+                      : "bg-[#fa989a] text-[#e13b15] border-[#e13b15]"
+                    : proposal.support1Weight! === 0 &&
+                      proposal.support0Weight! === 0 &&
+                      proposal.support2Weight! === 0
+                    ? "bg-[#FFEDD5] border-[#F97316] text-[#F97316]" // Styles for proposals that haven't started
+                    : proposal.support1Weight! > proposal.support0Weight!
+                    ? "text-[#639b55] border-[#639b55] bg-[#dbf8d4]" // Styles for proposals with more 'FOR' votes
+                    : "bg-[#fa989a] text-[#e13b15] border-[#e13b15]" // Styles for proposals with more 'AGAINST' votes
+                }`}
                 >
                   {Array.isArray(canceledProposals) &&
                   canceledProposals.some(
@@ -955,8 +866,17 @@ function Proposals({ props }: { props: string }) {
                 </div>
               ) : (
                 <VoteLoader />
-              )}
-
+              )} */}
+                {proposal.votesLoaded ? (
+                  <div
+                    className={`py-0.5 rounded-md text-xs xs:text-sm font-medium border flex justify-center items-center w-28 xs:w-32 
+                      ${getProposalStatusYet(proposal, canceledProposals).style}`}
+                  >
+                    {getProposalStatusYet(proposal, canceledProposals).text}
+                  </div>
+                ) : (
+                  <VoteLoader />
+                )}
               {/* <div className="flex items-center justify-center w-[15%]"> */}
               <div className="rounded-full bg-[#f4d3f9] border border-[#77367a] flex text-[#77367a] text-[10px] xs:text-xs h-[22px] items-center justify-center w-[19%] xs:h-fit py-[1px] xs:py-0.5 font-medium px-2 ">
                 {(() => {

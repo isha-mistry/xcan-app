@@ -50,6 +50,8 @@ import { Transaction } from "ethers";
 import { usePrivy } from "@privy-io/react-auth";
 import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 import { fetchApi } from "@/utils/api";
+import { GiConsoleController } from "react-icons/gi";
+import { fetchEnsNameAndAvatar, getENSName } from "@/utils/ENSUtils";
 
 // Create a client
 const client = createPublicClient({
@@ -109,7 +111,7 @@ function ProposalMain({ props }: { props: Props }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState<any>(null);
-  const [voterList, setVoterList] = useState<any>();
+  const [voterList, setVoterList] = useState<any>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [chartData, setChartData] = useState<any>([]);
   const [canceledProposals, setCanceledProposals] = useState<any[]>([]);
@@ -129,6 +131,7 @@ function ProposalMain({ props }: { props: Props }) {
   const contentRef = useRef<HTMLDivElement>(null);
   const [isExpanded, setIsExpanded] = useState(false);
   const [hasVoted, setHasVoted] = useState(false);
+  const [dailyVotes, setDailyVotes] = useState<any[]>([]);
   const chartContainerRef = useRef<HTMLDivElement | null>(null);
   const { user, ready, getAccessToken, authenticated } = usePrivy();
   const { walletAddress } = useWalletAddress();
@@ -140,6 +143,53 @@ function ProposalMain({ props }: { props: Props }) {
     votingPower?: number;
     network: string;
   }
+  // State to store ENS data for displayed voters only
+  const [ensData, setEnsData] = useState<{ [key: string]: { name: string | null; avatar: string | null } }>({});
+
+  // Fetch ENS data only for displayed voters
+  useEffect(() => {
+    const fetchEnsDataForDisplayed = async () => {
+      const displayedVoters = voterList?.slice(0, displayCount) || [];
+
+      // Fetch ENS data only for addresses we haven't fetched yet
+      const unfetchedVoters = displayedVoters.filter(
+        (voter: any) => !ensData[voter.voter]
+      );
+
+      // Fetch ENS data in parallel for better performance
+      const promises = unfetchedVoters.map(async (voter: any) => {
+        try {
+          const { ensName, avatar } = await fetchEnsNameAndAvatar(voter.voter);
+          return {
+            address: voter.voter,
+            data: { name: ensName, avatar: avatar }
+          };
+        } catch (error) {
+          console.error(`Error fetching ENS data for ${voter.voter}:`, error);
+          return {
+            address: voter.voter,
+            data: { name: null, avatar: null }
+          };
+        }
+      });
+
+      // Update state with new ENS data
+      const results = await Promise.allSettled(promises);
+      const newEnsData: { [key: string]: { name: string | null; avatar: string | null } } = {};
+      results.forEach((result) => {
+        if (result.status === 'fulfilled' && result.value) {
+          newEnsData[result.value.address] = result.value.data;
+        }
+      });
+
+      setEnsData(prev => ({
+        ...prev,
+        ...newEnsData
+      }));
+    };
+
+    fetchEnsDataForDisplayed();
+  }, [voterList, displayCount]); // Dependencies include display parameters
 
   const getContractAddress = async (txHash: `0x${string}`) => {
     try {
@@ -203,19 +253,6 @@ function ProposalMain({ props }: { props: Props }) {
     comment: string,
     voteData: VoteData
   ) => {
-    // Handle the vote submission logic here
-    // let address;
-    // let address1;
-
-    // try {
-    //   address = await walletClient.getAddresses();
-    //   address1 = address[0];
-    // } catch (error) {
-    //   console.error("Error getting addresses:", error);
-    //   toast.error("Please connect your MetaMask wallet!");
-    //   return;
-    // }
-
     if (!walletAddress) {
       toast.error("Please connect your MetaMask wallet!");
       return;
@@ -385,9 +422,8 @@ function ProposalMain({ props }: { props: Props }) {
         text = `<em>${matchem[1]}</em>`;
       }
 
-      return `<a href="${href}" title="${
-        title || ""
-      }" target="_blank" rel="noopener noreferrer" class="text-blue-shade-100">${text}</a>`;
+      return `<a href="${href}" title="${title || ""
+        }" target="_blank" rel="noopener noreferrer" class="text-blue-shade-100">${text}</a>`;
     };
 
     marked.setOptions({
@@ -524,97 +560,6 @@ function ProposalMain({ props }: { props: Props }) {
     fetchDescription();
   }, [props]);
 
-  //   const fetchVotes = useCallback(async () => {
-  //     let allVotes: VoteCast[] = [];
-  //     let blockTimestamp = "0";
-  //     const first = 1000; // Batch size
-
-  //     try {
-  //       while (true) {
-  //         const response = await fetch(
-  //           `/api/get-voters?proposalId=${props.id}&blockTimestamp=${blockTimestamp}&first=${first}&dao=${props.daoDelegates}`
-  //         );
-  //         const data = await response.json();
-  //         console.log('response', data)
-  //         const newVoteCastWithParams = data?.voteCastWithParams || [];
-  //         const newVoteCasts = data?.voteCasts || [];
-
-  //         if (newVoteCastWithParams.length === 0 && newVoteCasts.length === 0) {
-  //           break;
-  //         }
-
-  //         // Combine new votes
-  //         const allVotes = [...newVoteCasts, ...newVoteCastWithParams];
-  // console.log('alll votes', allVotes)
-  //         if (allVotes.length === 0) {
-  //           return { votes: [], nextBlockNumber: null };
-  //         }
-  //         // Find the highest block number from the new votes
-  //         const blockNumbers = newVoteCasts.map((vote: VoteCast) =>
-  //           typeof vote.blockTimestamp === "string"
-  //             ? BigInt(vote.blockTimestamp)
-  //             : BigInt((vote.blockTimestamp as string | number).toString())
-  //         );
-  // console.log(blockNumbers)
-  //         // if (blockNumbers.length > 0) {
-  //           // Convert to BigInt for safe comparison of large numbers
-  //           const maxBlock = blockNumbers.reduce((a:any, b:any) => (a > b ? a : b));
-  //           // Add 1 to ensure we don't duplicate the last block
-  //           blockTimestamp = (maxBlock + BigInt(1)).toString();
-  //         // }
-  //       }
-
-  //       // Sort by weight (descending)
-  //       allVotes.sort((a, b) => {
-  //         const weightA = BigInt(a.weight);
-  //         const weightB = BigInt(b.weight);
-  //         return weightB > weightA ? 1 : -1;
-  //       });
-
-  //       // Update voter list state
-  //       setVoterList(allVotes);
-  //       setIsLoading(false);
-
-  //       // Calculate weights
-  //       let s0Weight = 0;
-  //       let s1Weight = 0;
-  //       let s2Weight = 0;
-
-  //       allVotes.forEach((vote: VoteCast) => {
-  //         const weightInEther = weiToEther(vote.weight);
-  //         if (vote.support === 0) {
-  //           s0Weight += weightInEther;
-  //         } else if (vote.support === 1) {
-  //           s1Weight += weightInEther;
-  //         } else if (vote.support === 2) {
-  //           s2Weight += weightInEther;
-  //         }
-  //       });
-
-  //       // Update support weight states
-  //       setSupport0Weight(s0Weight);
-  //       setSupport1Weight(s1Weight);
-
-  //       return {
-  //         support0Weight: s0Weight,
-  //         support1Weight: s1Weight,
-  //         support2Weight: s2Weight,
-  //         votersCount: allVotes.length,
-  //         votesLoaded: true,
-  //       };
-  //     } catch (err: any) {
-  //       console.error("Error fetching votes:", err);
-  //       setIsLoading(false);
-  //       throw err;
-  //     }
-  //   }, [props.id, props.daoDelegates]);
-
-  //   useEffect(() => {
-  //     fetchVotes();
-  //   }, [support0Weight, support1Weight]);
-
-  // ----2nd
-
   const fetchVotePage = async (blockTimestamp: string, first: number) => {
     const response = await fetch(
       `/api/get-voters?proposalId=${props.id}&blockTimestamp=${blockTimestamp}&first=${first}&dao=${props.daoDelegates}`
@@ -625,7 +570,8 @@ function ProposalMain({ props }: { props: Props }) {
     }
 
     const data = await response.json();
-
+    setVoterList(data.voterDetails)
+    setDailyVotes(data.proposalDailyVoteSummaries)
     return data;
   };
 
@@ -641,7 +587,7 @@ function ProposalMain({ props }: { props: Props }) {
     let pageCount = 0;
 
     try {
-      while (pageCount < MAX_PAGES) {
+      // while (pageCount < MAX_PAGES) {
         pageCount++;
 
         // Implement retry logic
@@ -664,101 +610,21 @@ function ProposalMain({ props }: { props: Props }) {
           throw new Error("Failed to fetch page after retries");
         }
 
-        const newVoteCastWithParams = pageData?.voteCastWithParams || [];
-        const newVoteCasts = pageData?.voteCasts || [];
-        const newVotes = [...newVoteCasts, ...newVoteCastWithParams];
+        // const newVoteCastWithParams = pageData?.voteCastWithParams || [];
+        const newVoteCasts = pageData?.voterDetails || [];
+        const newVotes = [...newVoteCasts];
 
         // Break if no new votes
-        if (newVotes.length === 0) {
-          break;
-        }
-
-        // Add new votes to accumulated votes
-        accumulatedVotes = [...accumulatedVotes, ...newVotes];
-
-        // Find the highest block number from the new votes
-        const blockTimestamps = newVoteCasts
-          .map((vote: any) => {
-            try {
-              return BigInt(vote.blockTimestamp.toString());
-            } catch (err) {
-              console.error("Error parsing blockTimestamp:", err);
-              return BigInt(0);
-            }
-          })
-          .filter((num: any) => num > 0);
-
-        if (blockTimestamps.length === 0) {
-          break;
-        }
-
-        const maxBlock = blockTimestamps.reduce((a: any, b: any) =>
-          a > b ? a : b
-        );
-        const nextBlockTimestamp = (maxBlock + BigInt(1)).toString();
-
-        // Break if we're not making progress
-        if (nextBlockTimestamp === blockTimestamp) {
-          break;
-        }
-
-        blockTimestamp = nextBlockTimestamp;
-
-        // Add delay between requests to prevent rate limiting
-        await new Promise((resolve) => setTimeout(resolve, 500));
+        // if (newVotes.length == 1000) {
+        //   break;
+        // }
       }
-
-      // Remove duplicates based on voter and blockTimestamp
-      const uniqueVotes = Array.from(
-        new Map(
-          accumulatedVotes.map((vote) => [
-            `${vote.voter}-${vote.blockTimestamp}`,
-            vote,
-          ])
-        ).values()
-      );
-
-      // Sort by weight (descending)
-      uniqueVotes.sort((a, b) => {
-        try {
-          const weightA = BigInt(a.weight);
-          const weightB = BigInt(b.weight);
-          return weightB > weightA ? 1 : -1;
-        } catch {
-          return 0;
-        }
-      });
-
-      // Calculate weights
-      const weights = uniqueVotes.reduce(
-        (acc, vote) => {
-          const weightInEther = weiToEther(vote.weight);
-          if (vote.support === 0) acc.s0Weight += weightInEther;
-          else if (vote.support === 1) acc.s1Weight += weightInEther;
-          else if (vote.support === 2) acc.s2Weight += weightInEther;
-          return acc;
-        },
-        { s0Weight: 0, s1Weight: 0, s2Weight: 0 }
-      );
-
-      // Update all states
-      setVoterList(uniqueVotes);
-      setSupport0Weight(weights.s0Weight);
-      setSupport1Weight(weights.s1Weight);
-      setSupport2Weight(weights.s2Weight);
-
-      return {
-        support0Weight: weights.s0Weight,
-        support1Weight: weights.s1Weight,
-        support2Weight: weights.s2Weight,
-        votersCount: uniqueVotes.length,
-        votesLoaded: true,
-      };
-    } catch (err: any) {
-      console.error("Error fetching votes:", err);
-      setError(err.message);
-      throw err;
-    } finally {
+    // } catch (err: any) {
+    //   console.error("Error fetching votes:", err);
+    //   setError(err.message);
+    //   throw err;
+    // }
+  finally {
       setIsLoading(false);
     }
   }, [props.id, props.daoDelegates]);
@@ -809,111 +675,76 @@ function ProposalMain({ props }: { props: Props }) {
       return numWeight.toFixed(2);
     }
   };
+  const processProposalDailyVoteSummaries = (data: any[]) => {
+    // Transform the data directly from the new query
+    const processedData = data.map(summary => ({
+      name: summary.dayString,
+      For: parseFloat(summary.weightFor) / 1e18,
+      Against: parseFloat(summary.weightAgainst) / 1e18,
+      Abstain: parseFloat(summary.weightAbstain) / 1e18,
+      totalVotes: parseFloat(summary.totalVotes) / 1e18,
+      date: new Date(summary.dayString), // Assuming 'day' is a valid date string
+    }));
 
+    // Optional: Sort the data by date
+    const sortedData = processedData.sort((a, b) =>
+      a.date.getTime() - b.date.getTime()
+    );
+
+    // Optional: Create cumulative data if needed
+    const cumulativeData = sortedData.reduce((acc: { name: any; For: number; Against: number; Abstain: number; totalVotes: number; date: Date; }[], current, index) => {
+      const previousItem = index > 0 ? acc[index - 1] : null;
+
+      const cumulativeItem = {
+        ...current,
+        For: previousItem
+          ? previousItem.For + current.For
+          : current.For,
+        Against: previousItem
+          ? previousItem.Against + current.Against
+          : current.Against,
+        Abstain: previousItem
+          ? previousItem.Abstain + current.Abstain
+          : current.Abstain,
+      };
+      return [...acc, cumulativeItem];
+    }, []);
+    const lastCumulativeItem = cumulativeData[cumulativeData.length - 1];
+
+    if (lastCumulativeItem) {
+      // Set the final cumulative vote totals
+      setSupport1Weight(lastCumulativeItem.For);      // Votes "For"
+      setSupport0Weight(lastCumulativeItem.Against);  // Votes "Against"
+      setSupport2Weight(lastCumulativeItem.Abstain);  // Votes "Abstain"
+    }
+    // Format the data for chart
+    const chartData = cumulativeData.map(item => ({
+      name: item.name,
+      For: item.For,
+      Against: item.Against,
+      Abstain: item.Abstain,
+      date: item.date.toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "2-digit",
+      }),
+    }));
+    return chartData;
+  };
+
+  // Usage in your component
   useEffect(() => {
-    if (voterList && voterList.length > 0) {
-      const sortedVoterList = [...voterList].sort(
-        (a, b) => parseInt(a.blockTimestamp) - parseInt(b.blockTimestamp)
-      );
-      const startTimestamp = parseInt(sortedVoterList[0].blockTimestamp);
-      const endTimestamp = parseInt(
-        sortedVoterList[sortedVoterList.length - 1].blockTimestamp
-      );
-
-      const getDayFromTimestamp = (timestamp: number): string => {
-        const millisecondsPerDay = 24 * 60 * 60 * 1000;
-        const startDate = new Date(startTimestamp * 1000);
-        startDate.setUTCHours(0, 0, 0, 0);
-        const date = new Date(timestamp * 1000);
-        const dayNumber =
-          Math.floor(
-            (date.getTime() - startDate.getTime()) / millisecondsPerDay
-          ) + 1;
-        return `Day ${dayNumber}`;
-      };
-
-      const aggregateDataByDay = (data: typeof sortedVoterList) => {
-        const aggregatedData: Record<
-          string,
-          { For: number; Against: number; Abstain: number; date: Date }
-        > = {};
-
-        data.forEach((entry: any) => {
-          const timestamp = parseInt(entry.blockTimestamp);
-          const date = new Date(timestamp * 1000);
-          const day = date.toISOString().split("T")[0];
-          const weight = parseFloat(entry.weight) / 1e18;
-
-          if (!aggregatedData[day]) {
-            const utcMidnight = new Date(
-              Date.UTC(
-                date.getUTCFullYear(),
-                date.getUTCMonth(),
-                date.getUTCDate()
-              )
-            );
-            aggregatedData[day] = {
-              For: 0,
-              Against: 0,
-              Abstain: 0,
-              date: utcMidnight,
-            };
-          }
-
-          if (entry.support === 1) {
-            aggregatedData[day].For += weight;
-          } else if (entry.support === 0) {
-            aggregatedData[day].Against += weight;
-          } else {
-            aggregatedData[day].Abstain += weight;
-          }
-        });
-
-        const sortedDays = Object.keys(aggregatedData).sort();
-        let cumulativeFor = 0;
-        let cumulativeAgainst = 0;
-        let cumulativeAbstain = 0;
-
-        sortedDays.forEach((day) => {
-          cumulativeFor += aggregatedData[day].For;
-          cumulativeAgainst += aggregatedData[day].Against;
-          cumulativeAbstain += aggregatedData[day].Abstain;
-          aggregatedData[day].For = cumulativeFor;
-          aggregatedData[day].Against = cumulativeAgainst;
-          aggregatedData[day].Abstain = cumulativeAbstain;
-        });
-
-        return aggregatedData;
-      };
-      const aggregatedData = aggregateDataByDay(sortedVoterList);
-      const newChartData = Object.entries(aggregatedData)
-        .sort(([, a], [, b]) => a.date.getTime() - b.date.getTime())
-        .map(([day, data]) => {
-          const formattedFor = formatWeight(data.For);
-          const formattedAgainst = formatWeight(data.Against);
-          const formattedDate = data.date.toLocaleDateString("en-US", {
-            year: "numeric",
-            month: "short",
-            day: "2-digit",
-          });
-
-          return {
-            name: day,
-            For: data.For,
-            Against: data.Against,
-            Abstain: data.Abstain,
-            date: formattedDate,
-          };
-        });
+    if (dailyVotes) {
+      const newChartData = processProposalDailyVoteSummaries(dailyVotes);
       setChartData(newChartData);
     }
-  }, [voterList]);
+  }, [dailyVotes]);
 
   const [isChartLoading, setIsChartLoading] = useState(true);
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsChartLoading(false);
-    }, 2000);
+    }, 4000);
 
     return () => clearTimeout(timer);
   }, []);
@@ -926,9 +757,9 @@ function ProposalMain({ props }: { props: Props }) {
     isArbitrum
       ? window.open(`https://arbiscan.io/tx/${transactionHash}`, "_blank")
       : window.open(
-          `https://optimistic.etherscan.io/tx/${transactionHash}`,
-          "_blank"
-        );
+        `https://optimistic.etherscan.io/tx/${transactionHash}`,
+        "_blank"
+      );
   };
 
   const shareOnTwitter = () => {
@@ -975,7 +806,7 @@ function ProposalMain({ props }: { props: Props }) {
     const votingPeriodEnd = new Date(
       proposalTime.getTime() + votingPeriod * 24 * 60 * 60 * 1000
     );
-
+    console.log('day diffrence', daysDifference)
     if (canceledProposals.some((item: any) => item.proposalId === props.id)) {
       return { status: "Closed", votingPeriodEnd };
     }
@@ -1020,7 +851,6 @@ function ProposalMain({ props }: { props: Props }) {
 
   const getProposalStatusData = () => {
     if (!data || !data.blockTimestamp) return null;
-
     const proposalTime: any = new Date(data.blockTimestamp * 1000);
     const currentTime: any = new Date();
     const timeDifference = currentTime - proposalTime;
@@ -1047,12 +877,14 @@ function ProposalMain({ props }: { props: Props }) {
         return !votingPeriodEndData
           ? "PENDING"
           : currentDate > votingPeriodEndData
-          ? support1Weight > support0Weight
-            ? "SUCCEEDED"
-            : "DEFEATED"
-          : "PENDING";
+            ? support1Weight > support0Weight
+              ? "SUCCEEDED"
+              : "DEFEATED"
+            : "PENDING";
       }
     } else {
+      console.log("endinggg propossal ", votingPeriodEndData, currentDate)
+
       return currentDate > votingPeriodEndData!
         ? support1Weight! > support0Weight!
           ? "SUCCEEDED"
@@ -1077,7 +909,7 @@ function ProposalMain({ props }: { props: Props }) {
   };
 
   const proposal_status = getProposalStatusData();
-
+  console.log('proposal status', proposal_status, data, support1Weight >= 0, support1Weight)
   const Proposalstatus =
     (data && support1Weight >= 0) || support1Weight ? proposal_status : null;
 
@@ -1155,9 +987,8 @@ function ProposalMain({ props }: { props: Props }) {
       </div>
 
       <div
-        className={`rounded-[1rem] mx-4 md:mx-6 px-4 lg:mx-16 pb-6 pt-16 transition-shadow duration-300 ease-in-out shadow-xl bg-gray-50 font-poppins relative ${
-          isExpanded ? "h-fit" : "h-fit"
-        }`}
+        className={`rounded-[1rem] mx-4 md:mx-6 px-4 lg:mx-16 pb-6 pt-16 transition-shadow duration-300 ease-in-out shadow-xl bg-gray-50 font-poppins relative ${isExpanded ? "h-fit" : "h-fit"
+          }`}
       >
         <div className="w-full flex items-center justify-end gap-2 absolute top-6 right-12">
           <div className="">
@@ -1185,13 +1016,12 @@ function ProposalMain({ props }: { props: Props }) {
           )}
           <div className="flex-shrink-0">
             <div
-              className={`rounded-full flex items-center justify-center text-xs py-1 px-2 font-medium ${
-                status
-                  ? status === "Closed"
-                    ? "bg-[#f4d3f9] border border-[#77367a] text-[#77367a]"
-                    : "bg-[#f4d3f9] border border-[#77367a] text-[#77367a]"
-                  : "bg-gray-200 animate-pulse rounded-full"
-              }`}
+              className={`rounded-full flex items-center justify-center text-xs py-1 px-2 font-medium ${status
+                ? status === "Closed"
+                  ? "bg-[#f4d3f9] border border-[#77367a] text-[#77367a]"
+                  : "bg-[#f4d3f9] border border-[#77367a] text-[#77367a]"
+                : "bg-gray-200 animate-pulse rounded-full"
+                }`}
             >
               {status ? status : <div className="h-4 w-16"></div>}
             </div>
@@ -1234,11 +1064,10 @@ function ProposalMain({ props }: { props: Props }) {
             </div>
           ) : (
             <div
-              className={`rounded-full flex items-center justify-center text-xs h-fit py-0.5 border font-medium w-24 ${
-                Proposalstatus
-                  ? getStatusColor(Proposalstatus)
-                  : "bg-gray-200 animate-pulse rounded-full"
-              }`}
+              className={`rounded-full flex items-center justify-center text-xs h-fit py-0.5 border font-medium w-24 ${Proposalstatus
+                ? getStatusColor(Proposalstatus)
+                : "bg-gray-200 animate-pulse rounded-full"
+                }`}
             >
               {Proposalstatus ? (
                 Proposalstatus
@@ -1258,9 +1087,8 @@ function ProposalMain({ props }: { props: Props }) {
             <>
               <div
                 ref={contentRef}
-                className={` transition-max-height duration-500 ease-in-out overflow-hidden ${
-                  isExpanded ? "max-h-full" : "max-h-36"
-                }`}
+                className={` transition-max-height duration-500 ease-in-out overflow-hidden ${isExpanded ? "max-h-full" : "max-h-36"
+                  }`}
               >
                 <div
                   className="description-content"
@@ -1292,67 +1120,67 @@ function ProposalMain({ props }: { props: Props }) {
               </div>
             ) : (
               <div
-                className={`flex flex-col gap-2 py-3 pl-2 pr-1 w-full xl:pl-3 xl:pr-2 my-3 border-gray-200 ${
-                  voterList.length > 5
-                    ? `h-[440px] overflow-y-auto ${style.scrollbar}`
-                    : "h-fit"
-                }`}
+                className={`flex flex-col gap-2 py-3 pl-2 pr-1 w-full xl:pl-3 xl:pr-2 my-3 border-gray-200 ${voterList?.length > 5
+                  ? `h-[440px] overflow-y-auto ${style.scrollbar}`
+                  : "h-fit"
+                  }`}
               >
-                {voterList.length === 0 ? (
+                {voterList && voterList?.length === 0 ? (
                   <div className="flex items-center justify-center h-full text-gray-500">
                     ⏳ No Participation: This proposal hasn&apos;t received any
                     votes yet.
                   </div>
                 ) : (
                   voterList
-                    .slice(0, displayCount)
+                    ?.slice(0, displayCount)
                     .map((voter: any, index: any) => (
                       <div
                         className="flex items-center py-6 xl:px-6 px-3 bg-white w-full transition-all duration-300 rounded-2xl border-2 border-transparent hover:border-blue-200 transform hover:-translate-y-1 space-x-6"
                         key={index}
                       >
                         <div className="flex-grow flex items-center space-x-2 1.3lg:space-x-4">
-                          {isArbitrum ? (
+                          {ensData[voter.voter]?.avatar ? (
                             <Image
-                              src={user2}
-                              alt="Profile"
+                              src={ensData[voter.voter].avatar || (isArbitrum ? user2 : user5)}
+                              alt="ENS Avatar"
                               className="xl:w-10 w-8 xl:h-10 h-8 rounded-full"
+                              width={40}
+                              height={40}
                             />
                           ) : (
                             <Image
-                              src={user5}
+                              src={isArbitrum ? user2 : user5}
                               alt="Profile"
-                              className="xl:w-10 w-8 h-10 rounded-full"
+                              className="xl:w-10 w-8 xl:h-10 h-8 rounded-full"
                             />
                           )}
 
-                          <div>
+                          <div className="w-[70%]">
                             <p
                               onClick={() => handleAddressClick(voter.voter)}
-                              className="text-gray-800 xl:text-sm hover:text-blue-600 transition-colors duration-200 cursor-pointer text-xs xs:text-sm 2md:text-xs"
+                              className="text-gray-800 xl:text-sm hover:text-blue-600 transition-colors duration-200 cursor-pointer text-xs xs:text-sm 2md:text-xs overflow-hidden text-ellipsis whitespace-nowrap"
                             >
-                              {voter.voter.slice(0, 6)}...
-                              {voter.voter.slice(-4)}
+                             {ensData[voter.voter]?.name || `${voter.voter.slice(0, 6)}...${voter.voter.slice(-4)}`}
+
                             </p>
                           </div>
                         </div>
                         <div className="flex items-center space-x-1 0.5xs:space-x-2 1.3lg:space-x-4">
                           <div
-                            className={`py-1 xs:py-2 rounded-full 1.5lg:text-sm w-24 0.2xs:w-28 xs:w-36 2md:w-28 lg:w-[100px] 1.3lg:w-28 1.5xl:w-36 flex items-center justify-center xl:font-medium text-xs ${
-                              voter.support === 1
-                                ? "bg-green-100 text-green-800"
-                                : voter.support === 0
+                            className={`py-1 xs:py-2 rounded-full 1.5lg:text-sm w-24 0.2xs:w-28 xs:w-36 2md:w-28 lg:w-[100px] 1.3lg:w-28 1.5xl:w-36 flex items-center justify-center xl:font-medium text-xs ${voter.support === 1
+                              ? "bg-green-100 text-green-800"
+                              : voter.support === 0
                                 ? "bg-red-100 text-red-800"
                                 : "bg-blue-100 text-blue-800"
-                            }`}
+                              }`}
                           >
-                            {formatWeight(voter.weight / 10 ** 18)}
+                            {formatWeight(voter.votingPower / 10 ** 18)}
                             &nbsp;
                             {voter.support === 1
                               ? "For"
                               : voter.support === 0
-                              ? "Against"
-                              : "Abstain"}
+                                ? "Against"
+                                : "Abstain"}
                           </div>
                           <Tooltips
                             showArrow
@@ -1378,7 +1206,7 @@ function ProposalMain({ props }: { props: Props }) {
                       </div>
                     ))
                 )}
-                {displayCount <= voterList.length && (
+                {displayCount <= voterList?.length && (
                   <div className="flex justify-center items-center mt-6">
                     <button
                       onClick={loadMore}
@@ -1399,7 +1227,7 @@ function ProposalMain({ props }: { props: Props }) {
             >
               <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-black-shade-900"></div>
             </div>
-          ) : voterList && chartData.length === 0 ? (
+          ) : voterList.length === 0 && chartData.length === 0 ? (
             <div
               className="w-full 2md:w-[60%] h-[500px] flex items-center justify-center bg-gray-50 rounded-2xl"
               style={{ boxShadow: "0px 4px 26.7px 0px rgba(0, 0, 0, 0.10)" }}
