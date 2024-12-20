@@ -1,96 +1,163 @@
 import { connectDB } from "@/config/connectDB";
-import { NextApiRequest, NextApiResponse } from "next";
 import { NextResponse, NextRequest } from "next/server";
+import { Collection } from "mongodb";
 
-// Define the request body type
-interface OfficeHoursRequestBody {
-  host_address: string;
-  office_hours_slot: string;
+interface Attendee {
+  address: string;
+  uid?: string;
+  onchain_uid?: string;
+}
+
+interface Meeting {
   title: string;
   description: string;
   meeting_status: string;
-  dao_name: string;
-  video_uri: string;
-  meetingId: string;
+  meeting_id: string;
+  video_uri?: string;
+  slot_time: string;
+  host_uid?: string;
+  host_onchain_uid?: string;
+  thumbnail_image: string;
+  isMeetingRecorded?: boolean;
+  attendees: Attendee[];
+  created_at?: Date;
 }
 
-// Define the response body type
-interface OfficeHoursResponseBody {
-  success: boolean;
-  data?: {
-    id: string;
-    host_address: string;
-    office_hours_slot: string;
-    title: string;
-    description: string;
-    dao_name: string;
-    meeting_status: string;
-    video_uri: string;
-    meetingId: string;
-  } | null;
-  error?: string;
+interface DAOData {
+  [key: string]: Meeting;
 }
 
-export async function POST(
-  req: NextRequest,
-  res: NextApiResponse<OfficeHoursResponseBody>
-) {
-  const {
-    host_address,
-    office_hours_slot,
-    title,
-    description,
-    meeting_status,
-    dao_name,
-    video_uri,
-    meetingId,
-  }: OfficeHoursRequestBody = await req.json();
+interface OfficeHoursRequestBody {
+  host_address: string;
+  dao_name: DAOData;
+}
 
-  try {
-    // Connect to your MongoDB database
-    // console.log("Connecting to MongoDB...");
-    const client = await connectDB();
-    // console.log("Connected to MongoDB");
+interface OfficeHoursDocument {
+  host_address: string;
+  dao: {
+    name: string;
+    meetings: Meeting[];
+  }[];
+  created_at: Date;
+  updated_at: Date;
+}
 
-    // Access the collection
-    const db = client.db();
-    const collection = db.collection("office_hours");
-
-    // Insert the new office hours document
-    // console.log("Inserting office hours document...");
-    const result = await collection.insertOne({
-      host_address,
-      office_hours_slot,
-      title,
-      description,
-      meeting_status,
-      dao_name,
-      video_uri,
-      meetingId,
-    });
-    // console.log("Office hours document inserted:", result);
-
-    client.close();
-    // console.log("MongoDB connection closed");
-
-    if (result.insertedId) {
-      // Retrieve the inserted document using the insertedId
-      // console.log("Retrieving inserted document...");
-      const insertedDocument = await collection.findOne({
-        _id: result.insertedId,
-      });
-      // console.log("Inserted document retrieved");
-      return NextResponse.json({ result: insertedDocument }, { status: 200 });
-    } else {
-      return NextResponse.json(
-        { error: "Failed to retrieve inserted document" },
-        { status: 500 }
-      );
+// Helper functions for MongoDB operations
+const addMeetingToExistingDAO = async (
+  collection: Collection<OfficeHoursDocument>,
+  hostAddress: string,
+  daoName: string,
+  meetingData: Meeting
+) => {
+  return await collection.updateOne(
+    { host_address: hostAddress, "dao.name": daoName },
+    {
+      $addToSet: {
+        "dao.$.meetings": { ...meetingData, created_at: new Date() },
+      },
+      $set: { updated_at: new Date() },
     }
+  );
+};
+
+const addNewDAOToHost = async (
+  collection: Collection<OfficeHoursDocument>,
+  hostAddress: string,
+  daoName: string,
+  meetingData: Meeting
+) => {
+  return await collection.updateOne(
+    { host_address: hostAddress },
+    {
+      $push: {
+        dao: {
+          name: daoName,
+          meetings: [{ ...meetingData, created_at: new Date() }],
+        },
+      },
+      $set: { updated_at: new Date() },
+    }
+  );
+};
+
+const createNewHostWithDAO = async (
+  collection: Collection<OfficeHoursDocument>,
+  hostAddress: string,
+  daoName: string,
+  meetingData: Meeting
+) => {
+  return await collection.insertOne({
+    host_address: hostAddress,
+    dao: [
+      {
+        name: daoName,
+        meetings: [{ ...meetingData, created_at: new Date() }],
+      },
+    ],
+    created_at: new Date(),
+    updated_at: new Date(),
+  });
+};
+
+// Main API handler
+export async function POST(req: NextRequest) {
+  try {
+    const data: OfficeHoursRequestBody = await req.json();
+    console.log("Received data:", data);
+
+    const client = await connectDB();
+    const db = client.db();
+    const collection: Collection<OfficeHoursDocument> =
+      db.collection("office_hours");
+
+    const hostAddress = data.host_address;
+
+    for (const [daoName, meetingData] of Object.entries(data.dao_name)) {
+      const existingHost = await collection.findOne({
+        host_address: hostAddress,
+      });
+
+      if (existingHost) {
+        const existingDAO = existingHost.dao?.find(
+          (dao) => dao.name === daoName
+        );
+        if (existingDAO) {
+          await addMeetingToExistingDAO(
+            collection,
+            hostAddress,
+            daoName,
+            meetingData
+          );
+        } else {
+          await addNewDAOToHost(collection, hostAddress, daoName, meetingData);
+        }
+      } else {
+        await createNewHostWithDAO(
+          collection,
+          hostAddress,
+          daoName,
+          meetingData
+        );
+      }
+    }
+
+    const updatedDocument = await collection.findOne({
+      host_address: hostAddress,
+    });
+    await client.close();
+
+    return NextResponse.json(
+      {
+        success: true,
+        data: updatedDocument,
+        message: "Meetings stored successfully",
+      },
+      { status: 200 }
+    );
   } catch (error) {
     console.error("Error storing office hours:", error);
     return NextResponse.json(
-      { error: "Internal Server Error" },
+      { success: false, error: "Internal Server Error", details: error },
       { status: 500 }
     );
   }
