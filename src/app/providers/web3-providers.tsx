@@ -129,6 +129,11 @@ const privyConfig: PrivyClientConfig = {
     showWalletLoginFirst: true,
     logo: logo.src,
   },
+  externalWallets: { 
+    coinbaseWallet: { 
+      connectionOptions: 'all', 
+    }, 
+  }, 
   defaultChain: optimism,
 };
 

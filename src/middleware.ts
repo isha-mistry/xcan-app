@@ -13,9 +13,10 @@ const allowedOrigins = [
   process.env.NEXT_PUBLIC_HOSTED_MEETING_APP_URL!,
 ].filter(Boolean);
 
+console.log("allowedOrigins", allowedOrigins)
 const privyClient = new PrivyClient(
   process.env.NEXT_PUBLIC_PRIVY_APP_ID!,
-  process.env.NEXT_PUBLIC_PRIVY_SECRET!
+  process.env.PRIVY_SECRET!
 );
 
 const routeConfig = {
