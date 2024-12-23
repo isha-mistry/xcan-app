@@ -1,132 +1,271 @@
 import { connectDB } from "@/config/connectDB";
-import { NextApiRequest, NextApiResponse } from "next";
-import { NextResponse, NextRequest } from "next/server";
+import { NextResponse } from "next/server";
+import { Collection } from "mongodb";
 
-// Define the response body type
-interface UpdateOfficeHoursResponse {
-  success: boolean;
-  error?: string;
+interface UpdateMeetingRequestBody {
+  host_address: string;
+  dao_name: string;
+  meetingId: string;
+  title?: string;
+  description?: string;
+  slot_time?: string;
 }
-interface DeleteOfficeHoursResponse {
-  success: boolean;
-  error?: string;
-}
 
-export async function PUT(
-  req: Request,
-  res: NextResponse<UpdateOfficeHoursResponse>
-) {
-  // console.log("calling.......");
-  const address = req.url.split("edit-office-hours/")[1];
-  // console.log(address);
-  const { title, description, office_hours_slot, status } = await req.json();
-
-  //   // Validate request body
-  //   if (!title || !description || !startTime) {
-  //     return NextResponse.json(
-  //       { success: false, error: "Invalid request body" },
-  //       { status: 400 }
-  //     );
-  //   }
-
-  console.log("address", address);
-
+export async function PUT(req: Request) {
   try {
-    // Connect to your MongoDB database
-    // console.log("Connecting to MongoDB...");
-    const client = await connectDB();
-    // console.log("Connected to MongoDB");
+    const updateData: UpdateMeetingRequestBody = await req.json();
+    const { host_address, dao_name, meetingId } = updateData;
 
-    // Access the collection
-    const db = client.db();
-    const collection = db.collection("office_hours");
-
-    // Find the office hours document to update
-    // console.log("Finding office hours document to update...");
-    const officeHoursToUpdate = await collection.find({
-      host_address: address,
-      meeting_status: "active",
-    });
-    // console.log("office hour to update", officeHoursToUpdate);
-
-    if (!officeHoursToUpdate) {
+    // Validate required fields
+    if (!host_address || !dao_name || !meetingId) {
       return NextResponse.json(
-        { success: false, error: "Office hours not found" },
-        { status: 404 }
-      );
-    }
-
-    // Update the office hours document
-    // console.log("Updating office hours document...");
-    await collection.updateMany(
-      { host_address: address, meeting_status: "active" },
-      {
-        $set: {
-          title,
-          description,
-          office_hours_slot,
+        {
+          success: false,
+          error:
+            "Missing required fields: host_address, dao_name, or meetingId",
         },
-      }
-    );
-
-    client.close();
-    // console.log("MongoDB connection closed");
-
-    return NextResponse.json({ success: true });
-  } catch (error) {
-    console.error("Error updating office hours:", error);
-    return NextResponse.json(
-      { success: false, error: "Internal Server Error" },
-      { status: 500 }
-    );
-  }
-}
-export async function DELETE(
-  req: NextRequest,
-  res: NextApiResponse<DeleteOfficeHoursResponse>
-) {
-  try {
-    // Extract the address query parameter from the request
-    const address = req.url.split("edit-office-hours/")[1];
-
-    // Validate the address parameter
-    if (!address || typeof address !== "string") {
-      return NextResponse.json(
-        { error: "Invalid address parameter" },
         { status: 400 }
       );
     }
 
-    // Connect to MongoDB database
-    console.log("Connecting to MongoDB...");
     const client = await connectDB();
-    console.log("Connected to MongoDB");
-
-    // Access the collection
     const db = client.db();
     const collection = db.collection("office_hours");
 
-    // Find and delete the office hours document with the provided address
-    console.log("Deleting office hours document...");
-    const deleteResult = await collection.deleteOne({
-      host_address: address,
-      meeting_status: "active",
+    // First, get the existing document
+    const existingDoc = await collection.findOne({
+      host_address,
+      "dao.name": dao_name,
+      "dao.meetings.meeting_id": meetingId,
     });
-    console.log("Office hours document deleted:", deleteResult);
 
-    // Check if the document was successfully deleted
-    if (deleteResult.deletedCount === 0) {
-      throw new Error("No office hours found for the provided address");
+    if (!existingDoc) {
+      await client.close();
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Meeting not found",
+        },
+        { status: 404 }
+      );
     }
 
-    client.close();
-    console.log("MongoDB connection closed");
+    // Find the existing meeting data
+    const existingDAO = existingDoc.dao.find(
+      (dao: any) => dao.name === dao_name
+    );
+    const existingMeeting = existingDAO?.meetings.find(
+      (meeting: any) => meeting.meeting_id === meetingId
+    );
 
-    return NextResponse.json({ success: true }, { status: 200 });
-  } catch (error) {
-    console.error("Error deleting office hours:", error);
+    if (!existingMeeting) {
+      await client.close();
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Meeting not found in the specified DAO",
+        },
+        { status: 404 }
+      );
+    }
+
+    // Build update object only with non-empty values
+    const fieldsToUpdate: { [key: string]: any } = {};
+
+    // Only include fields that have non-empty values
+    if (updateData.title && updateData.title.trim() !== "") {
+      fieldsToUpdate[`dao.$[daoElem].meetings.$[meetingElem].title`] =
+        updateData.title;
+    }
+
+    if (updateData.description && updateData.description.trim() !== "") {
+      fieldsToUpdate[`dao.$[daoElem].meetings.$[meetingElem].description`] =
+        updateData.description;
+    }
+
+    if (updateData.slot_time && updateData.slot_time.trim() !== "") {
+      fieldsToUpdate[`dao.$[daoElem].meetings.$[meetingElem].slot_time`] =
+        updateData.slot_time;
+    }
+
+    // Only proceed with update if there are non-empty fields to update
+    if (Object.keys(fieldsToUpdate).length === 0) {
+      await client.close();
+      return NextResponse.json(
+        {
+          success: true,
+          message: "No valid fields to update",
+          data: existingDoc,
+        },
+        { status: 200 }
+      );
+    }
+
+    // Add updated_at timestamp
+    fieldsToUpdate["updated_at"] = new Date();
+
+    // Update document
+    const result = await collection.updateOne(
+      {
+        host_address,
+        "dao.name": dao_name,
+        "dao.meetings.meeting_id": meetingId,
+      },
+      { $set: fieldsToUpdate },
+      {
+        arrayFilters: [
+          { "daoElem.name": dao_name },
+          { "meetingElem.meeting_id": meetingId },
+        ],
+      }
+    );
+
+    // Fetch updated document
+    const updatedDocument = await collection.findOne({
+      host_address,
+      "dao.name": dao_name,
+      "dao.meetings.meeting_id": meetingId,
+    });
+
+    await client.close();
+
     return NextResponse.json(
-      { success: false, error: "Internal Server Error" },
+      {
+        success: true,
+        data: updatedDocument,
+        message: "Meeting updated successfully",
+      },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error("Error updating meeting:", error);
+    return NextResponse.json(
+      {
+        success: false,
+        error: "Internal Server Error",
+        details: error,
+      },
+      { status: 500 }
+    );
+  }
+}
+
+interface DeleteMeetingRequestBody {
+  host_address: string;
+  dao_name: string;
+  meetingId: string;
+}
+
+export async function DELETE(req: Request) {
+  try {
+    const deleteData: DeleteMeetingRequestBody = await req.json();
+    const { host_address, dao_name, meetingId } = deleteData;
+
+    // Validate required fields
+    if (!host_address || !dao_name || !meetingId) {
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            "Missing required fields: host_address, dao_name, or meetingId",
+        },
+        { status: 400 }
+      );
+    }
+
+    const client = await connectDB();
+    const db = client.db();
+    const collection = db.collection("office_hours");
+
+    // First, check if the document exists
+    const existingDoc = await collection.findOne({
+      host_address,
+      "dao.name": dao_name,
+      "dao.meetings.meeting_id": meetingId,
+    });
+
+    if (!existingDoc) {
+      await client.close();
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Meeting not found",
+        },
+        { status: 404 }
+      );
+    }
+
+    // Remove the meeting from the meetings array
+    const result = await collection.updateOne(
+      {
+        host_address,
+        "dao.name": dao_name,
+      },
+      {
+        /* @ts-ignore */
+        $pull: {
+          "dao.$[daoElem].meetings": {
+            meeting_id: meetingId,
+          },
+        },
+        $set: {
+          updated_at: new Date(),
+        },
+      },
+      {
+        arrayFilters: [{ "daoElem.name": dao_name }],
+      }
+    );
+
+    if (result.modifiedCount === 0) {
+      await client.close();
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Failed to delete meeting",
+        },
+        { status: 500 }
+      );
+    }
+
+    // Check if the DAO now has no meetings
+    const updatedDoc = await collection.findOne({
+      host_address,
+      "dao.name": dao_name,
+    });
+
+    const dao = updatedDoc?.dao.find((d: any) => d.name === dao_name);
+
+    // If DAO has no meetings, remove the entire DAO
+    if (dao && dao.meetings.length === 0) {
+      await collection.updateOne(
+        { host_address },
+        {
+          /* @ts-ignore */
+          $pull: {
+            dao: { name: dao_name },
+          },
+        }
+      );
+    }
+
+    await client.close();
+
+    return NextResponse.json(
+      {
+        success: true,
+        message: "Meeting deleted successfully",
+      },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error("Error deleting meeting:", error);
+    return NextResponse.json(
+      {
+        success: false,
+        error: "Internal Server Error",
+        details: error,
+      },
       { status: 500 }
     );
   }
