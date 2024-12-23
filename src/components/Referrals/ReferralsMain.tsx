@@ -8,7 +8,7 @@ import { Oval, TailSpin } from "react-loader-spinner";
 import MobileResponsiveMessage from "../MobileResponsiveMessage/MobileResponsiveMessage";
 import ConnectYourWallet from "../ComponentUtils/ConnectYourWallet";
 import { useConnection } from "@/app/hooks/useConnection";
-import { usePrivy } from "@privy-io/react-auth";
+import { usePrivy, useWallets } from "@privy-io/react-auth";
 import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 import { RotatingLines } from "react-loader-spinner";
 
@@ -18,6 +18,22 @@ function ReferralsMain() {
     useConnection();
     const { ready, authenticated, login, logout, user } = usePrivy();  
     const {walletAddress}=useWalletAddress();
+    const { wallets } = useWallets();
+
+    const isValidAuthentication = () => {
+      // Check if user is authenticated AND has an active wallet
+      const hasActiveWallet = wallets.some(wallet => wallet.address);
+      return authenticated && isConnected && hasActiveWallet;
+    };
+  
+    const canAccessProtectedResources = () => {
+      if (!isValidAuthentication()) {
+        return false;
+      }
+      return true;
+    };
+  
+    const Isvalid=canAccessProtectedResources();
 
 
   const renderContent = () => {
@@ -37,7 +53,7 @@ function ReferralsMain() {
     //   );
     // }
     
-    if (!authenticated) {
+    if (!Isvalid) {
       return <ConnectYourWallet />;
     }
 
