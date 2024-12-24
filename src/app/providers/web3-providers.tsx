@@ -43,7 +43,7 @@ import { http } from "viem";
 import { mainnet, optimism, arbitrum, arbitrumSepolia } from "viem/chains";
 // import { SiweMessage } from 'siwe';
 import { getCsrfToken } from "next-auth/react";
-import { useWalletClient } from "wagmi";
+import { useWalletClient,cookieStorage,createStorage } from "wagmi";
 import { PrivyAuthHandler } from "./PrivyAuthHandler";
 import logo from "@/assets/images/daos/CCLogo2.png";
 
@@ -56,6 +56,7 @@ interface Web3ProviderProps {
   children: ReactNode;
   autoConnect?: boolean;
 }
+  
 
 // const optimismSepolia = {
 //   id: 11155420,
@@ -115,6 +116,9 @@ const wagmiConfig = createConfig({
     [arbitrum.id]: http(),
     [arbitrumSepolia.id]: http(),
   },
+  storage: createStorage({
+    storage: cookieStorage,
+  }),  
 });
 
 // Privy configuration
@@ -128,8 +132,10 @@ const privyConfig: PrivyClientConfig = {
   appearance: {
     showWalletLoginFirst: true,
     logo: logo.src,
+    walletList:["metamask","rainbow","wallet_connect","coinbase_wallet"]
   },
   defaultChain: optimism,
+  supportedChains:[optimism,arbitrum,arbitrumSepolia]
 };
 
 const queryClient = new QueryClient();
@@ -151,6 +157,8 @@ export default function Web3Provider({ children }: Web3ProviderProps) {
   //     }`,
   //   };
   // }, [referrer]);
+
+
 
   return (
     <PrivyProvider

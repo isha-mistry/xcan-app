@@ -12,7 +12,7 @@ import {
   useReadContract,
   useWriteContract,
 } from "wagmi";
-import { Address, formatEther, parseEther } from "viem";
+import { Address, formatEther } from "viem";
 import {
   protocolRewardsABI,
   protocolRewardsAddress,
@@ -24,6 +24,13 @@ import Link from "next/link";
 import { Gift, Loader2 } from "lucide-react";
 import { usePrivy } from "@privy-io/react-auth";
 import { useWalletAddress } from "@/app/hooks/useWalletAddress";
+
+interface NetworkBalance {
+  chainId: number;
+  name: string;
+  logo: any;
+  accountBalance: bigint;
+}
 
 interface Reward {
   platform: string;
@@ -44,38 +51,73 @@ const REWARD_QUERY = gql`
 `;
 
 function TotalRewards() {
-  const {
-    isConnected: isUserConnected,
-    // isSessionLoading,
-    isPageLoading,
-    isReady,
-  } = useConnection();
+  const { isConnected: isUserConnected, isReady } = useConnection();
   const [totalRewards, setTotalRewards] = useState<any>({
     amount: "0.0",
     value: "$0.0",
   });
-  const { address,isConnected } = useAccount();
+  const { address } = useAccount();
   const chainId = useChainId();
-  const [claimableRewards, setClaimableRewards] = useState<Reward[]>([]);
   const [ethToUsdConversionRate, setEthToUsdConversionRate] = useState(0);
+  const [claimableRewards, setClaimableRewards] = useState<Reward[]>([]);
   const [displayEnsName, setDisplayEnsName] = useState<any>();
-  const {
-    data: hash,
-    writeContract,
-    isPending,
-    isError,
-    writeContractAsync,
-  } = useWriteContract();
+  const { writeContractAsync } = useWriteContract();
   const [claimingReward, setClaimingReward] = useState<boolean>(false);
   const [fetchingReward, setFetchingReward] = useState<boolean>(false);
-  const { ready, authenticated, login, logout, user } = usePrivy();
-  const {walletAddress}=useWalletAddress();
+  const { walletAddress } = useWalletAddress();
 
-  const nonZeroRewards = claimableRewards.filter(
-    (reward) => parseFloat(reward.amount) > 0
-  );
+  // Network configurations
+  const NETWORKS = {
+    ARBITRUM: {
+      chainId: 42161,
+      name: "Arbitrum",
+      logo: arblogo
+    },
+    ARBITRUM_SEPOLIA: {
+      chainId: 421614,
+      name: "Arbitrum Sepolia",
+      logo: arblogo
+    },
+    OPTIMISM: {
+      chainId: 10,
+      name: "Optimism",
+      logo: oplogo
+    }
+  };
 
- 
+  // Fetch balances for each network
+  const { data: arbitrumBalance } = useReadContract({
+    abi: protocolRewardsABI,
+    address: protocolRewardsAddress[NETWORKS.ARBITRUM.chainId as keyof typeof protocolRewardsAddress],
+    functionName: "balanceOf",
+    args: [walletAddress as Address],
+  });
+
+  const { data: arbitrumSepoliaBalance } = useReadContract({
+    abi: protocolRewardsABI,
+    address: protocolRewardsAddress[NETWORKS.ARBITRUM_SEPOLIA.chainId as keyof typeof protocolRewardsAddress],
+    functionName: "balanceOf",
+    args: [walletAddress as Address],
+  });
+
+  const { data: optimismBalance } = useReadContract({
+    abi: protocolRewardsABI,
+    address: protocolRewardsAddress[NETWORKS.OPTIMISM.chainId as keyof typeof protocolRewardsAddress],
+    functionName: "balanceOf",
+    args: [walletAddress as Address],
+  });
+
+  // const fetchEthPrice = useCallback(async () => {
+  //   try {
+  //     const response = await fetch(
+  //       "https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd"
+  //     );
+  //     const data = await response.json();
+  //     setEthToUsdConversionRate(data.ethereum.usd);
+  //   } catch (error) {
+  //     console.error("Error fetching ETH price:", error);
+  //   }
+  // }, []);
 
 
   const fetchReward = useCallback(async () => {
@@ -123,79 +165,78 @@ function TotalRewards() {
   }, [chainId]);
 
   useEffect(() => {
-    if (walletAddress!=null) {
+    if (walletAddress) {
       fetchReward();
-
       const fetchEnsName = async () => {
         const ensName = await fetchEnsNameAndAvatar(walletAddress);
         const truncatedAddress = truncateAddress(walletAddress);
-        setDisplayEnsName(
-          ensName?.ensName ? ensName.ensName : truncatedAddress
-        );
+        setDisplayEnsName(ensName?.ensName ? ensName.ensName : truncatedAddress);
       };
       fetchEnsName();
     }
-  }, [address,walletAddress]);
+  }, [walletAddress]);
 
-  const { data: accountBalance, isLoading } = useReadContract({
-    abi: protocolRewardsABI,
-    address:
-      protocolRewardsAddress[chainId as keyof typeof protocolRewardsAddress],
-    functionName: "balanceOf",
-    args: [walletAddress as Address],
-  });
+  // Calculate total rewards across all networks
+  // useEffect(() => {
+  //   const totalETH = Number(formatEther(
+  //     (arbitrumBalance || BigInt(0)) +
+  //     (arbitrumSepoliaBalance || BigInt(0)) +
+  //     (optimismBalance || BigInt(0))
+  //   )).toFixed(5);
 
-  const recipient = walletAddress;
-  const withdrawAmount = BigInt(accountBalance || 0) / BigInt(2);
+  //   const totalUSD = (Number(totalETH) * ethToUsdConversionRate).toFixed(2);
 
-  // withdraw amount is half of the balance
-  const rewardBalanceInETH: any = Number(
-    formatEther(accountBalance || BigInt(0))
-  ).toFixed(5);
-  const rewardBalanceInUSD: any = (
-    rewardBalanceInETH * ethToUsdConversionRate
-  ).toFixed(2);
-
-  // async function submit() {
-  //   // write to the withdraw function on the ProtocolRewards contract
-  //   if (!recipient) {
-  //     console.error("Recipient address is undefined.");
-  //     return;
-  //   }
-  //   writeContract({
-  //     abi: protocolRewardsABI,
-  //     address:
-  //       protocolRewardsAddress[chainId as keyof typeof protocolRewardsAddress],
-  //     functionName: "withdraw",
-  //     args: [recipient!, withdrawAmount],
+  //   setTotalRewards({
+  //     amount: totalETH,
+  //     value: `$${totalUSD}`
   //   });
-  // }
-  async function handleClaim() {
-    if (!recipient) {
+  // }, [arbitrumBalance, arbitrumSepoliaBalance, optimismBalance, ethToUsdConversionRate]);
+
+  async function handleClaim(chainId: number, balance: bigint) {
+    if (!walletAddress) {
       console.error("Recipient address is undefined.");
       return;
     }
-    setClaimingReward(true);
+ 
+   
 
     try {
-      const result = await writeContractAsync({
+      const withdrawAmount = balance / BigInt(2);
+      setClaimingReward(true);
+      await writeContractAsync({
         abi: protocolRewardsABI,
-        address:
-          protocolRewardsAddress[
-            chainId as keyof typeof protocolRewardsAddress
-          ],
+        address: protocolRewardsAddress[chainId as keyof typeof protocolRewardsAddress],
         functionName: "withdraw",
-        args: [recipient as `0x${string}`, withdrawAmount],
+        args: [walletAddress as `0x${string}`, withdrawAmount],
       });
-
-      await fetchReward();
     } catch (error) {
       console.error("Error claiming reward:", error);
-      setClaimingReward(false);
     } finally {
       setClaimingReward(false);
     }
   }
+
+  // Process all network balances
+  const networkBalances = [
+    {
+      ...NETWORKS.ARBITRUM,
+      accountBalance: arbitrumBalance || BigInt(0)
+    },
+    {
+      ...NETWORKS.ARBITRUM_SEPOLIA,
+      accountBalance: arbitrumSepoliaBalance || BigInt(0)
+    },
+    {
+      ...NETWORKS.OPTIMISM,
+      accountBalance: optimismBalance || BigInt(0)
+    }
+  ];
+
+  console.dir(networkBalances);
+
+  const formatETHValue:any = (value: bigint) => {
+    return Number(formatEther(value)).toFixed(5); // Consistently using 4 decimal places
+  };
 
   return (
     <>
@@ -218,69 +259,78 @@ function TotalRewards() {
         </div>
 
         <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-          <div className="p-4 xm:p-6">
-            <h2 className="text-2xl font-bold mb-4">Claim Rewards</h2>
-            {fetchingReward ? (
-              <div className="flex flex-col items-center justify-center py-2">
-                <Loader2 className="h-5 w-5 animate-spin text-blue-500 mb-4" />
-                <p className="text-gray-500">Fetching your rewards...</p>
-              </div>
-            ) : nonZeroRewards.length > 0 ? (
-              <div className="space-y-4">
-                {nonZeroRewards.map((reward, index) => (
-                  <div
-                    key={index}
-                    className="flex flex-col xm:flex-row md:flex-col 1.7lg:flex-row  items-center justify-between border-b pb-4 last:border-b-0 last:pb-0 gap-4"
-                  >
-                    <div className="flex items-center gap-4 0.2xs:gap-6 md:gap-4 1.7lg:gap-6 justify-between">
-                    <div className="flex items-center space-x-2">
-                      <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
-                        <Image
-                          src={reward.logo}
-                          alt="logo"
-                          className="w-8 h-8 object-contain"
-                        />
-                      </div>
-                      <span className="font-medium text-xs xm:text-base md:text-xs 1.7lg:text-base">{displayEnsName}</span>
-                    </div>
-                    <div>
-                      <div className="font-semibold text-sm xm:text-lg md:text-sm 1.7lg:text-lg">
-                        {rewardBalanceInETH} ETH
-                      </div>
-                      <div className="text-xs xm:text-sm md:text-xs 1.7lg:text-sm text-gray-500">
-                        ≈ ${rewardBalanceInUSD} USD
-                      </div>
-                    </div>
-                    </div>
-                    <button
-                      onClick={handleClaim}
-                      disabled={claimingReward}
-                      className={`bg-gradient-to-r from-green-400 to-blue-500 hover:from-green-500 hover:to-blue-600 text-white px-4 py-2 rounded-full transition-all duration-300 shadow-md hover:shadow-lg flex items-center justify-center min-w-[100px] ${
-                        claimingReward ? "opacity-75 cursor-not-allowed" : ""
-                      }`}
-                    >
-                      {claimingReward ? (
-                        <Loader2 className="mr-2 h-6 w-6 animate-spin" />
-                      ) : (
-                        "Claim"
-                      )}
-                    </button>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-8 text-gray-500">
-                <HiGift size={48} className="mx-auto mb-4 text-gray-400" />
-                <p>No rewards available to claim at the moment.</p>
-              </div>
-            )}
+      <div className="p-4 xm:p-6">
+        <h2 className="text-2xl font-bold mb-4">Claim Rewards</h2>
+        {fetchingReward ? (
+          <div className="flex flex-col items-center justify-center py-2">
+            <Loader2 className="h-5 w-5 animate-spin text-blue-500 mb-4" />
+            <p className="text-gray-500">Fetching your rewards...</p>
           </div>
-        </div>
+        ) : networkBalances.length > 0 ? (
+          <div className="space-y-4">
+            {networkBalances.map((network, index) => (
+              <div
+                key={index}
+                className="flex flex-col xm:flex-row md:flex-col 1.7lg:flex-row items-center justify-between border-b pb-4 last:border-b-0 last:pb-0 gap-4"
+              >
+                <div className="flex items-center gap-4 0.2xs:gap-6 md:gap-4 1.7lg:gap-6 justify-between">
+                  <div className="flex items-center space-x-2">
+                    <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
+                      <Image
+                        src={network.logo}
+                        alt="logo"
+                        className="w-8 h-8 object-contain"
+                      />
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="font-medium text-xs xm:text-base md:text-xs 1.7lg:text-base">
+                        {displayEnsName}
+                      </span>
+                      <span className="text-xs text-gray-500">
+                        {network.name}
+                      </span>
+                    </div>
+                  </div>
+                  <div>
+                    <div className="font-semibold text-sm xm:text-lg md:text-sm 1.7lg:text-lg">
+                      {formatETHValue(network.accountBalance)} ETH
+                    </div>
+                    <div className="text-xs xm:text-sm md:text-xs 1.7lg:text-sm text-gray-500">
+                      ≈ ${(Number(formatEther(network.accountBalance)) * ethToUsdConversionRate).toFixed(2)} USD
+                    </div>
+                  </div>
+                </div>
+                <button
+                  onClick={() => handleClaim(network.chainId, network.accountBalance)}
+                  disabled={claimingReward || network.accountBalance <= BigInt(0)}
+                  className={`bg-gradient-to-r from-green-400 to-blue-500 text-white px-4 py-2 rounded-full transition-all duration-300 shadow-md hover:shadow-lg flex items-center justify-center min-w-[100px] ${
+                    (claimingReward || network.accountBalance <= BigInt(0))
+                      ? "opacity-50 cursor-not-allowed from-gray-400 to-gray-500"
+                      : "hover:from-green-500 hover:to-blue-600"
+                  }`}
+                >
+                  {claimingReward && network.chainId==chainId ? (
+                    <Loader2 className="mr-2 h-6 w-6 animate-spin" />
+                  ) : (
+                    "Claim"
+                  )}
+                </button>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-8 text-gray-500">
+            <HiGift size={48} className="mx-auto mb-4 text-gray-400" />
+            <p>No networks available at the moment.</p>
+          </div>
+        )}
+      </div>
+    </div>
       </div>
 
       <div className="mt-4">
         <Link
-          href={"https://docs.chora.club/earn-rewards/mint-referral-reward"}
+          href="https://docs.chora.club/earn-rewards/mint-referral-reward"
           target="_blank"
           className="text-blue-600 hover:text-blue-800 hover:underline transition-colors duration-300"
         >
@@ -292,3 +342,4 @@ function TotalRewards() {
 }
 
 export default TotalRewards;
+

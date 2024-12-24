@@ -29,7 +29,7 @@ function NotificationIconComponent() {
   const { user, ready, getAccessToken, authenticated } = usePrivy();
   const [socketId, setSocketId] = useState<string | null>(null);
   const [isAPILoading, setIsAPILoading] = useState<boolean>();
-  const { data: session } = useSession();
+  // const { data: session } = useSession();
   const { walletAddress } = useWalletAddress();
   const {isConnected,address}=useAccount();
   const {
