@@ -46,7 +46,7 @@ function Heading() {
           </div>
           <div className="flex gap-1 xs:gap-2 items-center font-poppins">
             <RewardButton />
-            <ConnectWalletWithENS />
+            {/* <ConnectWalletWithENS /> */}
           </div>
         </div>
       </motion.div>

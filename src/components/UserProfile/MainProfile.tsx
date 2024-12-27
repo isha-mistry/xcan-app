@@ -1313,7 +1313,7 @@ function MainProfile() {
             </div>
             <div className="hidden lg:flex gap-1 xs:gap-2 items-center">
               <RewardButton />
-              <ConnectWalletWithENS />
+              {/* <ConnectWalletWithENS /> */}
             </div>
           </div>
 
