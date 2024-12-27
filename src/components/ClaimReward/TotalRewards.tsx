@@ -5,11 +5,12 @@ import arblogo from "@/assets/images/daos/arb.png";
 import Image from "next/image";
 import { HiGift } from "react-icons/hi";
 import { gql } from "urql";
-import { nft_client } from "@/config/staticDataUtils";
+import { nft_client, op_client } from "@/config/staticDataUtils";
 import {
   useAccount,
   useChainId,
   useReadContract,
+  useSwitchChain,
   useWriteContract,
 } from "wagmi";
 import { Address, formatEther } from "viem";
@@ -24,6 +25,7 @@ import Link from "next/link";
 import { Gift, Loader2 } from "lucide-react";
 import { usePrivy } from "@privy-io/react-auth";
 import { useWalletAddress } from "@/app/hooks/useWalletAddress";
+import toast from "react-hot-toast";
 
 interface NetworkBalance {
   chainId: number;
@@ -65,6 +67,7 @@ function TotalRewards() {
   const [claimingReward, setClaimingReward] = useState<boolean>(false);
   const [fetchingReward, setFetchingReward] = useState<boolean>(false);
   const { walletAddress } = useWalletAddress();
+  const { switchChainAsync } = useSwitchChain();
 
   // Network configurations
   const NETWORKS = {
@@ -91,6 +94,7 @@ function TotalRewards() {
     address: protocolRewardsAddress[NETWORKS.ARBITRUM.chainId as keyof typeof protocolRewardsAddress],
     functionName: "balanceOf",
     args: [walletAddress as Address],
+    chainId:NETWORKS.ARBITRUM.chainId
   });
 
   const { data: arbitrumSepoliaBalance } = useReadContract({
@@ -98,6 +102,7 @@ function TotalRewards() {
     address: protocolRewardsAddress[NETWORKS.ARBITRUM_SEPOLIA.chainId as keyof typeof protocolRewardsAddress],
     functionName: "balanceOf",
     args: [walletAddress as Address],
+    chainId: NETWORKS.ARBITRUM_SEPOLIA.chainId,
   });
 
   const { data: optimismBalance } = useReadContract({
@@ -105,6 +110,7 @@ function TotalRewards() {
     address: protocolRewardsAddress[NETWORKS.OPTIMISM.chainId as keyof typeof protocolRewardsAddress],
     functionName: "balanceOf",
     args: [walletAddress as Address],
+    chainId: NETWORKS.OPTIMISM.chainId,
   });
 
   // const fetchEthPrice = useCallback(async () => {
@@ -126,6 +132,7 @@ function TotalRewards() {
       const data = await nft_client
         .query(REWARD_QUERY, { address: walletAddress })
         .toPromise();
+
       const response = await fetch(
         "https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd"
       );
@@ -144,6 +151,7 @@ function TotalRewards() {
             10 ** 18
           ).toFixed(2)}`,
         })) || [];
+
       setTotalRewards(total[0]);
       const Rewards =
         data?.data.rewardsPerUsers?.map((reward: any) => ({
@@ -155,6 +163,7 @@ function TotalRewards() {
           ).toFixed(2)}`,
           logo: reward.id.includes("op") ? oplogo : arblogo,
         })) || [];
+
       setClaimableRewards(Rewards);
       // console.log(claimableRewards);
       setFetchingReward(false);
@@ -192,20 +201,31 @@ function TotalRewards() {
   //   });
   // }, [arbitrumBalance, arbitrumSepoliaBalance, optimismBalance, ethToUsdConversionRate]);
 
-  async function handleClaim(chainId: number, balance: bigint) {
+  async function handleClaim(chain: number, balance: bigint) {
     if (!walletAddress) {
       console.error("Recipient address is undefined.");
       return;
     }
- 
-   
-
     try {
-      const withdrawAmount = balance / BigInt(2);
       setClaimingReward(true);
+      
+      // Switch chain if needed
+      if (chainId !== chain) {
+        try {
+          await switchChainAsync({ chainId: chain });
+        } catch (error) {
+          console.error("Failed to switch chain:", error);
+          setClaimingReward(false);
+          return;
+        }
+      }
+
+      const withdrawAmount = balance / BigInt(2);
+      
+      // Use the chain parameter instead of chainId here
       await writeContractAsync({
         abi: protocolRewardsABI,
-        address: protocolRewardsAddress[chainId as keyof typeof protocolRewardsAddress],
+        address: protocolRewardsAddress[chain as keyof typeof protocolRewardsAddress],
         functionName: "withdraw",
         args: [walletAddress as `0x${string}`, withdrawAmount],
       });
@@ -214,6 +234,7 @@ function TotalRewards() {
     } finally {
       setClaimingReward(false);
     }
+   
   }
 
   // Process all network balances
@@ -230,9 +251,9 @@ function TotalRewards() {
       ...NETWORKS.OPTIMISM,
       accountBalance: optimismBalance || BigInt(0)
     }
-  ];
+  ].filter(network=>network.accountBalance>BigInt(0));
 
-  console.dir(networkBalances);
+
 
   const formatETHValue:any = (value: bigint) => {
     return Number(formatEther(value)).toFixed(5); // Consistently using 4 decimal places
@@ -321,7 +342,7 @@ function TotalRewards() {
         ) : (
           <div className="text-center py-8 text-gray-500">
             <HiGift size={48} className="mx-auto mb-4 text-gray-400" />
-            <p>No networks available at the moment.</p>
+            <p>No rewards available to claim at the moment.</p>
           </div>
         )}
       </div>

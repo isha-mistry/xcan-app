@@ -116,9 +116,9 @@ const wagmiConfig = createConfig({
     [arbitrum.id]: http(),
     [arbitrumSepolia.id]: http(),
   },
-  storage: createStorage({
-    storage: cookieStorage,
-  }),  
+  // storage: createStorage({
+  //   storage: cookieStorage,
+  // }),  
 });
 
 // Privy configuration

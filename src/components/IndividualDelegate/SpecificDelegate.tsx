@@ -93,7 +93,8 @@ function SpecificDelegate({ props }: { props: Type }) {
   const [attestationStatistics, setAttestationStatistics] =
     useState<MeetingRecords | null>(null);
   // const provider = new ethers.BrowserProvider(window?.ethereum);
-  const [displayEnsName, setDisplayEnsName] = useState<any>();
+  // const [displayEnsName, setDisplayEnsName] = useState<any>();
+  const [displayEnsName, setDisplayEnsName] = useState<any>(null);
   const [delegate, setDelegate] = useState("");
   const [same, setSame] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -130,6 +131,7 @@ function SpecificDelegate({ props }: { props: Type }) {
   const [copiedAddress, setCopiedAddress] = useState<string | null>(null);
   const [tempCpi, setTempCpi] = useState();
   const [tempCpiCalling, setTempCpiCalling] = useState(true);
+  const [isFromDatabase, setFromDatabase] = useState(false);
 
   const handleCopy = (addr: string) => {
     copy(addr);
@@ -223,7 +225,7 @@ function SpecificDelegate({ props }: { props: Type }) {
 
           try {
             setTempCpiCalling(true);
-            const token=await getAccessToken();
+            const token = await getAccessToken();
             const result = await calculateTempCpi(
               delegatorAddress,
               toAddress,
@@ -376,13 +378,14 @@ function SpecificDelegate({ props }: { props: Type }) {
         );
         const details = await res.json();
 
+        // console.log("Line 379:", details.data);
+
         setDelegateInfo(details.data.delegate);
         if (
           props.individualDelegate.toLowerCase() ===
           details.data.delegate.publicAddress.toLowerCase()
         ) {
           setIsDelegate(true);
-          
         }
 
         setKarmaSocials({
@@ -436,7 +439,7 @@ function SpecificDelegate({ props }: { props: Type }) {
   //         : "";
 
   //     console.log("Line 414:",contractAddress);
-  //     console.log('Line 415:',props.daoDelegates,props.individualDelegate);    
+  //     console.log('Line 415:',props.daoDelegates,props.individualDelegate);
 
   //     try {
   //       const delegateTx = await publicClient.readContract({
@@ -481,16 +484,16 @@ function SpecificDelegate({ props }: { props: Type }) {
         //If user is not connected and check delagate session
         const public_client = createPublicClient({
           chain: props.daoDelegates === "optimism" ? optimism : arbitrum,
-          transport: http()
-         });
+          transport: http(),
+        });
 
-         delegateTx = await public_client.readContract({
+        delegateTx = (await public_client.readContract({
           address: contractAddress as `0x${string}`,
           abi: dao_abi.abi,
           functionName: "delegates",
           args: [props.individualDelegate],
-         }) as string;
-       
+        })) as string;
+
         delegateTxAddr = delegateTx;
         if (
           delegateTxAddr.toLowerCase() ===
@@ -506,7 +509,6 @@ function SpecificDelegate({ props }: { props: Type }) {
     };
     checkDelegateStatus();
   }, [props]);
-
 
   const formatNumber = (number: number) => {
     if (number >= 1000000) {
@@ -604,7 +606,7 @@ function SpecificDelegate({ props }: { props: Type }) {
 
     if (action == 1) {
       setLoading(true);
-      const token=await getAccessToken();
+      const token = await getAccessToken();
       const myHeaders: HeadersInit = {
         "Content-Type": "application/json",
         ...(walletAddress && {
@@ -652,7 +654,7 @@ function SpecificDelegate({ props }: { props: Type }) {
         let updatenotification: boolean;
         updatenotification = !notification;
         setNotificationLoading(true);
-        const token=await getAccessToken();
+        const token = await getAccessToken();
         const myHeaders: HeadersInit = {
           "Content-Type": "application/json",
           ...(walletAddress && {
@@ -908,7 +910,7 @@ function SpecificDelegate({ props }: { props: Type }) {
 
         // const dbResponse = await axios.get(`/api/profile/${address}`);
 
-        const token=await getAccessToken();
+        const token = await getAccessToken();
         const myHeaders: HeadersInit = {
           "Content-Type": "application/json",
           ...(walletAddress && {
@@ -950,7 +952,12 @@ function SpecificDelegate({ props }: { props: Type }) {
             // ) {
             // Data found in the database, set the state accordingly
             // setResponseFromDB(true);
-            setDisplayImage(item.image);
+
+            if (item.image) {
+              setFromDatabase(true);
+              setDisplayImage(item.image);
+            }
+
             setDescription(item.description);
             setAttestationStatistics(item?.meetingRecords ?? null);
             if (item.isEmailVisible) {
@@ -998,6 +1005,10 @@ function SpecificDelegate({ props }: { props: Type }) {
           console.log(
             "Data not found in the database, fetching from third-party API"
           );
+          const { avatar: fetchedAvatar } = await fetchEnsNameAndAvatar(
+            props.individualDelegate
+          );
+          setDisplayImage(fetchedAvatar ? fetchedAvatar : "");
           setFollowerCountLoading(false);
           setIsFollowStatusLoading(false);
           // Data not found in the database, fetch data from the third-party API
@@ -1013,11 +1024,41 @@ function SpecificDelegate({ props }: { props: Type }) {
 
   useEffect(() => {
     const fetchEnsName = async () => {
-      const ensName = await fetchEnsNameAndAvatar(props.individualDelegate);
-      setDisplayEnsName(ensName?.ensName);
+      // const ensName = await fetchEnsNameAndAvatar(props.individualDelegate);
+      const { ensName: fetchedName, avatar: fetchedAvatar } =
+        await fetchEnsNameAndAvatar(props.individualDelegate);
+      setDisplayEnsName(fetchedName);
     };
     fetchEnsName();
   }, [props]);
+
+  const getImageSource = () => {
+    if (!displayImage) {
+      return (
+        delegateInfo?.profilePicture ||
+        (props.daoDelegates === "optimism"
+          ? OPLogo
+          : props.daoDelegates === "arbitrum"
+          ? ArbLogo
+          : ccLogo)
+      );
+    }
+
+    // If image is from database, prepend the IPFS gateway URL
+    if (isFromDatabase) {
+      return `https://gateway.lighthouse.storage/ipfs/${displayImage}`;
+    }
+
+    // If image is from ENS or other source, use it directly
+    return displayImage;
+  };
+
+  const getImageClassName = () => {
+    if (displayImage || delegateInfo?.profilePicture) {
+      return "w-full xs:w-28 xs:h-28 sm:w-36 sm:h-36 lg:w-40 lg:h-40 rounded-3xl";
+    }
+    return "w-14 h-14 sm:w-20 sm:h-20 lg:w-20 lg:h-20 rounded-3xl";
+  };
 
   return (
     <>
@@ -1047,24 +1088,11 @@ function SpecificDelegate({ props }: { props: Type }) {
                   <div className="w-full h-full xs:w-28 xs:h-28 sm:w-36 sm:h-36 lg:w-40 lg:h-40 flex items-center justify-center ">
                     {/* <div className="flex justify-center items-center w-40 h-40"> */}
                     <Image
-                      src={
-                        displayImage
-                          ? `https://gateway.lighthouse.storage/ipfs/${displayImage}`
-                          : delegateInfo?.profilePicture ||
-                            (props.daoDelegates === "optimism"
-                              ? OPLogo
-                              : props.daoDelegates === "arbitrum"
-                              ? ArbLogo
-                              : ccLogo)
-                      }
+                      src={getImageSource()}
                       alt="user"
                       width={256}
                       height={256}
-                      className={
-                        displayImage || delegateInfo?.profilePicture
-                          ? "w-full xs:w-28 xs:h-28 sm:w-36 sm:h-36 lg:w-40 lg:h-40 rounded-3xl"
-                          : "w-14 h-14 sm:w-20 sm:h-20 lg:w-20 lg:h-20 rounded-3xl"
-                      }
+                      className={getImageClassName()}
                     />
                     {/* </div> */}
 
