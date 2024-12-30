@@ -132,15 +132,8 @@ const privyConfig: PrivyClientConfig = {
   appearance: {
     showWalletLoginFirst: true,
     logo: logo.src,
-    walletList:["metamask","rainbow","wallet_connect","coinbase_wallet"]
   },
-  externalWallets: { 
-    coinbaseWallet: { 
-      connectionOptions: 'all', 
-    }, 
-  }, 
   defaultChain: optimism,
-  supportedChains:[optimism,arbitrum,arbitrumSepolia]
 };
 
 const queryClient = new QueryClient();

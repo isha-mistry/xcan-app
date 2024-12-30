@@ -70,6 +70,7 @@ import { MeetingRecords } from "@/types/UserProfileTypes";
 import { useApiData } from "@/contexts/ApiDataContext";
 import { calculateTempCpi } from "@/actions/calculatetempCpi";
 import { createPublicClient, http } from "viem";
+import ErrorComponent from "../Error/ErrorComponent";
 
 interface Type {
   daoDelegates: string;
@@ -132,6 +133,7 @@ function SpecificDelegate({ props }: { props: Type }) {
   const [tempCpi, setTempCpi] = useState();
   const [tempCpiCalling, setTempCpiCalling] = useState(true);
   const [isFromDatabase, setFromDatabase] = useState(false);
+  const [errorOccurred, setErrorOccurred] = useState(false);
 
   const handleCopy = (addr: string) => {
     copy(addr);
@@ -421,6 +423,28 @@ function SpecificDelegate({ props }: { props: Type }) {
 
     fetchData();
   }, [props.daoDelegates, props.individualDelegate, walletAddress]);
+
+  // useEffect(() => {
+  //   if (errorOccurred) {
+  //     console.log("An error occurred! Triggering side effect...");
+  //     // Perform any side effect here, such as logging or showing a fallback UI
+  //   }
+  // }, [errorOccurred]);
+
+  useEffect(() => {
+    const handleGlobalError = (event: ErrorEvent) => {
+      console.error("Global error caught:", event.error || event.message);
+      setErrorOccurred(true);
+    };
+
+    // Listen to global error events
+    window.addEventListener("error", handleGlobalError);
+
+    return () => {
+      // Cleanup
+      window.removeEventListener("error", handleGlobalError);
+    };
+  }, []);
 
   // For Optimism Governance Token
   const optimismTokenAddress = "0x4200000000000000000000000000000000000042";
@@ -1071,7 +1095,9 @@ function SpecificDelegate({ props }: { props: Type }) {
           <Heading />
         </div>
         {isPageLoading && <MainProfileSkeletonLoader />}
-        {!isPageLoading && (isDelegate || selfDelegate) ? (
+        {!isPageLoading &&
+        (isDelegate || selfDelegate) &&
+        errorOccurred == false ? (
           <div className="font-poppins">
             {/* {followed && <Confetti recycle={false} numberOfPieces={550} />} */}
             <div className="flex flex-col md:flex-row pb-5 lg:py-5 px-4 md:px-6 lg:px-14 justify-between items-start">
@@ -1537,12 +1563,14 @@ function SpecificDelegate({ props }: { props: Type }) {
           </div>
         ) : (
           !isPageLoading &&
-          !(isDelegate || selfDelegate) && (
+          !(isDelegate || selfDelegate) && errorOccurred &&  (
             <div className="flex flex-col justify-center items-center w-full h-screen">
-              <div className="text-5xl">☹️</div>{" "}
+              {/* <div className="text-5xl">☹️</div>{" "}
               <div className="pt-4 font-semibold text-lg">
                 Oops, no such result available!
-              </div>
+              </div> */}
+
+              <ErrorComponent message="We're sorry, but something went wrong ! We’re Making It Right.." />
             </div>
           )
         )}
