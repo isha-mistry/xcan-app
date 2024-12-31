@@ -76,28 +76,9 @@ function TopNavbar() {
         <div className="flex gap-3 items-center">
           {isConnected ? (
             <>
+            {pathname !== '/' && (
               <div className="flex gap-4">
-                {/* <Tooltip
-                content={<div className={`${styles.customTooltip}`}>DAOs</div>}
-                placement="bottom"
-                className="rounded-md bg-opacity-90"
-                closeDelay={1}
-              >
-                <Link
-                  href={"/"}
-                  className={`dao cursor-pointer xl:w-11 xl:h-11 2xl:w-12 2xl:h-12  rounded-full flex items-center justify-center border border-white bg-blue-shade-800 w-10 h-10 ${
-                    styles.icon3d
-                  } ${
-                    pathname.endsWith(`/`)
-                      ? "border-white border-2 rounded-full"
-                      : ""
-                  }`}
-                >
-                  <IoIosRocket
-                    className={`size-5 text-white ${styles.iconInner}`}
-                  />
-                </Link>
-              </Tooltip> */}
+              
                 <Link
                   href={"/explore-daos"}
                   className={`${styles.item} text-blue-shade-500 font-medium ${
@@ -153,136 +134,9 @@ function TopNavbar() {
                 >
                   Profile
                 </Link>
-                {/* <Tooltip
-                content={
-                  <div className={`${styles.customTooltip}`}>Office Hours</div>
-                }
-                placement="bottom"
-                className="rounded-md bg-opacity-90"
-                closeDelay={1}
-              >
-                <Link
-                  href={"/office-hours?hours=ongoing"}
-                  className={`office cursor-pointer xl:w-11 xl:h-11 2xl:w-12 2xl:h-12 rounded-full flex items-center justify-center border border-white bg-blue-shade-800 w-10 h-10 ${
-                    styles.icon3d
-                  } ${
-                    pathname.includes(`/office-hours`)
-                      ? "border-white border-2 rounded-full"
-                      : ""
-                  }`}
-                >
-                  <FaBusinessTime
-                    className={`size-5 text-white ${styles.iconInner}`}
-                  />
-                </Link>
-              </Tooltip> */}
-                {/* <Tooltip
-                content={
-                  <div className={`${styles.customTooltip}`}>Sessions</div>
-                }
-                placement="bottom"
-                className="rounded-md bg-opacity-90"
-                closeDelay={1}
-              >
-                <Link
-                  href={"/sessions?active=availableDelegates"}
-                  className={`session cursor-pointer xl:w-11 xl:h-11 2xl:w-12 2xl:h-12 rounded-full flex items-center justify-center border border-white bg-blue-shade-800 w-10 h-10 ${
-                    styles.icon3d
-                  } ${
-                    pathname.includes(`/sessions`)
-                      ? "border-white border-2 rounded-full"
-                      : ""
-                  }`}
-                >
-                  <PiUsersThreeFill
-                    className={`size-5 text-white ${styles.iconInner}`}
-                  />
-                </Link>
-              </Tooltip> */}
-                {/* <Tooltip
-                content={
-                  <div className={`${styles.customTooltip}`}>Invite</div>
-                }
-                placement="bottom"
-                className="rounded-md bg-opacity-90"
-                closeDelay={1}
-              >
-                <Link
-                  href={"/invite"}
-                  className={`cursor-pointer xl:w-11 xl:h-11 2xl:w-12 2xl:h-12  rounded-full flex items-center justify-center border border-white bg-blue-shade-800 w-10 h-10 ${
-                    styles.icon3d
-                  } ${
-                    pathname.includes(`/invite`)
-                      ? "border-white border-2 rounded-full"
-                      : ""
-                  }`}
-                >
-                  <BiSolidMessageSquareAdd
-                    className={`size-5 text-white ${styles.iconInner}`}
-                  />
-                </Link>
-              </Tooltip> */}
-                {/* <NotificationIconComponent /> */}
-                {/* <Tooltip
-                content={
-                  <div className={`${styles.customTooltip}`}>Git Book</div>
-                }
-                placement="right"
-                className="rounded-md bg-opacity-90"
-                closeDelay={1}
-              >
-                <Link
-                  href={"https://docs.chora.club/"}
-                  target="_blank"
-                  className={`gitbook cursor-pointer xl:w-11 xl:h-11 2xl:w-12 2xl:h-12 2.5xl:w-14 2.5xl:h-14 rounded-full flex items-center justify-center bg-white w-10 h-10 ${styles.icon3d} ${styles.whiteBg}`}
-                >
-                  <SiGitbook
-                    className={`size-5 text-blue-shade-200 ${styles.iconInner}`}
-                  />
-                </Link>
-              </Tooltip> */}
-                {/* {!authenticated ? (
-                <Tooltip
-                  content={
-                    <div className={`${styles.customTooltip}`}>Wallet</div>
-                  }
-                  placement="right"
-                  className="rounded-md bg-opacity-90"
-                  closeDelay={1}
-                >
-                  {isPageLoading || sessionLoading ? (
-                    <div
-                      className={`cursor-pointer xl:w-11 xl:h-11 2xl:w-12 2xl:h-12 2.5xl:w-14 2.5xl:h-14 rounded-full flex items-center justify-center bg-white w-10 h-10 ${styles.icon3d} ${styles.whiteBg}`}
-                    >
-                      <FaUser
-                        className={`size-5 text-blue-shade-200 ${styles.iconInner}`}
-                      />
-                    </div>
-                  ) : (
-                    <ConnectWallet />
-                  )}
-                </Tooltip>
-              ) : (
-                <Tooltip
-                  content={
-                    <div className={`${styles.customTooltip}`}>Profile</div>
-                  }
-                  placement="right"
-                  className="rounded-md bg-opacity-90"
-                  closeDelay={1}
-                >
-                  <div
-                    className={`cursor-pointer xl:w-11 xl:h-11 2xl:w-12 2xl:h-12 2.5xl:w-14 2.5xl:h-14 rounded-full flex items-center justify-center bg-white w-10 h-10 ${styles.icon3d} ${styles.whiteBg}`}
-                    // onClick={() => router.push(`/profile/${walletAddress}?active=info`)}
-                    onClick={HandleRedirect}
-                  >
-                    <FaUser
-                      className={`size-5 text-blue-shade-200 ${styles.iconInner}`}
-                    />
-                  </div>
-                </Tooltip>
-              )} */}
+               
               </div>
+            )}
               <ConnectWalletWithENS />
             </>
           ) : (
