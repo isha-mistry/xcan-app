@@ -18,6 +18,15 @@ import feature2 from "@/assets/images/Homepage/feature2.png";
 import feature3 from "@/assets/images/Homepage/feature3.png";
 import feature4 from "@/assets/images/Homepage/feature4.png";
 import { useSidebar } from "@/app/hooks/useSidebar";
+import ConnectWalletWithENS from "../ConnectWallet/ConnectWalletWithENS";
+import ConnectWalletHomePage from "./ConnectwalletHomePage";
+import DaoSelection from "./DaoSelection";
+import { createPublicClient, http } from "viem";
+import { arbitrum, optimism } from "viem/chains";
+import dao_abi from "../../artifacts/Dao.sol/GovernanceToken.json";
+import { useAccount } from "wagmi";
+import { usePathname, useRouter } from "next/navigation";
+import ErrorPopup from "./ErrorPopup";
 
 const Homepage = () => {
   const [isButtonHovered, setIsButtonHovered] = useState(false);
@@ -26,7 +35,45 @@ const Homepage = () => {
   const [timeLeft, setTimeLeft] = useState(5);
   const progressCircle = useRef<SVGCircleElement>(null);
   const SLIDE_DURATION = 5;
-  const { walletAddress, } = useSidebar();
+  const { walletAddress } = useSidebar();
+  const [showConnectWallet, setShowConnectWallet] = useState(false);
+  const [showConnectWalletGenerate, setShowConnectWalletGenerate] =
+    useState(false);
+  const [showConnectWalletDelegate, setShowConnectWalletDelegate] =
+    useState(false);
+  const [ShowConnectWalletBookSession, setShowConnectWalletBookSession] =
+    useState(false);
+  const [showConnectWalletFeature, setShowConnectWalletFeature] =
+    useState(false);
+  const [showDaoSelection, setShowDaoSelection] = useState(false);
+  const [showDaoSelectionFeature, setShowDaoSelectionFeature] = useState(false);
+  const [showDaoSelectionSchedule, setShowDaoSelectionSchedule] =
+    useState(false);
+  const [selfDelegate, setSelfDelegate] = useState(false);
+  const [showError, setShowError] = useState(false);
+  const { address, isConnected } = useAccount();
+  const router = useRouter();
+  const path = usePathname();
+  const [isPaused, setIsPaused] = useState(false);
+
+  // const handleSchedule = () => {
+  //   console.log("Schedule Now clicked");
+  //   if (!isConnected) {
+  //     // console.log("isconnec t false")
+  //     setShowConnectWalletFeature(true);
+  //   } else {
+  //     checkDelegateStatus("optimism"); // You can change this to "arbitrum" if needed
+  //   }
+  // };
+  // useEffect(() => {
+  //   if (isConnected && showConnectWalletFeature) {
+  //     // Close the wallet modal and redirect
+  //     setShowConnectWalletFeature(false);
+  //     // router.push(path +"sessions?active=availableDelegates");
+  //     checkDelegateStatus("optimism");
+  //   }
+  // }, [isConnected, showConnectWalletFeature, router, path]);
+
   const features = [
     {
       title: "Share on Warpcast",
@@ -34,16 +81,26 @@ const Homepage = () => {
         "Share your delegate profile on Warpcast with a single click and attract delegations effortlessly.",
       buttonText: "Generate Link",
       image: feature1,
-      href: "https://app.chora.club/sessions?active=availableDelegates",
-      target: "_self",
+      onclick: () => {
+        if (!isConnected) {
+          setShowConnectWalletGenerate(true);
+        } else {
+          setShowDaoSelectionFeature(true);
+        }
+      },
     },
     {
       title: "Build Your Credibility",
       description: "Earn attestations for every session you host or attend.",
       buttonText: "Book Session",
       image: feature2,
-      href: "https://app.chora.club/sessions?active=availableDelegates",
-      target: "_self",
+      onclick: () => {
+        if (!isConnected) {
+          setShowConnectWalletBookSession(true);
+        } else {
+          router.push(path + "sessions?active=availableDelegates");
+        }
+      },
     },
     {
       title: "Turn Sessions into Earnings",
@@ -51,8 +108,14 @@ const Homepage = () => {
         "As a Delegate Host impactful sessions and earn every time someone mints your session NFT.",
       buttonText: "Schedule Now",
       image: feature3,
-      href: `https://app.chora.club/profile/${walletAddress}?active=sessions&session=schedule`,
-      target: "_self",
+      // onclick: handleSchedule,
+      onclick: () => {
+        if (!isConnected) {
+          setShowConnectWalletFeature(true);
+        } else {
+          setShowDaoSelectionSchedule(true);
+        }
+      },
     },
     {
       title: "Grow and Earn More",
@@ -60,21 +123,67 @@ const Homepage = () => {
         "Refer creators or users to Chora Club and earn rewards for every mint and engagement.",
       buttonText: "Learn How to Earn",
       image: feature4,
-      href: "https://docs.chora.club/earn-rewards/create-referral-reward",
-      target: "_blank",
+      onclick: () => {
+        router.push(
+          "https://docs.chora.club/earn-rewards/create-referral-reward"
+        );
+      },
     },
   ];
 
-  // Auto-rotate every 5 seconds
-  //  useEffect(() => {
-  //   const timer = setInterval(() => {
-  //     setCurrentIndex((prev) => (prev + 1) % features.length);
-  //   }, 5000);
+  useEffect(() => {
+    if (isConnected && ShowConnectWalletBookSession) {
+      // Close the wallet modal and redirect
+      setShowConnectWalletBookSession(false);
+      router.push(path + "sessions?active=availableDelegates");
+    }
+  }, [isConnected, ShowConnectWalletBookSession, router, path]);
 
-  //   return () => clearInterval(timer);
-  // }, []);
+  const handleJoinAsUser = () => {
+    router.push(path + "sessions?active=recordedSessions");
+  };
+  const checkDelegateStatus = async (network: string) => {
+    setShowError(false);
+
+    let delegateTxAddr = "";
+    const contractAddress =
+      network === "optimism"
+        ? "0x4200000000000000000000000000000000000042"
+        : network === "arbitrum"
+        ? "0x912CE59144191C1204E64559FE8253a0e49E6548"
+        : "";
+
+    try {
+      let delegateTx;
+      const public_client = createPublicClient({
+        chain: network === "optimism" ? optimism : arbitrum,
+        transport: http(),
+      });
+
+      delegateTx = (await public_client.readContract({
+        address: contractAddress as `0x${string}`,
+        abi: dao_abi.abi,
+        functionName: "delegates",
+        args: [address],
+      })) as string;
+
+      delegateTxAddr = delegateTx;
+      if (delegateTxAddr.toLowerCase() === address?.toLowerCase()) {
+        router.push(
+          path + `profile/${address}?active=sessions&session=schedule`
+        );
+      } else {
+        setShowError(true);
+      }
+    } catch (error) {
+      console.error("Error in reading contract", error);
+      setShowError(true);
+    }
+  };
 
   useEffect(() => {
+    if (isPaused) return;
+
     const interval = setInterval(() => {
       setTimeLeft((prevTime) => {
         if (prevTime <= 1) {
@@ -86,7 +195,7 @@ const Homepage = () => {
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [currentIndex, features.length]);
+  }, [currentIndex, features.length, isPaused]);
 
   // Handle dot navigation
   useEffect(() => {
@@ -104,6 +213,30 @@ const Homepage = () => {
     setTimeLeft(SLIDE_DURATION);
   };
 
+  useEffect(() => {
+    if (isConnected && showConnectWallet) {
+      // Close the wallet modal and redirect
+      setShowConnectWallet(false);
+      router.push(path + "sessions?active=recordedSessions");
+    }
+  }, [isConnected, showConnectWallet, router, path]);
+
+  const handleGetStarted = () => {
+    if (!isConnected) {
+      setShowConnectWallet(true);
+    } else {
+      router.push(path + "sessions?active=recordedSessions");
+    }
+  };
+  const handleGetStartedDelegate = () => {
+    console.log(isConnected, "is connect?");
+    if (!isConnected) {
+      setShowConnectWalletDelegate(true);
+    } else {
+      setShowDaoSelection(true);
+    }
+  };
+
   return (
     <div className="md:h-[calc(100vh-60px)] flex flex-col overflow-hidden">
       <PageBackgroundPattern />
@@ -111,28 +244,25 @@ const Homepage = () => {
         <div className="flex-grow w-full bg-gradient-to-br from-gray-50 to-white flex items-center justify-center p-6 ">
           <div className="flex flex-col md:flex-row items-center max-w-6xl mx-auto gap-8 h-full">
             {/* Left Card - Join as Delegate */}
-            <div className="flex items-center justify-center group relative overflow-hidden rounded-2xl bg-white shadow-lg h-full transition-all duration-700 ease-in-out hover:shadow-2xl hover:transform hover:scale-105 p-3 max-h-[350px]">
+            <div className="flex items-center justify-center group relative overflow-hidden rounded-2xl bg-white shadow-lg h-full transition-all duration-700 ease-in-out hover:shadow-2xl hover:transform hover:scale-105 p-4 md:p-3 max-h-[230px]">
               <div className="absolute inset-0 bg-gradient-to-br from-blue-100 to-transparent transition-opacity duration-500"></div>
-              <div className="relative z-10 flex flex-col items-center text-center justify-between">
+              <div className="relative z-10 flex items-center gap-3 text-left justify-between">
                 <Image src={delegate} alt="" className="size-28" />
-                <h2 className="text-2xl font-bold text-gray-800">
-                  Join as Delegate
-                </h2>
-                <p className="text-gray-600 max-w-sm">
-                  Become a delegate and help shape the future of decentralized
-                  governance. Lead, propose, and make impactful decisions.
-                </p>
-                <Link
-                  href="https://mirror.xyz/0x30d644CBf785167D8CaBcB35602959E19D9004Db"
-                  className="mt-4 "
-                  target="_blank"
-                >
+                <div className="gap-1 flex flex-col">
+                  <h2 className="text-2xl font-bold text-gray-800">
+                    Join as Delegate
+                  </h2>
+                  <p className="text-gray-600 max-w-sm">
+                    Become a delegate and help shape the future of decentralized
+                    governance. Lead, propose, and make impactful decisions.
+                  </p>
                   <motion.button
                     className="w-[200px] bg-gradient-to-r from-[#3b82f6] to-[#31316d] text-white font-medium py-2.5 px-4 rounded-3xl overflow-hidden relative"
                     whileHover={{ scale: 1.05 }}
                     transition={{ duration: 0.2 }}
                     onMouseEnter={() => setIsButtonHovered(true)}
                     onMouseLeave={() => setIsButtonHovered(false)}
+                    onClick={handleGetStartedDelegate}
                   >
                     <div className="flex items-center justify-center space-x-2">
                       <motion.span
@@ -152,60 +282,96 @@ const Homepage = () => {
                       </motion.div>
                     </div>
                   </motion.button>
-                </Link>
+                </div>
               </div>
             </div>
 
             {/* Right Card - Join as User */}
-            <div className="flex items-center group relative overflow-hidden rounded-2xl bg-white justify-center shadow-lg h-full transition-all duration-700 ease-in-out hover:shadow-2xl hover:transform hover:scale-105 p-3 max-h-[350px]">
+            <div className="flex items-center group relative overflow-hidden rounded-2xl bg-white justify-center shadow-lg h-full transition-all duration-700 ease-in-out hover:shadow-2xl hover:transform hover:scale-105 p-4 md:p-3 max-h-[230px]">
               <div className="absolute inset-0 bg-gradient-to-br from-blue-100 to-transparent transition-opacity duration-500"></div>
-              <div className="relative z-10 flex flex-col items-center text-center justify-between">
+              <div className="relative z-10 flex items-center gap-3 text-left justify-between">
                 <Image src={user} alt="" className="size-28" />
-                <h2 className="text-2xl font-bold text-gray-800">
-                  Join as User
-                </h2>
-                <p className="text-gray-600 max-w-sm">
-                  Participate in governance, vote on proposals, and be part of a
-                  thriving decentralized community.
-                </p>
-                <Link
-                  href="https://mirror.xyz/0x30d644CBf785167D8CaBcB35602959E19D9004Db"
-                  className="mt-4 "
-                  target="_blank"
-                >
-                  <motion.button
-                    className="w-[200px] bg-gradient-to-r from-[#3b82f6] to-[#31316d] text-white font-medium py-2.5 px-4 rounded-3xl overflow-hidden relative"
-                    whileHover={{ scale: 1.05 }}
-                    transition={{ duration: 0.2 }}
-                    onMouseEnter={() => setIsButtonHoveredTwo(true)}
-                    onMouseLeave={() => setIsButtonHoveredTwo(false)}
-                  >
-                    <div className="flex items-center justify-center space-x-2">
-                      <motion.span
-                        animate={{ x: isButtonHoveredTwo ? -10 : 0 }}
-                        transition={{ duration: 0.3 }}
-                      >
-                        Get Started
-                      </motion.span>
-                      <motion.div
-                        animate={{
-                          x: isButtonHoveredTwo ? 5 : 0,
-                          opacity: isButtonHoveredTwo ? 1 : 0.7,
-                        }}
-                        transition={{ duration: 0.3 }}
-                      >
-                        <IoArrowForward size={20} />
-                      </motion.div>
-                    </div>
-                  </motion.button>
-                </Link>
+                <div className="gap-1 flex flex-col">
+                  <h2 className="text-2xl font-bold text-gray-800">
+                    Join as User
+                  </h2>
+                  <p className="text-gray-600 max-w-sm">
+                    Participate in governance, vote on proposals, and be part of
+                    a thriving decentralized community.
+                  </p>
+                  <div className="mt-4">
+                    <motion.button
+                      className="w-[200px] bg-gradient-to-r from-[#3b82f6] to-[#31316d] text-white font-medium py-2.5 px-4 rounded-3xl overflow-hidden relative"
+                      whileHover={{ scale: 1.05 }}
+                      transition={{ duration: 0.2 }}
+                      onClick={handleGetStarted}
+                      onMouseEnter={() => setIsButtonHoveredTwo(true)}
+                      onMouseLeave={() => setIsButtonHoveredTwo(false)}
+                    >
+                      <div className="flex items-center justify-center space-x-2">
+                        <motion.span
+                          animate={{ x: isButtonHoveredTwo ? -10 : 0 }}
+                          transition={{ duration: 0.3 }}
+                        >
+                          Get Started
+                        </motion.span>
+                        <motion.div
+                          animate={{
+                            x: isButtonHoveredTwo ? 5 : 0,
+                            opacity: isButtonHoveredTwo ? 1 : 0.7,
+                          }}
+                          transition={{ duration: 0.3 }}
+                        >
+                          <IoArrowForward size={20} />
+                        </motion.div>
+                      </div>
+                    </motion.button>
+                  </div>
+                  {/* )} */}
+                </div>
               </div>
             </div>
           </div>
         </div>
+        {showConnectWallet && !isConnected && (
+          <ConnectWalletHomePage onClose={() => setShowConnectWallet(false)} />
+        )}
+        {showConnectWalletDelegate && !isConnected && (
+          <ConnectWalletHomePage
+            onClose={() => setShowConnectWalletDelegate(false)}
+          />
+        )}
+        {ShowConnectWalletBookSession && !isConnected && (
+          <ConnectWalletHomePage
+            onClose={() => setShowConnectWalletDelegate(false)}
+          />
+        )}
+        {showConnectWalletGenerate && !isConnected && (
+          <ConnectWalletHomePage
+            onClose={() => setShowConnectWalletGenerate(false)}
+          />
+        )}
+        {showDaoSelection && (
+          <DaoSelection
+            onClose={() => setShowDaoSelection(false)}
+            joinAsDelegate={true}
+          />
+        )}
+        {showDaoSelectionFeature && (
+          <DaoSelection
+            onClose={() => setShowDaoSelectionFeature(false)}
+            feature={true}
+          />
+        )}
+        {showDaoSelectionSchedule && (
+          <DaoSelection
+            onClose={() => setShowDaoSelectionSchedule(false)}
+            featureSchedule={true}
+          />
+        )}
 
         {/* carousel */}
-        <div className="relative h-[40vh] w-full overflow-hidden bg-gradient-to-br from-blue-50 to-white p-3">
+        <div className="relative h-[50vh] w-full overflow-hidden p-3">
           {/* Timer */}
           <div className="absolute top-4 right-4 z-10">
             <div className="relative w-10 h-10">
@@ -249,14 +415,16 @@ const Homepage = () => {
               exit={{ opacity: 0, x: -1000 }}
               transition={{ duration: 0.5, ease: "easeInOut" }}
               className="h-full w-full"
+              onMouseEnter={() => setIsPaused(true)}
+              onMouseLeave={() => setIsPaused(false)}
             >
               <div className="flex h-full w-full items-center justify-center xm:px-4">
-                <div className="max-w-7xl xm:max-w-6xl w-full rounded-2xl bg-white shadow-lg m-auto h-[35vh] xm:h-[30vh] relative">
+                <div className="max-w-7xl xm:max-w-6xl w-full rounded-2xl  bg-gradient-to-br from-blue-50 to-white shadow-lg m-auto h-[45vh] xm:h-[40vh] relative">
                   <div className="flex flex-col xm:flex-row items-center md:space-x-8 space-y-4 md:space-y-0 h-full">
                     {/* Image Container */}
-                    <div className="w-full xm:w-1/3 h-full flex items-center justify-center p-4">
+                    <div className="w-full xm:w-2/3 h-full flex items-center justify-center p-4">
                       <div className="relative w-full h-full perspective-1000 group">
-                        <div className="absolute inset-0 bg-blue-200 rounded-2xl opacity-20 blur-2xl" />
+                        <div className="absolute inset-0 bg-white rounded-2xl opacity-20 blur-2xl" />
                         <motion.div
                           initial={{ scale: 0.8, opacity: 0 }}
                           animate={{ scale: 1, opacity: 1 }}
@@ -269,7 +437,7 @@ const Homepage = () => {
                               alt={features[currentIndex].title}
                               className="object-contain rounded-2xl transition-transform duration-500 ease-in-out group-hover:scale-110"
                               fill
-                              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 60vw, 60vw"
                             />
                           </div>
                         </motion.div>
@@ -282,7 +450,7 @@ const Homepage = () => {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.5, delay: 0.3 }}
-                        className="text-2xl xm:text-3xl md:text-4xl font-bold text-center xm:text-left"
+                        className={`${styles.heading} text-2xl xm:text-3xl md:text-4xl font-bold text-center xm:text-left`}
                       >
                         {features[currentIndex].title}
                       </motion.h2>
@@ -294,9 +462,11 @@ const Homepage = () => {
                       >
                         {features[currentIndex].description}
                       </motion.p>
-                      <Link
-                        href={features[currentIndex].href}
-                        target={features[currentIndex].target}
+                      <div
+                        onClick={() =>
+                          features[currentIndex].onclick?.() ??
+                          console.log("No onclick handler defined")
+                        }
                       >
                         <motion.button
                           initial={{ opacity: 0, y: 20 }}
@@ -306,7 +476,7 @@ const Homepage = () => {
                         >
                           {features[currentIndex].buttonText}
                         </motion.button>
-                      </Link>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -332,6 +502,10 @@ const Homepage = () => {
             ))}
           </div>
         </div>
+        {showError && <ErrorPopup onClose={() => setShowError(false)} />}
+        {showConnectWalletFeature && !isConnected && (
+          <ConnectWalletHomePage onClose={() => setShowConnectWallet(false)} />
+        )}
       </div>
     </div>
   );
