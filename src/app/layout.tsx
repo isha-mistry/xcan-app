@@ -121,7 +121,7 @@ export default function RootLayout({
                   <div className="lg:hidden fixed z-10 w-full bg-white border border-b-0">
                     <SidebarMainMobile />
                   </div> 
-                  <div className="hidden lg:flex items-center fixed h-[60px] bg-gradient-to-r from-[#3b82f6] to-[#31316d] w-screen z-10">
+                  <div className="hidden lg:flex items-center fixed h-[60px] bg-blue-shade-100 w-screen z-10">
                     <TopNavbar/>
                   </div>
                   <div className="w-[100%] ml-auto mt-[78px] sm:mt-[64px] lg:mt-[60px] z-0">

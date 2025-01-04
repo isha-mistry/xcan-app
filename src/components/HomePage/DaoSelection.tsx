@@ -2,18 +2,16 @@
 import React, { useEffect, useState } from "react";
 import { IoClose } from "react-icons/io5";
 import Image from "next/image";
-import logo from "@/assets/images/daos/CCLogo2.png";
-import ConnectWalletWithENS from "../ConnectWallet/ConnectWalletWithENS";
 import op from "@/assets/images/daos/op.png";
 import arb from "@/assets/images/daos/arb.png";
-import { useSidebar } from "@/app/hooks/useSidebar";
 import { createPublicClient, http } from "viem";
 import { optimism, arbitrum } from "viem/chains";
 import dao_abi from "../../artifacts/Dao.sol/GovernanceToken.json";
 import { useAccount } from "wagmi";
 import { usePathname, useRouter } from "next/navigation";
-import ConnectWalletHomePage from "./ConnectwalletHomePage";
 import PopupGenerateLink from "./PopupGenerateLink";
+import { usePrivy } from "@privy-io/react-auth";
+import ConnectWalletHomePage from "./ConnectwalletHomePage";
 
 interface DaoSelectionProps {
   onClose: () => void;
@@ -29,11 +27,20 @@ function DaoSelection({
   featureSchedule,
 }: DaoSelectionProps) {
   const router = useRouter();
-  const { address } = useAccount();
+  const { address, isConnected } = useAccount();
   const [showError, setShowError] = useState(false);
   const path = usePathname();
   const [showPopup, setShowPopup] = useState(false);
   const [dao, setDao] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [isNavigating, setIsNavigating] = useState(false);
+  const { authenticated } = usePrivy();
+  const [showWalletPopup, setShowWalletPopup] = useState(false);
+
+  const handleNavigation = (url: string) => {
+    setIsNavigating(true);
+    router.push(url);
+  };
 
   const handleOptimism = () => {
     checkDelegateStatus("optimism");
@@ -47,6 +54,7 @@ function DaoSelection({
 
   const checkDelegateStatus = async (network: "optimism" | "arbitrum") => {
     setShowError(false);
+    setIsLoading(true);
     const contractAddress =
       network === "optimism"
         ? "0x4200000000000000000000000000000000000042"
@@ -75,14 +83,15 @@ function DaoSelection({
       if (isSelfDelegate) {
         if (feature) {
           setShowPopup(true);
-        } else if (joinAsDelegate) {
-          router.push(
-            `${path}profile/${address}?active=sessions&session=schedule`
-          );
-        } else if (featureSchedule) {
-          router.push(
-            path + `profile/${address}?active=sessions&session=schedule`
-          );
+        } else if (joinAsDelegate || featureSchedule) {
+          if (authenticated) {
+            handleNavigation(
+              `${path}profile/${address}?active=sessions&session=schedule`
+            );
+          } else {
+            setShowWalletPopup(true);
+            console.log("not authenticated");
+          }
         }
       } else {
         setShowError(true);
@@ -90,7 +99,24 @@ function DaoSelection({
     } catch (error) {
       console.error("Error in reading contract", error);
       setShowError(true);
+    } finally {
+      setIsLoading(false);
     }
+  };
+
+  useEffect(() => {
+    if (isConnected && authenticated && showWalletPopup) {
+      // Close the wallet modal and redirect
+      setShowWalletPopup(false);
+      handleNavigation(
+        `${path}profile/${address}?active=sessions&session=schedule`
+      );
+    }
+  }, [isConnected, showWalletPopup, router, path, authenticated]);
+
+  const handlePopupClose = () => {
+    setShowPopup(false);
+    onClose();
   };
 
   return (
@@ -108,12 +134,6 @@ function DaoSelection({
                 onClick={onClose}
               />
             </div>
-            {/* <h2 className="font-bold text-3xl text-gray-900 mb-4">
-              Select The DAO
-            </h2>
-            <p className="text-gray-700 mb-8">
-              Select a DAO to begin your delegation journey
-            </p> */}
             {joinAsDelegate ? (
               <>
                 <h2 className="font-bold text-3xl text-gray-900 mb-4">
@@ -153,32 +173,44 @@ function DaoSelection({
                 You are not a delegate of this DAO. Please select another DAO.
               </p>
             )}
-            <div className="flex gap-4 justify-center">
-              <button
-                className="flex-1 p-6 rounded-xl border-2 border-transparent hover:border-blue-500 bg-gradient-to-br from-red-50 to-red-100 transition-all duration-300 group"
-                onClick={handleOptimism}
-              >
-                <div className="flex flex-col items-center gap-3">
-                  <Image src={op} alt="" className="w-12 h-12" />
-                  <span className="font-semibold text-gray-800">Optimism</span>
-                </div>
-              </button>
 
-              <button
-                className="flex-1 p-6 rounded-xl border-2 border-transparent hover:border-blue-500 bg-gradient-to-br from-blue-50 to-blue-100 transition-all duration-300 group"
-                onClick={handleArbitrum}
-              >
-                <div className="flex flex-col items-center gap-3">
-                  <Image src={arb} alt="" className="w-12 h-12" />
-                  <span className="font-semibold text-gray-800">Arbitrum</span>
-                </div>
-              </button>
-            </div>
+            {isLoading || isNavigating ? (
+              <div className="flex justify-center items-center py-8">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+              </div>
+            ) : (
+              <div className="flex gap-4 justify-center">
+                <button
+                  className="flex-1 p-6 rounded-xl border-2 border-transparent hover:border-blue-500 bg-gradient-to-br from-red-50 to-red-100 transition-all duration-300 group"
+                  onClick={handleOptimism}
+                >
+                  <div className="flex flex-col items-center gap-3">
+                    <Image src={op} alt="" className="w-12 h-12" />
+                    <span className="font-semibold text-gray-800">
+                      Optimism
+                    </span>
+                  </div>
+                </button>
+
+                <button
+                  className="flex-1 p-6 rounded-xl border-2 border-transparent hover:border-blue-500 bg-gradient-to-br from-blue-50 to-blue-100 transition-all duration-300 group"
+                  onClick={handleArbitrum}
+                >
+                  <div className="flex flex-col items-center gap-3">
+                    <Image src={arb} alt="" className="w-12 h-12" />
+                    <span className="font-semibold text-gray-800">
+                      Arbitrum
+                    </span>
+                  </div>
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>
-      {showPopup && (
-        <PopupGenerateLink onclose={() => setShowPopup(false)} dao={dao} />
+      {showPopup && <PopupGenerateLink onclose={handlePopupClose} dao={dao} />}
+      {showWalletPopup && (
+        <ConnectWalletHomePage onClose={() => setShowWalletPopup(false)} />
       )}
     </>
   );
