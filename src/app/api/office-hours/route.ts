@@ -7,6 +7,13 @@ import {
   OfficeHoursRequestBody,
 } from "@/types/OfficeHoursTypes";
 import { v4 as uuidv4 } from "uuid";
+import { imageCIDs } from "@/config/staticDataUtils";
+
+function getRandomElementFromArray(arr: any[]) {
+  const randomIndex = Math.floor(Math.random() * arr.length);
+  return arr[randomIndex];
+}
+const randomImage = getRandomElementFromArray(imageCIDs);
 
 // Helper function for MongoDB operations
 const addMeetingsToExistingDAO = async (
@@ -19,6 +26,7 @@ const addMeetingsToExistingDAO = async (
     reference_id: uuidv4(),
     ...meeting,
     meeting_status: "upcoming",
+    thumbnail_image: randomImage,
     created_at: new Date(),
   }));
 
@@ -45,6 +53,7 @@ const addNewDAOWithMeetings = async (
     reference_id: uuidv4(),
     ...meeting,
     meeting_status: "upcoming",
+    thumbnail_image: randomImage,
     created_at: new Date(),
   }));
 
@@ -72,6 +81,7 @@ const createNewHostWithMeetings = async (
     reference_id: uuidv4(),
     ...meeting,
     meeting_status: "upcoming",
+    thumbnail_image: randomImage,
     created_at: new Date(),
   }));
 
