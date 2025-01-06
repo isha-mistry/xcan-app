@@ -1,11 +1,10 @@
 import { connectDB } from "@/config/connectDB";
 import { NextResponse } from "next/server";
-import { Collection } from "mongodb";
 
 interface UpdateMeetingRequestBody {
   host_address: string;
   dao_name: string;
-  meetingId: string;
+  reference_id: string;
   title?: string;
   description?: string;
   slot_time?: string;
@@ -14,15 +13,16 @@ interface UpdateMeetingRequestBody {
 export async function PUT(req: Request) {
   try {
     const updateData: UpdateMeetingRequestBody = await req.json();
-    const { host_address, dao_name, meetingId } = updateData;
+    const { host_address, dao_name, reference_id, title, description } =
+      updateData;
 
     // Validate required fields
-    if (!host_address || !dao_name || !meetingId) {
+    if (!host_address || !dao_name || !reference_id) {
       return NextResponse.json(
         {
           success: false,
           error:
-            "Missing required fields: host_address, dao_name, or meetingId",
+            "Missing required fields: host_address, dao_name, or reference_id",
         },
         { status: 400 }
       );
@@ -36,7 +36,7 @@ export async function PUT(req: Request) {
     const existingDoc = await collection.findOne({
       host_address,
       "dao.name": dao_name,
-      "dao.meetings.meeting_id": meetingId,
+      "dao.meetings.reference_id": reference_id,
     });
 
     if (!existingDoc) {
@@ -55,7 +55,7 @@ export async function PUT(req: Request) {
       (dao: any) => dao.name === dao_name
     );
     const existingMeeting = existingDAO?.meetings.find(
-      (meeting: any) => meeting.meeting_id === meetingId
+      (meeting: any) => meeting.reference_id === reference_id
     );
 
     if (!existingMeeting) {
@@ -73,19 +73,13 @@ export async function PUT(req: Request) {
     const fieldsToUpdate: { [key: string]: any } = {};
 
     // Only include fields that have non-empty values
-    if (updateData.title && updateData.title.trim() !== "") {
-      fieldsToUpdate[`dao.$[daoElem].meetings.$[meetingElem].title`] =
-        updateData.title;
+    if (title && title.trim() !== "") {
+      fieldsToUpdate[`dao.$[daoElem].meetings.$[meetingElem].title`] = title;
     }
 
-    if (updateData.description && updateData.description.trim() !== "") {
+    if (description && description.trim() !== "") {
       fieldsToUpdate[`dao.$[daoElem].meetings.$[meetingElem].description`] =
-        updateData.description;
-    }
-
-    if (updateData.slot_time && updateData.slot_time.trim() !== "") {
-      fieldsToUpdate[`dao.$[daoElem].meetings.$[meetingElem].slot_time`] =
-        updateData.slot_time;
+        description;
     }
 
     // Only proceed with update if there are non-empty fields to update
@@ -109,13 +103,13 @@ export async function PUT(req: Request) {
       {
         host_address,
         "dao.name": dao_name,
-        "dao.meetings.meeting_id": meetingId,
+        "dao.meetings.reference_id": reference_id,
       },
       { $set: fieldsToUpdate },
       {
         arrayFilters: [
           { "daoElem.name": dao_name },
-          { "meetingElem.meeting_id": meetingId },
+          { "meetingElem.reference_id": reference_id },
         ],
       }
     );
@@ -124,7 +118,7 @@ export async function PUT(req: Request) {
     const updatedDocument = await collection.findOne({
       host_address,
       "dao.name": dao_name,
-      "dao.meetings.meeting_id": meetingId,
+      "dao.meetings.reference_id": reference_id,
     });
 
     await client.close();
@@ -153,21 +147,21 @@ export async function PUT(req: Request) {
 interface DeleteMeetingRequestBody {
   host_address: string;
   dao_name: string;
-  meetingId: string;
+  reference_id: string;
 }
 
 export async function DELETE(req: Request) {
   try {
     const deleteData: DeleteMeetingRequestBody = await req.json();
-    const { host_address, dao_name, meetingId } = deleteData;
+    const { host_address, dao_name, reference_id } = deleteData;
 
     // Validate required fields
-    if (!host_address || !dao_name || !meetingId) {
+    if (!host_address || !dao_name || !reference_id) {
       return NextResponse.json(
         {
           success: false,
           error:
-            "Missing required fields: host_address, dao_name, or meetingId",
+            "Missing required fields: host_address, dao_name, or reference_id",
         },
         { status: 400 }
       );
@@ -181,7 +175,7 @@ export async function DELETE(req: Request) {
     const existingDoc = await collection.findOne({
       host_address,
       "dao.name": dao_name,
-      "dao.meetings.meeting_id": meetingId,
+      "dao.meetings.reference_id": reference_id,
     });
 
     if (!existingDoc) {
@@ -202,10 +196,10 @@ export async function DELETE(req: Request) {
         "dao.name": dao_name,
       },
       {
-        /* @ts-ignore */
+        /*@ts-ignore*/
         $pull: {
           "dao.$[daoElem].meetings": {
-            meeting_id: meetingId,
+            reference_id: reference_id,
           },
         },
         $set: {
@@ -241,7 +235,7 @@ export async function DELETE(req: Request) {
       await collection.updateOne(
         { host_address },
         {
-          /* @ts-ignore */
+          /*@ts-ignore*/
           $pull: {
             dao: { name: dao_name },
           },

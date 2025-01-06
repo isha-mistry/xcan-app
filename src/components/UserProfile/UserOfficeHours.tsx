@@ -213,7 +213,7 @@ function UserOfficeHours({
           </button>
         </div>
 
-        {/* <div className="py-10">
+        <div className="py-10">
           {selfDelegate === true &&
             searchParams.get("hours") === "schedule" && (
               <UserScheduledHours daoName={daoName} />
@@ -243,11 +243,11 @@ function UserOfficeHours({
                 isOfficeHour={true}
               />
             ))}
-        </div> */}
-
-        <div className="py-10">
-          <OfficeHoursAlertMessage />
         </div>
+
+        {/* <div className="py-10">
+          <OfficeHoursAlertMessage />
+        </div> */}
       </div>
     </div>
   );

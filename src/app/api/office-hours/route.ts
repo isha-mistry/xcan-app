@@ -1,78 +1,33 @@
 import { connectDB } from "@/config/connectDB";
 import { NextResponse, NextRequest } from "next/server";
 import { Collection } from "mongodb";
+import {
+  Meeting,
+  OfficeHoursDocument,
+  OfficeHoursRequestBody,
+} from "@/types/OfficeHoursTypes";
+import { v4 as uuidv4 } from "uuid";
 
-interface Attendee {
-  address: string;
-  uid?: string;
-  onchain_uid?: string;
-}
-
-interface Meeting {
-  title: string;
-  description: string;
-  meeting_status: string;
-  meeting_id: string;
-  video_uri?: string;
-  slot_time: string;
-  host_uid?: string;
-  host_onchain_uid?: string;
-  thumbnail_image: string;
-  isMeetingRecorded?: boolean;
-  attendees: Attendee[];
-  created_at?: Date;
-}
-
-interface DAOData {
-  [key: string]: Meeting;
-}
-
-interface OfficeHoursRequestBody {
-  host_address: string;
-  dao_name: DAOData;
-}
-
-interface OfficeHoursDocument {
-  host_address: string;
-  dao: {
-    name: string;
-    meetings: Meeting[];
-  }[];
-  created_at: Date;
-  updated_at: Date;
-}
-
-// Helper functions for MongoDB operations
-const addMeetingToExistingDAO = async (
+// Helper function for MongoDB operations
+const addMeetingsToExistingDAO = async (
   collection: Collection<OfficeHoursDocument>,
   hostAddress: string,
   daoName: string,
-  meetingData: Meeting
+  meetings: Meeting[]
 ) => {
+  const meetingDocument = meetings.map((meeting) => ({
+    reference_id: uuidv4(),
+    ...meeting,
+    meeting_status: "upcoming",
+    created_at: new Date(),
+  }));
+
   return await collection.updateOne(
     { host_address: hostAddress, "dao.name": daoName },
     {
-      $addToSet: {
-        "dao.$.meetings": { ...meetingData, created_at: new Date() },
-      },
-      $set: { updated_at: new Date() },
-    }
-  );
-};
-
-const addNewDAOToHost = async (
-  collection: Collection<OfficeHoursDocument>,
-  hostAddress: string,
-  daoName: string,
-  meetingData: Meeting
-) => {
-  return await collection.updateOne(
-    { host_address: hostAddress },
-    {
       $push: {
-        dao: {
-          name: daoName,
-          meetings: [{ ...meetingData, created_at: new Date() }],
+        "dao.$.meetings": {
+          $each: meetingDocument,
         },
       },
       $set: { updated_at: new Date() },
@@ -80,18 +35,52 @@ const addNewDAOToHost = async (
   );
 };
 
-const createNewHostWithDAO = async (
+const addNewDAOWithMeetings = async (
   collection: Collection<OfficeHoursDocument>,
   hostAddress: string,
   daoName: string,
-  meetingData: Meeting
+  meetings: Meeting[]
 ) => {
+  const meetingDocument = meetings.map((meeting) => ({
+    reference_id: uuidv4(),
+    ...meeting,
+    meeting_status: "upcoming",
+    created_at: new Date(),
+  }));
+
+  return await collection.updateOne(
+    { host_address: hostAddress },
+    {
+      $push: {
+        dao: {
+          name: daoName,
+          meetings: meetingDocument,
+        },
+      },
+      $set: { updated_at: new Date() },
+    }
+  );
+};
+
+const createNewHostWithMeetings = async (
+  collection: Collection<OfficeHoursDocument>,
+  hostAddress: string,
+  daoName: string,
+  meetings: Meeting[]
+) => {
+  const meetingDocument = meetings.map((meeting) => ({
+    reference_id: uuidv4(),
+    ...meeting,
+    meeting_status: "upcoming",
+    created_at: new Date(),
+  }));
+
   return await collection.insertOne({
     host_address: hostAddress,
     dao: [
       {
         name: daoName,
-        meetings: [{ ...meetingData, created_at: new Date() }],
+        meetings: meetingDocument,
       },
     ],
     created_at: new Date(),
@@ -110,35 +99,31 @@ export async function POST(req: NextRequest) {
     const collection: Collection<OfficeHoursDocument> =
       db.collection("office_hours");
 
-    const hostAddress = data.host_address;
+    const { host_address: hostAddress, dao_name: daoName, meetings } = data;
 
-    for (const [daoName, meetingData] of Object.entries(data.dao_name)) {
-      const existingHost = await collection.findOne({
-        host_address: hostAddress,
-      });
+    const existingHost = await collection.findOne({
+      host_address: hostAddress,
+    });
 
-      if (existingHost) {
-        const existingDAO = existingHost.dao?.find(
-          (dao) => dao.name === daoName
-        );
-        if (existingDAO) {
-          await addMeetingToExistingDAO(
-            collection,
-            hostAddress,
-            daoName,
-            meetingData
-          );
-        } else {
-          await addNewDAOToHost(collection, hostAddress, daoName, meetingData);
-        }
-      } else {
-        await createNewHostWithDAO(
+    if (existingHost) {
+      const existingDAO = existingHost.dao?.find((dao) => dao.name === daoName);
+      if (existingDAO) {
+        await addMeetingsToExistingDAO(
           collection,
           hostAddress,
           daoName,
-          meetingData
+          meetings
         );
+      } else {
+        await addNewDAOWithMeetings(collection, hostAddress, daoName, meetings);
       }
+    } else {
+      await createNewHostWithMeetings(
+        collection,
+        hostAddress,
+        daoName,
+        meetings
+      );
     }
 
     const updatedDocument = await collection.findOne({

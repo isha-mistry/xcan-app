@@ -1,207 +1,652 @@
-import React, { useEffect, useState } from "react";
-import { useAccount } from "wagmi";
-import toast, { Toaster } from "react-hot-toast";
-import { usePrivy } from "@privy-io/react-auth";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  format,
+  isToday,
+  isBefore,
+  startOfDay,
+  addWeeks,
+  addHours,
+  parse,
+} from "date-fns";
+import { getAccessToken } from "@privy-io/react-auth";
 import { useWalletAddress } from "@/app/hooks/useWalletAddress";
+import TimeSlotSection from "@/components/ComponentUtils/TimeSlotSection";
+import Calendar from "@/components/ComponentUtils/Calendar";
+import {
+  DateSchedule,
+  TimeSlot,
+  ExistingSchedule,
+} from "@/types/OfficeHoursTypes";
+import { toast } from "react-hot-toast";
 import { fetchApi } from "@/utils/api";
 
-const UserScheduledHours = ({ daoName }: { daoName: string }) => {
-  const [selectedDate, setSelectedDate] = useState<string>("");
-  const [title, setTitle] = useState<string>("");
-  const [description, setDescription] = useState<string>("");
-  const [error, setError] = useState<string | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
-  const { address, isConnected } = useAccount();
-  const { user, ready, getAccessToken, authenticated } = usePrivy();
+const UserScheduledHours: React.FC<{ daoName: string }> = ({ daoName }) => {
+  const [selectedDates, setSelectedDates] = useState<DateSchedule[]>([]);
+  const [currentDate, setCurrentDate] = useState<Date>(new Date());
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [existingSchedules, setExistingSchedules] = useState<
+    ExistingSchedule[]
+  >([]);
+  const [isSaving, setIsSaving] = useState(false);
+  const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
   const { walletAddress } = useWalletAddress();
 
-  const [selectedTime, setSelectedTime] = useState<string>("");
+  const isTimeSlotConflicting = useCallback(
+    (
+      date: Date,
+      startTime: string,
+      endTime: string,
+      currentSlotId?: string
+    ) => {
+      const dateString = format(date, "yyyy-MM-dd");
+      const newStartTime = new Date(`${dateString}T${startTime}:00`);
+      const newEndTime = new Date(`${dateString}T${endTime}:00`);
 
-  const handleTimeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedTime(e.target.value);
-  };
+      return (
+        existingSchedules.some((schedule) => {
+          const scheduleStartTime = new Date(schedule.startTime);
+          const scheduleEndTime = new Date(schedule.endTime);
+          return (
+            newStartTime < scheduleEndTime && newEndTime > scheduleStartTime
+          );
+        }) ||
+        selectedDates.some(
+          (schedule) =>
+            schedule.date.toDateString() === date.toDateString() &&
+            schedule.timeSlots.some((slot) => {
+              if (currentSlotId && slot.id === currentSlotId) return false;
+              const slotStartTime = new Date(`${dateString}T${slot.startTime}`);
+              const slotEndTime = new Date(`${dateString}T${slot.endTime}`);
+              return newStartTime < slotEndTime && newEndTime > slotStartTime;
+            })
+        )
+      );
+    },
+    [existingSchedules, selectedDates]
+  );
 
-  const createRandomRoom = async () => {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_CREATE_ROOM_ENDPOINT}`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
+  const generateTimeOptions = useCallback(
+    (selectedDate: Date, isStartTime: boolean, startTime?: string) => {
+      const options: string[] = [];
+      const now = new Date();
+      const isCurrentDate = isToday(selectedDate);
+      let startHour = isCurrentDate ? now.getHours() : 0;
+
+      if (startTime && !isStartTime) {
+        const [hours, minutes] = startTime.split(":").map(Number);
+        startHour = hours;
+        if (minutes === 0) startHour += 1; // Skip the start time if it's on the hour
+      }
+
+      for (let hour = startHour; hour <= 23; hour++) {
+        if (isCurrentDate) {
+          const optionTime = new Date(selectedDate);
+          optionTime.setHours(hour, 0, 0, 0);
+          if (isBefore(optionTime, now)) continue;
+        }
+        options.push(`${hour.toString().padStart(2, "0")}:00`);
+      }
+
+      if (!isStartTime) {
+        // For end time, include all options after the start time and add 23:59
+        options.push("23:59");
+      }
+
+      return options;
+    },
+    []
+  );
+
+  const generateRecurringDates = useCallback((baseDate: Date): Date[] => {
+    return Array.from({ length: 4 }, (_, i) => addWeeks(baseDate, i + 1));
+  }, []);
+
+  const isDateSelected = useCallback(
+    (date: Date) =>
+      selectedDates.some(
+        (schedule) => schedule.date.toDateString() === date.toDateString()
+      ),
+    [selectedDates]
+  );
+
+  const isDateDisabled = useCallback(
+    (date: Date) => isBefore(date, startOfDay(new Date())) && !isToday(date),
+    []
+  );
+
+  const createTimeSlot = useCallback(
+    (date: Date, startTime: string): TimeSlot => {
+      const [hours, minutes] = startTime.split(":").map(Number);
+      let endHours = hours + 1;
+      let endMinutes = minutes;
+
+      if (endHours > 23) {
+        endHours = 23;
+        endMinutes = 59;
+      }
+
+      return {
+        startTime: `${hours.toString().padStart(2, "0")}:${minutes
+          .toString()
+          .padStart(2, "0")}`,
+        endTime: `${endHours.toString().padStart(2, "0")}:${endMinutes
+          .toString()
+          .padStart(2, "0")}`,
+        id: Math.random().toString(36).substr(2, 9),
+      };
+    },
+    []
+  );
+
+  const toggleDateSelection = useCallback(
+    (date: Date) => {
+      if (isDateDisabled(date)) return;
+
+      setSelectedDates((prevDates) => {
+        // If date is already selected, remove it
+        if (isDateSelected(date)) {
+          return prevDates.filter(
+            (schedule) => schedule.date.toDateString() !== date.toDateString()
+          );
+        }
+
+        // Get existing schedules for the selected date
+        const dateString = format(date, "yyyy-MM-dd");
+        const existingTimeSlotsForDate = existingSchedules
+          .filter((schedule) => {
+            const scheduleDate = format(
+              new Date(schedule.startTime),
+              "yyyy-MM-dd"
+            );
+            return scheduleDate === dateString;
+          })
+          .map((schedule) => ({
+            startTime: format(new Date(schedule.startTime), "HH:mm"),
+            endTime: format(new Date(schedule.endTime), "HH:mm"),
+            id: Math.random().toString(36).substr(2, 9),
+            bookedTitle: schedule.title,
+            bookedDescription: schedule.description,
+            reference_id: schedule.reference_id,
+          }))
+          .sort((a, b) => a.startTime.localeCompare(b.startTime)); // Sort by start time
+
+        // Determine initial time slots
+        let initialTimeSlots: TimeSlot[];
+
+        if (existingTimeSlotsForDate.length > 0) {
+          // If there are booked slots, only use those
+          initialTimeSlots = existingTimeSlotsForDate;
+        } else {
+          // If no booked slots, create a default time slot
+          const defaultStartTime = isToday(date)
+            ? generateTimeOptions(date, true)[0]
+            : "09:00";
+          initialTimeSlots = [createTimeSlot(date, defaultStartTime)];
+        }
+
+        // Create new schedule
+        const newSchedule: DateSchedule = {
+          date: date,
+          timeSlots: initialTimeSlots,
+          isRecurring: false,
+          title: title,
+          description: description,
+        };
+
+        return [...prevDates, newSchedule];
+      });
+    },
+    [
+      isDateDisabled,
+      isDateSelected,
+      generateTimeOptions,
+      createTimeSlot,
+      existingSchedules,
+      title,
+      description,
+    ]
+  );
+
+  const toggleRecurring = useCallback(
+    (dateIndex: number) => {
+      setSelectedDates((prevDates) => {
+        const newSchedules = [...prevDates];
+        const schedule = newSchedules[dateIndex];
+
+        if (!schedule.isRecurring) {
+          const recurringDates = generateRecurringDates(schedule.date);
+          const newRecurringSchedules = recurringDates.map((date) => ({
+            date,
+            timeSlots: schedule.timeSlots.map((slot) => ({
+              ...slot,
+              id: Math.random().toString(36).substr(2, 9),
+            })),
+            isRecurring: true,
+            title: schedule.title,
+            description: schedule.description,
+          }));
+
+          schedule.isRecurring = true;
+          return [...newSchedules, ...newRecurringSchedules];
+        } else {
+          const dayOfWeek = schedule.date.getDay();
+          return newSchedules.filter(
+            (s) => !(s.isRecurring && s.date.getDay() === dayOfWeek)
+          );
+        }
+      });
+    },
+    [generateRecurringDates]
+  );
+
+  const addTimeSlot = useCallback(
+    (dateIndex: number) => {
+      setSelectedDates((prevDates) => {
+        const newSchedules = [...prevDates];
+        const schedule = newSchedules[dateIndex];
+        const lastSlot = schedule.timeSlots[schedule.timeSlots.length - 1];
+
+        // If there are any booked slots, don't allow adding new slots
+        if (schedule.timeSlots.some((slot) => slot.bookedTitle)) {
+          return newSchedules;
+        }
+
+        const newTimeSlot = createTimeSlot(schedule.date, lastSlot.endTime);
+
+        // Check for conflicts with existing schedules
+        const conflictingSlot = existingSchedules.find((existingSlot) => {
+          const dateString = format(schedule.date, "yyyy-MM-dd");
+          const newSlotStart = new Date(
+            `${dateString}T${newTimeSlot.startTime}:00`
+          );
+          const newSlotEnd = new Date(
+            `${dateString}T${newTimeSlot.endTime}:00`
+          );
+          const existingStart = new Date(existingSlot.startTime);
+          const existingEnd = new Date(existingSlot.endTime);
+
+          return newSlotStart < existingEnd && newSlotEnd > existingStart;
+        });
+
+        if (conflictingSlot) {
+          // If there's a conflict, don't add the new slot
+          return newSchedules;
+        }
+
+        schedule.timeSlots.push(newTimeSlot);
+        return newSchedules;
+      });
+    },
+    [createTimeSlot, existingSchedules]
+  );
+
+  const removeTimeSlot = useCallback((dateIndex: number, slotIndex: number) => {
+    setSelectedDates((prevDates) => {
+      const newSchedules = [...prevDates];
+      newSchedules[dateIndex].timeSlots.splice(slotIndex, 1);
+      if (newSchedules[dateIndex].timeSlots.length === 0) {
+        newSchedules.splice(dateIndex, 1);
+      }
+      return newSchedules;
     });
-    const result = await res.json();
-    const roomId = await result.data;
-    return roomId;
-  };
+  }, []);
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const updateTime = useCallback(
+    (
+      dateIndex: number,
+      slotIndex: number,
+      field: "startTime" | "endTime",
+      newTime: string
+    ) => {
+      setSelectedDates((prevDates) => {
+        const newSchedules = [...prevDates];
+        const slot = newSchedules[dateIndex].timeSlots[slotIndex];
+        const schedule = newSchedules[dateIndex];
+
+        if (isToday(schedule.date)) {
+          const now = new Date();
+          const newDateTime = new Date(schedule.date);
+          const [hours, minutes] = newTime.split(":").map(Number);
+          newDateTime.setHours(hours, minutes, 0, 0);
+
+          if (isBefore(newDateTime, now)) return prevDates;
+        }
+
+        let updatedStartTime = slot.startTime;
+        let updatedEndTime = slot.endTime;
+
+        if (field === "startTime") {
+          updatedStartTime = newTime;
+          const [startHours, startMinutes] = newTime.split(":").map(Number);
+          let endHours = startHours + 1;
+          let endMinutes = startMinutes;
+
+          if (endHours > 23) {
+            endHours = 23;
+            endMinutes = 59;
+          }
+
+          updatedEndTime = `${endHours.toString().padStart(2, "0")}:${endMinutes
+            .toString()
+            .padStart(2, "0")}`;
+        } else {
+          updatedEndTime = newTime;
+        }
+
+        const bookedSlot = existingSchedules.find((existingSlot) => {
+          const slotStart = new Date(schedule.date);
+          const slotEnd = new Date(schedule.date);
+          const [startHours, startMinutes] = updatedStartTime
+            .split(":")
+            .map(Number);
+          const [endHours, endMinutes] = updatedEndTime.split(":").map(Number);
+          slotStart.setHours(startHours, startMinutes, 0, 0);
+          slotEnd.setHours(endHours, endMinutes, 0, 0);
+
+          const existingStart = new Date(existingSlot.startTime);
+          const existingEnd = new Date(existingSlot.endTime);
+
+          return slotStart < existingEnd && slotEnd > existingStart;
+        });
+
+        slot.startTime = updatedStartTime;
+        slot.endTime = updatedEndTime;
+        slot.bookedTitle = bookedSlot ? bookedSlot.title : undefined;
+
+        return newSchedules;
+      });
+    },
+    [existingSchedules]
+  );
+
+  const updateBookedSlot = useCallback(
+    (dateIndex: number, slotIndex: number, updatedSlot: TimeSlot) => {
+      setSelectedDates((prevDates) => {
+        const newSchedules = [...prevDates];
+        newSchedules[dateIndex].timeSlots[slotIndex] = updatedSlot;
+        return newSchedules;
+      });
+    },
+    []
+  );
+
+  const deleteBookedSlot = useCallback(
+    (dateIndex: number, slotIndex: number) => {
+      setSelectedDates((prevDates) => {
+        const newSchedules = [...prevDates];
+        const slot = newSchedules[dateIndex].timeSlots[slotIndex];
+
+        // If it's a booked slot, remove the booking information
+        if (slot.bookedTitle) {
+          slot.bookedTitle = undefined;
+          slot.bookedDescription = undefined;
+          return newSchedules;
+        } else {
+          // If it's not a booked slot, remove it entirely
+          newSchedules[dateIndex].timeSlots.splice(slotIndex, 1);
+          if (newSchedules[dateIndex].timeSlots.length === 0) {
+            newSchedules.splice(dateIndex, 1);
+          }
+          return newSchedules;
+        }
+      });
+    },
+    []
+  );
+
+  const removeExistingSchedule = useCallback((referenceId: string) => {
+    setExistingSchedules((prevSchedules) =>
+      prevSchedules.filter((schedule) => schedule.reference_id !== referenceId)
+    );
+  }, []);
+
+  const convertToUTC = useCallback(() => {
+    return selectedDates.flatMap((schedule) => {
+      const scheduleDate = schedule.date;
+
+      return schedule.timeSlots
+        .filter((slot) => !slot.bookedTitle)
+        .map((slot) => {
+          const [startHours, startMinutes] = slot.startTime
+            .split(":")
+            .map(Number);
+          const startDate = new Date(scheduleDate);
+          startDate.setHours(startHours, startMinutes, 0, 0);
+
+          const [endHours, endMinutes] = slot.endTime.split(":").map(Number);
+          const endDate = new Date(scheduleDate);
+          endDate.setHours(endHours, endMinutes, 0, 0);
+
+          return {
+            startTime: startDate.toISOString(),
+            endTime: endDate.toISOString(),
+            title: schedule.title,
+            description: schedule.description,
+          };
+        });
+    });
+  }, [selectedDates]);
+
+  const handleSave = useCallback(async () => {
+    setIsSaving(true);
+    const utcSchedule = convertToUTC();
+    console.log("UTC Schedule:", utcSchedule);
+
+    const token = await getAccessToken();
+    const myHeaders: HeadersInit = {
+      "Content-Type": "application/json",
+      ...(walletAddress && {
+        "x-wallet-address": walletAddress,
+        Authorization: `Bearer ${token}`,
+      }),
+    };
+
+    const raw = JSON.stringify({
+      host_address: walletAddress,
+      dao_name: daoName,
+      meetings: utcSchedule,
+    });
+
+    const requestOptions = {
+      method: "POST",
+      headers: myHeaders,
+      body: raw,
+    };
 
     try {
-      setIsSubmitting(true);
+      const response = await fetchApi("/office-hours", requestOptions);
+      const result = await response.json();
+      console.log("API Response:", result);
 
-      const roomId = await createRandomRoom();
-
-      const selectedDateTime = `${selectedDate} ${selectedTime}:00`;
-
-      const selectedDateUTC = new Date(selectedDateTime);
-      const utcFormattedDate = selectedDateUTC.toISOString();
-      const token=await getAccessToken();
-      const myHeaders: HeadersInit = {
-        "Content-Type": "application/json",
-        ...(walletAddress && {
-          "x-wallet-address": walletAddress,
-          Authorization: `Bearer ${token}`,
-        }),
-      };
-
-      const response = await fetchApi("/office-hours", {
-        method: "POST",
-        headers: myHeaders,
-        body: JSON.stringify({
-          host_address: walletAddress,
-          office_hours_slot: utcFormattedDate,
-          title,
-          description,
-          meeting_status: "active",
-          dao_name: daoName,
-          meetingId: roomId, // Pass the roomId as meetingId
-        }),
+      // Update the state to mark saved slots as booked
+      setSelectedDates((prevDates) => {
+        return prevDates.map((date) => ({
+          ...date,
+          timeSlots: date.timeSlots.map((slot) => ({
+            ...slot,
+            bookedTitle: slot.bookedTitle || date.title, // Use existing bookedTitle if present, otherwise use date.title
+            bookedDescription: slot.bookedDescription || date.description,
+            reference_id: slot.reference_id || result.data.reference_id, // Assuming the API returns a reference_id for each saved slot
+          })),
+        }));
       });
 
-      if (!response.ok) {
-        throw new Error("Failed to submit data");
-      }
-
-      setTitle("");
-      setDescription("");
-      setSelectedDate("");
-      setError(null);
-      toast.success("Successfully scheduled your office hour.");
+      toast.success("Schedule saved successfully!");
     } catch (error) {
-      console.error("Error:", error);
-      toast.error("Error scheduling your office hour.");
-      setError("Failed to submit data");
+      console.error("Error saving office hours:", error);
+      toast.error("Failed to save schedule. Please try again.");
     } finally {
-      setIsSubmitting(false);
+      setIsSaving(false);
     }
-  };
+  }, [convertToUTC, walletAddress, daoName, getAccessToken]);
 
-  const generateTimeOptions = () => {
-    const options = [];
-    for (let hour = 0; hour < 24; hour++) {
-      for (let minute = 0; minute < 60; minute += 15) {
-        const time = `${hour.toString().padStart(2, "0")}:${minute
-          .toString()
-          .padStart(2, "0")}`;
-        options.push(time);
-      }
+  const getOfficeHours = useCallback(async () => {
+    const token = await getAccessToken();
+    const myHeaders: HeadersInit = {
+      "Content-Type": "application/json",
+      ...(walletAddress && {
+        "x-wallet-address": walletAddress,
+        Authorization: `Bearer ${token}`,
+      }),
+    };
+
+    const requestOptions = {
+      method: "GET",
+      headers: myHeaders,
+    };
+
+    try {
+      const response = await fetchApi(
+        `/get-upcoming-officehours?host_address=${walletAddress}&dao_name=${daoName}`,
+        requestOptions
+      );
+      const result = await response.json();
+      setExistingSchedules(result.data.meetings || []);
+    } catch (error) {
+      console.error("Error fetching office hours:", error);
     }
-    return options;
-  };
+  }, [walletAddress, daoName]);
 
-  const timeOptions = generateTimeOptions();
+  useEffect(() => {
+    getOfficeHours();
+  }, [getOfficeHours]);
 
-  const currentDate = new Date();
-  let formattedDate = currentDate.toLocaleDateString();
-  if (
-    formattedDate.length !== 10 ||
-    !formattedDate.match(/^\d{4}-\d{2}-\d{2}$/)
-  ) {
-    const year = currentDate.getFullYear();
-    const month = String(currentDate.getMonth() + 1).padStart(2, "0");
-    const day = String(currentDate.getDate()).padStart(2, "0");
-    formattedDate = `${year}-${month}-${day}`;
-  }
+  const memoizedCalendar = useMemo(
+    () => (
+      <Calendar
+        currentDate={currentDate}
+        setCurrentDate={setCurrentDate}
+        selectedDates={selectedDates}
+        toggleDateSelection={toggleDateSelection}
+        isDateDisabled={isDateDisabled}
+        isDateSelected={isDateSelected}
+      />
+    ),
+    [
+      currentDate,
+      selectedDates,
+      toggleDateSelection,
+      isDateDisabled,
+      isDateSelected,
+    ]
+  );
+
+  const memoizedTimeSlotSection = useMemo(
+    () => (
+      <TimeSlotSection
+        hostAddress={walletAddress}
+        daoName={daoName}
+        selectedDates={selectedDates}
+        setSelectedDates={setSelectedDates}
+        generateTimeOptions={generateTimeOptions}
+        toggleRecurring={toggleRecurring}
+        addTimeSlot={addTimeSlot}
+        removeTimeSlot={removeTimeSlot}
+        updateTime={updateTime}
+        updateBookedSlot={updateBookedSlot}
+        deleteBookedSlot={deleteBookedSlot}
+        removeExistingSchedule={removeExistingSchedule}
+      />
+    ),
+    [
+      selectedDates,
+      generateTimeOptions,
+      toggleRecurring,
+      addTimeSlot,
+      removeTimeSlot,
+      updateTime,
+      updateBookedSlot,
+      deleteBookedSlot,
+      removeExistingSchedule,
+    ]
+  );
+
+  const isScheduleValid = useMemo(() => {
+    const hasDates = selectedDates.length > 0;
+    const hasTitle = title.trim() !== "";
+    const hasDescription = description.trim() !== "";
+
+    return hasDates && hasTitle && hasDescription && !isSaving;
+  }, [selectedDates, title, description, isSaving]);
 
   return (
-    <div className="ps-4 font-poppins">
-      <h1 className="text-xl font-bold mb-4">Schedule Office Hours</h1>
-      <form onSubmit={handleSubmit}>
-        <div className="mb-4">
-          <label className="block font-bold mb-2" htmlFor="title">
-            Title
-          </label>
-          <input
-            id="title"
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-          />
-        </div>
-        <div className="mb-4">
-          <label className="block font-bold mb-2" htmlFor="description">
-            Description
-          </label>
-          <textarea
-            id="description"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-          />
-        </div>
-        <div className="mb-4">
-          <label className="block font-bold mb-2" htmlFor="startDate">
-            Date & Time
-          </label>
-          <div className="flex">
-            <input
-              id="startDate"
-              type="date"
-              value={selectedDate}
-              onChange={(e) => setSelectedDate(e.target.value)}
-              className="shadow appearance-none border rounded w-2/5 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mr-1"
-              min={formattedDate}
-            />
-            <select
-              value={selectedTime || "Time"}
-              onChange={handleTimeChange}
-              className="shadow appearance-none border rounded w-1/5 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline ml-1"
-            >
-              <option disabled>Time</option>
-              {timeOptions.map((time) => (
-                <option key={time} value={time}>
-                  {time}
-                </option>
-              ))}
-            </select>
+    <div className="w-full min-h-screen bg-gray-50">
+      <div className="mx-auto p-8">
+        <div className="mb-8">
+          <div className="flex items-center space-x-3 mb-6">
+            <div className="h-10 w-10 bg-blue-600 rounded-lg flex items-center justify-center">
+              <span className="text-white font-semibold text-xl">
+                {daoName.charAt(0)}
+              </span>
+            </div>
+            <h1 className="text-3xl font-bold text-gray-900">{daoName}</h1>
+          </div>
+
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
+            <div className="space-y-6">
+              <div className="space-y-4">
+                <label htmlFor="title" className="block">
+                  <span className="text-lg font-semibold text-gray-900 mb-1 block">
+                    Title
+                  </span>
+                  <input
+                    type="text"
+                    id="title"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    placeholder="Enter a title for your schedule"
+                    className="w-full px-4 py-2 text-gray-900 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-200 focus:border-blue-500 transition-all"
+                  />
+                </label>
+              </div>
+
+              <div className="space-y-4">
+                <label htmlFor="description" className="block">
+                  <span className="text-lg font-semibold text-gray-900 mb-1 block">
+                    Description
+                  </span>
+                  <textarea
+                    id="description"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    placeholder="Describe the purpose of this schedule"
+                    rows={3}
+                    className="w-full px-4 py-2 text-gray-900 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-200 focus:border-blue-500 transition-all"
+                  />
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <h3 className="text-xl font-semibold text-gray-900 mb-6">
+              Schedule Availability
+            </h3>
+            <p className="text-sm text-gray-500 mb-6">
+              All times shown in {timezone}
+            </p>
+
+            <div className="flex gap-8">
+              {memoizedCalendar}
+              {memoizedTimeSlotSection}
+            </div>
           </div>
         </div>
-
-        {error && <div className="text-red-500">{error}</div>}
         <button
-          type="submit"
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline flex items-center"
-          disabled={isSubmitting}
+          onClick={handleSave}
+          disabled={!isScheduleValid}
+          className={`w-full mt-4 py-3 px-4 rounded-xl text-base font-medium transition-all ${
+            !isScheduleValid
+              ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+              : "bg-blue-600 text-white hover:bg-blue-700 shadow-sm hover:shadow"
+          }`}
         >
-          {isSubmitting ? (
-            <svg
-              className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-            >
-              <circle
-                className="opacity-25"
-                cx="12"
-                cy="12"
-                r="10"
-                stroke="currentColor"
-                strokeWidth="4"
-              ></circle>
-              <path
-                className="opacity-75"
-                fill="currentColor"
-                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 4.418 3.582 8 8 8v-4c-2.22 0-4.239-.905-5.708-2.369l1.416-1.416zm16.294-7.58A7.962 7.962 0 0120 12h4c0-4.418-3.582-8-8-8v4c2.219 0 4.238.904 5.707 2.369l-1.413 1.414z"
-              ></path>
-            </svg>
-          ) : (
-            "Submit"
-          )}
+          {isSaving ? "Saving..." : "Save Schedule"}{" "}
         </button>
-      </form>
+      </div>
     </div>
   );
 };
 
-export default UserScheduledHours;
+export default React.memo(UserScheduledHours);
