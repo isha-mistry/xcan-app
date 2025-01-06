@@ -77,7 +77,7 @@ const SidebarMainMobile = () => {
         <IoMenu className="size-6"/>
       </div>
       <div className="border border-l-0 h-16"></div>
-      <Link className="ml-2 0.2xs:ml-4 mt-[3px] text-black font-semibold text-[32px] font-poppins flex items-center" href={"https://chora.club/"}>Chora <span className="text-blue-shade-200">Club</span></Link>
+      <Link className="ml-2 0.2xs:ml-4 mt-[3px] text-black font-semibold text-[32px] font-poppins flex items-center" href={"/"}>Chora <span className="text-blue-shade-200">Club</span></Link>
           </div>
           <div className="mr-2 xm:mr-4"><ConnectWalletWithENS /> </div>
         </div>

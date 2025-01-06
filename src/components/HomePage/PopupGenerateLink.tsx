@@ -28,17 +28,17 @@ function PopupGenerateLink({ onclose, dao }: PopupProps) {
     return `${window.location.origin}/${dao}/${address}?active=info`;
   };
 
-//   const handleCopy = async () => {
-//     try {
-//       await navigator.clipboard.writeText(generateUrl());
-//       setCopied(true);
-//       setTimeout(() => setCopied(false), 2000);
-//     } catch (err) {
-//       console.error("Failed to copy text: ", err);
-//     }
-//   };
+  //   const handleCopy = async () => {
+  //     try {
+  //       await navigator.clipboard.writeText(generateUrl());
+  //       setCopied(true);
+  //       setTimeout(() => setCopied(false), 2000);
+  //     } catch (err) {
+  //       console.error("Failed to copy text: ", err);
+  //     }
+  //   };
 
-const handleCopy = () => {
+  const handleCopy = () => {
     // Logic to copy the URL to the clipboard
     navigator.clipboard.writeText(generateUrl());
     setCopied(true);
@@ -124,19 +124,21 @@ const handleCopy = () => {
         ></div>
 
         <div className="flex flex-col items-center justify-center h-screen bg-gradient-to-r from-blue-50 via-blue-100 to-blue-50">
-          <div className="p-10 bg-white rounded-3xl shadow-xl text-center max-w-lg transform transition duration-300 hover:scale-105 mx-2">
+          <div className="p-2 0.5xs:p-6 xm:p-10 bg-white rounded-3xl shadow-xl text-center max-w-[320px] 0.5xs:max-w-[380px] xs:max-w-md xm:max-w-lg transform transition duration-300 hover:scale-105 mx-2">
             <div className="bg-black rounded-full size-5 p-px flex justify-center items-center absolute top-5 right-5">
               <IoClose
                 className="cursor-pointer w-5 h-5 text-white "
                 onClick={onclose}
               />
             </div>
-            <h2 className="font-bold text-3xl text-gray-900 mb-4">
-            Get More Delegations with Farcaster Frames
+            <h2 className="font-bold text-2xl 0.2xs:text-3xl text-gray-900 my-6 0.2xs:my-4 px-2 0.2xs:px-0">
+              Get More Delegations with Farcaster Frames
             </h2>
 
-            <p className="text-left font-poppins text-sm text-gray-700 mb-6 leading-relaxed bg-blue-50 p-4 rounded-lg shadow-inner">
-              Copy your personalized link and share it as a Farcaster frame to stand out. Frames make it easy to highlight your role and invite others to delegate their tokens to you.
+            <p className="text-left font-poppins text-xs 0.5xs:text-sm text-gray-700 mb-6 leading-relaxed bg-blue-50 p-4 rounded-lg shadow-inner">
+              Copy your personalized link and share it as a Farcaster frame to
+              stand out. Frames make it easy to highlight your role and invite
+              others to delegate their tokens to you.
             </p>
 
             <div className="mb-6">
@@ -148,10 +150,10 @@ const handleCopy = () => {
                   className="w-full bg-transparent text-gray-700 text-sm focus:outline-none font-medium overflow-scroll"
                 /> */}
                 <div className="flex-grow overflow-x-auto scroll-smooth [&::-webkit-scrollbar]:mt-2 [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar]:transition-all [&::-webkit-scrollbar]:duration-300  [&::-webkit-scrollbar-track]:rounded-full  [&::-webkit-scrollbar-thumb]:rounded-full  [&::-webkit-scrollbar-thumb]:bg-blue-200  [&::-webkit-scrollbar-track]:bg-white  hover:[&::-webkit-scrollbar-thumb]:bg-blue-200">
-            <div className="w-full bg-transparent text-gray-700 text-sm font-medium whitespace-nowrap">
-              {generateUrl()}
-            </div>
-          </div>
+                  <div className="w-full bg-transparent text-gray-700 text-sm font-medium whitespace-nowrap">
+                    {generateUrl()}
+                  </div>
+                </div>
                 {/* <div className="w-full bg-transparent text-gray-700 text-sm focus:outline-none font-medium overflow-scroll">{generateUrl()}</div> */}
                 <button
                   onClick={handleCopy}
@@ -167,54 +169,51 @@ const handleCopy = () => {
               </div>
             </div>
 
-            <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-2xl p-4 flex justify-between  w-full shadow-sm font-poppins">
+            <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-2xl p-3 xs:p-4 flex justify-between  w-full shadow-sm font-poppins gap-1">
               <div>
-                <div className="flex gap-3 my-2">
+                <div className="flex gap-1.5 xs:gap-3 my-2">
                   <Image
                     src={userImage()}
                     alt=""
                     width={44}
                     height={44}
-                    className="size-11 rounded-full"
+                    className="size-8 xs:size-11 rounded-full"
                   />
                   <Image
                     src={dao === "optimism" ? op : arb}
                     alt=""
-                    className="size-11"
+                    className="size-8 xs:size-11"
                   />
                 </div>
-                <h2 className="text-sm text-left font-medium">
+                <h2 className="text-xs xs:text-sm text-left font-medium">
                   {" "}
                   You are invited to delegate
                   <br /> your Voting Power on
                 </h2>
-                <div className="flex gap-2 items-center text-sm mt-3">
-                  <div className="py-2 px-4 bg-blue-shade-200 rounded-full text-white">
+                <div className="flex gap-1 xm:gap-2 items-center text-[10px] xs:text-sm mt-3">
+                  <div className="py-1 px-2 xs:py-2 xs:px-4 bg-blue-shade-200 rounded-full text-white">
                     {dao.charAt(0).toUpperCase() + dao.slice(1)}
                   </div>
                   to
-                  <div className="py-2 px-4 bg-blue-shade-200 rounded-full text-white">
+                  <div className="py-1 px-2 xs:py-2 xs:px-4 bg-blue-shade-200 rounded-full text-white">
                     {ensName || address.slice(0, 4) + "..." + address.slice(-4)}
                   </div>
                 </div>
               </div>
 
-<div className="relative">
-
-              <Image
-                src={rectangle}
-                alt=""
-                className="h-auto w-36 bg-blue-shade-100 rounded-2xl"
+              <div className="relative">
+                <Image
+                  src={rectangle}
+                  alt=""
+                  className="h-auto w-32 xs:w-36 bg-blue-shade-100 rounded-2xl"
                 />
-                  <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center">
-                  <Image
-                    src={logo}
-                    alt="Logo"
-                    className="w-16 h-16"
-                  />
-                  <span className="text-white font-medium mt-2 text-xs">Chora Club</span>
+                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center">
+                  <Image src={logo} alt="Logo" className="size-10 xs:size-16" />
+                  <span className="text-white font-medium mt-2 text-xs">
+                    Chora Club
+                  </span>
                 </div>
-                </div>
+              </div>
             </div>
           </div>
         </div>

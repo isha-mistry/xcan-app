@@ -29,7 +29,7 @@ function TopNavbar() {
           </Link>
           <Link
             className="text-black font-semibold text-[28px] font-poppins flex items-center mt-[4px]"
-            href={"https://chora.club/"}
+            href={"/"}
           >
             Chora{" "}
             <span className="ml-1 text-white flex items-center">Club</span>
