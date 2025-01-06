@@ -67,22 +67,16 @@ export async function fetchEnsNameAndAvatar(address: any) {
     const ensName = await getEnsName(config, {
       address,
       chainId: mainnet.id,
-      universalResolverAddress: "0x74E20Bd2A1fE0cdbe45b9A1d89cb7e0a45b36376",
     });
-
-    let avatar = null;
-    if (ensName) {
-      avatar = await getEnsAvatar(config, {
-        name: normalize(ensName),
-        chainId: mainnet.id,
-        universalResolverAddress: "0x74E20Bd2A1fE0cdbe45b9A1d89cb7e0a45b36376",
-        assetGatewayUrls: {
-          ipfs: "https://cloudflare-ipfs.com",
-        },
-        gatewayUrls: ["https://cloudflare-ipfs.com"],
-      });
-    }
-
+    const avatar = await getEnsAvatar(config, {
+      assetGatewayUrls: {
+        ipfs: "https://cloudflare-ipfs.com",
+      },
+      gatewayUrls: ["https://cloudflare-ipfs.com"],
+      name: normalize(ensName?.toString() || ""),
+      chainId: mainnet.id,
+      // universalResolverAddress: "0x74E20Bd2A1fE0cdbe45b9A1d89cb7e0a45b36376",
+    });
     return { avatar, ensName };
   } catch (error) {
     const truncatedAddress = truncateAddress(address);
@@ -97,6 +91,7 @@ export async function fetchEnsName(address: any) {
       address,
       chainId: mainnet.id,
     });
+    // console.log("ensName: ", ensName);
     const displayName = address?.slice(0, 4) + "..." + address?.slice(-4);
 
     const ensNameOrAddress = ensName ? ensName : displayName;
