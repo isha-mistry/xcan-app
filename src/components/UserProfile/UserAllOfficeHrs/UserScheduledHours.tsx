@@ -247,14 +247,8 @@ const UserScheduledHours: React.FC<{ daoName: string }> = ({ daoName }) => {
         const schedule = newSchedules[dateIndex];
         const lastSlot = schedule.timeSlots[schedule.timeSlots.length - 1];
 
-        // If there are any booked slots, don't allow adding new slots
-        if (schedule.timeSlots.some((slot) => slot.bookedTitle)) {
-          return newSchedules;
-        }
-
         const newTimeSlot = createTimeSlot(schedule.date, lastSlot.endTime);
 
-        // Check for conflicts with existing schedules
         const conflictingSlot = existingSchedules.find((existingSlot) => {
           const dateString = format(schedule.date, "yyyy-MM-dd");
           const newSlotStart = new Date(
@@ -270,7 +264,6 @@ const UserScheduledHours: React.FC<{ daoName: string }> = ({ daoName }) => {
         });
 
         if (conflictingSlot) {
-          // If there's a conflict, don't add the new slot
           return newSchedules;
         }
 

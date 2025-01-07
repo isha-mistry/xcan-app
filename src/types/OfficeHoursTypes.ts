@@ -5,6 +5,7 @@ export interface Meeting {
   startTime: string;
   endTime: string;
   meeting_status?: string;
+  meetingId?:string;
   video_uri?: string;
   thumbnail_image?: string;
   isMeetingRecorded?: boolean;
@@ -19,13 +20,6 @@ export interface Attendee {
   uid?: string;
   onchain_uid?: string;
 }
-
-export interface OfficeHoursRequestBody {
-  host_address: string;
-  dao_name: string;
-  meetings: Meeting[];
-}
-
 export interface OfficeHoursDocument {
   host_address: string;
   dao: {
@@ -35,6 +29,13 @@ export interface OfficeHoursDocument {
   created_at: Date;
   updated_at: Date;
 }
+
+export interface OfficeHoursRequestBody {
+  host_address: string;
+  dao_name: string;
+  meetings: Meeting[];
+}
+
 
 export interface TimeSlot {
   startTime: string;

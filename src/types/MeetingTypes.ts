@@ -36,6 +36,8 @@ export interface SessionInterface {
   thumbnail_image?: string;
   deployedContractAddress?: string;
   nft_image?: string;
+  isMeetingRecorded?: boolean;
+  view: number;
 }
 
 export interface DynamicSessionInterface extends SessionInterface {

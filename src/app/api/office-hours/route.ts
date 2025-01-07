@@ -25,7 +25,7 @@ const addMeetingsToExistingDAO = async (
   const meetingDocument = meetings.map((meeting) => ({
     reference_id: uuidv4(),
     ...meeting,
-    meeting_status: "upcoming",
+    meeting_status: "Upcoming",
     thumbnail_image: randomImage,
     created_at: new Date(),
   }));
@@ -52,7 +52,7 @@ const addNewDAOWithMeetings = async (
   const meetingDocument = meetings.map((meeting) => ({
     reference_id: uuidv4(),
     ...meeting,
-    meeting_status: "upcoming",
+    meeting_status: "Upcoming",
     thumbnail_image: randomImage,
     created_at: new Date(),
   }));
@@ -80,7 +80,7 @@ const createNewHostWithMeetings = async (
   const meetingDocument = meetings.map((meeting) => ({
     reference_id: uuidv4(),
     ...meeting,
-    meeting_status: "upcoming",
+    meeting_status: "Upcoming",
     thumbnail_image: randomImage,
     created_at: new Date(),
   }));

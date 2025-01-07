@@ -1,101 +1,115 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/config/connectDB";
+import { OfficeHoursDocument, Meeting } from "@/types/OfficeHoursTypes";
 
-export async function POST(req: NextRequest, res: NextResponse) {
-  const { roomId, meetingType } = await req.json(); // Assuming the request body contains the roomId and meetingType
+// Define types for meeting status responses
+type MeetingStatusResponse = {
+  success: boolean;
+  message: string;
+  status: number;
+};
 
-  console.log("roomId", roomId);
-  console.log("meetingType", meetingType);
+// Helper function to create response
+const createResponse = (
+  success: boolean,
+  message: string,
+  data?: any,
+  status = 200
+) => {
+  return NextResponse.json(
+    { success, message, ...(data && { data }) },
+    { status }
+  );
+};
 
-  // Check if roomId is null or undefined
-  if (roomId === null || roomId === "undefined") {
-    return NextResponse.json(
-      { success: false, message: "Room ID is required" },
-      { status: 404 }
-    );
-  }
+// Helper function to get meeting status response
+const getMeetingStatusResponse = (status: string): MeetingStatusResponse => {
+  const responses: { [key: string]: MeetingStatusResponse } = {
+    Upcoming: { success: true, message: "Meeting is upcoming", status: 200 },
+    active: { success: true, message: "Meeting is upcoming", status: 200 },
+    Recorded: { success: true, message: "Meeting has ended", status: 200 },
+    Finished: { success: true, message: "Meeting has ended", status: 200 },
+    inactive: { success: true, message: "Meeting has ended", status: 200 },
+    Ongoing: { success: true, message: "Meeting is ongoing", status: 200 },
+    ongoing: { success: true, message: "Meeting is ongoing", status: 200 },
+    Denied: { success: true, message: "Meeting has been denied", status: 200 },
+  };
 
+  return (
+    responses[status] || {
+      success: false,
+      message: "Meeting status is invalid",
+      status: 400,
+    }
+  );
+};
+
+export async function POST(req: NextRequest) {
   let client;
 
   try {
-    // Connect to MongoDB
+    const { roomId, meetingType } = await req.json();
+
+    if (roomId === null || roomId === "undefined") {
+      return createResponse(false, "Room ID is required", null, 404);
+    }
+
     client = await connectDB();
-    // Access the appropriate collection based on meetingType
-    const collectionName =
-      meetingType === "session" ? "meetings" : "office_hours";
     const db = client.db();
-    const collection = db.collection(collectionName);
 
-    // Find document based on roomId
-    const meeting = await collection.findOne({ meetingId: roomId });
+    if (meetingType === "session") {
+      const meeting = await db
+        .collection("meetings")
+        .findOne({ meetingId: roomId });
 
-    // Check if meeting exists
-    if (!meeting) {
-      // Meeting does not exist
-      return NextResponse.json(
-        { success: true, message: "Meeting does not exist" },
-        { status: 200 }
-      );
-    } else {
-      console.log("meeting data:", meeting);
-      // Meeting exists
-      const statusField =
-        meetingType === "session" ? "meeting_status" : "meeting_status";
-
-      if (
-        meeting[statusField] === "active" ||
-        meeting[statusField] === "Upcoming"
-      ) {
-        // Meeting is upcoming
-        return NextResponse.json(
-          { success: true, message: "Meeting is upcoming", data: meeting },
-          { status: 200 }
-        );
-      } else if (
-        meeting[statusField] === "inactive" ||
-        meeting[statusField] === "Recorded" ||
-        meeting[statusField] === "Finished"
-      ) {
-        // Meeting has ended
-        return NextResponse.json(
-          { success: true, message: "Meeting has ended", data: meeting },
-          { status: 200 }
-        );
-      } else if (
-        meeting[statusField] === "ongoing" ||
-        meeting[statusField] === "Ongoing"
-      ) {
-        // Meeting is ongoing
-        return NextResponse.json(
-          { success: true, message: "Meeting is ongoing", data: meeting },
-          { status: 200 }
-        );
-      } else if (meeting[statusField] === "Denied") {
-        // Meeting is Denied
-        return NextResponse.json(
-          { success: true, message: "Meeting has been denied", data: meeting },
-          { status: 200 }
-        );
-      } else {
-        // Meeting status is unrecognized
-        return NextResponse.json(
-          {
-            success: false,
-            message: "Meeting status is invalid",
-            data: meeting,
-          },
-          { status: 400 }
-        );
+      if (!meeting) {
+        return createResponse(true, "Meeting does not exist");
       }
+
+      const { success, message, status } = getMeetingStatusResponse(
+        meeting.meeting_status
+      );
+      return createResponse(success, message, meeting, status);
+    } else {
+      const officeHours = await db
+        .collection<OfficeHoursDocument>("office_hours")
+        .findOne({ "dao.meetings.meetingId": roomId });
+
+      if (!officeHours) {
+        return createResponse(true, "Meeting does not exist");
+      }
+
+      // Find the specific meeting and its DAO
+      const daoInfo = officeHours.dao.reduce<{
+        meeting: Meeting | null;
+        daoName: string;
+      }>(
+        (acc, dao) => {
+          const meeting = dao.meetings.find((m) => m.meetingId === roomId);
+          return meeting ? { meeting, daoName: dao.name } : acc;
+        },
+        { meeting: null, daoName: "" }
+      );
+
+      if (!daoInfo.meeting) {
+        return createResponse(true, "Meeting does not exist");
+      }
+
+      const meetingWithContext = {
+        ...daoInfo.meeting,
+        host_address: officeHours.host_address,
+        dao_name: daoInfo.daoName,
+      };
+
+      const { success, message, status } = getMeetingStatusResponse(
+        daoInfo.meeting.meeting_status!
+      );
+      return createResponse(success, message, meetingWithContext, status);
     }
   } catch (error) {
     console.error("Error checking meeting status:", error);
-    return NextResponse.json(
-      { success: false, error: "Internal Server Error" },
-      { status: 500 }
-    );
+    return createResponse(false, "Internal Server Error", null, 500);
   } finally {
-    // Close the MongoDB client
     if (client) {
       await client.close();
     }

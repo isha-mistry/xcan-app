@@ -1,20 +1,45 @@
 import { connectDB } from "@/config/connectDB";
 import { NextResponse } from "next/server";
 
+interface Attendee {
+  address: string;
+  uid?: string;
+  onchain_uid?: string;
+}
+
 interface UpdateMeetingRequestBody {
   host_address: string;
   dao_name: string;
   reference_id: string;
   title?: string;
   description?: string;
-  slot_time?: string;
+  startTime?: string;
+  endTime?: string;
+  meeting_status?: string;
+  video_uri?: string;
+  thumbnail_image?: string;
+  isMeetingRecorded?: boolean;
+  host_uid?: string;
+  host_onchain_uid?: string;
+  attendees?: Attendee[];
+  attendee_update?: {
+    address: string;
+    uid?: string;
+    onchain_uid?: string;
+  };
 }
 
 export async function PUT(req: Request) {
   try {
     const updateData: UpdateMeetingRequestBody = await req.json();
-    const { host_address, dao_name, reference_id, title, description } =
-      updateData;
+    const {
+      host_address,
+      dao_name,
+      reference_id,
+      attendees,
+      attendee_update,
+      ...updateFields
+    } = updateData;
 
     // Validate required fields
     if (!host_address || !dao_name || !reference_id) {
@@ -69,20 +94,134 @@ export async function PUT(req: Request) {
       );
     }
 
-    // Build update object only with non-empty values
+    // Build update object only with provided values
     const fieldsToUpdate: { [key: string]: any } = {};
 
-    // Only include fields that have non-empty values
-    if (title && title.trim() !== "") {
-      fieldsToUpdate[`dao.$[daoElem].meetings.$[meetingElem].title`] = title;
+    // Helper function to add field if it exists and is different
+    const addFieldIfChanged = (
+      fieldName: string,
+      value: any,
+      prefix = "dao.$[daoElem].meetings.$[meetingElem]."
+    ) => {
+      if (value !== undefined && value !== existingMeeting[fieldName]) {
+        fieldsToUpdate[`${prefix}${fieldName}`] = value;
+      }
+    };
+
+    // Handle regular meeting field updates
+    addFieldIfChanged("title", updateFields.title?.trim());
+    addFieldIfChanged("description", updateFields.description?.trim());
+    addFieldIfChanged("startTime", updateFields.startTime);
+    addFieldIfChanged("endTime", updateFields.endTime);
+    addFieldIfChanged("meeting_status", updateFields.meeting_status);
+    addFieldIfChanged("video_uri", updateFields.video_uri);
+    addFieldIfChanged("thumbnail_image", updateFields.thumbnail_image);
+    addFieldIfChanged("isMeetingRecorded", updateFields.isMeetingRecorded);
+    addFieldIfChanged("host_uid", updateFields.host_uid);
+    addFieldIfChanged("host_onchain_uid", updateFields.host_onchain_uid);
+
+    // Get current attendees or initialize empty array
+    let currentAttendees = existingMeeting.attendees || [];
+
+    // Handle adding new attendees with UIDs
+    if (attendees) {
+      // Validate attendees array
+      if (!Array.isArray(attendees)) {
+        await client.close();
+        return NextResponse.json(
+          {
+            success: false,
+            error: "Attendees must be an array",
+          },
+          { status: 400 }
+        );
+      }
+
+      // Validate each attendee has required address
+      const invalidAttendee = attendees.find((attendee) => !attendee.address);
+      if (invalidAttendee) {
+        await client.close();
+        return NextResponse.json(
+          {
+            success: false,
+            error: "Each attendee must have an address",
+          },
+          { status: 400 }
+        );
+      }
+
+      // Process each new attendee
+      attendees.forEach((newAttendee) => {
+        const existingIndex = currentAttendees.findIndex(
+          (existing: Attendee) => existing.address === newAttendee.address
+        );
+
+        if (existingIndex === -1) {
+          // Add new attendee with any provided UIDs
+          currentAttendees.push({
+            address: newAttendee.address,
+            uid: newAttendee.uid,
+            onchain_uid: newAttendee.onchain_uid,
+          });
+        } else {
+          // Update existing attendee's UIDs if provided
+          if (newAttendee.uid !== undefined) {
+            currentAttendees[existingIndex].uid = newAttendee.uid;
+          }
+          if (newAttendee.onchain_uid !== undefined) {
+            currentAttendees[existingIndex].onchain_uid =
+              newAttendee.onchain_uid;
+          }
+        }
+      });
     }
 
-    if (description && description.trim() !== "") {
-      fieldsToUpdate[`dao.$[daoElem].meetings.$[meetingElem].description`] =
-        description;
+    // Handle updating specific attendee's UIDs
+    if (attendee_update) {
+      const { address, uid, onchain_uid } = attendee_update;
+
+      if (!address) {
+        await client.close();
+        return NextResponse.json(
+          {
+            success: false,
+            error: "Address is required for updating attendee UIDs",
+          },
+          { status: 400 }
+        );
+      }
+
+      const attendeeIndex = currentAttendees.findIndex(
+        (a: Attendee) => a.address === address
+      );
+
+      if (attendeeIndex === -1) {
+        await client.close();
+        return NextResponse.json(
+          {
+            success: false,
+            error: "Attendee not found in the meeting",
+          },
+          { status: 404 }
+        );
+      }
+
+      // Update the specific attendee's UIDs
+      if (uid !== undefined) {
+        currentAttendees[attendeeIndex].uid = uid;
+      }
+      if (onchain_uid !== undefined) {
+        currentAttendees[attendeeIndex].onchain_uid = onchain_uid;
+      }
     }
 
-    // Only proceed with update if there are non-empty fields to update
+    // Always update attendees field if we have processed any attendee changes
+    if (attendees || attendee_update) {
+      fieldsToUpdate["dao.$[daoElem].meetings.$[meetingElem].attendees"] =
+        currentAttendees;
+    }
+
+    // Only proceed with update if there are fields to update
     if (Object.keys(fieldsToUpdate).length === 0) {
       await client.close();
       return NextResponse.json(
