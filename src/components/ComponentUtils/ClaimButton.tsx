@@ -363,7 +363,7 @@ const ClaimButton: React.FC<ClaimButtonProps> = ({
         <button
           className={`${styles.button} ${
             !!onChainId || isClaimed ? styles.claimed : ""
-          } w-full `}
+          } w-full py-[3px] text-xs`}
           onClick={handleAttestationOnchain}
           disabled={!!onChainId || isClaiming || isClaimed || disabled}
         >
