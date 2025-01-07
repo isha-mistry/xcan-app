@@ -395,7 +395,7 @@ const Homepage = () => {
           )}
 
           {/* carousel */}
-          <div className="relative h-[55vh] 0.2xs:h-[60vh] xs:h-[65vh] md:h-[50vh] w-full overflow-hidden p-3 mb-5 md:mb-5">
+          <div className=" relative h-[60vh] 0.2xs:h-[60vh] xs:h-[65vh] md:h-[50vh] w-full overflow-hidden p-3 mb-5 md:mb-5">
             <AnimatePresence mode="wait">
               <motion.div
                 key={currentIndex}
@@ -408,7 +408,7 @@ const Homepage = () => {
                 onMouseLeave={() => setIsPaused(false)}
               >
                 <div className="flex h-full w-full items-center justify-center xm:px-4">
-                  <div className="max-w-7xl xm:max-w-6xl w-full rounded-2xl  bg-gradient-to-br from-blue-50 to-white shadow-lg m-auto h-[45vh] 0.2xs:h-[50vh] xs:h-[55vh] xm:h-[40vh] relative">
+                  <div className="max-w-7xl xm:max-w-6xl w-full rounded-2xl  bg-gradient-to-br from-blue-50 to-white shadow-lg m-auto h-[50vh] 0.2xs:h-[50vh] xs:h-[55vh] xm:h-[40vh] relative">
                     <div className="flex flex-col xm:flex-row items-center justify-between md:space-x-8  md:space-y-0 h-full">
                       {/* Image Container */}
                       <div className="w-full h-fit xm:w-2/3 xm:h-full flex items-center justify-center pl-4 pr-4 xm:pr-0 md:pl-6 py-4">
