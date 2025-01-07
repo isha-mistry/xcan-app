@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import UserScheduledHours from "./UserAllOfficeHrs/UserScheduledHours";
 import UserRecordedHours from "./UserAllOfficeHrs/UserRecordedHours";
 import UserUpcomingHours from "./UserAllOfficeHrs/UserUpcomingHours";
@@ -14,6 +14,8 @@ import { usePrivy } from "@privy-io/react-auth";
 import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 import { fetchApi } from "@/utils/api";
 import OfficeHoursAlertMessage from "../AlertMessage/OfficeHoursAlertMessage";
+import OfficeHourTile from "../ComponentUtils/OfficeHourTile";
+import RecordedSessionsSkeletonLoader from "../SkeletonLoader/RecordedSessionsSkeletonLoader";
 
 interface UserOfficeHoursProps {
   isDelegate: boolean | undefined;
@@ -47,6 +49,32 @@ function UserOfficeHours({
   const [showComingSoon, setShowComingSoon] = useState(true);
   const { user, ready, getAccessToken, authenticated } = usePrivy();
   const { walletAddress } = useWalletAddress();
+  const scrollContainerRef = useRef<HTMLDivElement | null>(null);
+  const [showLeftShadow, setShowLeftShadow] = useState(false);
+  const [showRightShadow, setShowRightShadow] = useState(false);
+
+  useEffect(() => {
+      const checkForOverflow = () => {
+        const container = scrollContainerRef.current;
+        if (container) {
+          setShowRightShadow(container.scrollWidth > container.clientWidth);
+        }
+      };
+  
+      checkForOverflow();
+      window.addEventListener("resize", checkForOverflow);
+      return () => window.removeEventListener("resize", checkForOverflow);
+    }, []);
+  
+    const handleScroll = () => {
+      const container = scrollContainerRef.current;
+      if (container) {
+        setShowLeftShadow(container.scrollLeft > 0);
+        setShowRightShadow(
+          container.scrollLeft < container.scrollWidth - container.clientWidth
+        );
+      }
+    };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -155,7 +183,10 @@ function UserOfficeHours({
   return (
     <div>
       <div className="pt-3">
-        <div className="flex w-fit gap-14 border-1 border-[#7C7C7C] px-6 rounded-xl text-sm">
+        <div className="flex gap-10 sm:gap-16  border-1 border-[#7C7C7C] px-6 rounded-xl text-sm overflow-x-auto whitespace-nowrap relative"
+        ref={scrollContainerRef}
+        onScroll={handleScroll}
+        >
           {selfDelegate === true && (
             <button
               className={`py-2  ${
@@ -223,25 +254,27 @@ function UserOfficeHours({
 
           {searchParams.get("hours") === "hosted" &&
             (dataLoading ? (
-              <SessionTileSkeletonLoader />
+              <RecordedSessionsSkeletonLoader />
             ) : (
-              <Tile
-                sessionDetails={sessionDetails}
-                dataLoading={dataLoading}
-                isEvent="Recorded"
-                isOfficeHour={true}
-              />
+              // <Tile
+              //   sessionDetails={sessionDetails}
+              //   dataLoading={dataLoading}
+              //   isEvent="Recorded"
+              //   isOfficeHour={true}
+              // />
+              <OfficeHourTile isHosted={true}/>
             ))}
           {searchParams.get("hours") === "attended" &&
             (dataLoading ? (
-              <SessionTileSkeletonLoader />
+              <RecordedSessionsSkeletonLoader />
             ) : (
-              <Tile
-                sessionDetails={sessionDetails}
-                dataLoading={dataLoading}
-                isEvent="Recorded"
-                isOfficeHour={true}
-              />
+              // <Tile
+              //   sessionDetails={sessionDetails}
+              //   dataLoading={dataLoading}
+              //   isEvent="Recorded"
+              //   isOfficeHour={true}
+              // />
+              <OfficeHourTile isAttended={true}/>
             ))}
         </div>
 

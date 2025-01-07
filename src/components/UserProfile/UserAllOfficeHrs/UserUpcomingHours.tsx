@@ -23,6 +23,7 @@ import { headers } from "next/headers";
 import { usePrivy } from "@privy-io/react-auth";
 import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 import { fetchApi } from "@/utils/api";
+import OfficeHourTile from "@/components/ComponentUtils/OfficeHourTile";
 
 interface SessionDetail {
   img: any;
@@ -211,204 +212,205 @@ function UserUpcomingHours() {
   }
 
   return (
-    <div>
-      <div className="space-y-6">
-        {pageLoading ? (
-          <SessionTileSkeletonLoader />
-        ) : sessionDetails.length > 0 ? (
-          sessionDetails.map((data, index) => (
-            <div
-              key={index}
-              className="flex p-5 rounded-[2rem] justify-between"
-              style={{
-                boxShadow: "0px 4px 26.7px 0px rgba(0, 0, 0, 0.10)",
-              }}
-            >
-              <div className="flex">
-                <Image
-                  src={data.img}
-                  alt="image"
-                  className="w-44 h-44 rounded-3xl border border-[#D9D9D9]"
-                />
+    // <div>
+    //   <div className="space-y-6">
+    //     {pageLoading ? (
+    //       <SessionTileSkeletonLoader />
+    //     ) : sessionDetails.length > 0 ? (
+    //       sessionDetails.map((data, index) => (
+    //         <div
+    //           key={index}
+    //           className="flex p-5 rounded-[2rem] justify-between"
+    //           style={{
+    //             boxShadow: "0px 4px 26.7px 0px rgba(0, 0, 0, 0.10)",
+    //           }}
+    //         >
+    //           <div className="flex">
+    //             <Image
+    //               src={data.img}
+    //               alt="image"
+    //               className="w-44 h-44 rounded-3xl border border-[#D9D9D9]"
+    //             />
 
-                <div className="ps-6 pe-12 py-1">
-                  <div className="font-semibold text-blue-shade-200 text-lg">
-                    {data.title}
-                  </div>
+    //             <div className="ps-6 pe-12 py-1">
+    //               <div className="font-semibold text-blue-shade-200 text-lg">
+    //                 {data.title}
+    //               </div>
 
-                  <div className="flex space-x-4 py-2">
-                    <div className="bg-[#1E1E1E] border border-[#1E1E1E] text-white rounded-md text-xs px-5 py-1 font-semibold">
-                      {data.dao}
-                    </div>
-                  </div>
+    //               <div className="flex space-x-4 py-2">
+    //                 <div className="bg-[#1E1E1E] border border-[#1E1E1E] text-white rounded-md text-xs px-5 py-1 font-semibold">
+    //                   {data.dao}
+    //                 </div>
+    //               </div>
 
-                  <div className="pt-1 pe-10">
-                    <hr />
-                  </div>
+    //               <div className="pt-1 pe-10">
+    //                 <hr />
+    //               </div>
 
-                  <div className="flex gap-x-16 text-sm py-3">
-                    <div className="text-[#3E3D3D]">
-                      <span className="font-semibold">Host:</span> {data.host}
-                    </div>
-                    <div className="text-[#3E3D3D]">
-                      <span className="font-semibold">Started at:</span>{" "}
-                      {new Date(data.started).toLocaleString()}{" "}
-                      {/* Format start time */}
-                    </div>
-                  </div>
+    //               <div className="flex gap-x-16 text-sm py-3">
+    //                 <div className="text-[#3E3D3D]">
+    //                   <span className="font-semibold">Host:</span> {data.host}
+    //                 </div>
+    //                 <div className="text-[#3E3D3D]">
+    //                   <span className="font-semibold">Started at:</span>{" "}
+    //                   {new Date(data.started).toLocaleString()}{" "}
+    //                   {/* Format start time */}
+    //                 </div>
+    //               </div>
 
-                  <div className="text-[#1E1E1E] text-sm">{data.desc}</div>
-                </div>
-              </div>
+    //               <div className="text-[#1E1E1E] text-sm">{data.desc}</div>
+    //             </div>
+    //           </div>
 
-              <div className="flex flex-col justify-between">
-                <div className="flex gap-2">
-                  <Tooltip content="Share" placement="top" showArrow>
-                    <span
-                      className="border-[0.5px] border-[#8E8E8E] rounded-full h-fit p-1 cursor-pointer"
-                      style={{
-                        backgroundColor: "rgba(217, 217, 217, 0.42)",
-                      }}
-                      onClick={() => null}
-                    >
-                      <FaRegShareFromSquare color="#3e3d3d" size={13} />
-                    </span>
-                  </Tooltip>
-                  <Tooltip content="Edit" placement="top" showArrow>
-                    <span
-                      className="border-[0.5px] border-[#8E8E8E] rounded-full h-fit p-1 cursor-pointer"
-                      style={{
-                        backgroundColor: "rgba(217, 217, 217, 0.42)",
-                      }}
-                      onClick={onOpen}
-                    >
-                      <FiEdit color="#3e3d3d" size={13} />
-                    </span>
-                  </Tooltip>
+    //           <div className="flex flex-col justify-between">
+    //             <div className="flex gap-2">
+    //               <Tooltip content="Share" placement="top" showArrow>
+    //                 <span
+    //                   className="border-[0.5px] border-[#8E8E8E] rounded-full h-fit p-1 cursor-pointer"
+    //                   style={{
+    //                     backgroundColor: "rgba(217, 217, 217, 0.42)",
+    //                   }}
+    //                   onClick={() => null}
+    //                 >
+    //                   <FaRegShareFromSquare color="#3e3d3d" size={13} />
+    //                 </span>
+    //               </Tooltip>
+    //               <Tooltip content="Edit" placement="top" showArrow>
+    //                 <span
+    //                   className="border-[0.5px] border-[#8E8E8E] rounded-full h-fit p-1 cursor-pointer"
+    //                   style={{
+    //                     backgroundColor: "rgba(217, 217, 217, 0.42)",
+    //                   }}
+    //                   onClick={onOpen}
+    //                 >
+    //                   <FiEdit color="#3e3d3d" size={13} />
+    //                 </span>
+    //               </Tooltip>
 
-                  <Tooltip content="Delete" placement="top" showArrow>
-                    <span
-                      className="border-[0.5px] border-[#8E8E8E] rounded-full h-fit p-1 cursor-pointer"
-                      style={{
-                        backgroundColor: "rgba(217, 217, 217, 0.42)",
-                      }}
-                      onClick={() => handleDelete(index)}
-                    >
-                      <RiDeleteBin5Line color="#3e3d3d" size={13} />
-                    </span>
-                  </Tooltip>
-                </div>
-                <div className="text-center bg-blue-shade-100 rounded-full font-bold text-white py-2 px-3 text-xs cursor-pointer">
-                  <a
-                    href={`/meeting/officehours/${data.meetingId}/lobby`}
-                    rel="noopener noreferrer"
-                    onClick={() => setStartLoading(true)}
-                  >
-                    {startLoading ? (
-                      <>
-                        <Oval
-                          visible={true}
-                          height="20"
-                          width="20"
-                          color="#fff"
-                          secondaryColor="#cdccff"
-                          ariaLabel="oval-loading"
-                        />
-                      </>
-                    ) : (
-                      "Start"
-                    )}
-                  </a>
-                </div>
-              </div>
-              <Modal
-                isOpen={isOpen}
-                onOpenChange={onOpenChange}
-                className="font-poppins"
-                size="3xl"
-              >
-                <ModalContent>
-                  {(onClose) => (
-                    <>
-                      <ModalHeader className="flex flex-col gap-1">
-                        Edit Office Hours
-                      </ModalHeader>
-                      <ModalBody>
-                        <div className="px-1 font-medium">Title</div>
-                        <input
-                          type="url"
-                          value={formData.title}
-                          placeholder="Title"
-                          className="outline-none bg-[#D9D9D945] rounded-md px-2 py-1 text-sm"
-                          onChange={(e) =>
-                            handleInputChange("title", e.target.value)
-                          }
-                        />
+    //               <Tooltip content="Delete" placement="top" showArrow>
+    //                 <span
+    //                   className="border-[0.5px] border-[#8E8E8E] rounded-full h-fit p-1 cursor-pointer"
+    //                   style={{
+    //                     backgroundColor: "rgba(217, 217, 217, 0.42)",
+    //                   }}
+    //                   onClick={() => handleDelete(index)}
+    //                 >
+    //                   <RiDeleteBin5Line color="#3e3d3d" size={13} />
+    //                 </span>
+    //               </Tooltip>
+    //             </div>
+    //             <div className="text-center bg-blue-shade-100 rounded-full font-bold text-white py-2 px-3 text-xs cursor-pointer">
+    //               <a
+    //                 href={`/meeting/officehours/${data.meetingId}/lobby`}
+    //                 rel="noopener noreferrer"
+    //                 onClick={() => setStartLoading(true)}
+    //               >
+    //                 {startLoading ? (
+    //                   <>
+    //                     <Oval
+    //                       visible={true}
+    //                       height="20"
+    //                       width="20"
+    //                       color="#fff"
+    //                       secondaryColor="#cdccff"
+    //                       ariaLabel="oval-loading"
+    //                     />
+    //                   </>
+    //                 ) : (
+    //                   "Start"
+    //                 )}
+    //               </a>
+    //             </div>
+    //           </div>
+    //           <Modal
+    //             isOpen={isOpen}
+    //             onOpenChange={onOpenChange}
+    //             className="font-poppins"
+    //             size="3xl"
+    //           >
+    //             <ModalContent>
+    //               {(onClose) => (
+    //                 <>
+    //                   <ModalHeader className="flex flex-col gap-1">
+    //                     Edit Office Hours
+    //                   </ModalHeader>
+    //                   <ModalBody>
+    //                     <div className="px-1 font-medium">Title</div>
+    //                     <input
+    //                       type="url"
+    //                       value={formData.title}
+    //                       placeholder="Title"
+    //                       className="outline-none bg-[#D9D9D945] rounded-md px-2 py-1 text-sm"
+    //                       onChange={(e) =>
+    //                         handleInputChange("title", e.target.value)
+    //                       }
+    //                     />
 
-                        <div className="px-1 font-medium">Description</div>
-                        <input
-                          type="url"
-                          value={formData.description}
-                          placeholder="Description"
-                          className="outline-none bg-[#D9D9D945] rounded-md px-2 py-1 text-sm"
-                          onChange={(e) =>
-                            handleInputChange("description", e.target.value)
-                          }
-                        />
-                        <div className="px-1 font-medium">
-                          Office Hours Slot
-                        </div>
-                        <div className="flex">
-                          <input
-                            id="startDate"
-                            type="date"
-                            value={selectedDate}
-                            onChange={(e) => setSelectedDate(e.target.value)}
-                            className="outline-none bg-[#D9D9D945] rounded-md px-2 py-1 text-sm w-2/5"
-                            min={formattedDate}
-                          />
-                          <select
-                            value={selectedTime || "Time"}
-                            onChange={handleTimeChange}
-                            className="outline-none bg-[#D9D9D945] rounded-md px-2 py-2 text-sm ml-1 w-1/5"
-                          >
-                            <option disabled>Time</option>
-                            {timeOptions.map((time) => (
-                              <option key={time} value={time}>
-                                {time}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-                      </ModalBody>
-                      <ModalFooter>
-                        <Button color="default" onPress={onClose}>
-                          Close
-                        </Button>
-                        <Button color="primary" onPress={handleSubmit}>
-                          {loading ? ( // Display spinner when loading
-                            <FaSpinner className="animate-spin mr-2" />
-                          ) : (
-                            "Save"
-                          )}
-                        </Button>
-                      </ModalFooter>
-                    </>
-                  )}
-                </ModalContent>
-              </Modal>
-            </div>
-          ))
-        ) : (
-          <div className="flex flex-col justify-center items-center">
-            <div className="text-5xl">☹️</div>{" "}
-            <div className="pt-4 font-semibold text-lg">
-              Oops, no such result available!
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
+    //                     <div className="px-1 font-medium">Description</div>
+    //                     <input
+    //                       type="url"
+    //                       value={formData.description}
+    //                       placeholder="Description"
+    //                       className="outline-none bg-[#D9D9D945] rounded-md px-2 py-1 text-sm"
+    //                       onChange={(e) =>
+    //                         handleInputChange("description", e.target.value)
+    //                       }
+    //                     />
+    //                     <div className="px-1 font-medium">
+    //                       Office Hours Slot
+    //                     </div>
+    //                     <div className="flex">
+    //                       <input
+    //                         id="startDate"
+    //                         type="date"
+    //                         value={selectedDate}
+    //                         onChange={(e) => setSelectedDate(e.target.value)}
+    //                         className="outline-none bg-[#D9D9D945] rounded-md px-2 py-1 text-sm w-2/5"
+    //                         min={formattedDate}
+    //                       />
+    //                       <select
+    //                         value={selectedTime || "Time"}
+    //                         onChange={handleTimeChange}
+    //                         className="outline-none bg-[#D9D9D945] rounded-md px-2 py-2 text-sm ml-1 w-1/5"
+    //                       >
+    //                         <option disabled>Time</option>
+    //                         {timeOptions.map((time) => (
+    //                           <option key={time} value={time}>
+    //                             {time}
+    //                           </option>
+    //                         ))}
+    //                       </select>
+    //                     </div>
+    //                   </ModalBody>
+    //                   <ModalFooter>
+    //                     <Button color="default" onPress={onClose}>
+    //                       Close
+    //                     </Button>
+    //                     <Button color="primary" onPress={handleSubmit}>
+    //                       {loading ? ( // Display spinner when loading
+    //                         <FaSpinner className="animate-spin mr-2" />
+    //                       ) : (
+    //                         "Save"
+    //                       )}
+    //                     </Button>
+    //                   </ModalFooter>
+    //                 </>
+    //               )}
+    //             </ModalContent>
+    //           </Modal>
+    //         </div>
+    //       ))
+    //     ) : (
+    //       <div className="flex flex-col justify-center items-center">
+    //         <div className="text-5xl">☹️</div>{" "}
+    //         <div className="pt-4 font-semibold text-lg">
+    //           Oops, no such result available!
+    //         </div>
+    //       </div>
+    //     )}
+    //   </div>
+    // </div>
+    <OfficeHourTile upComing={true}/>
   );
 }
 
