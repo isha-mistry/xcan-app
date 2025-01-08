@@ -500,7 +500,7 @@ function Sidebar() {
             <NotificationIconComponent />
             <Tooltip
               content={
-                <div className={`${styles.customTooltip}`}>Git Book</div>
+                <div className={`${styles.customTooltip}`}>Docs</div>
               }
               placement="right"
               className="rounded-md bg-opacity-90"

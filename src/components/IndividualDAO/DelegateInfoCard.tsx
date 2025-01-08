@@ -35,8 +35,7 @@ const DelegateInfoCard: React.FC<DelegateInfoCardProps> = ({
   useEffect(() => {
     const fetchEnsData = async () => {
       setIsLoading(true);
-      const { ensName: fetchedName, avatar: fetchedAvatar } =
-        await fetchEnsNameAndAvatar(delegate.delegate);
+      const { ensName: fetchedName, avatar: fetchedAvatar } =await fetchEnsNameAndAvatar(delegate.delegate);
       setEnsName(fetchedName);
       setAvatar(fetchedAvatar);
       setIsLoading(false);
@@ -50,6 +49,7 @@ const DelegateInfoCard: React.FC<DelegateInfoCardProps> = ({
     fetchEnsData();
   }, [delegate.delegate]);
 
+  
   const handleCopyAddress = (e: React.MouseEvent) => {
     e.stopPropagation();
     navigator.clipboard.writeText(delegate.delegate);

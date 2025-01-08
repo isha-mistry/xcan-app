@@ -1187,6 +1187,7 @@ function ProposalMain({ props }: { props: Props }) {
                             content={
                               <div className="font-poppins">
                                 Transaction Hash
+                                (Coming Soon)
                               </div>
                             }
                             placement="right"
@@ -1194,9 +1195,10 @@ function ProposalMain({ props }: { props: Props }) {
                             closeDelay={1}
                           >
                             <button
-                              onClick={() =>
-                                handleTransactionClick(voter.transactionHash)
-                              }
+                              // onClick={() =>
+                              //   handleTransactionClick(voter.transactionHash)
+                              // }
+                              disabled
                               className="text-blue-600 hover:text-blue-800 transition-colors duration-200"
                             >
                               <RiExternalLinkLine className="w-5 h-5" />
