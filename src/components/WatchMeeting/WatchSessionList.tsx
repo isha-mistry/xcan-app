@@ -22,7 +22,7 @@ function WatchSessionList() {
       address: "0x3013bb4E03a7B81106D69C10710EaE148C8410E1",
     },
     {
-      image: thumbnail,
+      image: thumbnail, 
       title: "Navigating the Future: Optimism and the Rise of DAOs",
       dao: "optimism",
       period: "5 months ago",

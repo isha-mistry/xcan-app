@@ -10,6 +10,7 @@ import MobileChainSwitcher from "./MobileChainSwitcher";
 import { fetchApi } from "@/utils/api";
 import toast, { Toaster } from "react-hot-toast";
 import { disconnect } from "process";
+import { Wallet } from "lucide-react";
 
 function ConnectWalletWithENS() {
   const [userProfileImage, setUserProfileImage] = useState<string | null>(null);
@@ -19,7 +20,8 @@ function ConnectWalletWithENS() {
   const chainId = useChainId();
   const { chains, error: switchNetworkError, switchChain } = useSwitchChain();
   const [walletAddress2, setWalletAddress] = useState<string | null>(null);
-  const { ready, authenticated, login, logout, user,connectWallet } = usePrivy();
+  const { ready, authenticated, login, logout, user, connectWallet } =
+    usePrivy();
   const { wallets } = useWallets();
   const activeWallet = wallets[0]; // Primary wallet
 
@@ -30,7 +32,6 @@ function ConnectWalletWithENS() {
       // If authenticated with Privy and no external wallet, use embedded wallet address
       setWalletAddress(user.wallet.address); // Embedded wallet address
     }
-   
   }, [authenticated, user, isConnected, walletAddress2]);
 
   useEffect(() => {
@@ -87,7 +88,6 @@ function ConnectWalletWithENS() {
 
     fetchUserProfile();
   }, [walletAddress2, authenticated]);
-  
 
   const getDisplayImage = () => {
     if (ensAvatar) {
@@ -110,8 +110,6 @@ function ConnectWalletWithENS() {
   //   }
   // };
 
-
-
   if (!ready) {
     return null; // or loading spinner
   }
@@ -127,30 +125,44 @@ function ConnectWalletWithENS() {
   const isValidAuthentication = () => {
     // Improved authentication check
     const hasEmbeddedWallet = user?.google || user?.farcaster;
-    const hasWeb3Wallet = wallets.some(wallet => wallet.address);
-    
+    const hasWeb3Wallet = wallets.some((wallet) => wallet.address);
+
     // Return true if authenticated and has either embedded or web3 wallet
-    return authenticated && (hasEmbeddedWallet || hasWeb3Wallet && isConnected);
+    return (
+      authenticated && (hasEmbeddedWallet || (hasWeb3Wallet && isConnected))
+    );
   };
-  
+
   const canAccessProtectedResources = () => {
     return isValidAuthentication();
   };
-  
+
   const isValid = canAccessProtectedResources();
-  
-  
+
   return (
     <div className="wallet z-10 font-poppins">
       {!isValid ? (
-        <button
-          onClick={handleLogin}
-          type="button"
-          className="flex items-center justify-center text-white bg-blue-shade-200 hover:bg-blue-shade-100 border border-white rounded-full p-2 md:px-5 md:py-4 text-xs md:text-sm font-bold transition-transform transform hover:scale-105"
-        >
-          <BiSolidWallet className="block md:hidden size-5" />
-          <span className="hidden md:block">Connect Wallet</span>
-        </button>
+        <>
+          <button
+            onClick={handleLogin}
+            type="button"
+            className="flex md:hidden items-center justify-center text-blue-shade-200 bg-white hover:bg-blue-shade-500 border-white rounded-full p-2 md:px-5 md:py-4 text-xs  font-bold transition-transform transform hover:scale-105"
+          >
+            <BiSolidWallet className="size-5" />
+            {/* <span className="hidden md:block">Connect Wallet</span> */}
+          </button>
+          <button
+            onClick={handleLogin}
+            type="button"
+            className="hidden md:flex items-center justify-center  bg-gradient-to-br from-blue-50 to-blue-100 text-blue-shade-200 px-4 py-3 rounded-full  shadow-lg hover:shadow-xl  transition-all duration-300  group relative overflow-hidden transform-none hover:scale-105 text-xs font-medium"
+          >
+            <Wallet
+              size={16}
+              className="mr-2 size-5  group-hover:rotate-6 transition-transform"
+            />
+            <span className="font-poppins mt-1 ">Connect Wallet</span>
+          </button>
+        </>
       ) : (
         <>
           {/* Desktop View */}

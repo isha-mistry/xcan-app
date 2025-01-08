@@ -60,6 +60,8 @@ import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 import { fetchApi } from "@/utils/api";
 import { BrowserProvider, Contract } from "ethers";
 import { MeetingRecords } from "@/types/UserProfileTypes";
+import { createPublicClient, http } from "viem";
+import { optimism, arbitrum } from "viem/chains";
 
 function MainProfile() {
   const { isConnected, chain } = useAccount();
@@ -271,34 +273,54 @@ function MainProfile() {
     const checkDelegateStatus = async () => {
       // const addr = await walletClient.getAddresses();
       // const address1 = addr[0];
+      if (!walletAddress || !chain) return;
       try {
-        const contractAddress = getChainAddress(chain?.name);
-        if (walletAddress) {
-          const delegateTx = await publicClient?.readContract({
-            address: contractAddress as `0x${string}`,
-            abi: dao_abi.abi,
-            functionName: "delegates",
-            args: [walletAddress],
-            // account: address1,
-          });
+        const contractAddress = getChainAddress(chain.name);
+        const network = getDaoName(chain.name);
+        // if (walletAddress) {
+        //   const delegateTx = await publicClient?.readContract({
+        //     address: contractAddress as `0x${string}`,
+        //     abi: dao_abi.abi,
+        //     functionName: "delegates",
+        //     args: [walletAddress],
+        //     // account: address1,
+        //   });
 
-          // console.log("DelegateTx",delegateTx)
+        //   // console.log("DelegateTx",delegateTx)
 
-          const delegateTxAddr = delegateTx.toLowerCase();
+        //   const delegateTxAddr = delegateTx.toLowerCase();
 
-          if (delegateTxAddr === "0x0000000000000000000000000000000000000000") {
-            setSelfDelegate(false);
-          } else {
-            setSelfDelegate(true);
-          }
-        }
+        //   if (delegateTxAddr === "0x0000000000000000000000000000000000000000") {
+        //     setSelfDelegate(false);
+        //   } else {
+        //     setSelfDelegate(true);
+        //   }
+        // }
+        const public_client = createPublicClient({
+          chain: network === "optimism" ? optimism : arbitrum,
+          transport: http(),
+        });
+
+        const delegateTx = await public_client.readContract({
+          address: contractAddress as `0x${string}`,
+          abi: dao_abi.abi,
+          functionName: "delegates",
+          args: [walletAddress],
+        }) as string;
+
+        const isSelfDelegate = 
+          delegateTx.toLowerCase() !== "0x0000000000000000000000000000000000000000" &&
+          delegateTx.toLowerCase() === walletAddress.toLowerCase();
+
+        console.log("Is self delegate (MainProfile):", isSelfDelegate);
+        setSelfDelegate(isSelfDelegate);
       } catch (e) {
         console.log("error in function: ", e);
         setSelfDelegate(false);
       }
     };
     checkDelegateStatus();
-  }, [walletAddress, daoName, selfDelegate]);
+  }, [walletAddress, chain]);
 
   // Pass the address of whom you want to delegate the voting power to
   // const handleDelegateVotes = async (to: string) => {
@@ -1313,7 +1335,7 @@ function MainProfile() {
             </div>
             <div className="hidden lg:flex gap-1 xs:gap-2 items-center">
               <RewardButton />
-              <ConnectWalletWithENS />
+              {/* <ConnectWalletWithENS /> */}
             </div>
           </div>
 
