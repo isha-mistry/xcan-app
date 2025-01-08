@@ -55,7 +55,7 @@ export async function GET(req: NextRequest) {
       result.dao[0].meetings?.filter(
         (meeting:Meeting) =>
           new Date(meeting.startTime) > currentDate &&
-          meeting.meeting_status === "upcoming"
+          meeting.meeting_status === "Upcoming"
       ) || [];
 
     return NextResponse.json(
