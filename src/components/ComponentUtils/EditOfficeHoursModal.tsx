@@ -3,6 +3,8 @@ import { TimeSlot } from "@/types/OfficeHoursTypes";
 import { X } from "lucide-react";
 import toast from "react-hot-toast";
 import { fetchApi } from "@/utils/api";
+import { usePrivy } from "@privy-io/react-auth";
+import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 
 interface EditOfficeHoursModalProps {
   slot: TimeSlot;
@@ -23,15 +25,26 @@ const EditOfficeHoursModal: React.FC<EditOfficeHoursModalProps> = ({
   const [title, setTitle] = useState(slot.bookedTitle || "");
   const [description, setDescription] = useState(slot.bookedDescription || "");
   const [isLoading, setIsLoading] = useState(false);
+  const { user, ready, getAccessToken, authenticated } = usePrivy();
+  const { walletAddress } = useWalletAddress();
   // const { toast } = useToast();
+
+  console.log("slot", slot);
 
   const updateMeeting = async () => {
     try {
+      const token = await getAccessToken();
+      const myHeaders: HeadersInit = {
+        "Content-Type": "application/json",
+        ...(walletAddress && {
+          "x-wallet-address": walletAddress,
+          Authorization: `Bearer ${token}`,
+        }),
+      };
+
       const response = await fetchApi("/edit-office-hours", {
         method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: myHeaders,
         body: JSON.stringify({
           host_address: hostAddress,
           dao_name: daoName,
@@ -77,7 +90,7 @@ const EditOfficeHoursModal: React.FC<EditOfficeHoursModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div className="fixed inset-0 backdrop-blur-sm bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg p-8 w-full max-w-md">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold">Edit Booked Slot</h2>

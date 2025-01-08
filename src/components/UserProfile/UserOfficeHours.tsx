@@ -1,7 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
 import UserScheduledHours from "./UserAllOfficeHrs/UserScheduledHours";
-import UserRecordedHours from "./UserAllOfficeHrs/UserRecordedHours";
-import UserUpcomingHours from "./UserAllOfficeHrs/UserUpcomingHours";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useRouter } from "next-nprogress-bar";
 import Tile from "../ComponentUtils/Tile";
@@ -16,6 +14,7 @@ import { fetchApi } from "@/utils/api";
 import OfficeHoursAlertMessage from "../AlertMessage/OfficeHoursAlertMessage";
 import OfficeHourTile from "../ComponentUtils/OfficeHourTile";
 import RecordedSessionsSkeletonLoader from "../SkeletonLoader/RecordedSessionsSkeletonLoader";
+import { OfficeHoursProps } from "@/types/OfficeHoursTypes";
 
 interface UserOfficeHoursProps {
   isDelegate: boolean | undefined;
@@ -23,156 +22,86 @@ interface UserOfficeHoursProps {
   daoName: string;
 }
 
-interface Session {
-  _id: string;
-  host_address: string;
-  office_hours_slot: string;
-  title: string;
-  description: string;
-  meeting_status: "ongoing" | "active" | "inactive"; // Define the possible statuses
-  dao_name: string;
-  attendees: any[];
-}
-
 function UserOfficeHours({
   isDelegate,
   selfDelegate,
   daoName,
 }: UserOfficeHoursProps) {
-  const { address, isConnected } = useAccount();
   const router = useRouter();
   const path = usePathname();
   const searchParams = useSearchParams();
 
-  const [sessionDetails, setSessionDetails] = useState([]);
   const [dataLoading, setDataLoading] = useState(true);
-  const [showComingSoon, setShowComingSoon] = useState(true);
-  const { user, ready, getAccessToken, authenticated } = usePrivy();
+  const { getAccessToken } = usePrivy();
   const { walletAddress } = useWalletAddress();
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
   const [showLeftShadow, setShowLeftShadow] = useState(false);
   const [showRightShadow, setShowRightShadow] = useState(false);
+  const [upcomingOfficeHours, setUpcomingOfficeHours] = useState<
+    OfficeHoursProps[]
+  >([]);
+  const [ongoingOfficeHours, setOngoingOfficeHours] = useState<
+    OfficeHoursProps[]
+  >([]);
+  const [hostedOfficeHours, setHostedOfficeHours] = useState<
+    OfficeHoursProps[]
+  >([]);
+  const [attendedOfficeHours, setAttendedOfficeHours] = useState<
+    OfficeHoursProps[]
+  >([]);
 
   useEffect(() => {
-      const checkForOverflow = () => {
-        const container = scrollContainerRef.current;
-        if (container) {
-          setShowRightShadow(container.scrollWidth > container.clientWidth);
-        }
-      };
-  
-      checkForOverflow();
-      window.addEventListener("resize", checkForOverflow);
-      return () => window.removeEventListener("resize", checkForOverflow);
-    }, []);
-  
-    const handleScroll = () => {
+    const checkForOverflow = () => {
       const container = scrollContainerRef.current;
       if (container) {
-        setShowLeftShadow(container.scrollLeft > 0);
-        setShowRightShadow(
-          container.scrollLeft < container.scrollWidth - container.clientWidth
-        );
+        setShowRightShadow(container.scrollWidth > container.clientWidth);
       }
     };
+
+    checkForOverflow();
+    window.addEventListener("resize", checkForOverflow);
+    return () => window.removeEventListener("resize", checkForOverflow);
+  }, []);
+
+  const handleScroll = () => {
+    const container = scrollContainerRef.current;
+    if (container) {
+      setShowLeftShadow(container.scrollLeft > 0);
+      setShowRightShadow(
+        container.scrollLeft < container.scrollWidth - container.clientWidth
+      );
+    }
+  };
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setDataLoading(true);
-        const token=await getAccessToken();
-        const myHeaders: HeadersInit = {
-          "Content-Type": "application/json",
-          ...(walletAddress && {
-            "x-wallet-address": walletAddress,
-            Authorization: `Bearer ${token}`,
-          }),
-        };
-        const raw = JSON.stringify({
-          address: walletAddress,
-        });
-
-        const requestOptions: RequestInit = {
-          method: "POST",
-          headers: myHeaders,
-          body: raw,
-        };
-
-        const response = await fetchApi(
-          "/get-officehours-address",
-          requestOptions
-        );
-        const result = await response.json();
-
-        //api for individual attendees
-        const rawData = JSON.stringify({
-          attendee_address: walletAddress,
-        });
-
-        const requestOption: RequestInit = {
-          method: "POST",
-          headers: myHeaders,
-          body: rawData,
-        };
-
-        const responseData = await fetchApi(
-          "/get-attendee-individual",
-          requestOption
-        );
-        const resultData = await responseData.json();
-
-        if (
-          searchParams.get("hours") === "ongoing" ||
-          searchParams.get("hours") === "upcoming" ||
-          searchParams.get("hours") === "hosted"
-        ) {
-          const filteredSessions = result.filter((session: Session) => {
-            if (searchParams.get("hours") === "ongoing") {
-              return (
-                session.meeting_status === "ongoing" &&
-                session.dao_name === daoName
-              );
-            } else if (searchParams.get("hours") === "upcoming") {
-              return (
-                session.meeting_status === "active" &&
-                session.dao_name === daoName
-              );
-            } else if (searchParams.get("hours") === "hosted") {
-              return (
-                session.meeting_status === "inactive" &&
-                session.dao_name === daoName
-              );
-            }
-          });
-          setSessionDetails(filteredSessions);
-        } else if (searchParams.get("hours") === "attended") {
-          const filteredSessions = resultData.filter((session: Session) => {
-            return (
-              session.attendees.some(
-                (attendee: any) => attendee.attendee_address === walletAddress
-              ) && session.dao_name === daoName
-            );
-          });
-          setSessionDetails(filteredSessions);
+    const fetchUserOfficeHours = async () => {
+      const response = await fetchApi(
+        `/get-office-hours?host_address=${walletAddress}&dao_name=${daoName}`,
+        {
+          headers: {
+            Authorization: `Bearer ${await getAccessToken()}`,
+          },
         }
+      );
 
-        setDataLoading(false);
-      } catch (error) {
-        console.error(error);
-        setDataLoading(false);
-      }
+      const result = await response.json();
+
+      console.log("result", result);
+      setOngoingOfficeHours(result.data.ongoing);
+      setUpcomingOfficeHours(result.data.upcoming);
+      setHostedOfficeHours(result.data.hosted);
+      setAttendedOfficeHours(result.data.attended);
+      setDataLoading(false);
     };
 
-    if (walletAddress != null) {
-      fetchData();
-    }
-  }, [searchParams.get("hours")]); // Re-fetch data when filter changes
+    fetchUserOfficeHours();
+  }, [walletAddress, daoName]);
 
   useEffect(() => {
     // Set initial session details
-    setSessionDetails([]);
+    // setSessionDetails([]);
     setDataLoading(true);
-  }, [address, walletAddress]);
+  }, [walletAddress]);
 
   useEffect(() => {
     if (!selfDelegate && searchParams.get("hours") === "schedule") {
@@ -183,9 +112,10 @@ function UserOfficeHours({
   return (
     <div>
       <div className="pt-3">
-        <div className="flex gap-10 sm:gap-16  border-1 border-[#7C7C7C] px-6 rounded-xl text-sm overflow-x-auto whitespace-nowrap relative"
-        ref={scrollContainerRef}
-        onScroll={handleScroll}
+        <div
+          className="flex gap-10 sm:gap-16  border-1 border-[#7C7C7C] px-6 rounded-xl text-sm overflow-x-auto whitespace-nowrap relative"
+          ref={scrollContainerRef}
+          onScroll={handleScroll}
         >
           {selfDelegate === true && (
             <button
@@ -199,6 +129,21 @@ function UserOfficeHours({
               }
             >
               Schedule
+            </button>
+          )}
+
+          {selfDelegate === true && (
+            <button
+              className={`py-2  ${
+                searchParams.get("hours") === "ongoing"
+                  ? "text-[#3E3D3D] font-bold"
+                  : "text-[#7C7C7C]"
+              }`}
+              onClick={() =>
+                router.push(path + "?active=officeHours&hours=ongoing")
+              }
+            >
+              Ongoing
             </button>
           )}
 
@@ -249,38 +194,64 @@ function UserOfficeHours({
             searchParams.get("hours") === "schedule" && (
               <UserScheduledHours daoName={daoName} />
             )}
+
           {selfDelegate === true &&
-            searchParams.get("hours") === "upcoming" && <UserUpcomingHours />}
+            searchParams.get("hours") === "ongoing" &&
+            (dataLoading ? (
+              <RecordedSessionsSkeletonLoader />
+            ) : ongoingOfficeHours.length === 0 ? (
+              <div className="flex flex-col justify-center items-center pt-10">
+                <div className="text-5xl">☹️</div>{" "}
+                <div className="pt-4 font-semibold text-lg">
+                  Oops, no such result available!
+                </div>
+              </div>
+            ) : (
+              <OfficeHourTile isOngoing={true} data={ongoingOfficeHours} />
+            ))}
+
+          {selfDelegate === true &&
+            searchParams.get("hours") === "upcoming" &&
+            (dataLoading ? (
+              <RecordedSessionsSkeletonLoader />
+            ) : upcomingOfficeHours.length === 0 ? (
+              <div className="flex flex-col justify-center items-center pt-10">
+                <div className="text-5xl">☹️</div>{" "}
+                <div className="pt-4 font-semibold text-lg">
+                  Oops, no such result available!
+                </div>
+              </div>
+            ) : (
+              <OfficeHourTile isUpcoming={true} data={upcomingOfficeHours} />
+            ))}
 
           {searchParams.get("hours") === "hosted" &&
             (dataLoading ? (
               <RecordedSessionsSkeletonLoader />
+            ) : hostedOfficeHours.length === 0 ? (
+              <div className="flex flex-col justify-center items-center pt-10">
+                <div className="text-5xl">☹️</div>{" "}
+                <div className="pt-4 font-semibold text-lg">
+                  Oops, no such result available!
+                </div>
+              </div>
             ) : (
-              // <Tile
-              //   sessionDetails={sessionDetails}
-              //   dataLoading={dataLoading}
-              //   isEvent="Recorded"
-              //   isOfficeHour={true}
-              // />
-              <OfficeHourTile isHosted={true}/>
+              <OfficeHourTile isHosted={true} data={hostedOfficeHours} />
             ))}
           {searchParams.get("hours") === "attended" &&
             (dataLoading ? (
               <RecordedSessionsSkeletonLoader />
+            ) : attendedOfficeHours.length === 0 ? (
+              <div className="flex flex-col justify-center items-center pt-10">
+                <div className="text-5xl">☹️</div>{" "}
+                <div className="pt-4 font-semibold text-lg">
+                  Oops, no such result available!
+                </div>
+              </div>
             ) : (
-              // <Tile
-              //   sessionDetails={sessionDetails}
-              //   dataLoading={dataLoading}
-              //   isEvent="Recorded"
-              //   isOfficeHour={true}
-              // />
-              <OfficeHourTile isAttended={true}/>
+              <OfficeHourTile isAttended={true} data={attendedOfficeHours} />
             ))}
         </div>
-
-        {/* <div className="py-10">
-          <OfficeHoursAlertMessage />
-        </div> */}
       </div>
     </div>
   );

@@ -4,7 +4,6 @@ import { Meeting, OfficeHoursDocument } from "@/types/OfficeHoursTypes";
 
 export async function GET(req: NextRequest) {
   try {
-    // Get query parameters from the URL
     const url = new URL(req.url);
     const host_address = url.searchParams.get("host_address");
     const dao_name = url.searchParams.get("dao_name");
@@ -14,7 +13,6 @@ export async function GET(req: NextRequest) {
     const collection = db.collection("office_hours");
 
     let query: any = {};
-    let projection: any = {};
 
     // Base query setup based on host_address and dao_name
     if (host_address && dao_name) {
@@ -26,77 +24,90 @@ export async function GET(req: NextRequest) {
       query = {
         "dao.name": dao_name,
       };
-    } else if (host_address) {
-      query = {
-        host_address: host_address,
-      };
     }
 
-    projection = {
-      dao: 1,
-      host_address: 1,
-    };
-
-    const results = await collection.find(query, { projection }).toArray();
+    const results = await collection.find(query).toArray();
     await client.close();
 
     if (!results.length) {
       return NextResponse.json({ error: "No meetings found" }, { status: 404 });
     }
 
-    // Function to categorize meetings by their states
-    const categorizeMeetings = (meetings: Meeting[], hostAddr: string) => {
-      return {
-        ongoing: meetings.filter(
-          (meeting) => meeting.meeting_status === "ongoing"
-        ),
-        upcoming: meetings.filter(
-          (meeting) => meeting.meeting_status === "upcoming"
-        ),
-        recorded: meetings.filter(
-          (meeting) => meeting.meeting_status === "recorded"
-        ),
-        hosted: meetings.filter(
-          (meeting) =>
-            meeting.meeting_status === "recorded" && hostAddr === host_address
-        ),
-        attended: meetings.filter(
-          (meeting) =>
-            meeting.meeting_status === "recorded" &&
-            meeting.attendees?.some(
-              (attendee) => attendee.address === host_address
-            )
-        ),
-      };
-    };
+    // Create categorized meeting arrays
+    const ongoing: Array<Meeting & { host_address: string; dao_name: string }> =
+      [];
+    const upcoming: Array<
+      Meeting & { host_address: string; dao_name: string }
+    > = [];
+    const recorded: Array<
+      Meeting & { host_address: string; dao_name: string }
+    > = [];
+    const hosted: Array<Meeting & { host_address: string; dao_name: string }> =
+      [];
+    const attended: Array<
+      Meeting & { host_address: string; dao_name: string }
+    > = [];
 
-    // Transform and categorize the results
-    const transformedResults = results.flatMap(
-      (result) => {
-        // If dao_name is specified, filter to only include that DAO
-        const relevantDaos = dao_name
-          ? result.dao.filter((d: any) => d.name === dao_name)
-          : result.dao;
+    results.forEach((result) => {
+      const relevantDaos = dao_name
+        ? result.dao.filter((d: any) => d.name === dao_name)
+        : result.dao;
 
-        return relevantDaos.map((dao: any) => {
-          const categorizedMeetings = categorizeMeetings(
-            dao.meetings || [],
-            result.host_address
-          );
-
-          return {
+      relevantDaos.forEach((dao: any) => {
+        (dao.meetings || []).forEach((meeting: Meeting) => {
+          const meetingDocument = {
+            ...meeting,
             host_address: result.host_address,
             dao_name: dao.name,
-            meetings: categorizedMeetings,
           };
+
+          // Categorize meetings
+          switch (meeting.meeting_status) {
+            case "Ongoing":
+              ongoing.push(meetingDocument);
+              break;
+            case "Upcoming":
+              upcoming.push(meetingDocument);
+              break;
+            case "Recorded":
+              recorded.push(meetingDocument);
+
+              // Check if this is a hosted meeting
+              if (result.host_address === host_address) {
+                hosted.push(meetingDocument);
+              }
+
+              // Check if this is an attended meeting
+              if (
+                meeting.attendees?.some(
+                  (attendee) => attendee.address === host_address
+                )
+              ) {
+                attended.push(meetingDocument);
+              }
+              break;
+          }
         });
-      }
-    );
+      });
+    });
+
+    // Sort meetings by date if available
+    const sortByDate = (a: Meeting, b: Meeting) => {
+      const dateA = new Date(a.startTime || 0).getTime();
+      const dateB = new Date(b.startTime || 0).getTime();
+      return dateB - dateA; // Most recent first
+    };
 
     return NextResponse.json(
       {
         success: true,
-        data: transformedResults,
+        data: {
+          ongoing: ongoing.sort(sortByDate),
+          upcoming: upcoming.sort(sortByDate),
+          recorded: recorded.sort(sortByDate),
+          hosted: hosted.sort(sortByDate),
+          attended: attended.sort(sortByDate),
+        },
       },
       { status: 200 }
     );

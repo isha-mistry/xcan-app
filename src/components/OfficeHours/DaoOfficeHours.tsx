@@ -24,6 +24,9 @@ import { usePrivy } from "@privy-io/react-auth";
 import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 import { fetchApi } from "@/utils/api";
 import OfficeHoursAlertMessage from "../AlertMessage/OfficeHoursAlertMessage";
+import { OfficeHoursProps } from "@/types/OfficeHoursTypes";
+import OfficeHourTile from "../ComponentUtils/OfficeHourTile";
+import RecordedSessionsSkeletonLoader from "../SkeletonLoader/RecordedSessionsSkeletonLoader";
 interface Type {
   img: StaticImageData;
   title: string;
@@ -33,16 +36,6 @@ interface Type {
   host: string;
   started: string;
   desc: string;
-}
-
-interface Session {
-  _id: string;
-  host_address: string;
-  office_hours_slot: string;
-  title: string;
-  description: string;
-  meeting_status: "ongoing" | "active" | "inactive"; // Define the possible statuses
-  dao_name: string;
 }
 
 function DaoOfficeHours() {
@@ -57,46 +50,35 @@ function DaoOfficeHours() {
   const [showComingSoon, setShowComingSoon] = useState(true);
   const { user, ready, getAccessToken, authenticated } = usePrivy();
   const { walletAddress } = useWalletAddress();
+  const [upcomingOfficeHours, setUpcomingOfficeHours] = useState<
+    OfficeHoursProps[]
+  >([]);
+  const [recordedOfficeHours, setRecordedOfficeHours] = useState<
+    OfficeHoursProps[]
+  >([]);
+  const [ongoingOfficeHours, setOngoingOfficeHours] = useState<
+    OfficeHoursProps[]
+  >([]);
 
-  // useEffect(() => {
-  //   const fetchData = async () => {
-  //     try {
-  //       setDataLoading(true);
-  //       const myHeaders = new Headers();
-  //       myHeaders.append("Content-Type", "application/json");
+  useEffect(() => {
+    const fetchOfficeHours = async () => {
+      const response = await fetchApi(`/get-office-hours`, {
+        headers: {
+          Authorization: `Bearer ${await getAccessToken()}`,
+        },
+      });
 
-  //       const requestOptions: RequestInit = {
-  //         method: "GET",
-  //         headers: myHeaders,
-  //       };
+      const result = await response.json();
 
-  //       const response = await fetchApi(
-  //         "/get-specific-officehours",
-  //         requestOptions
-  //       );
-  //       const result = await response.json();
-  //       console.log(result);
+      console.log("result", result);
+      setOngoingOfficeHours(result.data.ongoing);
+      setUpcomingOfficeHours(result.data.upcoming);
+      setRecordedOfficeHours(result.data.recorded);
+      setDataLoading(false);
+    };
 
-  //       // Filter sessions based on meeting_status
-  //       const filteredSessions = result.filter((session: Session) => {
-  //         if (searchParams.get("hours") === "ongoing") {
-  //           return session.meeting_status === "ongoing";
-  //         } else if (searchParams.get("hours") === "upcoming") {
-  //           return session.meeting_status === "active";
-  //         } else if (searchParams.get("hours") === "recorded") {
-  //           return session.meeting_status === "inactive";
-  //         }
-  //       });
-
-  //       setSessionDetails(filteredSessions);
-  //       setDataLoading(false);
-  //     } catch (error) {
-  //       console.error(error);
-  //     }
-  //   };
-
-  //   fetchData();
-  // }, [searchParams.get("hours")]); // Re-fetch data when filter changes
+    fetchOfficeHours();
+  }, [searchParams.get("hours")]); // Re-fetch data when filter changes
 
   // useEffect(() => {
   //   // Set initial session details
@@ -179,21 +161,6 @@ function DaoOfficeHours() {
         </div> */}
         <Heading />
 
-        {showComingSoon && (
-          <div className="flex items-center w-fit bg-yellow-100 border border-yellow-400 rounded-full px-3 py-1 font-poppins">
-            <p className="text-sm text-yellow-700 mr-2">
-              Office hours are currently being developed. In the meantime,
-              please enjoy our 1:1 sessions.
-            </p>
-            <button
-              onClick={() => setShowComingSoon(false)}
-              className="text-yellow-700 hover:text-yellow-800 ps-3"
-            >
-              <RxCross2 size={18} />
-            </button>
-          </div>
-        )}
-
         <div className="pr-32 pt-4 font-poppins">
           <div className="flex gap-16 border-1 border-[#7C7C7C] pl-6 rounded-xl">
             <button
@@ -258,42 +225,47 @@ function DaoOfficeHours() {
             />
           </div>
 
-          {/* <div className="py-5">
-          {searchParams.get("hours") === "ongoing" &&
-            (dataLoading ? (
-              <SessionTileSkeletonLoader />
-            ) : (
-              <Tile
-                sessionDetails={sessionDetails}
-                dataLoading={dataLoading}
-                isEvent="Ongoing"
-                isOfficeHour={true}
-              />
-            ))}
-          {searchParams.get("hours") === "upcoming" &&
-            (dataLoading ? (
-              <SessionTileSkeletonLoader />
-            ) : (
-              <Tile
-                sessionDetails={sessionDetails}
-                dataLoading={dataLoading}
-                isEvent="Upcoming"
-                isOfficeHour={true}
-              />
-            ))}
-          {searchParams.get("hours") === "recorded" &&
-            (dataLoading ? (
-              <SessionTileSkeletonLoader />
-            ) : (
-              <Tile
-                sessionDetails={sessionDetails}
-                dataLoading={dataLoading}
-                isEvent="Recorded"
-                isOfficeHour={true}
-              />
-            ))}
-        </div> */}
-          <OfficeHoursAlertMessage />
+          <div className="py-5">
+            {searchParams.get("hours") === "ongoing" &&
+              (dataLoading ? (
+                <RecordedSessionsSkeletonLoader />
+              ) : ongoingOfficeHours.length === 0 ? (
+                <div className="flex flex-col justify-center items-center pt-10">
+                  <div className="text-5xl">☹️</div>{" "}
+                  <div className="pt-4 font-semibold text-lg">
+                    Oops, no such result available!
+                  </div>
+                </div>
+              ) : (
+                <OfficeHourTile isOngoing={true} data={ongoingOfficeHours} />
+              ))}
+            {searchParams.get("hours") === "upcoming" &&
+              (dataLoading ? (
+                <RecordedSessionsSkeletonLoader />
+              ) : upcomingOfficeHours.length === 0 ? (
+                <div className="flex flex-col justify-center items-center pt-10">
+                  <div className="text-5xl">☹️</div>{" "}
+                  <div className="pt-4 font-semibold text-lg">
+                    Oops, no such result available!
+                  </div>
+                </div>
+              ) : (
+                <OfficeHourTile isOngoing={true} data={upcomingOfficeHours} />
+              ))}
+            {searchParams.get("hours") === "recorded" &&
+              (dataLoading ? (
+                <RecordedSessionsSkeletonLoader />
+              ) : recordedOfficeHours.length === 0 ? (
+                <div className="flex flex-col justify-center items-center pt-10">
+                  <div className="text-5xl">☹️</div>{" "}
+                  <div className="pt-4 font-semibold text-lg">
+                    Oops, no such result available!
+                  </div>
+                </div>
+              ) : (
+                <OfficeHourTile isOngoing={true} data={recordedOfficeHours} />
+              ))}
+          </div>
         </div>
       </div>
     </>

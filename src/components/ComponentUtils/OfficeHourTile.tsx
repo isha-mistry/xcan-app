@@ -13,51 +13,36 @@ import arb from "@/assets/images/daos/arb.png";
 import { LuDot } from "react-icons/lu";
 import { BiLinkExternal } from "react-icons/bi";
 import buttonStyles from "./Button.module.css";
+import { OfficeHoursProps } from "@/types/OfficeHoursTypes";
+import EditOfficeHoursModal from "./EditOfficeHoursModal";
 interface CopyStates {
   [key: number]: boolean;
 }
-interface OfficeHoursProps {
+interface OfficeHoursTileProps {
   isHosted?: boolean;
   isAttended?: boolean;
-  upComing?: boolean;
+  isUpcoming?: boolean;
+  isOngoing?: boolean;
+  data: OfficeHoursProps[];
 }
 
 const OfficeHourTile = ({
   isHosted,
   isAttended,
-  upComing,
-}: OfficeHoursProps) => {
+  isUpcoming,
+  isOngoing,
+  data,
+}: OfficeHoursTileProps) => {
+  const [localData, setLocalData] = useState<OfficeHoursProps[]>(data);
   const [copyStates, setCopyStates] = useState<CopyStates>({});
-  const data = [
-    {
-      image: img1,
-      title: "Lorem ipsum dolor sit amet consectetur adipisicing elit.",
-      desc: "Lorem ipsum dolor sit amet consectetur adipisicing elit. Delectus cupiditate consequatur commodi ducimus, excepturi in ipsum earum porro nemo, sapiente quia fugiat explicabo magni eum.",
-      startIn: "11:59PM, 12/01/2025",
-      host: "0xc622420AD9dE8E595694413F24731Dd877eb84E1",
-    },
-    {
-      image: img1,
-      title: "Lorem ipsum dolor sit amet consectetur adipisicing elit.",
-      desc: "Lorem ipsum dolor sit amet consectetur adipisicing elit. Delectus cupiditate consequatur commodi ducimus, excepturi in ipsum earum porro nemo, sapiente quia fugiat explicabo magni eum.",
-      startIn: "11:59PM, 12/01/2025",
-      host: "0xc622420AD9dE8E595694413F24731Dd877eb84E1",
-    },
-    {
-      image: img1,
-      title: "Lorem ipsum dolor sit amet consectetur adipisicing elit.",
-      desc: "Lorem ipsum dolor sit amet consectetur adipisicing elit. Delectus cupiditate consequatur commodi ducimus, excepturi in ipsum earum porro nemo, sapiente quia fugiat explicabo magni eum.",
-      startIn: "11:59PM, 12/01/2025",
-      host: "0xc622420AD9dE8E595694413F24731Dd877eb84E1",
-    },
-    {
-      image: img1,
-      title: "Lorem ipsum dolor sit amet consectetur adipisicing elit.",
-      desc: "Lorem ipsum dolor sit amet consectetur adipisicing elit. Delectus cupiditate consequatur commodi ducimus, excepturi in ipsum earum porro nemo, sapiente quia fugiat explicabo magni eum.",
-      startIn: "11:59PM, 12/01/2025",
-      host: "0xc622420AD9dE8E595694413F24731Dd877eb84E1",
-    },
-  ];
+  const [editModalData, setEditModalData] = useState<{
+    isOpen: boolean;
+    itemData: OfficeHoursProps | null;
+  }>({
+    isOpen: false,
+    itemData: null,
+  });
+
   const truncateAddress = (address: string) => {
     return `${address.slice(0, 6)}...${address.slice(-4)}`;
   };
@@ -80,18 +65,55 @@ const OfficeHourTile = ({
       console.error("Failed to copy:", err);
     }
   };
+
+  const handleEditModalOpen = (itemData: OfficeHoursProps) => {
+    setEditModalData({
+      isOpen: true,
+      itemData,
+    });
+  };
+
+  const handleEditModalClose = () => {
+    setEditModalData({
+      isOpen: false,
+      itemData: null,
+    });
+  };
+
+  const handleUpdate = (updatedSlot: any) => {
+    if (editModalData.itemIndex !== null && editModalData.itemData) {
+      // Update the local data
+      const updatedData = [...localData];
+      updatedData[editModalData.itemIndex] = {
+        ...updatedData[editModalData.itemIndex],
+        title: updatedSlot.bookedTitle,
+        description: updatedSlot.bookedDescription,
+      };
+
+      setLocalData(updatedData);
+
+      if (onDataUpdate) {
+        onDataUpdate(updatedData);
+      }
+
+      handleEditModalClose();
+    }
+  };
+
   return (
     <div
       className={`grid min-[475px]:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 sm:gap-10 py-8 font-poppins`}
     >
-      {data.map((data: any, index: number) => (
-        <div className="border border-[#D9D9D9] sm:rounded-3xl">
+      {localData.map((data: OfficeHoursProps, index: number) => (
+        <div className="border border-[#D9D9D9] sm:rounded-3xl" key={index}>
           <div
             className={`w-full h-44 sm:rounded-t-3xl bg-black object-cover object-center relative `}
           >
             <Image
-              src={data.image}
+              src={`https://gateway.lighthouse.storage/ipfs/${data.thumbnail_image}`}
               alt=""
+              width={200}
+              height={200}
               className="w-full h-44 rounded-t-3xl object-cover"
             />
             <div className="absolute top-2 right-2 bg-black rounded-full">
@@ -103,7 +125,11 @@ const OfficeHourTile = ({
                 className="w-7 h-7"
               />
             </div>
-            <div className={`${!upComing? "hidden": ""} absolute top-2 left-2 bg-black rounded-full`}>
+            <div
+              className={`${
+                !isUpcoming ? "hidden" : ""
+              } absolute top-2 left-2 bg-black rounded-full`}
+            >
               <Image
                 src={op}
                 alt="image"
@@ -122,7 +148,9 @@ const OfficeHourTile = ({
             </div>
 
             {/* Description */}
-            <p className="text-sm text-gray-600 line-clamp-2">{data.desc}</p>
+            <p className="text-sm text-gray-600 line-clamp-2">
+              {data.description}
+            </p>
 
             {(isAttended || isHosted) && (
               <div className="flex items-center text-sm gap-0.5 sm:gap-1 py-1">
@@ -154,9 +182,9 @@ const OfficeHourTile = ({
               <span className="font-medium text-sm">Host:</span>
               <span
                 className="text-sm font-medium hover:text-blue-shade-200 cursor-pointer"
-                title={data.host}
+                title={data.host_address}
               >
-                {truncateAddress(data.host)}
+                {truncateAddress(data.host_address)}
               </span>
               <Tooltip
                 content={copyStates[index] ? "Copied!" : "Copy"}
@@ -166,7 +194,7 @@ const OfficeHourTile = ({
               >
                 <span className="cursor-pointer text-xs sm:text-sm">
                   <IoCopy
-                    onClick={(e) => handleCopy(data.host, index, e)}
+                    onClick={(e) => handleCopy(data.host_address, index, e)}
                     className={`transition-colors duration-300 ${
                       copyStates[index]
                         ? "text-blue-500"
@@ -180,56 +208,66 @@ const OfficeHourTile = ({
             {isAttended && (
               <div className="flex gap-2 w-full">
                 <Tooltip content="Claim Offchain" placement="top" showArrow>
-                <div className={`${buttonStyles.button} w-full gap-0.5 text-xs py-2.5`}>
-                  Offchain
-                  <FaGift
-                    size={14}
-                    className="text-white hover:text-blue-600 transition-colors duration-200"
-                    title="Open link in new tab"
-                  />
-                </div>
+                  <div
+                    className={`${buttonStyles.button} w-full gap-0.5 text-xs py-2.5`}
+                  >
+                    Offchain
+                    <FaGift
+                      size={14}
+                      className="text-white hover:text-blue-600 transition-colors duration-200"
+                      title="Open link in new tab"
+                    />
+                  </div>
                 </Tooltip>
                 <Tooltip content="Claim Onchain" placement="top" showArrow>
-                <div className={`${buttonStyles.button} w-full gap-0.5 text-xs py-2.5`}>
-                  Onchain
-                  <FaGift
-                    size={14}
-                    className="text-white hover:text-blue-600 transition-colors duration-200"
-                    title="Open link in new tab"
-                  />
-                </div>
+                  <div
+                    className={`${buttonStyles.button} w-full gap-0.5 text-xs py-2.5`}
+                  >
+                    Onchain
+                    <FaGift
+                      size={14}
+                      className="text-white hover:text-blue-600 transition-colors duration-200"
+                      title="Open link in new tab"
+                    />
+                  </div>
                 </Tooltip>
               </div>
             )}
             {isHosted && (
               <div className="flex justify-end w-full">
                 <Tooltip content="Edit Details" placement="top" showArrow>
-                <div
-                  className={`bg-gradient-to-r from-[#8d949e] to-[#555c6629] rounded-full p-1 py-3 cursor-pointer w-10 flex items-center justify-center font-semibold text-sm text-black`}
-                >
-                  <FaPencil color="black" size={14} />
-                </div>
+                  <div
+                    className={`bg-gradient-to-r from-[#8d949e] to-[#555c6629] rounded-full p-1 py-3 cursor-pointer w-10 flex items-center justify-center font-semibold text-sm text-black`}
+                  >
+                    <FaPencil color="black" size={14} />
+                  </div>
                 </Tooltip>
               </div>
             )}
 
-            {upComing && (
+            {isUpcoming && (
               <>
                 <div className="flex items-center space-x-2 text-sm text-gray-700">
                   <Clock className="w-4 h-4 text-indigo-500" />
                   <span className="font-medium">Starts at:</span>
                   <span className="text-indigo-600 font-semibold">
-                    {data.startIn}
+                    {new Date(data.startTime).toLocaleString()}
                   </span>
                 </div>
 
                 <div className="space-y-3 pt-3 border-t border-gray-100">
                   <div className="flex gap-2">
-                    <button className="flex items-center justify-center gap-2 w-full px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 rounded-full hover:bg-blue-100 transition-colors">
+                    <button
+                      className="flex items-center justify-center gap-2 w-full px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 rounded-full hover:bg-blue-100 transition-colors"
+                      onClick={() => handleEditModalOpen(data)}
+                    >
                       <Edit2 className="w-4 h-4" />
                       <span>Edit</span>
                     </button>
-                    <button className="flex items-center justify-center gap-2 w-full px-4 py-2 text-sm font-medium text-red-600 bg-red-50 rounded-full hover:bg-red-100 transition-colors">
+                    <button
+                      // onClick={}
+                      className="flex items-center justify-center gap-2 w-full px-4 py-2 text-sm font-medium text-red-600 bg-red-50 rounded-full hover:bg-red-100 transition-colors"
+                    >
                       <Trash2 className="w-4 h-4" />
                       <span>Delete</span>
                     </button>
@@ -242,9 +280,35 @@ const OfficeHourTile = ({
                 </div>
               </>
             )}
+            {isOngoing && (
+              <button className="flex items-center justify-center gap-2 w-full px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-indigo-500 to-blue-500 rounded-full hover:from-indigo-600 hover:to-blue-600 transition-all duration-300 transform hover:scale-[1.02]">
+                <Play className="w-4 h-4" />
+                <span>Join Session</span>
+              </button>
+            )}
           </div>
         </div>
       ))}
+
+      {editModalData.isOpen && editModalData.itemData && (
+        <EditOfficeHoursModal
+          slot={{
+            reference_id: editModalData.itemData.reference_id,
+            bookedTitle: editModalData.itemData.title,
+            bookedDescription: editModalData.itemData.description,
+            startTime: new Date(
+              editModalData.itemData.startTime
+            ).toLocaleTimeString(),
+            endTime: new Date(
+              editModalData.itemData.endTime
+            ).toLocaleTimeString(),
+          }}
+          onClose={handleEditModalClose}
+          onUpdate={() => {}}
+          hostAddress={editModalData.itemData.host_address}
+          daoName={editModalData.itemData.dao_name}
+        />
+      )}
     </div>
   );
 };

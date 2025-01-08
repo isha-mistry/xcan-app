@@ -5,7 +5,7 @@ export interface Meeting {
   startTime: string;
   endTime: string;
   meeting_status?: string;
-  meetingId?:string;
+  meetingId?: string;
   video_uri?: string;
   thumbnail_image?: string;
   isMeetingRecorded?: boolean;
@@ -36,11 +36,10 @@ export interface OfficeHoursRequestBody {
   meetings: Meeting[];
 }
 
-
 export interface TimeSlot {
   startTime: string;
   endTime: string;
-  id: string;
+  id?: string;
   bookedTitle?: string;
   bookedDescription?: string;
   reference_id?: string;
@@ -133,5 +132,24 @@ export interface ExistingSchedule {
   title: string;
   description: string;
   id: string;
+  reference_id: string;
+}
+
+export interface OfficeHoursProps {
+  attendees?: Attendee[];
+  created_at?: string; 
+  dao_name: string;
+  description: string;
+  host_address: string;
+  host_onchain_uid?: string;
+  host_uid?: string;
+  isMeetingRecorded?: boolean;
+  meeting_id?: string;
+  meeting_status: "Ongoing" | "Upcoming" | "Recorded" | "Hosted" | "Attended";
+  thumbnail_image: string;
+  title: string;
+  video_uri?: string;
+  startTime: string;
+  endTime: string;
   reference_id: string;
 }
