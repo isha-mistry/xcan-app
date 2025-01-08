@@ -20,10 +20,7 @@ const nextConfig = {
     // ],
     remotePatterns: [{ protocol: "https", hostname: "**", },],
   },
-  reactStrictMode: false,
-  typescript: {
-    ignoreBuildErrors: true
-  }
+  reactStrictMode: false
 };
 
 module.exports = nextConfig;
