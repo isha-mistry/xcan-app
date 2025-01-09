@@ -15,6 +15,13 @@ import { BiLinkExternal } from "react-icons/bi";
 import buttonStyles from "./Button.module.css";
 import { OfficeHoursProps } from "@/types/OfficeHoursTypes";
 import EditOfficeHoursModal from "./EditOfficeHoursModal";
+import { useWalletAddress } from "@/app/hooks/useWalletAddress";
+import { getAccessToken } from "@privy-io/react-auth";
+import { fetchApi } from "@/utils/api";
+import toast from "react-hot-toast";
+import { TailSpin } from "react-loader-spinner";
+import ClaimButton from "./ClaimButton";
+import Link from "next/link";
 interface CopyStates {
   [key: number]: boolean;
 }
@@ -35,6 +42,11 @@ const OfficeHourTile = ({
 }: OfficeHoursTileProps) => {
   const [localData, setLocalData] = useState<OfficeHoursProps[]>(data);
   const [copyStates, setCopyStates] = useState<CopyStates>({});
+  const { walletAddress } = useWalletAddress();
+  const [loadingButton, setLoadingButton] = useState("");
+  const [AttestationURL, setAttestationURL] = useState("");
+  const [claimInProgress, setClaimInProgress] = useState(false);
+  const [claimingMeetingId, setClaimingMeetingId] = useState(null);
   const [editModalData, setEditModalData] = useState<{
     isOpen: boolean;
     itemData: OfficeHoursProps | null;
@@ -45,6 +57,16 @@ const OfficeHourTile = ({
 
   const truncateAddress = (address: string) => {
     return `${address.slice(0, 6)}...${address.slice(-4)}`;
+  };
+
+  const handleClaimStart = (meetingId: any) => {
+    setClaimInProgress(true);
+    setClaimingMeetingId(meetingId);
+  };
+
+  const handleClaimEnd = () => {
+    setClaimInProgress(false);
+    setClaimingMeetingId(null);
   };
 
   const handleCopy = async (
@@ -80,23 +102,92 @@ const OfficeHourTile = ({
     });
   };
 
-  const handleUpdate = (updatedSlot: any) => {
-    if (editModalData.itemIndex !== null && editModalData.itemData) {
-      // Update the local data
-      const updatedData = [...localData];
-      updatedData[editModalData.itemIndex] = {
-        ...updatedData[editModalData.itemIndex],
-        title: updatedSlot.bookedTitle,
-        description: updatedSlot.bookedDescription,
+  // const handleUpdate = (updatedSlot: any) => {
+  //   if (editModalData.itemIndex !== null && editModalData.itemData) {
+  //     // Update the local data
+  //     const updatedData = [...localData];
+  //     updatedData[editModalData.itemIndex] = {
+  //       ...updatedData[editModalData.itemIndex],
+  //       title: updatedSlot.bookedTitle,
+  //       description: updatedSlot.bookedDescription,
+  //     };
+
+  //     setLocalData(updatedData);
+
+  //     if (onDataUpdate) {
+  //       onDataUpdate(updatedData);
+  //     }
+
+  //     handleEditModalClose();
+  //   }
+  // };
+
+  const handleClaimOffchain = async (
+    MeetingId: string | undefined,
+    dao_name: string,
+    MeetingType: number,
+    StartTime: number,
+    EndTime: number
+  ) => {
+    console.log(
+      "Line 112:",
+      MeetingId,
+      MeetingType,
+      dao_name,
+      StartTime,
+      EndTime
+    );
+    try {
+      const token = await getAccessToken();
+      const myHeaders: HeadersInit = {
+        "Content-Type": "application/json",
+        ...(walletAddress && {
+          "x-wallet-address": walletAddress,
+          Authorization: `Bearer ${token}`,
+        }),
       };
 
-      setLocalData(updatedData);
-
-      if (onDataUpdate) {
-        onDataUpdate(updatedData);
+      let tokenforAttestation = "";
+      if (dao_name === "optimism") {
+        tokenforAttestation = "OP";
+      } else if (dao_name === "arbitrum") {
+        tokenforAttestation = "ARB";
       }
 
-      handleEditModalClose();
+
+      const raw = JSON.stringify({
+        recipient: walletAddress,
+        meetingId: `${MeetingId}/${tokenforAttestation}`,
+        meetingType: MeetingType,
+        startTime: StartTime,
+        endTime: EndTime,
+        daoName: dao_name,
+      });
+
+      console.log("Line 131:", raw);
+      setLoadingButton("offchain");
+
+      const requestOptions: any = {
+        method: "POST",
+        headers: myHeaders,
+        body: raw,
+        redirect: "follow",
+      };
+
+      const response = await fetchApi("/attest-offchain", requestOptions);
+      // console.log("Line 154", response);
+      if (response.ok) {
+        setLoadingButton("");
+        console.log("Attestation successful");
+        toast.success("Attestation successful!");
+      } else {
+        console.error("Attestation failed");
+        toast.error("Attestation failed!");
+      }
+    } catch (error: any) {
+      setLoadingButton("");
+      console.error("Error during attestation", error);
+      toast.error("An error occurred during attestation!");
     }
   };
 
@@ -110,7 +201,8 @@ const OfficeHourTile = ({
             className={`w-full h-44 sm:rounded-t-3xl bg-black object-cover object-center relative `}
           >
             <Image
-              src={`https://gateway.lighthouse.storage/ipfs/${data.thumbnail_image}`}
+              // src={`https://gateway.lighthouse.storage/ipfs/${data.thumbnail_image}`}
+              src={img1}
               alt=""
               width={200}
               height={200}
@@ -205,7 +297,7 @@ const OfficeHourTile = ({
               </Tooltip>
             </div>
 
-            {isAttended && (
+            {isAttended && data.IsEligible && (
               <div className="flex gap-2 w-full">
                 <Tooltip content="Claim Offchain" placement="top" showArrow>
                   <div
@@ -233,11 +325,99 @@ const OfficeHourTile = ({
                 </Tooltip>
               </div>
             )}
+            {isHosted && data.IsEligible && (
+              <div className="flex gap-2 justify-end w-full">
+                {/* Check if data.onchain exists */}
+                {data.host_onchain_uid ? (
+                  <Link
+                    href={
+                      data.dao_name.toLowerCase() === "optimism"
+                        ? `https://optimism.easscan.org/offchain/attestation/view/0x64a3746f068b91a2bed1e88d9186e36acae9bbe65919919dd722d54d56d75015`
+                        : data.dao_name.toLowerCase() === "arbitrum"
+                        ? `https://arbitrum.easscan.org/offchain/attestation/view/0x64a3746f068b91a2bed1e88d9186e36acae9bbe65919919dd722d54d56d75015`
+                        : "#"
+                    }
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                    }}
+                    className={`${buttonStyles.button} w-full gap-1`}
+                  >
+                  </Link>
+                ) : (
+                  <>
+                    {/* Tooltip and button section */}
+                    <Tooltip content="Claim Offchain" placement="top" showArrow>
+                      <div
+                        className={`${
+                          buttonStyles.button
+                        } w-full gap-0.5 text-xs py-2.5 ${
+                          loadingButton === "offchain" ? "disabled" : ""
+                        }`}
+                        onClick={
+                          loadingButton === ""
+                            ? () =>
+                                handleClaimOffchain(
+                                  data.meetingId,
+                                  data.dao_name,
+                                  data.MeetingType,
+                                  data.Meeting_StartTime,
+                                  data.Meeting_EndTime
+                                )
+                            : undefined
+                        }
+                      >
+                        {loadingButton === "offchain" ? (
+                          <TailSpin
+                            visible={true}
+                            height="30"
+                            width="40"
+                            color="black"
+                            ariaLabel="oval-loading"
+                          />
+                        ) : (
+                          <>
+                            Offchain
+                            <FaGift
+                              size={14}
+                              className="text-white hover:text-blue-600 transition-colors duration-200"
+                              title="Open link in new tab"
+                            />
+                          </>
+                        )}
+                      </div>
+                    </Tooltip>
+
+                    <Tooltip content="Claim Onchain" placement="top" showArrow>
+                      <ClaimButton
+                        meetingId={data.meetingId as string}
+                        meetingType={data.MeetingType}
+                        startTime={data.Meeting_StartTime}
+                        endTime={data.Meeting_EndTime}
+                        dao={data.dao_name}
+                        address={walletAddress || ""}
+                        onChainId={
+                          "0xf72064cbf2cb5efb654fe98c0d04147b7250e7723cbec418a8cc7750b7c9fda9"
+                        }
+                        disabled={
+                          claimInProgress &&
+                          claimingMeetingId !== data.meetingId
+                        }
+                        onClaimStart={() => handleClaimStart(data.meetingId)}
+                        onClaimEnd={handleClaimEnd}
+                      />
+                    </Tooltip>
+                  </>
+                )}
+              </div>
+            )}
+
             {isHosted && (
               <div className="flex justify-end w-full">
                 <Tooltip content="Edit Details" placement="top" showArrow>
                   <div
-                    className={`bg-gradient-to-r from-[#8d949e] to-[#555c6629] rounded-full p-1 py-3 cursor-pointer w-10 flex items-center justify-center font-semibold text-sm text-black`}
+                    className={`bg-gradient-to-r from-[#8d949e] to-[#555c6629] rounded-full p-1 py-3 cursor-pointer w-10 flex items-center justify-end font-semibold text-sm text-black`}
                   >
                     <FaPencil color="black" size={14} />
                   </div>

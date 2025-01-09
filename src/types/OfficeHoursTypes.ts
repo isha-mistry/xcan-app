@@ -144,7 +144,7 @@ export interface OfficeHoursProps {
   host_onchain_uid?: string;
   host_uid?: string;
   isMeetingRecorded?: boolean;
-  meeting_id?: string;
+  meetingId?: string;
   meeting_status: "Ongoing" | "Upcoming" | "Recorded" | "Hosted" | "Attended";
   thumbnail_image: string;
   title: string;
@@ -152,4 +152,8 @@ export interface OfficeHoursProps {
   startTime: string;
   endTime: string;
   reference_id: string;
+  MeetingType:number;
+  IsEligible: boolean;
+  Meeting_StartTime:number;
+  Meeting_EndTime:number;
 }
