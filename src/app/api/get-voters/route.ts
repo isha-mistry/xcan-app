@@ -129,12 +129,12 @@ import { NextResponse } from "next/server";
 export const runtime = "nodejs";
 
 const client = new Client({
-  url: process.env.OPTIMISM_PROPOSALS_GRAPH_URL|| "https://api.studio.thegraph.com/query/95484/optimismproposals/version/latest",
+  url: process.env.NEXT_PUBLIC_OPTIMISM_PROPOSALS_GRAPH_URL|| "https://api.studio.thegraph.com/query/95484/optimismproposals/version/latest",
   exchanges: [fetchExchange],
 });
 
 const arb_client = new Client({
-  url:process.env.ARBITRUM_PROPOSALS_GRAPH_URL|| "https://api.studio.thegraph.com/query/95484/arbitrumproposals/version/latest",
+  url:process.env.NEXT_PUBLIC_ARBITRUM_PROPOSALS_GRAPH_URL|| "https://api.studio.thegraph.com/query/95484/arbitrumproposals/version/latest",
   exchanges: [fetchExchange],
 });
 
