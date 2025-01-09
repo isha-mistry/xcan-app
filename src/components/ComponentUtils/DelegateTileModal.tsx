@@ -17,6 +17,7 @@ import dao_abi from "../../artifacts/Dao.sol/GovernanceToken.json";
 import { Address } from "viem";
 import { useRouter } from "next/router";
 
+
 interface delegate {
   isOpen: boolean;
   closeModal: any;
@@ -31,6 +32,7 @@ interface delegate {
   tempCpi: any;
   tempCpiCalling: boolean;
 }
+
 
 function DelegateTileModal({
   isOpen,
@@ -77,7 +79,6 @@ function DelegateTileModal({
   const handleMouseLeave = () => {
     setIsHovering(false);
   };
-
   useEffect(() => {
     // Simulate data fetching
     setTimeout(() => {
@@ -181,52 +182,59 @@ function DelegateTileModal({
             </div>
           </div>
 
-          {daoName === "optimism" && (
-            <div className="flex items-center justify-between w-full max-w-md bg-gradient-to-br from-gray-100 to-gray-200 border-2 border-gray-300 rounded-3xl px-4 0.7xs:px-6 py-4 mt-4 shadow-md  ">
-              <div className="flex flex-col items-center">
-                <span className="text-black font-medium text-xs 0.7xs:text-sm tracking-wide uppercase mb-2">
-                  Current CPI
-                </span>
-                <div className="text-lg font-semibold text-black bg-white px-3 py-1 rounded-lg">
-                  {actualCpi ? (
-                    Number(actualCpi).toFixed(2)
-                  ) : (
-                    <ThreeDots
-                      visible={true}
-                      height="30"
-                      width="40"
-                      color="black"
-                      ariaLabel="oval-loading"
-                    />
-                  )}
-                </div>
-              </div>
-              <div className="flex flex-col items-center">
-                <span className="text-black font-medium text-xs 0.7xs:text-sm tracking-wide uppercase mb-2">
-                  CPI if you delegate
-                </span>
-                <div
-                className={`${
-                  Number(tempCpi?.toFixed(2)) <= Number(actualCpi?.toFixed(2)) ? "text-[#1c8e1c]" : "text-red-600"
-                } text-lg font-semibold bg-white px-3 py-1 rounded-lg`}
-                
-                >
-                  {!tempCpiCalling && tempCpi ? (
-                    Number(tempCpi).toFixed(2)
-                  ) : (
-                    <span className="text-gray-500 italic">
-                      <ThreeDots
-                        visible={true}
-                        height="30"
-                        width="40"
-                        color="black"
-                        ariaLabel="oval-loading"
-                      />
-                    </span>
-                  )}
-                </div>
-              </div>
+          {  daoName === "optimism" && (
+      <div className="flex flex-col items-center w-full max-w-md bg-gradient-to-br from-gray-100 to-gray-200 border-2 border-gray-300 rounded-3xl px-4 0.7xs:px-6 py-4 mt-4 shadow-md">
+        <div className="flex items-center justify-between w-full">
+          <div className="flex flex-col items-center">
+            <span className="text-black font-medium text-xs 0.7xs:text-sm tracking-wide uppercase mb-2">
+              Current CPI
+            </span>
+            <div className="text-lg font-semibold text-black bg-white px-3 py-1 rounded-lg">
+              {actualCpi !== null && actualCpi !== undefined ? (
+                Number(actualCpi).toFixed(2)
+              ) : (
+                <ThreeDots
+                  visible={true}
+                  height="30"
+                  width="40"
+                  color="black"
+                  ariaLabel="loading"
+                />
+              )}
             </div>
+          </div>
+          <div className="flex flex-col items-center">
+            <span className="text-black font-medium text-xs 0.7xs:text-sm tracking-wide uppercase mb-2">
+              CPI if you delegate
+            </span>
+            <div
+              className={`${
+                tempCpi !== null && tempCpi !== undefined && Number(tempCpi?.toFixed(2)) <= Number(actualCpi?.toFixed(2))
+                  ? "text-[#1c8e1c]"
+                  : "text-red-600"
+              } text-lg font-semibold bg-white px-3 py-1 rounded-lg`}
+            >
+              {!tempCpiCalling && tempCpi !== null && tempCpi !== undefined ? (
+                Number(tempCpi).toFixed(2)
+              ) : (
+                <span className="text-gray-500 italic">
+                  <ThreeDots
+                    visible={true}
+                    height="30"
+                    width="40"
+                    color="black"
+                    ariaLabel="loading"
+                  />
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+        <div className="mt-4 text-sm font-medium text-gray-700">
+        Data to calculate CPI updates in every 5 minutes!
+      </div>
+
+      </div>
           )}
 
           <button
