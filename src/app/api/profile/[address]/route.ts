@@ -50,6 +50,7 @@ export async function GET(
 ) {
   try {
     const client = await connectDB();
+    // console.log("Get API called!");
     const db = client.db();
     const collection = db.collection("delegates");
     const address = req.url.split("profile/")[1];
@@ -103,12 +104,16 @@ export async function POST(
     // Extract address from request parameters
     const address = req.url.split("profile/")[1];
 
+    // console.log("Line 171 of front-end side...",address)
+
     // Find documents based on address
     const documents = await collection
       .find({
         address: { $regex: `^${address}$`, $options: "i" },
       })
       .toArray();
+
+    // console.log("Line 182...",documents);  
 
     client.close();
     // console.log("MongoDB connection closed");

@@ -12,13 +12,32 @@ export async function fetchApi(
 ) {
   const { method = "GET", body, headers = {}, ...otherOptions } = options;
 
+  // Convert Headers object to plain object if needed
+  let headersObject: Record<string, string> = {};
+
+  if (headers instanceof Headers) {
+    // Convert Headers object to plain object
+    Array.from(headers.entries()).forEach(([key, value]) => {
+      headersObject[key] = value;
+    });
+  } else {
+    headersObject = headers as Record<string, string>;
+  }
+
   const defaultHeaders = {
     "Content-Type": "application/json",
   };
 
+  // Merge headers properly
+  const mergedHeaders = {
+    ...defaultHeaders,
+    ...headersObject,
+  };
+
+  // Create fetch options
   const fetchOptions: RequestInit = {
     method,
-    headers: { ...defaultHeaders, ...headers },
+    headers: mergedHeaders,
     ...otherOptions,
   };
   if (body) {
@@ -28,7 +47,7 @@ export async function fetchApi(
       fetchOptions.body = JSON.stringify(body);
     }
   }
-  console.log("/api/proxy${endpoint}", endpoint);
+
   const response = await fetch(`/api/proxy${endpoint}`, fetchOptions);
 
   if (!response.ok) {

@@ -185,6 +185,7 @@ export async function POST(req: NextRequest, res: NextResponse<Type[]>) {
       `Error fetching filtered Session Data in availability:`,
       error
     );
+    
     return NextResponse.json(
       { error: "Internal Server Error" },
       { status: 500 }

@@ -8,6 +8,9 @@ import Confetti from "react-confetti";
 import { BsTwitterX } from "react-icons/bs";
 import { useAccount } from "wagmi";
 import StarRating from "../FeedbackPopup/RatingTypes/StarRating";
+import { getAccessToken, usePrivy } from "@privy-io/react-auth";
+import { useWalletAddress } from "@/app/hooks/useWalletAddress";
+import { fetchApi } from "@/utils/api";
 
 function AttestationModal({
   isOpen,
@@ -28,7 +31,9 @@ function AttestationModal({
   const [submitted, setSubmitted] = useState(false);
   const [feedbackStored, setFeedbackStored] = useState(false);
   const [hoverRating, setHoverRating] = useState<number>(0);
-  const { address } = useAccount();
+  const { address ,isConnected} = useAccount();
+  const { ready, authenticated, login, logout, user } = usePrivy();
+  const {walletAddress}=useWalletAddress();
 
   useEffect(() => {
     const storedStatus = sessionStorage.getItem("meetingData");
@@ -40,13 +45,15 @@ function AttestationModal({
     }
   }, []);
 
+
+
+
   const toggleModal = () => {
     if (rating !== null && !feedbackStored) {
       storeUserFeedback();
     }
     onClose();
   };
-  // console.log("Attestation modal");
 
   const shareOnTwitter = () => {
     const url = encodeURIComponent(`https://app.chora.club/`);
@@ -69,7 +76,6 @@ function AttestationModal({
 
   const handleRatingClick = (value: number) => {
     setRating(value);
-    console.log("Rating submitted:", value);
   };
 
   const storeUserFeedback = async () => {
@@ -98,7 +104,7 @@ function AttestationModal({
       };
 
       const response = await fetch(
-        "/api/feedback/store-feedback",
+        "api/feedback/store-feedback",
         requestOptions
       );
 

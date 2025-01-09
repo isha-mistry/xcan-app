@@ -10,6 +10,8 @@ import ErrorDisplay from "../ComponentUtils/ErrorDisplay";
 import { headers } from "next/headers";
 import { useAccount } from "wagmi";
 import { CiSearch } from "react-icons/ci";
+import { usePrivy } from "@privy-io/react-auth";
+import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 import { fetchApi } from "@/utils/api";
 import OfficeHoursAlertMessage from "../AlertMessage/OfficeHoursAlertMessage";
 
@@ -30,7 +32,8 @@ function OfficeHours({ props }: { props: string }) {
   const path = usePathname();
   const searchParams = useSearchParams();
   const dao_name = props;
-  const { address } = useAccount();
+  const { address, isConnected } = useAccount();
+  const { user, ready, getAccessToken, authenticated } = usePrivy();
   // const dao_name = props.charAt(0).toUpperCase() + props.slice(1);
 
   const [sessionDetails, setSessionDetails] = useState([]);
@@ -38,13 +41,18 @@ function OfficeHours({ props }: { props: string }) {
   const [dataLoading, setDataLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [noResults, setNoResults] = useState(false);
+  const { walletAddress } = useWalletAddress();
 
   const fetchData = async () => {
     try {
       setDataLoading(true);
+      const token=await getAccessToken();
       const myHeaders: HeadersInit = {
         "Content-Type": "application/json",
-        ...(address && { "x-wallet-address": address }),
+        ...(walletAddress && {
+          "x-wallet-address": walletAddress,
+          Authorization: `Bearer ${token}`,
+        }),
       };
 
       const raw = JSON.stringify({
@@ -62,7 +70,7 @@ function OfficeHours({ props }: { props: string }) {
         requestOptions
       );
       const result = await response.json();
-      console.log(result);
+      // console.log(result);
 
       // Filter sessions based on meeting_status
       const filteredSessions = result.filter((session: Session) => {
@@ -100,90 +108,93 @@ function OfficeHours({ props }: { props: string }) {
     }
   };
 
-  // useEffect(() => {
-  //   fetchData();
-  // }, [searchParams.get("hours")]); // Re-fetch data when filter changes
+  useEffect(() => {
+    if (walletAddress != null) {
+      fetchData();
+    }
+  }, [searchParams.get("hours")]); // Re-fetch data when filter changes
 
   // useEffect(() => {
   //   // Set initial session details
   //   setSessionDetails([]);
   // }, [props]);
 
-  // const handleSearchChange = async (query: string) => {
-  //   setSearchQuery(query);
-  //   setDataLoading(true);
-  //   setNoResults(false);
+  const handleSearchChange = async (query: string) => {
+    setSearchQuery(query);
+    setDataLoading(true);
+    setNoResults(false);
 
-  //   try {
-  //     if (query.length > 0) {
-  //       setDataLoading(true);
-  //       const raw = JSON.stringify({
-  //         dao_name: dao_name,
-  //       });
+    try {
+      if (query.length > 0) {
+        setDataLoading(true);
+        const raw = JSON.stringify({
+          dao_name: dao_name,
+        });
+        const token=await getAccessToken()
+        const myHeaders: HeadersInit = {
+          "Content-Type": "application/json",
+          ...(walletAddress && {
+            "x-wallet-address": walletAddress,
+            Authorization: `Bearer ${token}`,
+          }),
+        };
 
-  //       const myHeaders = new Headers();
-  //       myHeaders.append("Content-Type", "application/json");
-  //       if (address) {
-  //         myHeaders.append("x-wallet-address", address);
-  //       }
+        const requestOptions: any = {
+          method: "POST",
+          headers: myHeaders,
+          body: raw,
+          redirect: "follow",
+        };
+        const res = await fetchApi(
+          `/search-officehours/${query}`,
+          requestOptions
+        );
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+        const result = await res.json();
+        const resultData = await result.data;
 
-  //       const requestOptions: any = {
-  //         method: "POST",
-  //         headers: myHeaders,
-  //         body: raw,
-  //         redirect: "follow",
-  //       };
-  //       const res = await fetchApi(
-  //         `/search-officehours/${query}`,
-  //         requestOptions
-  //       );
-  //       if (!res.ok) {
-  //         throw new Error(`HTTP error! status: ${res.status}`);
-  //       }
-  //       const result = await res.json();
-  //       const resultData = await result.data;
-
-  //       if (result.success) {
-  //         const filtered: any = resultData.filter((session: Session) => {
-  //           if (searchParams.get("hours") === "ongoing") {
-  //             return session.meeting_status === "ongoing";
-  //           } else if (searchParams.get("hours") === "upcoming") {
-  //             return session.meeting_status === "active";
-  //           } else if (searchParams.get("hours") === "recorded") {
-  //             return session.meeting_status === "inactive";
-  //           }
-  //         });
-  //         console.log("filtered: ", filtered);
-  //         setSessionDetails(filtered);
-  //         setNoResults(filtered.length === 0);
-  //         setError(null);
-  //       }
-  //     } else {
-  //       setSessionDetails(tempDetails);
-  //       setNoResults(tempDetails.length === 0);
-  //       setError(null);
-  //     }
-  //   } catch (error: any) {
-  //     console.error("Search error:", error);
-  //     if (error.name === "TypeError" && error.message === "Failed to fetch") {
-  //       setError("Please check your internet connection and try again.");
-  //     } else if (error.name === "TimeoutError") {
-  //       setError(
-  //         "The search request is taking longer than expected. Please try again."
-  //       );
-  //     } else if (error.name === "SyntaxError") {
-  //       setError(
-  //         "We're having trouble processing the search data. Please try again later."
-  //       );
-  //     } else {
-  //       setError(
-  //         `Unable to perform search for "${query}". Please try again in a few moments.`
-  //       );
-  //     }
-  //   } finally {
-  //     setDataLoading(false);
-  //   }
-  // };
+        if (result.success) {
+          const filtered: any = resultData.filter((session: Session) => {
+            if (searchParams.get("hours") === "ongoing") {
+              return session.meeting_status === "ongoing";
+            } else if (searchParams.get("hours") === "upcoming") {
+              return session.meeting_status === "active";
+            } else if (searchParams.get("hours") === "recorded") {
+              return session.meeting_status === "inactive";
+            }
+          });
+          setSessionDetails(filtered);
+          setNoResults(filtered.length === 0);
+          setError(null);
+        }
+      } else {
+        setSessionDetails(tempDetails);
+        setNoResults(tempDetails.length === 0);
+        setError(null);
+      }
+    } catch (error: any) {
+      console.error("Search error:", error);
+      if (error.name === "TypeError" && error.message === "Failed to fetch") {
+        setError("Please check your internet connection and try again.");
+      } else if (error.name === "TimeoutError") {
+        setError(
+          "The search request is taking longer than expected. Please try again."
+        );
+      } else if (error.name === "SyntaxError") {
+        setError(
+          "We're having trouble processing the search data. Please try again later."
+        );
+      } else {
+        setError(
+          `Unable to perform search for "${query}". Please try again in a few moments.`
+        );
+      }
+    } finally {
+      setDataLoading(false);
+    }
+  };
 
   const handleRetry = () => {
     setError(null);

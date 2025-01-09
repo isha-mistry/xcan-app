@@ -11,14 +11,18 @@ import { useAccount } from "wagmi";
 import ErrorDisplay from "@/components/ComponentUtils/ErrorDisplay";
 import RecordedSessionsSkeletonLoader from "@/components/SkeletonLoader/RecordedSessionsSkeletonLoader";
 import { SessionInterface } from "@/types/MeetingTypes";
+import { usePrivy } from "@privy-io/react-auth";
+import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 import { fetchApi } from "@/utils/api";
 
 function BookedUserSessions({ daoName }: { daoName: string }) {
-  const { address } = useAccount();
+  const { address, isConnected } = useAccount();
+  const { user, ready, getAccessToken, authenticated } = usePrivy();
   // const address = "0xB351a70dD6E5282A8c84edCbCd5A955469b9b032";
   const [sessionDetails, setSessionDetails] = useState([]);
   const [pageLoading, setPageLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { walletAddress } = useWalletAddress();
 
   const handleRetry = () => {
     setError(null);
@@ -28,13 +32,17 @@ function BookedUserSessions({ daoName }: { daoName: string }) {
 
   const getMeetingData = async () => {
     try {
+      const token=await getAccessToken();
       const myHeaders: HeadersInit = {
         "Content-Type": "application/json",
-        ...(address && { "x-wallet-address": address }),
+        ...(walletAddress && {
+          "x-wallet-address": walletAddress,
+          Authorization: `Bearer ${token}`,
+        }),
       };
 
       const raw = JSON.stringify({
-        address: address,
+        address: walletAddress,
       });
 
       const requestOptions: any = {
@@ -44,11 +52,10 @@ function BookedUserSessions({ daoName }: { daoName: string }) {
         redirect: "follow",
       };
       const response = await fetchApi(
-        `/get-meeting/${address}?dao_name=${daoName}`,
+        `/get-meeting/${walletAddress}?dao_name=${daoName}`,
         requestOptions
       );
       const result = await response.json();
-      // console.log("result in get meeting", result);
       let filteredData: any = result.data;
       if (result.success) {
         const currentTime = new Date();
@@ -73,8 +80,10 @@ function BookedUserSessions({ daoName }: { daoName: string }) {
   };
 
   useEffect(() => {
-    getMeetingData();
-  }, [address]);
+    if (walletAddress != null) {
+      getMeetingData();
+    }
+  }, [walletAddress]);
 
   if (error) {
     return (

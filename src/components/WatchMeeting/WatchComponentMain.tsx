@@ -6,7 +6,7 @@ import { Oval } from "react-loader-spinner";
 import search from "@/assets/images/daos/search.png";
 import WatchSession from "./WatchSession";
 import WatchSessionList from "./WatchSessionList";
-import { ConnectButton } from "@rainbow-me/rainbowkit";
+// import { ConnectButton } from "@rainbow-me/rainbowkit";
 import styles from "./WatchSession.module.css";
 import WatchSessionVideo from "./WatchSessionVideo";
 import WatchSocialLinks from "./WatchSocialLinks";
@@ -193,7 +193,6 @@ function WatchComponentMain({ props }: { props: { id: string } }) {
           throw new Error("Network response was not ok");
         }
         const result = await response.json();
-        // console.log("result::::", result);
         setData(result.data[0]);
         setCollection(result.collection);
         // console.log(result.data[0].video_uri);
@@ -233,7 +232,7 @@ function WatchComponentMain({ props }: { props: { id: string } }) {
               </div>
               <div className="flex gap-1 xs:gap-2 items-center">
                 <RewardButton />
-                <ConnectWalletWithENS />
+                {/* <ConnectWalletWithENS /> */}
               </div>
             </div>
 

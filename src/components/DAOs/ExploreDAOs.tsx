@@ -10,7 +10,7 @@ import { dao_details } from "@/config/daoDetails";
 import SidebarMainMobile from "../MainSidebar/SidebarMainMobile";
 import RewardButton from "../ClaimReward/RewardButton";
 import { useSearchParams } from "next/navigation";
-import { useConnectModal } from "@rainbow-me/rainbowkit";
+// import { useConnectModal } from "@rainbow-me/rainbowkit";
 import { useConnection } from "@/app/hooks/useConnection";
 import { useAccount } from "wagmi";
 import Link from "next/link";
@@ -20,6 +20,7 @@ import { motion } from "framer-motion";
 import ExploreDaosSkeletonLoader from "../SkeletonLoader/ExploreDaosSkeletonLoader";
 import Heading from "../ComponentUtils/Heading";
 import PageBackgroundPattern from "@/components/ComponentUtils/PageBackgroundPattern";
+import { usePrivy } from "@privy-io/react-auth";
 import FeaturedArticles from "./FeaturedArticles";
 
 const ExploreDAOs = () => {
@@ -41,9 +42,10 @@ const ExploreDAOs = () => {
   const [isHovered, setIsHovered] = useState(false);
   const [openSearch, setOpenSearch] = useState(false);
   const searchParams = useSearchParams();
-  const { openConnectModal } = useConnectModal();
-  const { isConnected, isLoading, isSessionLoading, isPageLoading, isReady } =
+  // const { openConnectModal } = useConnectModal();
+  const { isConnected, isLoading, isPageLoading, isReady } =
     useConnection();
+  const { ready, authenticated, login, logout } = usePrivy();
 
   useEffect(() => {
     const storedStatus = sessionStorage.getItem("notificationStatus");
@@ -63,6 +65,8 @@ const ExploreDAOs = () => {
     );
     setDaoInfo(filtered);
   };
+
+  
 
   const handleClick = (name: string, img: StaticImageData) => {
     const formatted = name.toLowerCase();
@@ -87,8 +91,9 @@ const ExploreDAOs = () => {
   }, [openSearch]);
 
   useEffect(() => {
-    if (searchParams.get("referrer") && openConnectModal) {
-      openConnectModal();
+    if (searchParams.get("referrer") && login) {
+      // openConnectModal();
+      login()
     }
   }, [searchParams]);
 

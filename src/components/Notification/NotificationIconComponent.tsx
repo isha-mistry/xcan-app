@@ -16,6 +16,8 @@ import {
 } from "./NotificationActions";
 import { useNotificationStudioState } from "@/store/notificationStudioState";
 import { useSession } from "next-auth/react";
+import { usePrivy } from "@privy-io/react-auth";
+import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 import { fetchApi } from "@/utils/api";
 
 function NotificationIconComponent() {
@@ -24,10 +26,12 @@ function NotificationIconComponent() {
   const hoverRef = useRef<HTMLDivElement>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const socket = useSocket();
-  const { address } = useAccount();
+  const { user, ready, getAccessToken, authenticated } = usePrivy();
   const [socketId, setSocketId] = useState<string | null>(null);
   const [isAPILoading, setIsAPILoading] = useState<boolean>();
-  const { data: session } = useSession();
+  // const { data: session } = useSession();
+  const { walletAddress } = useWalletAddress();
+  const {isConnected,address}=useAccount();
   const {
     notifications,
     newNotifications,
@@ -45,8 +49,8 @@ function NotificationIconComponent() {
   const cacheDuration = 60000; // 1 minute cache
 
   useEffect(() => {
-    setCanFetch(!!address && !!session);
-  }, [address, session, setCanFetch]);
+    setCanFetch(!!walletAddress);
+  }, [walletAddress, setCanFetch]);
 
   useEffect(() => {
     return () => {
@@ -65,12 +69,15 @@ function NotificationIconComponent() {
     if (now - lastFetchTime.current > cacheDuration) {
       setIsAPILoading(true);
       try {
+        const token=await getAccessToken();
         const myHeaders: HeadersInit = {
           "Content-Type": "application/json",
-          ...(address && { "x-wallet-address": address }),
+          ...(walletAddress && {
+            "x-wallet-address": walletAddress,
+            Authorization: `Bearer ${token}`,
+          }),
         };
-
-        const raw = JSON.stringify({ address });
+        const raw = JSON.stringify({ address: walletAddress });
 
         const requestOptions: RequestInit = {
           method: "POST",
@@ -109,7 +116,7 @@ function NotificationIconComponent() {
         setIsAPILoading(false);
       }
     }
-  }, [address, setNotifications, setHasAnyUnreadNotification]);
+  }, [ walletAddress, setNotifications, setHasAnyUnreadNotification]);
 
   const handleMouseEnter = useCallback(() => {
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
@@ -130,8 +137,8 @@ function NotificationIconComponent() {
   }, [socket]);
 
   useEffect(() => {
-    if (socket && address && socketId) {
-      socket.emit("register_host", { hostAddress: address, socketId });
+    if (socket && walletAddress != null && socketId) {
+      socket.emit("register_host", { hostAddress: walletAddress, socketId });
 
       socket.on("new_notification", (message: Notification) => {
         const notificationData: Notification = {
@@ -157,7 +164,7 @@ function NotificationIconComponent() {
     };
   }, [
     socket,
-    address,
+    walletAddress,
     socketId,
     addNotification,
     hasAnyUnreadNotification,
@@ -187,8 +194,9 @@ function NotificationIconComponent() {
         </div>
       );
     }
+    
 
-    if (!canFetch) {
+    if (!authenticated ||!isConnected && !address ) {
       return (
         <div className="flex justify-center items-center p-4">
           <p className="text-sm text-gray-500">

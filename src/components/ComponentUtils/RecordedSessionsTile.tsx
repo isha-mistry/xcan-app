@@ -21,6 +21,8 @@ import { LuDot } from "react-icons/lu";
 import { BiLinkExternal } from "react-icons/bi";
 import buttonStyles from "./Button.module.css";
 import { formatTimeAgo } from "@/utils/getRelativeTime";
+import { usePrivy } from "@privy-io/react-auth";
+import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 
 interface meeting {
   meetingData: any;
@@ -49,7 +51,9 @@ function RecordedSessionsTile({
   const videoRefs = useRef<any>([]);
   const [videoDurations, setVideoDurations] = useState<any>({});
   const router = useRouter();
-  const { address } = useAccount();
+  const { address,isConnected } = useAccount();
+  const { ready, authenticated, login, logout, user } = usePrivy();
+  const {walletAddress}=useWalletAddress();
   // const address = "0xc622420AD9dE8E595694413F24731Dd877eb84E1";
   const [ensHostNames, setEnsHostNames] = useState<any>({});
   const [ensGuestNames, setEnsGuestNames] = useState<any>({});
@@ -78,6 +82,7 @@ function RecordedSessionsTile({
       }));
     }, 4000);
   };
+
 
   function formatViews(views: number): string {
     // Handle negative numbers or NaN
@@ -456,7 +461,7 @@ function RecordedSessionsTile({
                       startTime={data.attestations[0]?.startTime}
                       endTime={data.attestations[0]?.endTime}
                       dao={data.dao_name}
-                      address={address || ""}
+                      address={walletAddress || ""}
                       onChainId={
                         session === "hosted" ? data.onchain_host_uid : ""
                       }
@@ -471,14 +476,14 @@ function RecordedSessionsTile({
                 {session === "attended" &&
                   data.attendees.some(
                     (attendee: any) =>
-                      attendee.attendee_address === address &&
+                      attendee.attendee_address === walletAddress &&
                       attendee.attendee_uid
                   ) && (
                     <div className="flex gap-2 w-full">
                       {(() => {
                         const matchingAttendee = data.attendees.find(
                           (attendee: any) =>
-                            attendee.attendee_address === address
+                            attendee.attendee_address === walletAddress
                         );
                         const attendeeUid = matchingAttendee?.attendee_uid;
 
@@ -518,7 +523,7 @@ function RecordedSessionsTile({
                         startTime={data.attestations[0]?.startTime}
                         endTime={data.attestations[0]?.endTime}
                         dao={data.dao_name}
-                        address={address || ""}
+                        address={walletAddress || ""}
                         disabled={
                           claimInProgress &&
                           claimingMeetingId !== data.meetingId
@@ -529,7 +534,7 @@ function RecordedSessionsTile({
                           session === "attended"
                             ? data.attendees.find(
                                 (attendee: any) =>
-                                  attendee.attendee_address === address
+                                  attendee.attendee_address === walletAddress
                               )?.onchain_attendee_uid
                             : ""
                         }

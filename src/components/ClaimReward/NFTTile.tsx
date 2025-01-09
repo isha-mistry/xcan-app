@@ -21,7 +21,6 @@ interface NFTProps {
 function NFTTile({ nft }: NFTProps) {
   const [currentSrcIndex, setCurrentSrcIndex] = useState(0);
   const [imageLoadError, setImageLoadError] = useState(false);
-  console.log(nft);
   const cid = nft.thumbnail?.split("ipfs://")[1];
 
   const getDaoLogo = (network: string) => {

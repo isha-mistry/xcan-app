@@ -1,30 +1,15 @@
 "use client";
-import Image from "next/image";
+
 import React, { useState, useEffect } from "react";
-import search from "@/assets/images/daos/search.png";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useRouter } from "next-nprogress-bar";
-import Tile from "../ComponentUtils/Tile";
-import SessionTile from "../ComponentUtils/SessionTiles";
-import { Oval } from "react-loader-spinner";
 import RecordedSessionsTile from "../ComponentUtils/RecordedSessionsTile";
-import {
-  Modal,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-  Button,
-  useDisclosure,
-} from "@nextui-org/react";
-import AttestationModal from "../ComponentUtils/AttestationModal";
 import RecordedSessionsSkeletonLoader from "../SkeletonLoader/RecordedSessionsSkeletonLoader";
 import ErrorDisplay from "../ComponentUtils/ErrorDisplay";
-import { useAccount } from "wagmi";
-import { RiErrorWarningLine } from "react-icons/ri";
-import { TimeoutError } from "viem";
 import { SessionInterface } from "@/types/MeetingTypes";
 import { CiSearch } from "react-icons/ci";
+import { usePrivy } from "@privy-io/react-auth";
+import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 import { fetchApi } from "@/utils/api";
 
 function DelegatesSession({ props }: { props: string }) {
@@ -36,16 +21,20 @@ function DelegatesSession({ props }: { props: string }) {
   const [sessionDetails, setSessionDetails] = useState([]);
   const [tempSession, setTempSession] = useState([]);
   const [dataLoading, setDataLoading] = useState(true);
-  const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure();
   const [error, setError] = useState<string | null>(null);
-  const { address } = useAccount();
+  const { user, ready, getAccessToken, authenticated } = usePrivy();
+  const { walletAddress } = useWalletAddress();
 
   const fetchData = async () => {
     try {
       setDataLoading(true);
+      const token=await getAccessToken();
       const myHeaders: HeadersInit = {
         "Content-Type": "application/json",
-        ...(address && { "x-wallet-address": address }),
+        ...(walletAddress && {
+          "x-wallet-address": walletAddress,
+          Authorization: `Bearer ${token}`,
+        }),
       };
       const requestOptions: any = {
         method: "POST",
@@ -57,12 +46,9 @@ function DelegatesSession({ props }: { props: string }) {
         }),
       };
 
-      // console.log("propspropsprops", dao_name);
-
       const response = await fetch(`/api/get-dao-sessions`, requestOptions);
       const result = await response.json();
       const resultData = await result.data;
-      console.log("resultData", resultData);
       if (Array.isArray(resultData)) {
         const filtered: any = resultData.filter((session: SessionInterface) => {
           if (searchParams.get("session") === "upcoming") {
@@ -101,6 +87,9 @@ function DelegatesSession({ props }: { props: string }) {
     }
   };
   useEffect(() => {
+    // if (walletAddress != null) {
+    //   fetchData();
+    // }
     fetchData();
   }, [searchParams.get("session")]);
 
@@ -118,9 +107,13 @@ function DelegatesSession({ props }: { props: string }) {
           dao_name: dao_name,
         });
 
+        const token=await getAccessToken();
         const myHeaders: HeadersInit = {
           "Content-Type": "application/json",
-          ...(address && { "x-wallet-address": address }),
+          ...(walletAddress && {
+            "x-wallet-address": walletAddress,
+            Authorization: `Bearer ${token}`,
+          }),
         };
 
         const requestOptions: any = {
@@ -147,7 +140,6 @@ function DelegatesSession({ props }: { props: string }) {
               return false;
             }
           );
-          console.log("filtered: ", filtered);
           setSessionDetails(filtered);
           setError(null);
         } else {

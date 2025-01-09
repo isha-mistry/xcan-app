@@ -1,8 +1,8 @@
 import Image from "next/image";
 import React, { useEffect, useState, useCallback, useMemo } from "react";
 import { useRouter } from "next-nprogress-bar";
-import toast from "react-hot-toast";
-import { useConnectModal, useChainModal } from "@rainbow-me/rainbowkit";
+import toast, { Toaster } from "react-hot-toast";
+// import { useConnectModal, useChainModal } from "@rainbow-me/rainbowkit";
 import { useAccount } from "wagmi";
 import WalletAndPublicClient from "@/helpers/signer";
 import ErrorDisplay from "../ComponentUtils/ErrorDisplay";
@@ -28,6 +28,9 @@ import { truncateAddress } from "@/utils/text";
 import DelegateListSkeletonLoader from "../SkeletonLoader/DelegateListSkeletonLoader";
 import { ChevronDown } from "lucide-react";
 import debounce from "lodash/debounce";
+import { getAccessToken, usePrivy,useWallets } from "@privy-io/react-auth";
+import { useWalletAddress } from "@/app/hooks/useWalletAddress";
+import { BrowserProvider, Contract, JsonRpcSigner } from 'ethers';
 import { motion } from "framer-motion";
 import { calculateTempCpi } from "@/actions/calculatetempCpi";
 
@@ -37,7 +40,6 @@ const DEBOUNCE_DELAY = 500;
 function DelegatesList({ props }: { props: string }) {
   const {
     isConnected: isUserConnected,
-    isSessionLoading,
     isLoading,
     isPageLoading,
     isReady,
@@ -54,12 +56,15 @@ function DelegatesList({ props }: { props: string }) {
   const [same, setSame] = useState(false);
   const [delegatingToAddr, setDelegatingToAddr] = useState(false);
   const [confettiVisible, setConfettiVisible] = useState(false);
+  const { wallets } = useWallets();
 
   const router = useRouter();
-  const { openChainModal } = useChainModal();
-  const { openConnectModal } = useConnectModal();
+  // const { openChainModal } = useChainModal();
+  // const { openConnectModal } = useConnectModal();
   const { isConnected, address, chain } = useAccount();
   const { publicClient, walletClient } = WalletAndPublicClient();
+  const { ready, authenticated, login, logout,user } = usePrivy();
+  const {walletAddress}=useWalletAddress();
   const [tempCpi, setTempCpi] = useState();
   const [tempCpiCalling, setTempCpiCalling] = useState(true);
 
@@ -155,21 +160,20 @@ function DelegatesList({ props }: { props: string }) {
   // }, [debouncedSearch]);
 
   const handleDelegateModal = async (delegateObject: any) => {
-    console.log("delegateObject", delegateObject);
     setSelectedDelegate(delegateObject);
-    if (!isConnected) {
-      openConnectModal?.();
+    if (!isConnected || !authenticated)  {
+      login()
       return;
     }
-    const delegatorAddress = address;
+    const delegatorAddress = walletAddress;
     const toAddress = delegateObject.delegate;
-
+    const token=await getAccessToken();
     setDelegateOpen(true);
     try {
       const data = await (props === "optimism" ? op_client : arb_client).query(
         DELEGATE_CHANGED_QUERY,
         {
-          delegator: address,
+          delegator: walletAddress,
         }
       );
       const delegate = data.data.delegateChangeds[0]?.toDelegate;
@@ -187,9 +191,10 @@ function DelegatesList({ props }: { props: string }) {
         const result = await calculateTempCpi(
           delegatorAddress,
           toAddress,
-          address
+          walletAddress,
+          token
         );
-        console.log("result:::::::::", result);
+        // console.log("result:::::::::", result);
         if (result?.data?.results[0].cpi) {
           const data = result?.data?.results[0].cpi;
           setTempCpi(data);
@@ -200,43 +205,140 @@ function DelegatesList({ props }: { props: string }) {
       }
     }
   };
+  // const handleDelegateVotes = async (to: string) => {
+  //   if (!walletAddress) {
+  //     toast.error("Please connect your wallet!");
+  //     return;
+  //   }
+
+  //   const chainAddress = getChainAddress(chain?.name);
+  //   const network = props === "optimism" ? "OP Mainnet" : "Arbitrum One";
+  //   alert(`189:${network}`);
+  //   alert(`190:${walletClient?.chain.name}`);
+
+  //   if (walletClient?.chain.name !== network) {
+  //     toast.error("Please switch to the appropriate network to delegate!");
+  //     // openChainModal?.();
+  //     return;
+  //   }
+
+  //   try {
+  //     setDelegatingToAddr(true);
+  //     await walletClient.writeContract({
+  //       address: chainAddress,
+  //       chain: props === "arbitrum" ? arbitrum : optimism,
+  //       abi: dao_abi.abi,
+  //       functionName: "delegate",
+  //       args: [to],
+  //       account: walletAddress,
+  //     });
+
+  //     setConfettiVisible(true);
+  //     setTimeout(() => setConfettiVisible(false), 5000);
+  //     toast.success("Delegation successful!");
+  //   } catch (error) {
+  //     console.error("Delegation failed:", error);
+  //     toast.error("Transaction failed");
+  //   } finally {
+  //     setDelegatingToAddr(false);
+  //   }
+  // };
+
   const handleDelegateVotes = async (to: string) => {
-    if (!address) {
+    if (!walletAddress) {
       toast.error("Please connect your wallet!");
       return;
     }
-
+  
     const chainAddress = getChainAddress(chain?.name);
-    const network = props === "optimism" ? "OP Mainnet" : "Arbitrum One";
-
-    if (walletClient?.chain.name !== network) {
-      toast.error("Please switch to the appropriate network to delegate!");
-      openChainModal?.();
+    if (!chainAddress) {
+      toast.error("Invalid chain address,try again!");
       return;
     }
-
+  
+    const network = props === "optimism" ? "OP Mainnet" : "Arbitrum One";
+    const chainId = props === "optimism" ? 10 : 42161;
+  
     try {
       setDelegatingToAddr(true);
-      await walletClient.writeContract({
-        address: chainAddress,
-        chain: props === "arbitrum" ? arbitrum : optimism,
-        abi: dao_abi.abi,
-        functionName: "delegate",
-        args: [to],
-        account: address,
-      });
-
+  
+      // For Privy wallets, we should get the provider from the wallet instance
+      // Assuming you have access to the Privy wallet instance
+      const privyProvider = await wallets[0]?.getEthereumProvider();
+      
+      if (!privyProvider) {
+        toast.error("Could not get wallet provider");
+        return;
+      }
+  
+      // Create ethers provider
+      const provider = new BrowserProvider(privyProvider);
+      
+      // Get the current network
+      const currentNetwork = await provider.getNetwork();
+      const currentChainId = Number(currentNetwork.chainId);
+  
+      // Check if we're on the correct network
+      if (currentChainId !== chainId) {
+        // toast.error(`Please switch to ${network} (Chain ID: ${chainId})`);
+        toast('Switching to correct netwotk,try again!');
+        
+        // Try to switch network
+        try {
+          await privyProvider.request({
+            method: 'wallet_switchEthereumChain',
+            params: [{ chainId: `0x${chainId.toString(16)}` }],
+          });
+        } catch (switchError) {
+          console.error('Failed to switch network:', switchError);
+          return;
+        }
+        return;
+      }
+  
+      // console.log('Getting signer...');
+      const signer = await provider.getSigner();
+      
+      // console.log('Creating contract instance...');
+      const contract = new Contract(
+        chainAddress,
+        dao_abi.abi,
+        signer
+      );
+  
+      // console.log('Initiating delegation transaction...');
+      const tx = await contract.delegate(to);
+      // console.log('Waiting for transaction confirmation...');
+      await tx.wait();
+  
       setConfettiVisible(true);
       setTimeout(() => setConfettiVisible(false), 5000);
       toast.success("Delegation successful!");
+  
     } catch (error) {
       console.error("Delegation failed:", error);
-      toast.error("Transaction failed");
+      
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      
+      if (errorMessage.includes('eth_chainId is not supported')) {
+        console.log('Provider state:', {
+          provider: await wallets[0]?.getEthereumProvider(),
+          network,
+          chainId
+        });
+        toast.error(`Network Error: Make sure you're connected to ${network}`);
+      } else if (errorMessage.includes('user rejected')) {
+        toast.error("Transaction was rejected by user");
+      } else if (errorMessage.includes('network')) {
+        toast.error(`Please connect to ${network} (Chain ID: ${chainId})`);
+      } else {
+        toast.error("Transaction failed. Please try again");
+        console.error('Detailed error:', error);
+      }
     } finally {
       setDelegatingToAddr(false);
     }
   };
-
   const formatNumber = (number: number) => {
     if (number >= 1e6) return `${(number / 1e6).toFixed(2)}m`;
     if (number >= 1e3) return `${(number / 1e3).toFixed(2)}k`;
@@ -348,6 +450,18 @@ function DelegatesList({ props }: { props: string }) {
 
   return (
     <div className="container mx-auto px-4 py-8">
+       <Toaster
+                  toastOptions={{
+                    style: {
+                      fontSize: "14px",
+                      backgroundColor: "#3E3D3D",
+                      color: "#fff",
+                      boxShadow: "none",
+                      borderRadius: "50px",
+                      padding: "3px 5px",
+                    },
+                  }}
+                />
       <div className="flex flex-col md:flex-row justify-between items-center mb-8">
         <div className="relative w-full md:w-96 mb-4 md:mb-0">
           <input

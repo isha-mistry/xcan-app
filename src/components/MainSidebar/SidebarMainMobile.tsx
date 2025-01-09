@@ -18,6 +18,8 @@ import { useSession } from "next-auth/react";
 import { ConnectWallet } from "../ConnectWallet/ConnectWallet";
 import cclogo from "@/assets/images/daos/CCLogo.png"
 import { IoGiftSharp } from "react-icons/io5";
+import { useWalletAddress } from "@/app/hooks/useWalletAddress";
+import ConnectWalletWithENS from "../ConnectWallet/ConnectWalletWithENS";
 
 
 const SidebarMainMobile = () => {  
@@ -32,7 +34,7 @@ const SidebarMainMobile = () => {
       isPageLoading,
       session,
       status,
-      address,
+      walletAddress,
       isConnected,
     } = useSidebar();
     const sidebarRef = useRef<HTMLDivElement | null>(null);
@@ -64,16 +66,20 @@ const SidebarMainMobile = () => {
 
   return (
     <div className="relative">
-      <div className="absolute top-0 left-0 flex items-center w-full border-b-1 p-1 bg-white">
+      <div className="absolute top-0 left-0 flex items-center justify-between w-full border-b-1 p-1 bg-white">
+
+<div className="flex">
 
       <div
-        className="bg-blue-shade-200 text-white text-lg font-bold p-1.5 rounded-full cursor-pointer my-4 mx-4"
+        className="bg-blue-shade-200 text-white text-lg font-bold p-1.5 rounded-full cursor-pointer my-4 mx-2 0.2xs:mx-4"
         onClick={toggleSidebar}
         >
         <IoMenu className="size-6"/>
       </div>
       <div className="border border-l-0 h-16"></div>
-      <Link className="ml-4 text-black font-semibold text-[32px] font-poppins flex items-center" href={"https://chora.club/"}>Chora <span className="text-blue-shade-200">Club</span></Link>
+      <Link className="ml-2 0.2xs:ml-4 mt-[3px] text-black font-semibold text-[32px] font-poppins flex items-center" href={"/"}>Chora <span className="text-blue-shade-200">Club</span></Link>
+          </div>
+          <div className="mr-2 xm:mr-4"><ConnectWalletWithENS /> </div>
         </div>
 
       <div
@@ -232,7 +238,7 @@ const SidebarMainMobile = () => {
                 )
             ):(
                 <li>
-                    <Link href={`/profile/${address}?active=info`} className="block py-4 pl-6 sm:py-5 hover:bg-blue-shade-100">
+                    <Link href={`/profile/${walletAddress}?active=info`} className="block py-4 pl-6 sm:py-5 hover:bg-blue-shade-100">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center">
                       <FaUser className="size-5 mr-4" />

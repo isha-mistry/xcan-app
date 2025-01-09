@@ -11,6 +11,8 @@ import { Oval } from "react-loader-spinner";
 import SessionTileSkeletonLoader from "../SkeletonLoader/SessionTileSkeletonLoader";
 import { useAccount } from "wagmi";
 import { SessionInterface } from "@/types/MeetingTypes";
+import { getAccessToken, usePrivy } from "@privy-io/react-auth";
+import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 
 interface Type {
   daoDelegates: string;
@@ -25,11 +27,13 @@ function DelegateSessions({ props }: { props: Type }) {
   const [sessionDetails, setSessionDetails] = useState([]);
   const dao_name = props.daoDelegates;
   const [error, setError] = useState<string | null>(null);
-  const { address } = useAccount();
+  const { address, isConnected } = useAccount();
+  const { ready, authenticated, login, logout, user } = usePrivy();
+  const { walletAddress } = useWalletAddress();
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
   const [showLeftShadow, setShowLeftShadow] = useState(false);
   const [showRightShadow, setShowRightShadow] = useState(false);
-  
+
   useEffect(() => {
     const checkForOverflow = () => {
       const container = scrollContainerRef.current;
@@ -39,8 +43,8 @@ function DelegateSessions({ props }: { props: Type }) {
     };
 
     checkForOverflow();
-    window.addEventListener('resize', checkForOverflow);
-    return () => window.removeEventListener('resize', checkForOverflow);
+    window.addEventListener("resize", checkForOverflow);
+    return () => window.removeEventListener("resize", checkForOverflow);
   }, []);
 
   const handleScroll = () => {
@@ -58,11 +62,14 @@ function DelegateSessions({ props }: { props: Type }) {
   const getMeetingData = async () => {
     setDataLoading(true);
     try {
+      const token=await getAccessToken();
       const myHeaders: HeadersInit = {
         "Content-Type": "application/json",
-        ...(address && { "x-wallet-address": address }),
+        ...(walletAddress && {
+          "x-wallet-address": walletAddress,
+          Authorization: `Bearer ${token}`,
+        }),
       };
-
       const raw = JSON.stringify({
         dao_name: dao_name,
         address: props.individualDelegate,
@@ -120,6 +127,9 @@ function DelegateSessions({ props }: { props: Type }) {
   };
 
   useEffect(() => {
+    // if (walletAddress != null) {
+    //   getMeetingData();
+    // }
     getMeetingData();
   }, [
     props.daoDelegates,
@@ -143,8 +153,11 @@ function DelegateSessions({ props }: { props: Type }) {
   return (
     <div>
       <div className=" pt-4 relative">
-      <div className={`flex gap-10 sm:gap-16 border-1 border-[#7C7C7C] px-6 rounded-xl text-sm overflow-x-auto whitespace-nowrap relative`} ref={scrollContainerRef}
-        onScroll={handleScroll}>
+        <div
+          className={`flex gap-10 sm:gap-16 border-1 border-[#7C7C7C] px-6 rounded-xl text-sm overflow-x-auto whitespace-nowrap relative`}
+          ref={scrollContainerRef}
+          onScroll={handleScroll}
+        >
           <button
             className={`py-2  ${
               searchParams.get("session") === "book"

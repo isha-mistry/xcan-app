@@ -13,15 +13,21 @@ import {
   protocolRewardsABI,
   protocolRewardsAddress,
 } from "chora-protocol-deployments";
+import { usePrivy } from "@privy-io/react-auth";
+import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 
 function RewardButton() {
   const router = useRouter();
-  const { address } = useAccount();
+  const { address,isConnected } = useAccount();
   const chainId = useChainId();
   const [showTooltip, setShowTooltip] = useState(false);
   const hoverRef = useRef<HTMLDivElement>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [ethToUsdConversionRate, setEthToUsdConversionRate] = useState(0);
+  const { ready, authenticated, login, logout, user } = usePrivy();
+  const {walletAddress}=useWalletAddress();
+
+
 
   const { data: hash, writeContract, isPending, isError } = useWriteContract();
 
@@ -30,7 +36,7 @@ function RewardButton() {
     address:
       protocolRewardsAddress[chainId as keyof typeof protocolRewardsAddress],
     functionName: "balanceOf",
-    args: [address as Address],
+    args: [walletAddress as Address],
   });
 
   // withdraw amount is half of the balance
@@ -49,7 +55,6 @@ function RewardButton() {
         );
         const data = await response.json();
         setEthToUsdConversionRate(data.ethereum.usd);
-        console.log("data.ethereum.usd", data.ethereum.usd);
       } catch (error) {
         console.error("Failed to fetch ETH to USD conversion rate:", error);
       }
@@ -57,6 +62,8 @@ function RewardButton() {
 
     fetchEthToUsdRate();
   }, []);
+
+  
 
   const handleClick = useCallback(() => {
     router.push("/claim-rewards");

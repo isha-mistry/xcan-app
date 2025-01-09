@@ -2,19 +2,17 @@ import { BASE_URL } from "@/config/constants";
 import { fetchApi } from "@/utils/api";
 import { fetchEnsNameAndAvatar } from "@/utils/ENSUtils";
 import { truncateAddress } from "@/utils/text";
+import { cache } from "react";
 
 export async function fetchInviteeDetails(userAddress: string) {
   const requestOptions = {
     method: "GET",
-    headers: { "Content-Type": "application/json" },
-    caches: "no-store",
-    next: { revalidate: 0 },
+    headers: {
+      "Content-Type": "application/json",
+    },
   };
 
-  const res = await fetchApi(
-    `/profile/${userAddress}`,
-    requestOptions
-  );
+  const res = await fetchApi(`/profile/${userAddress}`, requestOptions);
   const response = await res.json();
 
   const displayImage = response?.data[0]?.image;

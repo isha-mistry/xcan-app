@@ -18,7 +18,7 @@ import { LuDot } from "react-icons/lu";
 import chainImg from "@/assets/images/daos/chain.png";
 import user2 from "@/assets/images/user/user2.svg";
 import user5 from "@/assets/images/user/user5.svg";
-import { useConnectModal, useChainModal } from "@rainbow-me/rainbowkit";
+// import { useConnectModal, useChainModal } from "@rainbow-me/rainbowkit";
 import VotingPopup from "./VotingPopup";
 import arb_proposals_abi from "../../artifacts/Dao.sol/arb_proposals_abi.json";
 import op_proposals_abi from "../../artifacts/Dao.sol/op_proposals_abi.json";
@@ -47,6 +47,8 @@ import ProposalMainDescriptionSkeletonLoader from "../SkeletonLoader/ProposalMai
 import DOMPurify from "dompurify";
 import MobileResponsiveMessage from "../MobileResponsiveMessage/MobileResponsiveMessage";
 import { Transaction } from "ethers";
+import { usePrivy } from "@privy-io/react-auth";
+import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 import { fetchApi } from "@/utils/api";
 import { GiConsoleController } from "react-icons/gi";
 import { fetchEnsNameAndAvatar, getENSName } from "@/utils/ENSUtils";
@@ -123,14 +125,24 @@ function ProposalMain({ props }: { props: Props }) {
   const network = useAccount().chain;
   const { publicClient, walletClient } = WalletAndPublicClient();
   const { chain } = useAccount();
-  const { openChainModal } = useChainModal();
+  // const { openChainModal } = useChainModal();
   const [isVotingOpen, setIsVotingOpen] = useState(false);
-  const { address } = useAccount();
+  const { address, isConnected } = useAccount();
   const contentRef = useRef<HTMLDivElement>(null);
   const [isExpanded, setIsExpanded] = useState(false);
   const [hasVoted, setHasVoted] = useState(false);
   const [dailyVotes, setDailyVotes] = useState<any[]>([]);
   const chartContainerRef = useRef<HTMLDivElement | null>(null);
+  const { user, ready, getAccessToken, authenticated } = usePrivy();
+  const { walletAddress } = useWalletAddress();
+
+  interface VoteData {
+    address: string;
+    proposalId: string;
+    choice: string[];
+    votingPower?: number;
+    network: string;
+  }
   // State to store ENS data for displayed voters only
   const [ensData, setEnsData] = useState<{ [key: string]: { name: string | null; avatar: string | null } }>({});
 
@@ -199,12 +211,14 @@ function ProposalMain({ props }: { props: Props }) {
 
   const StoreData = async (voteData: VoteData) => {
     // Make the API call to submit the vote
-
+    const token=await getAccessToken();
     const myHeaders: HeadersInit = {
       "Content-Type": "application/json",
-      ...(address && { "x-wallet-address": address }),
+      ...(walletAddress && {
+        "x-wallet-address": walletAddress,
+        Authorization: `Bearer ${token}`,
+      }),
     };
-
     const response = await fetchApi("/submit-vote", {
       method: "PUT",
       headers: myHeaders,
@@ -226,9 +240,9 @@ function ProposalMain({ props }: { props: Props }) {
 
     if (chain !== props.daoDelegates) {
       toast.error("Please switch to appropriate network to delegate!");
-      if (openChainModal) {
-        openChainModal();
-      }
+      // if (openChainModal) {
+      //   // openChainModal();
+      // }
     } else {
       setIsVotingOpen(true);
     }
@@ -239,7 +253,7 @@ function ProposalMain({ props }: { props: Props }) {
     comment: string,
     voteData: VoteData
   ) => {
-    if (!address) {
+    if (!walletAddress) {
       toast.error("Please connect your MetaMask wallet!");
       return;
     }
@@ -270,7 +284,7 @@ function ProposalMain({ props }: { props: Props }) {
                 : op_proposals_abi,
             functionName: "castVoteWithReason",
             args: [proposalId, vote, comment],
-            account: address,
+            account: walletAddress,
           });
           StoreData(voteData);
         } catch (e) {
@@ -289,7 +303,7 @@ function ProposalMain({ props }: { props: Props }) {
                 : op_proposals_abi,
             functionName: "castVote",
             args: [proposalId, vote],
-            account: address,
+            account: walletAddress,
           });
           StoreData(voteData);
         } catch (e) {
@@ -303,12 +317,12 @@ function ProposalMain({ props }: { props: Props }) {
     const queryParams = new URLSearchParams({
       proposalId: props.id,
       network: props.daoDelegates,
-      voterAddress: address,
+      voterAddress: walletAddress,
     } as any);
 
     try {
-      const response = await fetch(
-        `/api/get-vote-detail?${queryParams.toString()}`,
+      const response = await fetchApi(
+        `/get-vote-detail?${queryParams.toString()}`,
         {
           method: "GET",
           headers: {
@@ -318,7 +332,7 @@ function ProposalMain({ props }: { props: Props }) {
       );
 
       if (!response.ok) {
-        console.log("Network response was not ok");
+        // console.log("Network response was not ok");
       }
 
       const data = await response.json();
@@ -331,7 +345,7 @@ function ProposalMain({ props }: { props: Props }) {
 
   useEffect(() => {
     checkVoteStatus();
-  }, [props, address]);
+  }, [props, walletAddress]);
   const loadMore = () => {
     const newDisplayCount = displayCount + 20;
     setDisplayCount(newDisplayCount);
@@ -490,8 +504,8 @@ function ProposalMain({ props }: { props: Props }) {
         setLoading(true);
         setError(null);
         try {
-          const response = await fetch(
-            `/api/get-proposals?proposalId=${props.id}`
+          const response = await fetchApi(
+            `/get-proposals?proposalId=${props.id}`
           );
           const result = await response.json();
 
@@ -1030,7 +1044,7 @@ function ProposalMain({ props }: { props: Props }) {
           onSubmit={handleVoteSubmit}
           proposalId={props.id}
           proposalTitle={truncateText(data?.description, 50)}
-          address={address || ""}
+          address={walletAddress || ""}
           dao={props.daoDelegates}
         />
 
@@ -1173,7 +1187,7 @@ function ProposalMain({ props }: { props: Props }) {
                             content={
                               <div className="font-poppins">
                                 Transaction Hash
-                                (Coming soon)
+                                (Coming Soon)
                               </div>
                             }
                             placement="right"
@@ -1182,7 +1196,7 @@ function ProposalMain({ props }: { props: Props }) {
                           >
                             <button
                               // onClick={() =>
-                                // handleTransactionClick(voter.transactionHash)
+                              //   handleTransactionClick(voter.transactionHash)
                               // }
                               disabled
                               className="text-blue-600 hover:text-blue-800 transition-colors duration-200"

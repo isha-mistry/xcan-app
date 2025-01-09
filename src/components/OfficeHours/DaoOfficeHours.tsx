@@ -9,7 +9,7 @@ import text1 from "@/assets/images/daos/texture1.png";
 import text2 from "@/assets/images/daos/texture2.png";
 import { StaticImageData } from "next/image";
 import Tile from "../ComponentUtils/Tile";
-import { ConnectButton } from "@rainbow-me/rainbowkit";
+// import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { Oval } from "react-loader-spinner";
 import { Tooltip } from "@nextui-org/react";
 import ConnectWalletWithENS from "../ConnectWallet/ConnectWalletWithENS";
@@ -20,6 +20,8 @@ import SidebarMainMobile from "../MainSidebar/SidebarMainMobile";
 import MobileResponsiveMessage from "../MobileResponsiveMessage/MobileResponsiveMessage";
 import Heading from "../ComponentUtils/Heading";
 import { CiSearch } from "react-icons/ci";
+import { usePrivy } from "@privy-io/react-auth";
+import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 import { fetchApi } from "@/utils/api";
 import OfficeHoursAlertMessage from "../AlertMessage/OfficeHoursAlertMessage";
 interface Type {
@@ -53,8 +55,8 @@ function DaoOfficeHours() {
   const [sessionDetails, setSessionDetails] = useState<Type[]>([]);
   const [dataLoading, setDataLoading] = useState(true);
   const [showComingSoon, setShowComingSoon] = useState(true);
-
-  const { address } = useAccount();
+  const { user, ready, getAccessToken, authenticated } = usePrivy();
+  const { walletAddress } = useWalletAddress();
 
   // useEffect(() => {
   //   const fetchData = async () => {

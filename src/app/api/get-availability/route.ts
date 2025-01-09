@@ -158,6 +158,8 @@ export async function PUT(req: NextRequest, res: NextResponse<Type[]>) {
     const query = { dao_name, userAddress, timeSlotSizeMinutes };
     const document = await collection.findOne(query);
 
+    // console.log("Line 161...",document);
+
     if (!document) {
       client.close();
       return NextResponse.json(
@@ -187,7 +189,7 @@ export async function PUT(req: NextRequest, res: NextResponse<Type[]>) {
       },
     });
 
-    console.log("Updated Document", document);
+    // console.log("Updated Document", document);
 
     client.close();
 

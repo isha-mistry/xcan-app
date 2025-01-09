@@ -27,6 +27,8 @@ import copy from "copy-to-clipboard";
 import UpdateHostedSessionModal from "./UpdateHostedSessionModal";
 import { SessionInterface } from "@/types/MeetingTypes";
 import { LIGHTHOUSE_BASE_API_KEY } from "@/config/constants";
+import { usePrivy } from "@privy-io/react-auth";
+import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 import { fetchApi } from "@/utils/api";
 
 type Attendee = {
@@ -87,7 +89,7 @@ function SessionTile({
   isSession,
 }: // query,
 SessionTileProps) {
-  const { address } = useAccount();
+  const { address, isConnected } = useAccount();
   const router = useRouter();
   const path = usePathname();
   const [selectedTileIndex, setSelectedTileIndex] = useState<number | null>(
@@ -104,6 +106,11 @@ SessionTileProps) {
     description: "",
     image: "",
   });
+  const { user, ready, getAccessToken, authenticated } = usePrivy();
+  const { walletAddress } = useWalletAddress();
+  const [pageLoading, setPageLoading] = useState(true);
+  const [applyStyles, setApplyStyles] = useState(true);
+  const [expanded, setExpanded] = useState<{ [index: number]: boolean }>({});
 
   const handleEditModal = (index: number) => {
     setSelectedTileIndex(index);
@@ -112,6 +119,7 @@ SessionTileProps) {
   const handleCloseEdit = () => {
     setEditOpen(false);
   };
+
   // const provider = new ethers.BrowserProvider(window?.ethereum);
   // const provider =
   //   window.ethereum != null
@@ -139,10 +147,6 @@ SessionTileProps) {
     setSelectedTileIndex(null);
   };
 
-  const [pageLoading, setPageLoading] = useState(true);
-  const [applyStyles, setApplyStyles] = useState(true);
-  const [expanded, setExpanded] = useState<{ [index: number]: boolean }>({});
-
   const handleDescription = () => {
     setApplyStyles(!applyStyles);
   };
@@ -160,38 +164,34 @@ SessionTileProps) {
     dao,
   }: AttestationDataParams) => {
     setIsClaiming((prev: any) => ({ ...prev, [index]: true }));
-    if (
-      typeof window.ethereum === "undefined" ||
-      !window.ethereum.isConnected()
-    ) {
-      console.log("not connected");
-    }
 
-    // const address = await walletClient.getAddresses();
-    // console.log(address);
-    let token = "";
+    let daoToken = "";
     let EASContractAddress = "";
 
     if (dao === "optimism") {
-      token = "OP";
+      daoToken = "OP";
       EASContractAddress = "0x4200000000000000000000000000000000000021";
     } else if (dao === "arbitrum") {
-      token = "ARB";
+      daoToken = "ARB";
       EASContractAddress = "0xbD75f629A22Dc1ceD33dDA0b68c546A1c035c458";
     }
 
     const data = {
       recipient: address,
-      meetingId: `${meetingId}/${token}`,
+      meetingId: `${meetingId}/${daoToken}`,
       meetingType: meetingType,
       startTime: meetingStartTime,
       endTime: meetingEndTime,
       daoName: dao,
     };
 
+    const token=await getAccessToken();
     const myHeaders: HeadersInit = {
       "Content-Type": "application/json",
-      ...(address && { "x-wallet-address": address }),
+      ...(walletAddress && {
+        "x-wallet-address": walletAddress,
+        Authorization: `Bearer ${token}`,
+      }),
     };
 
     // Configure the request options
@@ -218,10 +218,7 @@ SessionTileProps) {
 
       const eas = new EAS(EASContractAddress);
       const signer = await provider.getSigner();
-      console.log("the wallet2 obj", signer);
       eas.connect(signer);
-      console.log("obj created");
-      console.log("eas obj", eas);
       const schemaUID =
         "0xf9e214a80b66125cad64453abe4cef5263be3a7f01760d0cc72789236fca2b5d";
       const tx = await eas.attestByDelegation({
@@ -238,20 +235,22 @@ SessionTileProps) {
         attester: "0x7B2C5f70d66Ac12A25cE4c851903436545F1b741",
       });
       const newAttestationUID = await tx.wait();
-      console.log("New attestation UID: ", newAttestationUID);
 
       if (newAttestationUID) {
         try {
+          const token=await getAccessToken();
           const myHeaders: HeadersInit = {
             "Content-Type": "application/json",
-            ...(address && { "x-wallet-address": address }),
+            ...(walletAddress && {
+              "x-wallet-address": walletAddress,
+              Authorization: `Bearer ${token}`,
+            }),
           };
-
           const raw = JSON.stringify({
             meetingId: meetingId,
             meetingType: meetingType,
             uidOnchain: newAttestationUID,
-            address: address,
+            address: walletAddress,
           });
           const requestOptions: any = {
             method: "PUT",
@@ -264,9 +263,7 @@ SessionTileProps) {
             requestOptions
           );
           const responseData = await response.json();
-          console.log("responseData", responseData);
           if (responseData.success) {
-            console.log("On-chain attestation Claimed");
             setIsClaimed((prev) => ({ ...prev, [index]: true }));
             setIsClaiming((prev) => ({ ...prev, [index]: false }));
           }
@@ -301,7 +298,6 @@ SessionTileProps) {
 
   const handleChange = (e: any) => {
     const { name, value, files } = e.target;
-    console.log("name-value-files", name, value, files);
     setFormData((prevData) => ({
       ...prevData,
       [name]: files ? files : value,
@@ -311,8 +307,8 @@ SessionTileProps) {
   const handleSave = async (sessionData: any) => {
     // Handle save logic here, such as making an API call
     setLoading(true);
-    console.log(formData);
-    console.log(sessionData);
+    // console.log(formData);
+    // console.log(sessionData);
     // Close the modal after saving
     const progressCallback = async (progressData: any) => {
       let percentageDone =
@@ -320,7 +316,7 @@ SessionTileProps) {
         (
           ((progressData?.total as any) / progressData?.uploaded) as any
         )?.toFixed(2);
-      console.log(percentageDone);
+      // console.log(percentageDone);
     };
 
     const apiKey = LIGHTHOUSE_BASE_API_KEY ? LIGHTHOUSE_BASE_API_KEY : "";
@@ -329,7 +325,6 @@ SessionTileProps) {
       if (formData.image) {
         const output = await lighthouse.upload(formData.image, apiKey);
         imageCid = output.data.Hash;
-        console.log("image output: ", output.data.Hash);
       }
 
       if (formData.title === "") {
@@ -342,9 +337,13 @@ SessionTileProps) {
       if (formData.image === "") {
         imageCid = sessionData.thumbnail_image;
       }
+      const token=await getAccessToken();
       const myHeaders: HeadersInit = {
         "Content-Type": "application/json",
-        ...(address && { "x-wallet-address": address }),
+        ...(walletAddress && {
+          "x-wallet-address": walletAddress,
+          Authorization: `Bearer ${token}`,
+        }),
       };
 
       const raw = JSON.stringify({
@@ -367,7 +366,6 @@ SessionTileProps) {
       );
       if (response) {
         const responseData = await response.json();
-        console.log("responseData: ", responseData);
         setLoading(false);
       } else {
         setLoading(false);
@@ -375,7 +373,7 @@ SessionTileProps) {
 
       handleCloseEdit();
     } catch (e) {
-      console.log("errorrrrrr: ", e);
+      console.log("Error: ", e);
       toast.error("Unable to update the data.");
       setLoading(false);
       handleCloseEdit();

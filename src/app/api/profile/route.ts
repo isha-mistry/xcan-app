@@ -148,7 +148,7 @@ export async function POST(
       socialHandles,
       networks,
     });
-    console.log("Delegate document inserted:", result);
+    // console.log("Delegate document inserted:", result);
 
     client.close();
     // console.log("MongoDB connection closed");
@@ -284,10 +284,18 @@ export async function PUT(
       return NextResponse.json({ success: true }, { status: 200 });
     } else {
       // If no document was modified
-      return NextResponse.json(
-        { error: "No document found to update" },
-        { status: 404 }
-      );
+      if(result.acknowledged){
+        return NextResponse.json({ success: true }, { status: 200 });
+      }
+      else
+      {
+        return NextResponse.json(
+          { error: "No document found to update" },
+          { status: 404 }
+        );
+
+      }
+    
     }
   } catch (error) {
     console.error("Error updating delegate:", error);

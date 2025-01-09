@@ -13,17 +13,19 @@ import { Oval } from "react-loader-spinner";
 import SessionTileSkeletonLoader from "@/components/SkeletonLoader/SessionTileSkeletonLoader";
 import ErrorDisplay from "@/components/ComponentUtils/ErrorDisplay";
 import RecordedSessionsSkeletonLoader from "@/components/SkeletonLoader/RecordedSessionsSkeletonLoader";
+import { usePrivy } from "@privy-io/react-auth";
+import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 import { fetchApi } from "@/utils/api";
 
 function AttendingUserSessions({ daoName }: { daoName: string }) {
   const router = useRouter();
   const path = usePathname();
   const searchParams = useSearchParams();
-  const { address } = useAccount();
   const [sessionDetails, setSessionDetails] = useState<any[]>([]);
   const [pageLoading, setPageLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
+  const { user, ready, getAccessToken, authenticated } = usePrivy();
+  const { walletAddress } = useWalletAddress();
   const handleRetry = () => {
     setError(null);
     getUserMeetingData();
@@ -33,11 +35,15 @@ function AttendingUserSessions({ daoName }: { daoName: string }) {
   const getUserMeetingData = async () => {
     try {
       setPageLoading(true);
+      const token=await getAccessToken();
       const myHeaders: HeadersInit = {
         "Content-Type": "application/json",
-        ...(address && { "x-wallet-address": address }),
+        ...(walletAddress && {
+          "x-wallet-address": walletAddress,
+          Authorization: `Bearer ${token}`,
+        }),
       };
-      const response = await fetchApi(`/get-session-data/${address}`, {
+      const response = await fetchApi(`/get-session-data/${walletAddress}`, {
         method: "POST",
         headers: myHeaders,
         body: JSON.stringify({
@@ -49,11 +55,9 @@ function AttendingUserSessions({ daoName }: { daoName: string }) {
 
       if (result.success) {
         const resultData = await result.attending;
-        console.log("resultData in attending", resultData);
         setSessionDetails(resultData);
       }
     } catch (error) {
-      console.log("error in catch", error);
       setError("Unable to load sessions. Please try again in a few moments.");
     } finally {
       setPageLoading(false);
@@ -61,7 +65,9 @@ function AttendingUserSessions({ daoName }: { daoName: string }) {
   };
 
   useEffect(() => {
-    getUserMeetingData();
+    if (walletAddress != null) {
+      getUserMeetingData();
+    }
   }, [searchParams.get("session")]);
 
   if (error) {

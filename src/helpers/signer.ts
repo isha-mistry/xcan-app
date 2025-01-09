@@ -1,47 +1,52 @@
-import { createWalletClient, createPublicClient, custom } from "viem";
+import { createWalletClient, createPublicClient, custom, http } from "viem";
 import { optimism, arbitrum } from "viem/chains";
 import { useAccount } from "wagmi";
-import { defineChain } from "viem";
 
 declare global {
   interface Window {
     ethereum?: any;
-    // Add other properties if needed
+    privy?: any; // Declare privy as a possible Web3 provider
   }
 }
 
 const WalletAndPublicClient = () => {
-  let publicClient: any;
-  let walletClient: any;
-  let chainName: any;
+  let publicClient: any = null;
+  let walletClient: any = null;
+  let chainConfig: any = null;
 
   const { chain } = useAccount();
 
-  // console.log("chain: ", chain?.name);
 
+  // Map chain name to the corresponding Viem chain configuration
   if (chain?.name === "OP Mainnet") {
-    chainName = optimism;
+    chainConfig = optimism;
   } else if (chain?.name === "Arbitrum One") {
-    chainName = arbitrum;
+    chainConfig = arbitrum;
   } else {
-    chainName = "";
+    console.error("Unsupported chain detected:", chain?.name);
+    return { publicClient, walletClient };
   }
 
-  // console.log("chainName in signer: ", chainName);
-  if (typeof window !== "undefined" && window.ethereum) {
-    // Instantiate public client and wallet client
-    publicClient = createPublicClient({
-      chain: chainName,
-      transport: custom(window.ethereum),
-    });
-    walletClient = createWalletClient({
-      chain: chainName,
-      transport: custom(window.ethereum),
-    });
 
-    // Now you can use publicClient and walletClient as needed
+  if (typeof window !== "undefined" && (window.ethereum || window.privy)) {
+    const provider = window.ethereum; // Use Privy if available, fallback to Ethereum
+
+    try {
+      // Create public and wallet clients
+      publicClient = createPublicClient({
+        chain: chainConfig,
+        transport: http(),
+      });
+      walletClient = createWalletClient({
+        chain: chainConfig,
+        transport: http()
+      });
+      
+    } catch (error) {
+      console.error("Error creating clients:", error);
+    }
   } else {
-    console.error("window.ethereum is not available");
+    console.error("No Web3 provider available in window object.");
   }
 
   return { publicClient, walletClient };

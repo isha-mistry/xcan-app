@@ -1,6 +1,8 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useAccount } from "wagmi";
 import toast, { Toaster } from "react-hot-toast";
+import { usePrivy } from "@privy-io/react-auth";
+import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 import { fetchApi } from "@/utils/api";
 
 const UserScheduledHours = ({ daoName }: { daoName: string }) => {
@@ -9,7 +11,9 @@ const UserScheduledHours = ({ daoName }: { daoName: string }) => {
   const [description, setDescription] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
-  const { address } = useAccount();
+  const { address, isConnected } = useAccount();
+  const { user, ready, getAccessToken, authenticated } = usePrivy();
+  const { walletAddress } = useWalletAddress();
 
   const [selectedTime, setSelectedTime] = useState<string>("");
 
@@ -41,17 +45,20 @@ const UserScheduledHours = ({ daoName }: { daoName: string }) => {
 
       const selectedDateUTC = new Date(selectedDateTime);
       const utcFormattedDate = selectedDateUTC.toISOString();
-
+      const token=await getAccessToken();
       const myHeaders: HeadersInit = {
         "Content-Type": "application/json",
-        ...(address && { "x-wallet-address": address }),
+        ...(walletAddress && {
+          "x-wallet-address": walletAddress,
+          Authorization: `Bearer ${token}`,
+        }),
       };
 
       const response = await fetchApi("/office-hours", {
         method: "POST",
         headers: myHeaders,
         body: JSON.stringify({
-          host_address: address,
+          host_address: walletAddress,
           office_hours_slot: utcFormattedDate,
           title,
           description,
@@ -70,7 +77,6 @@ const UserScheduledHours = ({ daoName }: { daoName: string }) => {
       setSelectedDate("");
       setError(null);
       toast.success("Successfully scheduled your office hour.");
-      console.log("Data submitted successfully");
     } catch (error) {
       console.error("Error:", error);
       toast.error("Error scheduling your office hour.");
@@ -106,10 +112,6 @@ const UserScheduledHours = ({ daoName }: { daoName: string }) => {
     const day = String(currentDate.getDate()).padStart(2, "0");
     formattedDate = `${year}-${month}-${day}`;
   }
-
-  // console.log("formattedDate", formattedDate);
-
-  // console.log("currentDate", currentDate);
 
   return (
     <div className="ps-4 font-poppins">

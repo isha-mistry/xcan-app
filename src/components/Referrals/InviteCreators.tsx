@@ -15,7 +15,7 @@ import { RxCross2 } from "react-icons/rx";
 function InviteCreators({ userAddress }: { userAddress: any }) {
   const [copied, setCopied] = useState(false);
   const [inviteeDetails, setInviteeDetails] = useState<any>();
-  const { isConnected, isLoading, isSessionLoading, isPageLoading, isReady } =
+  const { isConnected, isLoading, isPageLoading, isReady } =
     useConnection();
   const [earnings, setEarnings] = useState(0);
   const [showComingSoon, setShowComingSoon] = useState(true);

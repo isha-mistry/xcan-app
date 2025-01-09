@@ -12,6 +12,7 @@ import { GiChaingun } from "react-icons/gi";
 import { MEETING_BASE_URL } from "@/config/constants";
 import { useAccount } from "wagmi";
 import { useNotificationStudioState } from "@/store/notificationStudioState";
+import { getAccessToken } from "@privy-io/react-auth";
 import { fetchApi } from "@/utils/api";
 
 export const getBackgroundColor = (data: any) => {
@@ -73,11 +74,13 @@ export const getIcon = (data: any) => {
 export const markAsRead = async (data: any): Promise<void> => {
   const { setNotifications, updateCombinedNotifications } =
     useNotificationStudioState.getState();
+  const token = await getAccessToken();
   try {
     const myHeaders: HeadersInit = {
       "Content-Type": "application/json",
       ...(data.receiver_address && {
         "x-wallet-address": data.receiver_address,
+        Authorization: `Bearer ${token}`,
       }),
     };
 

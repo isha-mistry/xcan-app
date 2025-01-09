@@ -1,10 +1,12 @@
 import { ReportRequestBody, VideoReport } from "@/app/api/report-session/route";
-import { useConnectModal } from "@rainbow-me/rainbowkit";
-import React, { useState } from "react";
+// import { useConnectModal } from "@rainbow-me/rainbowkit";
+import React, { useEffect, useState } from "react";
 import { RxCross2 } from "react-icons/rx";
 import { v4 as uuidv4 } from "uuid";
 import { useAccount } from "wagmi";
 import { Toaster, toast } from "react-hot-toast";
+import { usePrivy } from "@privy-io/react-auth";
+import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 import { fetchApi } from "@/utils/api";
 
 function ReportAdditionalDetailsModal({
@@ -18,10 +20,13 @@ function ReportAdditionalDetailsModal({
   category: string;
   onClose: () => void;
 }) {
-  const { openConnectModal } = useConnectModal();
+  // const { openConnectModal } = useConnectModal();
   const { address, isConnected } = useAccount();
   const [details, setDetails] = useState("");
   const [isLoading, setIsLoading] = useState<boolean>();
+  const { ready, authenticated, login, logout, getAccessToken, user } =
+    usePrivy();
+  const { walletAddress } = useWalletAddress();
   const toggleModal = () => {
     onClose();
   };
@@ -41,9 +46,13 @@ function ReportAdditionalDetailsModal({
     video_reports: any
   ) => {
     setIsLoading(true);
+    const token=await getAccessToken();
     const myHeaders: HeadersInit = {
       "Content-Type": "application/json",
-      ...(address && { "x-wallet-address": address }),
+      ...(walletAddress && {
+        "x-wallet-address": walletAddress,
+        Authorization: `Bearer ${token}`,
+      }),
     };
     const requestOptions = {
       method: "POST",
@@ -76,7 +85,7 @@ function ReportAdditionalDetailsModal({
       reports: [
         {
           report_id: unique_id,
-          user_wallet_address: address,
+          user_wallet_address: walletAddress,
           report_type: category,
           description: details,
           timestamp: unixEpochTime,
@@ -86,7 +95,7 @@ function ReportAdditionalDetailsModal({
       ],
     };
 
-    if (address && isConnected) {
+    if (walletAddress && authenticated) {
       try {
         const result = await submitReport(
           meetingId,
@@ -95,12 +104,10 @@ function ReportAdditionalDetailsModal({
         );
 
         if (result.success) {
-          console.log("Report submitted successfully:", result);
           toast("Report submitted successfully");
         } else {
           if (result.exists) {
             toast.error("You have already reported this session.");
-            console.log("User already reported the session before");
           } else {
             console.error("Failed to submit report:", result);
             toast.error(result.error || "Failed to submit report");
@@ -115,8 +122,9 @@ function ReportAdditionalDetailsModal({
         setIsLoading(false);
       }
     } else {
-      if (openConnectModal) {
-        openConnectModal();
+      if (!authenticated) {
+        // openConnectModal();
+        login();
       }
     }
   };
@@ -126,13 +134,15 @@ function ReportAdditionalDetailsModal({
       <div className="fixed inset-0 z-50 flex items-center justify-center font-poppins">
         <div
           className="absolute inset-0 backdrop-blur-md"
-          onClick={toggleModal}></div>
+          onClick={toggleModal}
+        ></div>
         <div className="z-50 bg-white p-6 rounded-3xl shadow-lg w-[28rem]">
           <div className="flex justify-between items-center">
             <div className="text-xl font-bold text-gray-900">Report video</div>
             <button
               className="text-gray-500 hover:text-gray-800"
-              onClick={toggleModal}>
+              onClick={toggleModal}
+            >
               <RxCross2 size={20} />
             </button>
           </div>
@@ -148,14 +158,16 @@ function ReportAdditionalDetailsModal({
             <button
               type="button"
               onClick={toggleModal}
-              className="ps-4 text-gray-700 rounded hover:text-gray-800 font-semibold">
+              className="ps-4 text-gray-700 rounded hover:text-gray-800 font-semibold"
+            >
               Cancel
             </button>
             <button
               type="button"
               onClick={handleReport}
               className="ps-4 text-red-500 hover:text-red-600 font-semibold"
-              disabled={isLoading}>
+              disabled={isLoading}
+            >
               {isLoading ? <>Submitting...</> : <> Report</>}
             </button>
           </div>

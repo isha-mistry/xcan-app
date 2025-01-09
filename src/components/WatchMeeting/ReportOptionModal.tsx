@@ -24,8 +24,6 @@ function ReportOptionModal({
   isOpen: boolean;
   onClose: () => void;
 }) {
-  console.log("data", data);
-  console.log("collection", collection);
 
   const toggleModal = () => {
     onClose();

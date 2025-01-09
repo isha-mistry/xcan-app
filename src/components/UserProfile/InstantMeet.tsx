@@ -27,6 +27,8 @@ import screenImghover from "@/assets/images/instant-meet/screenImghover.svg";
 import chatImg from "@/assets/images/instant-meet/chat.png";
 import chatImghover from "@/assets/images/instant-meet/chatImghover.svg";
 import heroImg from "@/assets/images/instant-meet/instant-meet-hero.svg";
+import { usePrivy } from "@privy-io/react-auth";
+import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 import { MEETING_BASE_URL } from "@/config/constants";
 import { redirectionInNewTab } from "@/utils/meetingUtils";
 import { fetchApi } from "@/utils/api";
@@ -44,10 +46,11 @@ function InstantMeet({ isDelegate, selfDelegate, daoName }: instantMeetProps) {
   });
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [confirmSave, setConfirmSave] = useState(false);
-  const { address } = useAccount();
+  const { address, isConnected } = useAccount();
+  const { walletAddress } = useWalletAddress();
   const { chain } = useAccount();
   const [isScheduling, setIsScheduling] = useState(false);
-  // const [daoName, setDaoName] = useState<string>();
+  const { user, ready, getAccessToken, authenticated } = usePrivy();
   const router = useRouter();
 
   const handleModalInputChange = (
@@ -57,7 +60,6 @@ function InstantMeet({ isDelegate, selfDelegate, daoName }: instantMeetProps) {
   ) => {
     const { name, value } = e.target;
 
-    console.log("Value in modal: ", value);
     setModalData((prevData) => ({
       ...prevData,
       [name]: value,
@@ -69,8 +71,8 @@ function InstantMeet({ isDelegate, selfDelegate, daoName }: instantMeetProps) {
 
     let getHeaders = new Headers();
     getHeaders.append("Content-Type", "application/json");
-    if (address) {
-      getHeaders.append("x-wallet-address", address);
+    if (walletAddress) {
+      getHeaders.append("x-wallet-address", walletAddress);
     }
 
     const res = await fetch(`/api/create-room`, {
@@ -79,32 +81,30 @@ function InstantMeet({ isDelegate, selfDelegate, daoName }: instantMeetProps) {
     });
     const result = await res.json();
     const roomId = await result.data;
-    console.log("Instant meet: ", roomId);
 
     let localDateTime = new Date();
 
     // Convert the local date and time to the specified format (YYYY-MM-DDTHH:mm:ss.sssZ)
     let dateInfo = localDateTime.toISOString();
 
-    console.log("Modal details: ", modalData);
-
     const requestData = {
       dao_name: daoName,
       slot_time: dateInfo,
       title: modalData.title,
       description: modalData.description,
-      host_address: address,
+      host_address: walletAddress,
       session_type: "instant-meet",
       meetingId: roomId,
       meeting_status: "Ongoing",
       attendees: [],
     };
-
-    console.log("requestData", requestData);
-
+    const token=await getAccessToken();
     const myHeaders: HeadersInit = {
       "Content-Type": "application/json",
-      ...(address && { "x-wallet-address": address }),
+      ...(walletAddress && {
+        "x-wallet-address": walletAddress,
+        Authorization: `Bearer ${token}`,
+      }),
     };
 
     const requestOptions: any = {
@@ -115,10 +115,8 @@ function InstantMeet({ isDelegate, selfDelegate, daoName }: instantMeetProps) {
     };
 
     try {
-      // console.log("calling.......");
       const response = await fetchApi("/book-slot", requestOptions);
       const result = await response.json();
-      console.log("result:", result);
       if (result.success) {
         // setIsScheduled(true);
         setConfirmSave(false);

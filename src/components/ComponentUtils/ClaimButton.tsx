@@ -8,6 +8,7 @@ import { EAS } from "@ethereum-attestation-service/eas-sdk";
 import toast from "react-hot-toast";
 import confetti from "canvas-confetti";
 import { fetchApi } from "@/utils/api";
+import { usePrivy, useWallets } from "@privy-io/react-auth";
 
 interface ClaimButtonProps {
   meetingId: string;
@@ -36,7 +37,8 @@ const ClaimButton: React.FC<ClaimButtonProps> = ({
 }) => {
   const [isClaiming, setIsClaiming] = useState(false);
   const [isClaimed, setIsClaimed] = useState(!!onChainId);
-
+  const { user, ready, getAccessToken } = usePrivy();
+  const { wallets } = useWallets();
   useEffect(() => {
     setIsClaimed(!!onChainId);
   }, [onChainId]);
@@ -50,55 +52,204 @@ const ClaimButton: React.FC<ClaimButtonProps> = ({
     });
   };
 
+  // const handleAttestationOnchain = async (e: React.MouseEvent) => {
+  //   e.stopPropagation();
+  //   if (isClaimed || isClaiming || disabled) return;
+
+  //   setIsClaiming(true);
+  //   onClaimStart();
+
+  //   try {
+  //     if (
+  //       typeof window.ethereum === "undefined" ||
+  //       !window.ethereum.isConnected()
+  //     ) {
+  //       setIsClaiming(false);
+  //       onClaimEnd();
+  //       return;
+  //     }
+  //   } catch (e) {
+  //     toast.error("Connect your wallet");
+  //     onClaimEnd();
+  //   }
+
+  //   let token = "";
+  //   let EASContractAddress = "";
+
+  //   if (dao === "optimism") {
+  //     token = "OP";
+  //     EASContractAddress = "0x4200000000000000000000000000000000000021";
+  //   } else if (dao === "arbitrum") {
+  //     token = "ARB";
+  //     EASContractAddress = "0xbD75f629A22Dc1ceD33dDA0b68c546A1c035c458";
+  //   }
+
+  //   const data = {
+  //     recipient: address,
+  //     meetingId: `${meetingId}/${token}`,
+  //     meetingType: meetingType,
+  //     startTime: startTime,
+  //     endTime: endTime,
+  //     daoName: dao,
+  //   };
+
+  //   const ClientToken=await getAccessToken();
+
+  //   try {
+  //     const myHeaders: HeadersInit = {
+  //       "Content-Type": "application/json",
+  //       ...(address && {
+  //         "x-wallet-address": address,
+  //         Authorization: `Bearer ${ClientToken}`,
+  //       }),
+  //     };
+  //     // Configure the request options
+  //     const requestOptions = {
+  //       method: "POST",
+  //       headers: myHeaders,
+  //       body: JSON.stringify(data),
+  //     };
+
+  //     const res = await fetchApi("/attest-onchain", requestOptions);
+
+  //     // if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+  //     if (!res.ok) {
+  //       const errorText = await res.text();
+  //       throw new Error(
+  //         `HTTP error! status: ${res.status}, message: ${errorText}`
+  //       );
+  //     }
+
+  //     const attestationObject = await res.json();
+  //     const provider = new ethers.BrowserProvider(window?.ethereum);
+  //     const eas = new EAS(EASContractAddress);
+  //     const signer = await provider.getSigner();
+  //     eas.connect(signer);
+
+  //     const schemaUID =
+  //       "0xf9e214a80b66125cad64453abe4cef5263be3a7f01760d0cc72789236fca2b5d";
+  //     const tx = await eas.attestByDelegation({
+  //       schema: schemaUID,
+  //       data: {
+  //         recipient: attestationObject.delegatedAttestation.message.recipient,
+  //         expirationTime:
+  //           attestationObject.delegatedAttestation.message.expirationTime,
+  //         revocable: attestationObject.delegatedAttestation.message.revocable,
+  //         refUID: attestationObject.delegatedAttestation.message.refUID,
+  //         data: attestationObject.delegatedAttestation.message.data,
+  //       },
+  //       signature: attestationObject.delegatedAttestation.signature,
+  //       attester: "0x7B2C5f70d66Ac12A25cE4c851903436545F1b741",
+  //     });
+  //     const newAttestationUID = await tx.wait();
+
+  //     if (newAttestationUID) {
+  //       const updateResponse = await fetchApi(`/update-attestation-uid`, {
+  //         method: "PUT",
+  //         headers: { "Content-Type": "application/json" },
+  //         body: JSON.stringify({
+  //           meetingId: meetingId,
+  //           meetingType: meetingType,
+  //           uidOnchain: newAttestationUID,
+  //           address: address,
+  //           daoName: dao,
+  //         }),
+  //       });
+  //       const updateData = await updateResponse.json();
+  //       if (updateData.success) {
+  //         setIsClaimed(true);
+  //         setTimeout(() => {
+  //           triggerConfetti();
+  //         }, 100);
+  //         toast.success("On-chain attestation claimed successfully!");
+  //       }
+  //     }
+  //   } catch (error: any) {
+  //     console.error("Error claim:", error.message);
+  //     toast.error(`Failed to claim on-chain attestation`);
+  //     onClaimEnd();
+  //   } finally {
+  //     setIsClaiming(false);
+  //   }
+  // };
+
   const handleAttestationOnchain = async (e: React.MouseEvent) => {
     e.stopPropagation();
+    
+    // Early return conditions
     if (isClaimed || isClaiming || disabled) return;
+    
 
+    // Reset states
     setIsClaiming(true);
     onClaimStart();
 
     try {
-      if (
-        typeof window.ethereum === "undefined" ||
-        !window.ethereum.isConnected()
-      ) {
-        console.log("not connected");
-        setIsClaiming(false);
-        onClaimEnd();
-        return;
+      // Validate Privy authentication
+      if (!ready) {
+        toast.error("Privy authentication not ready");
+        throw new Error("Privy not ready");
       }
-    } catch (e) {
-      toast.error("Connect your wallet");
-      onClaimEnd();
-    }
 
-    let token = "";
-    let EASContractAddress = "";
+      if (!user) {
+        toast.error("Please log in first");
+        throw new Error("No user logged in");
+      }
 
-    if (dao === "optimism") {
-      token = "OP";
-      EASContractAddress = "0x4200000000000000000000000000000000000021";
-    } else if (dao === "arbitrum") {
-      token = "ARB";
-      EASContractAddress = "0xbD75f629A22Dc1ceD33dDA0b68c546A1c035c458";
-    }
+      // Get the connected provider
+      // const provider = user.wallet?.ethereum;
 
-    const data = {
-      recipient: address,
-      meetingId: `${meetingId}/${token}`,
-      meetingType: meetingType,
-      startTime: startTime,
-      endTime: endTime,
-      daoName: dao,
-    };
+      const privyProvider = await wallets[0]?.getEthereumProvider();
 
-    try {
-      const myHeaders: HeadersInit = {
-        "Content-Type": "application/json",
-        ...(address && { "x-wallet-address": address }),
+      if (!privyProvider) {
+        toast.error("No wallet connected. Please connect a wallet.");
+        throw new Error("No provider found");
+      }
+
+      // Use ethers to create a provider
+      const ethersProvider = new ethers.BrowserProvider(privyProvider);
+      const signer = await ethersProvider.getSigner();
+
+      // Determine DAO-specific details
+      let token = "";
+      let EASContractAddress = "";
+
+      switch (dao.toLowerCase()) {
+        case "optimism":
+          token = "OP";
+          EASContractAddress = "0x4200000000000000000000000000000000000021";
+          break;
+        case "arbitrum":
+          token = "ARB";
+          EASContractAddress = "0xbD75f629A22Dc1ceD33dDA0b68c546A1c035c458";
+          break;
+        default:
+          throw new Error(`Unsupported DAO: ${dao}`);
+      }
+
+      // Prepare attestation data
+      const data = {
+        recipient: address,
+        meetingId: `${meetingId}/${token}`,
+        meetingType: meetingType,
+        startTime: startTime,
+        endTime: endTime,
+        daoName: dao,
       };
 
-      // Configure the request options
+      // Get Privy access token
+      const ClientToken = await getAccessToken();
+
+      // Prepare API request headers
+      const myHeaders: HeadersInit = {
+        "Content-Type": "application/json",
+        ...(address && {
+          "x-wallet-address": address,
+          Authorization: `Bearer ${ClientToken}`,
+        }),
+      };
+
+      // Fetch attestation details
       const requestOptions = {
         method: "POST",
         headers: myHeaders,
@@ -107,22 +258,25 @@ const ClaimButton: React.FC<ClaimButtonProps> = ({
 
       const res = await fetchApi("/attest-onchain", requestOptions);
 
-      // if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+      // Handle API response
       if (!res.ok) {
         const errorText = await res.text();
         throw new Error(
-          `HTTP error! status: ${res.status}, message: ${errorText}`
+          `API Error! status: ${res.status}, message: ${errorText}`
         );
       }
 
       const attestationObject = await res.json();
-      const provider = new ethers.BrowserProvider(window?.ethereum);
+
+      // Initialize EAS
       const eas = new EAS(EASContractAddress);
-      const signer = await provider.getSigner();
       eas.connect(signer);
 
+      // Prepare attestation parameters
       const schemaUID =
         "0xf9e214a80b66125cad64453abe4cef5263be3a7f01760d0cc72789236fca2b5d";
+    
+      // Perform on-chain attestation
       const tx = await eas.attestByDelegation({
         schema: schemaUID,
         data: {
@@ -136,10 +290,12 @@ const ClaimButton: React.FC<ClaimButtonProps> = ({
         signature: attestationObject.delegatedAttestation.signature,
         attester: "0x7B2C5f70d66Ac12A25cE4c851903436545F1b741",
       });
+
+      // Wait for transaction confirmation
       const newAttestationUID = await tx.wait();
-      console.log("New attestation UID: ", newAttestationUID);
 
       if (newAttestationUID) {
+        // Update attestation UID in backend
         const updateResponse = await fetchApi(`/update-attestation-uid`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
@@ -148,23 +304,43 @@ const ClaimButton: React.FC<ClaimButtonProps> = ({
             meetingType: meetingType,
             uidOnchain: newAttestationUID,
             address: address,
+            daoName: dao,
           }),
         });
+
         const updateData = await updateResponse.json();
+        
         if (updateData.success) {
-          console.log("On-chain attestation Claimed");
+          // Successful claim
           setIsClaimed(true);
+          
+          // Trigger confetti with a slight delay
           setTimeout(() => {
             triggerConfetti();
           }, 100);
+
           toast.success("On-chain attestation claimed successfully!");
+          onClaimEnd();
+        } else {
+          throw new Error("Failed to update attestation UID");
         }
       }
     } catch (error: any) {
-      console.error("Error claim:", error.message);
-      toast.error(`Failed to claim on-chain attestation`);
+      // Comprehensive error handling
+      console.error("Claim Error:", error);
+      
+      let errorMessage = "Failed to claim on-chain attestation";
+      
+      if (error.code === 'ACTION_REJECTED') {
+        errorMessage = "Transaction was rejected by the user";
+      } else if (error.message.includes('insufficient funds')) {
+        errorMessage = "Insufficient funds for transaction";
+      }
+      
+      toast.error(errorMessage);
       onClaimEnd();
     } finally {
+      // Ensure claiming state is reset
       setIsClaiming(false);
     }
   };
@@ -216,4 +392,4 @@ const ClaimButton: React.FC<ClaimButtonProps> = ({
   );
 };
 
-export default ClaimButton;
+export default ClaimButton; 

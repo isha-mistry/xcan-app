@@ -23,7 +23,9 @@ import { useAccount } from "wagmi";
 import { CiSearch } from "react-icons/ci";
 import { FaChevronDown } from "react-icons/fa";
 import { MdOutlineHourglassDisabled } from "react-icons/md";
-import { useConnectModal } from "@rainbow-me/rainbowkit";
+import { usePrivy } from "@privy-io/react-auth";
+import { useWalletAddress } from "@/app/hooks/useWalletAddress";
+// import { useConnectModal } from "@rainbow-me/rainbowkit";
 import Link from "next/link";
 import op from "@/assets/images/daos/op.png";
 import arb from "@/assets/images/daos/arb.png";
@@ -77,7 +79,10 @@ function AvailableSessions() {
   const [error, setError] = useState<string | null>(null);
   const [initialFetchComplete, setInitialFetchComplete] = useState(false);
   const [showFilterOptions, setShowFilterOptions] = useState(false);
-  const { openConnectModal } = useConnectModal();
+  // const { openConnectModal } = useConnectModal();
+  const { ready, authenticated, login, logout, user } = usePrivy();
+  const { walletAddress } = useWalletAddress();
+
   const [tooltipContent, setTooltipContent] = useState("Copy");
   const [animatingButtons, setAnimatingButtons] = useState<{
     [key: string]: boolean;
@@ -129,6 +134,22 @@ function AvailableSessions() {
 
     return () => window.removeEventListener("resize", handleResize);
   }, []);
+
+  const handleBookSession = (daoName: string, userAddress: string) => {
+    if (authenticated) {
+      router.push(
+        `/${daoName}/${userAddress}?active=delegatesSession&session=book`
+      );
+    } else if (!authenticated) {
+      // openConnectModal();
+      login();
+    } else {
+      console.error("Connect modal is not available");
+      alert(
+        "Wallet connection is not available. Please check your wallet configuration."
+      );
+    }
+  };
 
   const handleRetry = () => {
     setError(null);
@@ -880,25 +901,13 @@ function AvailableSessions() {
                     </span>
                   </div>
                   <div className="w-[45%] 0.5xs:w-[40%] flex justify-end ">
-                    <Link
-                      href={
-                        isConnected
-                          ? `/${daos.session.dao_name}/${daos.session.userAddress}?active=delegatesSession&session=book`
-                          : ""
+                    <button
+                      onClick={() =>
+                        handleBookSession(
+                          daos.session.dao_name,
+                          daos.session.userAddress
+                        )
                       }
-                      onClick={(e) => {
-                        if (!isConnected) {
-                          e.preventDefault();
-                          if (openConnectModal) {
-                            openConnectModal();
-                          } else {
-                            console.error("Connect modal is not available");
-                            toast(
-                              "Wallet connection is not available. Please check your wallet configuration."
-                            );
-                          }
-                        }
-                      }}
                       className="group relative bg-black text-white py-2 xs:py-3 sm:py-4 px-4 sm:px-6 rounded-[36px] text-[10px] xs:text-xs sm:text-sm w-[11rem] font-medium shadow-[0_8px_30px_rgb(0,0,0,0.12)] before:content-[''] before:absolute before:inset-0 before:rounded-[36px] before:bg-gradient-to-r before:from-transparent before:via-white/5 before:to-transparent before:pointer-events-none transition-all duration-300 ease-out hover:transform hover:translate-y-[-2px]hover:shadow-[0_20px_40px_rgba(0,0,0,0.25)] hover:bg-[#1b1b1b] focus:outline-none focus:ring-2 focus:ring-gray-400 active:transform active:translate-y-[1px] flex items-center justify-center gap-2 overflow-hidden"
                     >
                       <span className="transition-transform duration-300 group-hover:translate-x-[-2px]">
@@ -908,7 +917,7 @@ function AvailableSessions() {
                         size={16}
                         className="size-3 xs:size-4 transition-all duration-500 ease-in-out group-hover:translate-x-[10px] group-hover:scale-125 group-hover:rotate-12 group-hover:animate-pulse relative after:absolute after:content-[''] after:w-full after:h-full after:bg-white/10 after:top-0 after:left-0 after:rounded-full after:scale-0 group-hover:after:scale-150 after:transition-transform after:duration-300 after:opacity-0 group-hover:after:opacity-100"
                       />
-                    </Link>
+                    </button>
                   </div>
                 </div>
               </div>

@@ -49,7 +49,7 @@ function DelegateTileModal({
   const { isConnected, address, chain } = useAccount();
   const { apiData: cpiData, loading, error: errorApi } = useApiData();
   const actualCpi = cpiData?.data?.results[0].cpi;
-  console.log("cpiData::::", cpiData);
+  // console.log("cpiData::::", cpiData);
   const [isLoading, setIsLoading] = useState(true);
   const [isHovering, setIsHovering] = useState(false);
   const [tokenImage, setTokenImage] = useState(op);
@@ -73,7 +73,7 @@ function DelegateTileModal({
     // args:['0x6eda5acaff7f5964e1ecc3fd61c62570c186ca0c' as Address]
     args: [address as Address],
   });
-  console.log(accountBalance, "acc balance", typeof accountBalance);
+  // console.log(accountBalance, "acc balance", typeof accountBalance);
   const handleMouseLeave = () => {
     setIsHovering(false);
   };
@@ -97,7 +97,6 @@ function DelegateTileModal({
       </div>
     );
   }
-  // console.log("deleeeeee", addressCheck);
   return (
     <>
       <div className="fixed inset-0 flex items-center justify-center z-50  overflow-hidden font-poppins">

@@ -10,6 +10,7 @@ import ProposalsSkeletonLoader from "../SkeletonLoader/ProposalsSkeletonLoader";
 import ArbLogo from "@/assets/images/daos/arb.png";
 import { dao_details } from "@/config/daoDetails";
 import ErrorDisplay from "../ComponentUtils/ErrorDisplay";
+import { fetchApi } from "@/utils/api";
 
 interface Proposal {
   proposalId: string;
@@ -61,7 +62,7 @@ function Proposals({ props }: { props: string }) {
 
   // useEffect(() => {
   //   const fetchCanacelledProposals = async () => {
-  //     const response = await fetch(`/api/get-canceledproposal?dao=${props}`);
+  //     const response = await fetchApi(`/get-canceledproposal?dao=${props}`);
   //     const result = await response.json();
   //     setCanceledProposals(result);
   //   };
@@ -215,7 +216,307 @@ function Proposals({ props }: { props: string }) {
       setLoading(false);
     }
   };
+  // useEffect(() => {
+  //   const fetchVotesForDisplayedProposals = async () => {
+  //     setLoading(true);
+  //     try {
+  //       const updatedProposals = await Promise.allSettled(
+  //         displayedProposals.map(async (proposal) => {
+  //           if (!proposal.votesLoaded) {
+  //             return await fetchVotes(proposal);
+  //           }
+  //           return proposal;
+  //         })
+  //       );
 
+  //       // Process successful and failed fetches
+  //       const processedProposals = updatedProposals.map(result => 
+  //         result.status === 'fulfilled' ? result.value : result.reason
+  //       );
+
+  //       // Update only successful proposals
+  //       const successfulProposals = processedProposals.filter(
+  //         proposal => proposal.votesLoaded
+  //       );
+
+  //       setDisplayedProposals(prevProposals => 
+  //         prevProposals.map(proposal => 
+  //           successfulProposals.find(p => p.proposalId === proposal.proposalId) || proposal
+  //         )
+  //       );
+  //     } catch (error: any) {
+  //       console.error("Error in batch fetching:", error);
+  //       setError(error.message);
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
+
+  //   if (displayedProposals.some((proposal) => !proposal.votesLoaded)) {
+  //     fetchVotesForDisplayedProposals();
+  //   }
+  // }, [displayedProposals, fetchVotes]);
+  // useEffect(() => {
+  //   const fetchVotesForDisplayedProposals = async () => {
+  //     setLoading(true);
+  //     setError(null);
+
+  //     try {
+  //       // Create chunks of 3 proposals to prevent too many concurrent requests
+  //       const CHUNK_SIZE = 3;
+  //       const proposalsToFetch = displayedProposals.filter(p => !p.votesLoaded);
+        
+  //       for (let i = 0; i < proposalsToFetch.length; i += CHUNK_SIZE) {
+  //         const chunk = proposalsToFetch.slice(i, i + CHUNK_SIZE);
+          
+  //         const results = await Promise.allSettled(
+  //           chunk.map(proposal => fetchVotes(proposal))
+  //         );
+
+  //         // Process results and update state
+  //         setDisplayedProposals(prevProposals => {
+  //           const updatedProposals = [...prevProposals];
+            
+  //           results.forEach((result, index) => {
+  //             if (result.status === 'fulfilled') {
+  //               const proposalIndex = updatedProposals.findIndex(
+  //                 p => p.proposalId === chunk[index].proposalId
+  //               );
+  //               if (proposalIndex !== -1) {
+  //                 updatedProposals[proposalIndex] = result.value;
+  //               }
+  //             } else {
+  //               console.error(`Failed to fetch votes for proposal ${chunk[index].proposalId}:`, result.reason);
+  //             }
+  //           });
+
+  //           return updatedProposals;
+  //         });
+
+  //         // Add a small delay between chunks to prevent rate limiting
+  //         if (i + CHUNK_SIZE < proposalsToFetch.length) {
+  //           await new Promise(resolve => setTimeout(resolve, 1000));
+  //         }
+  //       }
+  //     } catch (error: any) {
+  //       console.error("Error in batch fetching:", error);
+  //       setError(error.message);
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
+
+  //   if (displayedProposals.some(proposal => !proposal.votesLoaded)) {
+  //     fetchVotesForDisplayedProposals();
+  //   }
+  // }, [displayedProposals, fetchVotes]);
+  
+  const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+  const fetchVotePage = async (
+    proposalId: string, 
+    lastBlockTimestamp: string, 
+    batchSize: number,
+    retryCount = 0
+  ): Promise<{ votes: Vote[], nextBlockTimestamp: string | null }> => {
+    const MAX_RETRIES = 3;
+    const RETRY_DELAY = 2000; // 2 seconds
+
+    try {
+      const response = await fetchApi(
+        `/get-voters?proposalId=${proposalId}&blockTimestamp=${lastBlockTimestamp}&first=${batchSize}&dao=${props}`
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data: FetchVotesResponse = await response.json();
+      const votes = [ ...(data?.voteCasts || [])];
+      const votesWithParams = [ ...(data?.voteCastWithParams || [])];
+      // Merge votes and votesWithParams
+      const combinedVotes = [...votes, ...votesWithParams];
+
+      if (combinedVotes.length === 0) {
+        return { votes: [], nextBlockTimestamp: null };
+      }
+
+      // Sort votes by blockTimestamp to ensure proper ordering
+      const sortedVotes = votes.sort((a, b) => {
+        const timeA = typeof a.blockTimestamp === 'string' ? parseInt(a.blockTimestamp) : a.blockTimestamp;
+        const timeB = typeof b.blockTimestamp === 'string' ? parseInt(b.blockTimestamp) : b.blockTimestamp;
+        return timeA - timeB;
+      });
+
+      // Get the last timestamp and add 1 for the next page
+      const lastVote = sortedVotes[sortedVotes.length - 1];
+      const nextBlock = typeof lastVote.blockTimestamp === 'string' 
+        ? (parseInt(lastVote.blockTimestamp) + 1).toString()
+        : (lastVote.blockTimestamp + 1).toString();
+      return { 
+        votes: combinedVotes,
+        nextBlockTimestamp: votes.length >= batchSize ? nextBlock : null 
+      };
+
+    } catch (error) {
+      if (retryCount < MAX_RETRIES) {
+        await sleep(RETRY_DELAY * Math.pow(2, retryCount));
+        return fetchVotePage(proposalId, lastBlockTimestamp, batchSize, retryCount + 1);
+      }
+      throw error;
+    }
+  };
+
+  const fetchVotes = useCallback(async (proposal: Proposal): Promise<Proposal> => {
+    if (fetchingProposalIds.has(proposal.proposalId)) {
+      throw new Error('Already fetching votes for this proposal');
+    }
+
+    setFetchingProposalIds(prev => new Set(prev).add(proposal.proposalId));
+    
+    const BATCH_SIZE = 1000;
+    let allVotes = new Map<string, Vote>(); // Use Map for efficient deduplication
+    let lastBlockTimestamp = "0";
+    let hasMore = true;
+    let totalPages = 0;
+    const MAX_PAGES = 50; // Safety limit
+
+    try {
+      
+      while (hasMore && totalPages < MAX_PAGES) {
+        totalPages++;
+
+        const { votes, nextBlockTimestamp } = await fetchVotePage(
+          proposal.proposalId,
+          lastBlockTimestamp,
+          BATCH_SIZE
+        );
+
+        // Process and deduplicate votes
+        votes.forEach(vote => {
+          const key = `${vote.voter}-${vote.blockTimestamp}`;
+          if (!allVotes.has(key)) {
+            allVotes.set(key, vote);
+          }
+        });
+
+        if (!nextBlockTimestamp) {
+          hasMore = false;
+        } else {
+          lastBlockTimestamp = nextBlockTimestamp;
+          // Add small delay between pages to prevent rate limiting
+          await sleep(200);
+        }
+
+        // Log progress
+      }
+
+      if (totalPages >= MAX_PAGES) {
+        // console.warn(`Reached maximum pages for proposal ${proposal.proposalId}`);
+      }
+
+      // Calculate vote weights
+      const voteWeights = Array.from(allVotes.values()).reduce(
+        (acc, vote) => {
+          const weightInEther = weiToEther(vote.weight);
+          const supportKey = `support${vote.support}Weight` as keyof typeof acc;
+          acc[supportKey] += weightInEther;
+          return acc;
+        },
+        { support0Weight: 0, support1Weight: 0, support2Weight: 0 }
+      );
+
+
+      return {
+        ...proposal,
+        ...voteWeights,
+        votersCount: allVotes.size,
+        votesLoaded: true,
+      };
+
+    } catch (error) {
+      console.error(`Error fetching votes for proposal ${proposal.proposalId}:`, error);
+      throw error;
+    } finally {
+      setFetchingProposalIds(prev => {
+        const next = new Set(prev);
+        next.delete(proposal.proposalId);
+        return next;
+      });
+    }
+  }, [props, fetchingProposalIds]);
+
+  useEffect(() => {
+    const fetchVotesForDisplayedProposals = async () => {
+      if (loading) return;
+      
+      setLoading(true);
+      setError(null);
+
+      try {
+        // Process proposals in smaller chunks
+        const CHUNK_SIZE = 2;
+        const proposalsToFetch = displayedProposals.filter(p => 
+          !p.votesLoaded && !fetchingProposalIds.has(p.proposalId)
+        );
+
+        for (let i = 0; i < proposalsToFetch.length; i += CHUNK_SIZE) {
+          const chunk = proposalsToFetch.slice(i, i + CHUNK_SIZE);
+          
+          // Fetch votes for current chunk
+          const results = await Promise.allSettled(chunk.map(fetchVotes));
+
+          // Update state with results
+          setDisplayedProposals(prevProposals => {
+            const updatedProposals = [...prevProposals];
+            
+            results.forEach((result, index) => {
+              const currentProposal = chunk[index];
+              const proposalIndex = updatedProposals.findIndex(
+                p => p.proposalId === currentProposal.proposalId
+              );
+
+              if (proposalIndex !== -1) {
+                if (result.status === 'fulfilled') {
+                  updatedProposals[proposalIndex] = result.value;
+                } else {
+                  console.error(
+                    `Failed to fetch votes for proposal ${currentProposal.proposalId}:`,
+                    result.reason
+                  );
+                  // Mark as not loaded so it can be retried
+                  updatedProposals[proposalIndex] = {
+                    ...updatedProposals[proposalIndex],
+                    votesLoaded: false
+                  };
+                }
+              }
+            });
+
+            return updatedProposals;
+          });
+
+          // Add delay between chunks
+          if (i + CHUNK_SIZE < proposalsToFetch.length) {
+            await sleep(500);
+          }
+        }
+      } catch (error: any) {
+        console.error("Error in batch fetching:", error);
+        setError(error.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    const unfetchedProposals = displayedProposals.some(
+      p => !p.votesLoaded && !fetchingProposalIds.has(p.proposalId)
+    );
+    
+    if (unfetchedProposals) {
+      fetchVotesForDisplayedProposals();
+    }
+  }, [displayedProposals, fetchVotes, fetchingProposalIds, loading]);
   useEffect(() => {
     const proposals = async () => {
       if (currentCache && currentCache.props === props) {

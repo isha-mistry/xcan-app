@@ -11,14 +11,26 @@ import {
 import styles from "./DelegateInfo.module.css";
 import { marked } from "marked";
 import { useAccount } from "wagmi";
+import { usePrivy } from "@privy-io/react-auth";
+import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 import { fetchApi } from "@/utils/api";
+import { BASE_URL } from "@/config/constants";
+import { MeetingRecords } from "@/types/UserProfileTypes";
 
 interface Type {
   daoDelegates: string;
   individualDelegate: string;
 }
 
-function DelegateInfo({ props, desc }: { props: Type; desc: string }) {
+function DelegateInfo({
+  props,
+  desc,
+  attestationCounts,
+}: {
+  props: Type;
+  desc: string;
+  attestationCounts: MeetingRecords | null;
+}) {
   const [karmaDescription, setKarmaDescription] = useState<string>();
   const [opAgoraDescription, setOpAgoraDescription] = useState<string>();
   const [loading, setLoading] = useState(true);
@@ -38,7 +50,9 @@ function DelegateInfo({ props, desc }: { props: Type; desc: string }) {
   const [loadingOpAgora, setLoadingOpAgora] = useState(false);
   const [loadingKarma, setLoadingKarma] = useState(false);
   const [convertedDescription, setConvertedDescription] = useState<string>("");
-  const { address } = useAccount();
+  const { address, isConnected } = useAccount();
+  const { user, ready, getAccessToken, authenticated } = usePrivy();
+  const { walletAddress } = useWalletAddress();
 
   useEffect(() => {
     if (activeButton === "onchain") {
@@ -46,14 +60,14 @@ function DelegateInfo({ props, desc }: { props: Type; desc: string }) {
     } else if (activeButton === "offchain") {
       fetchAttestation("offchain");
     }
-  }, [activeButton, props.individualDelegate, props.daoDelegates]);
+  }, [
+    walletAddress,
+    activeButton,
+    props.individualDelegate,
+    props.daoDelegates,
+  ]);
 
   const fetchAttestation = async (buttonType: string) => {
-    let sessionHostingCount = 0;
-    let sessionAttendingCount = 0;
-    let officehoursHostingCount = 0;
-    let officehoursAttendingCount = 0;
-
     setActiveButton(buttonType);
     setSessionHostedLoading(true);
     setSessionAttendedLoading(true);
@@ -66,155 +80,46 @@ function DelegateInfo({ props, desc }: { props: Type; desc: string }) {
     const attendee_uid_key =
       buttonType === "onchain" ? "onchain_uid_attendee" : "attendee_uid";
 
-    const sessionHosted = async () => {
-      try {
-        const response = await fetchApi(
-          `/get-meeting/${props.individualDelegate}?dao_name=${props.daoDelegates}`,
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-            },
-          }
-        );
-        const result = await response.json();
-        if (result.success) {
-          result.data.forEach((item: any) => {
-            if (
-              item.meeting_status === "Recorded" &&
-              item.dao_name === props.daoDelegates &&
-              item[host_uid_key]
-            ) {
-              sessionHostingCount++;
-            }
-            setSessionHostCount(sessionHostingCount);
-            setSessionHostedLoading(false);
-          });
-        } else {
-          setSessionHostedLoading(false);
-        }
-      } catch (e) {
-        console.log("Error: ", e);
-        setSessionHostedLoading(false);
-      }
-    };
+    try {
+      if (attestationCounts) {
+        const currentDaoRecords =
+          attestationCounts?.[props.daoDelegates as keyof MeetingRecords];
 
-    const sessionAttended = async () => {
-      try {
-        const myHeaders: HeadersInit = {
-          "Content-Type": "application/json",
-          ...(address && { "x-wallet-address": address }),
-        };
-        const response = await fetchApi(
-          `/get-session-data/${props.individualDelegate}`,
-          {
-            method: "POST",
-            headers: myHeaders,
-            body: JSON.stringify({
-              dao_name: props.daoDelegates,
-            }),
-          }
-        );
-        const result = await response.json();
-        if (result.success) {
-          result.data.forEach((item: any) => {
-            if (
-              item.meeting_status === "Recorded" &&
-              item.dao_name === props.daoDelegates &&
-              item.attendees.some((attendee: any) => attendee[attendee_uid_key])
-            ) {
-              sessionAttendingCount++;
-            }
-            setSessionAttendCount(sessionAttendingCount);
-            setSessionAttendedLoading(false);
-          });
-        } else {
-          setSessionAttendedLoading(false);
+        if (buttonType === "onchain") {
+          setSessionHostCount(
+            currentDaoRecords?.sessionHosted?.onchainCounts || 0
+          );
+          setSessionAttendCount(
+            currentDaoRecords?.sessionAttended?.onchainCounts || 0
+          );
+          setOfficehoursHostCount(
+            currentDaoRecords?.officeHoursHosted?.onchainCounts || 0
+          );
+          setOfficehoursAttendCount(
+            currentDaoRecords?.officeHoursAttended?.onchainCounts || 0
+          );
+        } else if (buttonType === "offchain") {
+          setSessionHostCount(
+            currentDaoRecords?.sessionHosted?.offchainCounts || 0
+          );
+          setSessionAttendCount(
+            currentDaoRecords?.sessionAttended?.offchainCounts || 0
+          );
+          setOfficehoursHostCount(
+            currentDaoRecords?.officeHoursHosted?.offchainCounts || 0
+          );
+          setOfficehoursAttendCount(
+            currentDaoRecords?.officeHoursAttended?.offchainCounts || 0
+          );
         }
-      } catch (e) {
-        console.log("Error: ", e);
-        setSessionAttendedLoading(false);
       }
-    };
-
-    const officeHoursHosted = async () => {
-      try {
-        const myHeaders: HeadersInit = {
-          "Content-Type": "application/json",
-          ...(address && { "x-wallet-address": address }),
-        };
-        const response = await fetchApi(`/get-officehours-address`, {
-          method: "POST",
-          headers: myHeaders,
-          body: JSON.stringify({
-            address: props.individualDelegate,
-          }),
-        });
-        const result = await response.json();
-        // console.log("office hours result: ", result);
-        if (result.length > 0) {
-          result.forEach((item: any) => {
-            if (
-              item.meeting_status === "inactive" &&
-              item.dao_name === props.daoDelegates &&
-              item[host_uid_key]
-            ) {
-              officehoursHostingCount++;
-            }
-            // console.log("office hours host count: ", officehoursHostingCount);
-            setOfficehoursHostCount(officehoursHostingCount);
-            setOfficeHoursHostedLoading(false);
-          });
-        } else {
-          setOfficeHoursHostedLoading(false);
-        }
-      } catch (e) {
-        console.log("Error: ", e);
-        setOfficeHoursHostedLoading(false);
-      }
-    };
-
-    const officeHoursAttended = async () => {
-      try {
-        const myHeaders: HeadersInit = {
-          "Content-Type": "application/json",
-          ...(address && { "x-wallet-address": address }),
-        };
-        const response = await fetchApi(`/get-attendee-individual`, {
-          method: "POST",
-          headers: myHeaders,
-          body: JSON.stringify({
-            attendee_address: props.individualDelegate,
-          }),
-        });
-        const result = await response.json();
-        // console.log("office hours attended result: ", result);
-        if (result.length > 0) {
-          result.forEach((item: any) => {
-            if (
-              item.meeting_status === "inactive" &&
-              item.dao_name === props.daoDelegates &&
-              item.attendees.some((attendee: any) => attendee[attendee_uid_key])
-            ) {
-              officehoursAttendingCount++;
-            }
-            // console.log("officehours attended: ", officehoursAttendingCount);
-            setOfficehoursAttendCount(officehoursAttendingCount);
-            setOfficeHoursAttendedLoading(false);
-          });
-        } else {
-          setOfficeHoursAttendedLoading(false);
-        }
-      } catch (e) {
-        console.log("Error: ", e);
-        setOfficeHoursAttendedLoading(false);
-      }
-    };
-
-    sessionHosted();
-    sessionAttended();
-    officeHoursHosted();
-    officeHoursAttended();
+    } catch (e) {
+    } finally {
+      setSessionHostedLoading(false);
+      setSessionAttendedLoading(false);
+      setOfficeHoursHostedLoading(false);
+      setOfficeHoursAttendedLoading(false);
+    }
   };
 
   const details = [
@@ -272,8 +177,6 @@ function DelegateInfo({ props, desc }: { props: Type; desc: string }) {
             `/api/get-arbitrum-delegatelist?user=${props.individualDelegate}`
           );
           const details = await res.json();
-          console.log("Details: ", details);
-          console.log("Desc: ", details.delegate.statement.statement);
           // setKarmaDescription(details.delegate.statement.statement);
           const statementHtml = await convertMarkdownToHtml(
             details.delegate.statement.statement
@@ -310,7 +213,6 @@ function DelegateInfo({ props, desc }: { props: Type; desc: string }) {
 
           const data = await res.json();
           const statement = data.statement.payload.delegateStatement;
-          console.log("statement", statement);
           // setOpAgoraDescription(statement);
           // setConvertedDescription(convertMarkdownToHtml(statement));
           const statementHtml = await convertMarkdownToHtml(statement);
@@ -328,9 +230,6 @@ function DelegateInfo({ props, desc }: { props: Type; desc: string }) {
     };
     fetchData();
   }, [props.individualDelegate, props.daoDelegates]);
-
-  console.log("desc from karma: ", karmaDescription);
-  console.log("desc from db: ", desc);
 
   return (
     <div className="pt-4">

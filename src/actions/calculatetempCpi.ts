@@ -8,13 +8,10 @@ async function handleResponse(response: Response) {
 }
 
 export async function calculateTempCpi(
-  delegatorAddress: `0x${string}` | undefined | string,
-  toAddress: `0x${string}` | undefined | string,
-  address: `0x${string}` | undefined | string
-) {
+delegatorAddress: `0x${string}` | undefined | string | null, toAddress: `0x${string}` | undefined | string | null, address: `0x${string}` | undefined | string | null, token: string | null) {
   const myHeaders: HeadersInit = {
     "Content-Type": "application/json",
-    ...(address && { "x-wallet-address": address }),
+    ...(address && { "x-wallet-address": address,"Authorization":`Bearer ${token}` }),
   };
 
   const raw = JSON.stringify({
@@ -27,7 +24,7 @@ export async function calculateTempCpi(
     body: raw,
     redirect: "follow",
   };
-  console.log("requestOptions++++++++++++++++++++++++++++", requestOptions);
+  // console.log("requestOptions++++++++++++++++++++++++++++", requestOptions);
   const response = await fetchApi(`/calculate-temp-cpi`, requestOptions);
   const result = handleResponse(response);
   return result;

@@ -10,7 +10,7 @@ import {
   useWriteContract,
   useSwitchChain,
 } from "wagmi";
-import { useConnectModal } from "@rainbow-me/rainbowkit";
+// import { useConnectModal } from "@rainbow-me/rainbowkit";
 import { createCollectorClient, createCreatorClient } from "chora-protocol-sdk";
 import { ethers } from "ethers";
 import lighthouse from "@lighthouse-web3/sdk";
@@ -38,6 +38,8 @@ import {
   ChevronUp,
   ChevronDown,
 } from "lucide-react";
+import { getAccessToken, usePrivy } from "@privy-io/react-auth";
+import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 import { fetchApi } from "@/utils/api";
 
 interface Attendee extends DynamicAttendeeInterface {
@@ -62,10 +64,12 @@ const WatchFreeCollect = ({
   collection: string;
 }) => {
   const chainId = useChainId();
-  const { openConnectModal } = useConnectModal();
+  // const { openConnectModal } = useConnectModal();
+  const { ready, authenticated, login, logout, user } = usePrivy();
   const { switchChain } = useSwitchChain();
   const publicClient = usePublicClient()!;
-  const { address, chain } = useAccount();
+  const { chain, isConnected } = useAccount();
+  const { walletAddress } = useWalletAddress();
   const { data: session } = useSession();
   const searchParams = useSearchParams();
   const { writeContractAsync, writeContract } = useWriteContract();
@@ -101,7 +105,7 @@ const WatchFreeCollect = ({
       setHasDeployedContractAddress(true);
     }
     setMintReferral(searchParams.get("referrer") || "");
-  }, [data, searchParams, address, session]);
+  }, [data, searchParams, walletAddress, session]);
 
   useEffect(() => {
     const fetchEthToUsdRate = async () => {
@@ -163,6 +167,7 @@ const WatchFreeCollect = ({
       if (switchChain) {
         try {
           setIsLoading(true);
+          toast("Switching to Arbitrum Sepolia network,try again!");
           await switchChain({ chainId: TARGET_CHAIN_ID });
         } catch (error) {
           console.error("Failed to switch network:", error);
@@ -184,9 +189,10 @@ const WatchFreeCollect = ({
   };
 
   const handleMint = async () => {
-    if (!address && !session) {
+    if (!walletAddress && !authenticated) {
       toast("Wallet not connected");
-      openConnectModal?.();
+      // openConnectModal?.();
+      login();
       return;
     }
 
@@ -209,7 +215,7 @@ const WatchFreeCollect = ({
         quantityToMint: BigInt(number),
         mintComment,
         mintReferral: mintReferralAddress,
-        minterAccount: address!,
+        minterAccount: walletAddress as `0x${string}`,
       });
 
       const txHash = await writeContractAsync(parameters);
@@ -221,9 +227,11 @@ const WatchFreeCollect = ({
   };
 
   const handleContractSubmit = async (contractAddress: string) => {
+    const token=await getAccessToken();
     const myHeaders: HeadersInit = {
       "Content-Type": "application/json",
-      ...(address && { "x-wallet-address": address }),
+      ...(walletAddress && { "x-wallet-address": walletAddress , 
+      "Authorization": `Bearer ${token}`}),
     };
 
     const raw = JSON.stringify({
@@ -331,10 +339,9 @@ const WatchFreeCollect = ({
   };
 
   const handleFirstMinter = async () => {
-    if (!address && !session) {
+    if (!authenticated) {
       toast("Wallet not connected");
-      console.log("Not connected");
-      openConnectModal?.();
+      login();
       return;
     }
 
@@ -353,7 +360,7 @@ const WatchFreeCollect = ({
         token: {
           tokenMetadataURI: tokenMetadataURI || tokenDataURI,
         },
-        account: address!,
+        account: walletAddress as `0x${string}`,
       });
 
       const txHash: `0x${string}` = await writeContractAsync(parameters);

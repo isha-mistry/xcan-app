@@ -6,6 +6,9 @@ import toast, { Toaster } from "react-hot-toast";
 import { useAccount } from "wagmi";
 import { Grid } from "react-loader-spinner";
 import { motion, AnimatePresence } from "framer-motion";
+import { getAccessToken, usePrivy } from "@privy-io/react-auth";
+import { useWalletAddress } from "@/app/hooks/useWalletAddress";
+import { fetchApi } from "@/utils/api";
 
 interface AvailableUserSessionsProps {
   daoName: string;
@@ -25,6 +28,8 @@ function AvailableUserSessions({
   setSessionCreated,
 }: AvailableUserSessionsProps) {
   const { address, isConnected } = useAccount();
+  const { walletAddress } = useWalletAddress();
+  const { ready, authenticated, login, logout, user } = usePrivy();
   const { chain } = useAccount();
   const [data, setData] = useState([]);
   const [dataLoading, setDataLoading] = useState<Boolean>(false);
@@ -35,14 +40,18 @@ function AvailableUserSessions({
       if (!daoName) return;
       setDataLoading(true);
       try {
+        const token=await getAccessToken();
         const myHeaders: HeadersInit = {
           "Content-Type": "application/json",
-          ...(address && { "x-wallet-address": address }),
+          ...(walletAddress && {
+            "x-wallet-address": walletAddress,
+            Authorization: `Bearer ${token}`,
+          }),
         };
 
         const raw = JSON.stringify({
           dao_name: daoName,
-          userAddress: address,
+          userAddress: walletAddress,
         });
 
         const requestOptions = {
@@ -65,10 +74,12 @@ function AvailableUserSessions({
         toast.error("Failed to fetch data.");
       }
     };
-    fetchData();
+    if (walletAddress != null) {
+      fetchData();
+    }
   }, [
     daoName,
-    address,
+    walletAddress,
     scheduledSuccess === true,
     sessionCreated,
     updateTrigger,
@@ -97,7 +108,7 @@ function AvailableUserSessions({
             <TimeSlotTable
               title="15 Minutes"
               slotSize={15}
-              address={address}
+              // address={walletAddress}
               dao_name={daoName}
               data={data.filter((item: any) => item.timeSlotSizeMinutes === 15)}
               setData={setData}
@@ -108,7 +119,7 @@ function AvailableUserSessions({
             <TimeSlotTable
               title="30 Minutes"
               slotSize={30}
-              address={address}
+              // address={walletAddress}
               dao_name={daoName}
               data={data.filter((item: any) => item.timeSlotSizeMinutes === 30)}
               setData={setData}
@@ -119,7 +130,7 @@ function AvailableUserSessions({
             <TimeSlotTable
               title="45 Minutes"
               slotSize={45}
-              address={address}
+              // address={walletAddress}
               dao_name={daoName}
               data={data.filter((item: any) => item.timeSlotSizeMinutes === 45)}
               setData={setData}
@@ -154,16 +165,13 @@ function TimeSlotTable({
   title,
   data,
   slotSize,
-  address,
+  // wallletAddres
   dao_name,
   setData,
   triggerUpdate,
 }: any) {
   const [deleting, setDeleting] = useState<string | null>(null);
-
-  useEffect(() => {
-    console.log("data", data);
-  }, [data]);
+  const { walletAddress } = useWalletAddress();
 
   const handleButtonClick = () => {
     toast("Coming soon 🚀");
@@ -171,15 +179,20 @@ function TimeSlotTable({
 
   const handleDeleteButtonClick = async ({ date, startTime, endTime }: any) => {
     setDeleting(date);
+
     try {
+      const token=await getAccessToken();
       const myHeaders: HeadersInit = {
         "Content-Type": "application/json",
-        ...(address && { "x-wallet-address": address }),
+        ...(walletAddress && {
+          "x-wallet-address": walletAddress,
+          Authorization: `Bearer ${token}`,
+        }),
       };
 
       const raw = JSON.stringify({
         dao_name: dao_name,
-        userAddress: address,
+        userAddress: walletAddress,
         timeSlotSizeMinutes: slotSize,
         date: date,
         startTime: startTime,
@@ -193,8 +206,9 @@ function TimeSlotTable({
         redirect: "follow",
       };
 
-      const response = await fetch("/api/get-availability", requestOptions);
+      const response = await fetchApi("/get-availability", requestOptions);
       const result = await response.json();
+
       if (result.success) {
         toast.success("Deleted successfully!");
         setData((prevData: any) =>
@@ -208,7 +222,6 @@ function TimeSlotTable({
                     !(
                       timeRange.startTime === startTime &&
                       timeRange.endTime === endTime &&
-                      // item.dateAndRanges.date === date
                       range.date === date
                     )
                 ),
@@ -223,7 +236,7 @@ function TimeSlotTable({
       }
       triggerUpdate();
     } catch (error) {
-      console.error(error);
+      console.error("Delete error:", error);
       toast.error("Failed to delete.");
     } finally {
       setDeleting(null);

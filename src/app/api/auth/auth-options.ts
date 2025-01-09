@@ -6,6 +6,7 @@ import { BASE_URL } from "@/config/constants";
 import jwt from "jsonwebtoken";
 
 async function AccountCreate(user: any, token: any, referrer: string | null) {
+  console.log(user);
   try {
     // const referrer = sessionStorage.getItem("referrer");
     const res = await fetch(`${BASE_URL}/api/auth/accountcreate`, {
@@ -24,9 +25,9 @@ async function AccountCreate(user: any, token: any, referrer: string | null) {
     });
 
     if (res.status === 200) {
-      console.log("Account created successfully!");
+      // console.log("Account created successfully!");
     } else if (res.status === 409) {
-      console.log("Resource already exists!");
+      // console.log("Resource already exists!");
     } else {
       console.log("Unexpected response:", await res.text());
     }
@@ -62,11 +63,7 @@ export const authOptions: NextAuthOptions = {
           // console.log("referrer: ", referrer);
 
           const nextAuthUrl = new URL(BASE_URL as string);
-          // console.log("credentials", credentials);
-          // console.log("req", req);
-          // console.log("siwe", siwe);
-          // console.log("nextAuthUrl", nextAuthUrl);
-          // console.log("process.env.VERCEL_URL", process.env.VERCEL_URL);
+
           const secret = process.env.NEXTAUTH_SECRET;
           const result = await siwe.verify({
             signature: credentials?.signature || "",

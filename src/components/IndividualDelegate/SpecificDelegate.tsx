@@ -32,7 +32,7 @@ import {
 import WalletAndPublicClient from "@/helpers/signer";
 import dao_abi from "../../artifacts/Dao.sol/GovernanceToken.json";
 // import { ConnectButton } from "@rainbow-me/rainbowkit";
-import { useConnectModal, useChainModal } from "@rainbow-me/rainbowkit";
+// import { useConnectModal, useChainModal } from "@rainbow-me/rainbowkit";
 import { useAccount } from "wagmi";
 import OPLogo from "@/assets/images/daos/op.png";
 import ArbLogo from "@/assets/images/daos/arb.png";
@@ -60,12 +60,17 @@ import { getChainAddress, getDaoName } from "@/utils/chainUtils";
 import { optimism, arbitrum } from "viem/chains";
 import RewardButton from "../ClaimReward/RewardButton";
 import MobileResponsiveMessage from "../MobileResponsiveMessage/MobileResponsiveMessage";
+import { usePrivy, useWallets } from "@privy-io/react-auth";
+import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 import { fetchApi } from "@/utils/api";
-import { ChevronDownIcon } from "lucide-react";
+import { BrowserProvider, Contract, JsonRpcSigner } from "ethers";
+import { ChevronDownIcon, CloudCog } from "lucide-react";
 import Heading from "../ComponentUtils/Heading";
+import { MeetingRecords } from "@/types/UserProfileTypes";
 import { useApiData } from "@/contexts/ApiDataContext";
 import { calculateTempCpi } from "@/actions/calculatetempCpi";
 import { createPublicClient, http } from "viem";
+import ErrorComponent from "../Error/ErrorComponent";
 
 interface Type {
   daoDelegates: string;
@@ -74,11 +79,11 @@ interface Type {
 
 function SpecificDelegate({ props }: { props: Type }) {
   const { chain } = useAccount();
-  const { openChainModal } = useChainModal();
+  // const { openChainModal } = useChainModal();
   const [delegateInfo, setDelegateInfo] = useState<any>();
   const router = useRouter();
   const path = usePathname();
-  const { openConnectModal } = useConnectModal();
+  // const { openConnectModal } = useConnectModal();
   const searchParams = useSearchParams();
   const [selfDelegate, setSelfDelegate] = useState<boolean>();
   const [isDelegate, setIsDelegate] = useState<boolean>();
@@ -86,8 +91,11 @@ function SpecificDelegate({ props }: { props: Type }) {
   const [displayName, setDisplayName] = useState("");
   const [displayImage, setDisplayImage] = useState("");
   const [description, setDescription] = useState("");
+  const [attestationStatistics, setAttestationStatistics] =
+    useState<MeetingRecords | null>(null);
   // const provider = new ethers.BrowserProvider(window?.ethereum);
-  const [displayEnsName, setDisplayEnsName] = useState<any>();
+  // const [displayEnsName, setDisplayEnsName] = useState<any>();
+  const [displayEnsName, setDisplayEnsName] = useState<any>(null);
   const [delegate, setDelegate] = useState("");
   const [same, setSame] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -104,21 +112,28 @@ function SpecificDelegate({ props }: { props: Type }) {
 
   const [delegateOpen, setDelegateOpen] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
-  // const address = useAccount();
+
   const [followerCountLoading, setFollowerCountLoading] = useState(true);
   const [notificationLoading, setNotificationLoading] = useState(false);
   const [isFollowStatusLoading, setIsFollowStatusLoading] = useState(true);
   const [delegatingToAddr, setDelegatingToAddr] = useState(false);
-  const { isConnected, address } = useAccount();
+  const { isConnected } = useAccount();
   const [confettiVisible, setConfettiVisible] = useState(false);
   const network = useAccount().chain;
   const { publicClient, walletClient } = WalletAndPublicClient();
+  const { ready, authenticated, login, logout, getAccessToken, user } =
+    usePrivy();
+  const { walletAddress } = useWalletAddress();
+  const { wallets } = useWallets();
   const dropdownRef = useRef<HTMLDivElement | null>(null);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [selectedTab, setSelectedTab] = useState("Info");
+
   const [copiedAddress, setCopiedAddress] = useState<string | null>(null);
   const [tempCpi, setTempCpi] = useState();
   const [tempCpiCalling, setTempCpiCalling] = useState(true);
+  const [isFromDatabase, setFromDatabase] = useState(false);
+  const [errorOccurred, setErrorOccurred] = useState(false);
 
   const handleCopy = (addr: string) => {
     copy(addr);
@@ -139,7 +154,7 @@ function SpecificDelegate({ props }: { props: Type }) {
   const handleTabChange = (tabValue: string) => {
     // console.log(tabValue);
     const selected = tabs.find((tab) => tab.value === tabValue);
-    console.log(selected);
+    // console.log(selected);
     if (selected) {
       setSelectedTab(selected.name);
       setIsDropdownOpen(false);
@@ -193,11 +208,13 @@ function SpecificDelegate({ props }: { props: Type }) {
 
   const handleDelegateModal = async () => {
     if (!isConnected) {
-      if (openConnectModal) {
-        openConnectModal();
+      if (!authenticated) {
+        // openConnectModal();
+        // alert('open modal!');
+        login();
       }
     } else {
-      const delegatorAddress = address;
+      const delegatorAddress = walletAddress;
       const toAddress = props.individualDelegate;
       setDelegateOpen(true);
       setLoading(true);
@@ -205,17 +222,19 @@ function SpecificDelegate({ props }: { props: Type }) {
         let data: any;
         if (props.daoDelegates === "optimism") {
           data = await op_client.query(DELEGATE_CHANGED_QUERY, {
-            delegator: address,
+            delegator: walletAddress,
           });
 
           try {
             setTempCpiCalling(true);
+            const token = await getAccessToken();
             const result = await calculateTempCpi(
               delegatorAddress,
               toAddress,
-              address
+              walletAddress,
+              token
             );
-            console.log("result:::::::::", result);
+            // console.log("result:::::::::", result);
             if (result?.data?.results[0].cpi) {
               const data = result?.data?.results[0].cpi;
               setTempCpi(data);
@@ -226,7 +245,7 @@ function SpecificDelegate({ props }: { props: Type }) {
           }
         } else {
           data = await arb_client.query(DELEGATE_CHANGED_QUERY, {
-            delegator: address,
+            delegator: walletAddress,
           });
         }
 
@@ -353,15 +372,15 @@ function SpecificDelegate({ props }: { props: Type }) {
   }, [op_client, props.individualDelegate]);
 
   useEffect(() => {
-    // console.log("Network", chain?.network);
     const fetchData = async () => {
-      console.log("fetching from karma");
       setIsPageLoading(true);
       try {
         const res = await fetch(
           `https://api.karmahq.xyz/api/dao/find-delegate?dao=${props.daoDelegates}&user=${props.individualDelegate}`
         );
         const details = await res.json();
+
+        // console.log("Line 379:", details.data);
 
         setDelegateInfo(details.data.delegate);
         if (
@@ -387,6 +406,12 @@ function SpecificDelegate({ props }: { props: Type }) {
         });
         // await updateFollowerState();
         // await setFollowerscount();
+
+        // Only fetch delegate data if we have a wallet address
+        // if (walletAddress) {
+        //   await fetchDelegateData();
+        // }
+
         await fetchDelegateData();
 
         setIsPageLoading(false);
@@ -397,7 +422,32 @@ function SpecificDelegate({ props }: { props: Type }) {
     };
 
     fetchData();
+  }, [props.daoDelegates, props.individualDelegate, walletAddress]);
+
+  // useEffect(() => {
+  //   if (errorOccurred) {
+  //     console.log("An error occurred! Triggering side effect...");
+  //     // Perform any side effect here, such as logging or showing a fallback UI
+  //   }
+  // }, [errorOccurred]);
+
+  useEffect(() => {
+    const handleGlobalError = (event: ErrorEvent) => {
+      console.error("Global error caught:", event.error || event.message);
+      setErrorOccurred(true);
+    };
+
+    // Listen to global error events
+    window.addEventListener("error", handleGlobalError);
+
+    return () => {
+      // Cleanup
+      window.removeEventListener("error", handleGlobalError);
+    };
   }, []);
+
+  // For Optimism Governance Token
+  const optimismTokenAddress = "0x4200000000000000000000000000000000000042";
 
   // useEffect(() => {
   //   const checkDelegateStatus = async () => {
@@ -413,7 +463,7 @@ function SpecificDelegate({ props }: { props: Type }) {
   //         : "";
 
   //     console.log("Line 414:",contractAddress);
-  //     console.log('Line 415:',props.daoDelegates,props.individualDelegate);    
+  //     console.log('Line 415:',props.daoDelegates,props.individualDelegate);
 
   //     try {
   //       const delegateTx = await publicClient.readContract({
@@ -458,16 +508,16 @@ function SpecificDelegate({ props }: { props: Type }) {
         //If user is not connected and check delagate session
         const public_client = createPublicClient({
           chain: props.daoDelegates === "optimism" ? optimism : arbitrum,
-          transport: http()
-         });
+          transport: http(),
+        });
 
-         delegateTx = await public_client.readContract({
+        delegateTx = (await public_client.readContract({
           address: contractAddress as `0x${string}`,
           abi: dao_abi.abi,
           functionName: "delegates",
           args: [props.individualDelegate],
-         }) as string;
-       
+        })) as string;
+
         delegateTxAddr = delegateTx;
         if (
           delegateTxAddr.toLowerCase() ===
@@ -519,7 +569,6 @@ function SpecificDelegate({ props }: { props: Type }) {
       const data = await resp.json();
 
       if (!data.success || !data.data || data.data.length === 0) {
-        console.log("No data returned from API");
         setFollowers(0); // Show 0 if no data
         return;
       }
@@ -530,21 +579,21 @@ function SpecificDelegate({ props }: { props: Type }) {
         (dao: any) => dao.dao_name.toLowerCase() === currentDaoName
       );
 
-      console.log("daoFollowersdaoFollowers: ", daoFollowers);
+      // console.log("daoFollowersdaoFollowers: ", daoFollowers);
 
       if (daoFollowers) {
         const followerCount = daoFollowers?.follower?.filter(
           (f: any) => f.isFollowing
         ).length;
 
-        console.log("followerCountfollowerCount: ", followerCount);
+        // console.log("followerCountfollowerCount: ", followerCount);
 
         setFollowers(followerCount);
         setFollowerCountLoading(false);
 
-        if (address) {
+        if (walletAddress) {
           const userFollow = daoFollowers.follower.find(
-            (f: any) => f.address.toLowerCase() === address.toLowerCase()
+            (f: any) => f.address.toLowerCase() === walletAddress.toLowerCase()
           );
 
           setIsFollowing(userFollow?.isFollowing ?? false);
@@ -581,9 +630,13 @@ function SpecificDelegate({ props }: { props: Type }) {
 
     if (action == 1) {
       setLoading(true);
+      const token = await getAccessToken();
       const myHeaders: HeadersInit = {
         "Content-Type": "application/json",
-        ...(address && { "x-wallet-address": address }),
+        ...(walletAddress && {
+          "x-wallet-address": walletAddress,
+          Authorization: `Bearer ${token}`,
+        }),
       };
       try {
         const response = await fetchApi("/delegate-follow/updatefollower", {
@@ -592,7 +645,7 @@ function SpecificDelegate({ props }: { props: Type }) {
           body: JSON.stringify({
             // Add any necessary data
             delegate_address: delegate_address,
-            follower_address: address,
+            follower_address: walletAddress,
             action: action,
             dao: dao,
           }),
@@ -625,9 +678,13 @@ function SpecificDelegate({ props }: { props: Type }) {
         let updatenotification: boolean;
         updatenotification = !notification;
         setNotificationLoading(true);
+        const token = await getAccessToken();
         const myHeaders: HeadersInit = {
           "Content-Type": "application/json",
-          ...(address && { "x-wallet-address": address }),
+          ...(walletAddress && {
+            "x-wallet-address": walletAddress,
+            Authorization: `Bearer ${token}`,
+          }),
         };
         try {
           const response = await fetchApi("/delegate-follow/updatefollower", {
@@ -636,7 +693,7 @@ function SpecificDelegate({ props }: { props: Type }) {
             body: JSON.stringify({
               // Add any necessary data
               delegate_address: delegate_address,
-              follower_address: address,
+              follower_address: walletAddress,
               action: action,
               dao: dao,
               updatenotification: updatenotification,
@@ -661,14 +718,15 @@ function SpecificDelegate({ props }: { props: Type }) {
 
   const handleFollow = async () => {
     if (!isConnected) {
-      if (openConnectModal) {
-        openConnectModal();
+      if (!authenticated) {
+        // openConnectModal();
+        login();
       }
     } else if (isFollowing) {
       setUnfollowmodel(true);
     } else {
       // let address = await walletClient.getAddresses();
-      if (address === props.individualDelegate) {
+      if (walletAddress === props.individualDelegate) {
         toast.error("You can't follow your own profile!");
       } else {
         setLoading(true);
@@ -677,14 +735,16 @@ function SpecificDelegate({ props }: { props: Type }) {
         let dao: string;
         dao = props.daoDelegates;
         // let address = await walletClient.getAddresses();
-        follower_address = address;
+        follower_address = walletAddress;
         delegate_address = props.individualDelegate;
+        const token = await getAccessToken();
         try {
           const response = await fetchApi("/delegate-follow/savefollower", {
             method: "PUT",
             headers: {
               "Content-Type": "application/json",
               "x-wallet-address": follower_address,
+              Authorization: `Bearer ${token}`,
             },
             body: JSON.stringify({
               // Add any necessary data
@@ -718,73 +778,155 @@ function SpecificDelegate({ props }: { props: Type }) {
       }
     }
   };
+  // const handleDelegateVotes = async (to: string) => {
+  //   // let address;
+  //   // let address1;
+
+  //   // try {
+  //   //   address = await walletClient.getAddresses();
+  //   //   address1 = address[0];
+  //   // } catch (error) {
+  //   //   console.error("Error getting addresses:", error);
+  //   //   toast.error("Please connect your MetaMask wallet!");
+  //   //   return;
+  //   // }
+
+  //   if (!address || !walletAddress) {
+  //     toast.error("Please connect your MetaMask wallet!");
+  //     return;
+  //   }
+
+  //   let chainAddress;
+  //   if (props.daoDelegates === "optimism") {
+  //     chainAddress = "0x4200000000000000000000000000000000000042";
+  //   } else if (props.daoDelegates === "arbitrum") {
+  //     chainAddress = "0x912CE59144191C1204E64559FE8253a0e49E6548";
+  //   } else {
+  //     return;
+  //   }
+
+  //   if (walletClient?.chain === "") {
+  //     toast.error("Please connect your wallet!");
+  //   } else {
+  //     let network;
+  //     if (props.daoDelegates === "optimism") {
+  //       network = "OP Mainnet";
+  //     } else if (props.daoDelegates === "arbitrum") {
+  //       network = "Arbitrum One";
+  //     }
+
+  //     if (walletClient?.chain.name === network) {
+  //       try {
+  //         setDelegatingToAddr(true);
+  //         const delegateTx = await walletClient.writeContract({
+  //           address: chainAddress,
+  //           chain: props.daoDelegates === "arbitrum" ? arbitrum : optimism,
+  //           abi: dao_abi.abi,
+  //           functionName: "delegate",
+  //           args: [to],
+  //           account: walletAddress,
+  //         });
+
+  //         setDelegatingToAddr(false);
+  //         setConfettiVisible(true);
+  //         setTimeout(() => setConfettiVisible(false), 5000);
+  //       } catch (e) {
+  //         toast.error("Transaction failed");
+  //         console.log(e);
+  //         setDelegatingToAddr(false);
+  //       }
+  //     } else {
+  //       toast.error("Please switch to appropriate network to delegate!");
+
+  //       // if (openChainModal) {
+  //       //   // openChainModal();
+  //       // }
+  //     }
+  //   }
+  // };
+
   const handleDelegateVotes = async (to: string) => {
-    // let address;
-    // let address1;
-
-    // try {
-    //   address = await walletClient.getAddresses();
-    //   address1 = address[0];
-    // } catch (error) {
-    //   console.error("Error getting addresses:", error);
-    //   toast.error("Please connect your MetaMask wallet!");
-    //   return;
-    // }
-
-    if (!address) {
-      toast.error("Please connect your MetaMask wallet!");
-      return;
-    }
-
-    let chainAddress;
-    if (props.daoDelegates === "optimism") {
-      chainAddress = "0x4200000000000000000000000000000000000042";
-    } else if (props.daoDelegates === "arbitrum") {
-      chainAddress = "0x912CE59144191C1204E64559FE8253a0e49E6548";
-    } else {
-      return;
-    }
-
-    if (walletClient?.chain === "") {
+    if (!walletAddress) {
       toast.error("Please connect your wallet!");
-    } else {
-      let network;
-      if (props.daoDelegates === "optimism") {
-        network = "OP Mainnet";
-      } else if (props.daoDelegates === "arbitrum") {
-        network = "Arbitrum One";
+      return;
+    }
+
+    const chainAddress = getChainAddress(chain?.name);
+    if (!chainAddress) {
+      toast.error("Invalid chain address,try again!");
+      return;
+    }
+
+    const network =
+      props.daoDelegates === "optimism" ? "OP Mainnet" : "Arbitrum One";
+    const chainId = props.daoDelegates === "optimism" ? 10 : 42161;
+
+    try {
+      setDelegatingToAddr(true);
+
+      // For Privy wallets, we should get the provider from the wallet instance
+      // Assuming you have access to the Privy wallet instance
+      const privyProvider = await wallets[0]?.getEthereumProvider();
+
+      if (!privyProvider) {
+        toast.error("Could not get wallet provider");
+        return;
       }
 
-      console.log("network: ", network);
-      if (walletClient?.chain.name === network) {
+      // Create ethers provider
+      const provider = new BrowserProvider(privyProvider);
+
+      // Get the current network
+      const currentNetwork = await provider.getNetwork();
+      const currentChainId = Number(currentNetwork.chainId);
+
+      // Check if we're on the correct network
+      if (currentChainId !== chainId) {
+        toast.error(`Please switch to ${network} (Chain ID: ${chainId})`);
+
+        // Try to switch network
         try {
-          setDelegatingToAddr(true);
-          const delegateTx = await walletClient.writeContract({
-            address: chainAddress,
-            chain: props.daoDelegates === "arbitrum" ? arbitrum : optimism,
-            abi: dao_abi.abi,
-            functionName: "delegate",
-            args: [to],
-            account: address,
+          await privyProvider.request({
+            method: "wallet_switchEthereumChain",
+            params: [{ chainId: `0x${chainId.toString(16)}` }],
           });
-
-          setDelegatingToAddr(false);
-          setConfettiVisible(true);
-          setTimeout(() => setConfettiVisible(false), 5000);
-        } catch (e) {
-          toast.error("Transaction failed");
-          setDelegatingToAddr(false);
+        } catch (switchError) {
+          console.error("Failed to switch network:", switchError);
+          return;
         }
-      } else {
-        toast.error("Please switch to appropriate network to delegate!");
-
-        if (openChainModal) {
-          openChainModal();
-        }
+        return;
       }
+
+      const signer = await provider.getSigner();
+
+      const contract = new Contract(chainAddress, dao_abi.abi, signer);
+
+      const tx = await contract.delegate(to);
+      await tx.wait();
+
+      setConfettiVisible(true);
+      setTimeout(() => setConfettiVisible(false), 5000);
+      toast.success("Delegation successful!");
+    } catch (error) {
+      console.error("Delegation failed:", error);
+
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+
+      if (errorMessage.includes("eth_chainId is not supported")) {
+        toast.error(`Network Error: Make sure you're connected to ${network}`);
+      } else if (errorMessage.includes("user rejected")) {
+        toast.error("Transaction was rejected by user");
+      } else if (errorMessage.includes("network")) {
+        toast.error(`Please connect to ${network} (Chain ID: ${chainId})`);
+      } else {
+        toast.error("Transaction failed. Please try again");
+        console.error("Detailed error:", error);
+      }
+    } finally {
+      setDelegatingToAddr(false);
     }
   };
-
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -792,9 +934,13 @@ function SpecificDelegate({ props }: { props: Type }) {
 
         // const dbResponse = await axios.get(`/api/profile/${address}`);
 
+        const token = await getAccessToken();
         const myHeaders: HeadersInit = {
           "Content-Type": "application/json",
-          ...(address && { "x-wallet-address": address }),
+          ...(walletAddress && {
+            "x-wallet-address": walletAddress,
+            Authorization: `Bearer ${token}`,
+          }),
         };
 
         // const raw = JSON.stringify({
@@ -823,17 +969,21 @@ function SpecificDelegate({ props }: { props: Type }) {
           // Iterate over each item in the response data array
           for (const item of dbResponse.data) {
             // Check if address and daoName match
-            // console.log("Item: ", item);
 
             // if (
             //   item.daoName === dao &&
             //   item.address === props.individualDelegate
             // ) {
-            // console.log("Data found in the database", item);
             // Data found in the database, set the state accordingly
             // setResponseFromDB(true);
-            setDisplayImage(item.image);
+
+            if (item.image) {
+              setFromDatabase(true);
+              setDisplayImage(item.image);
+            }
+
             setDescription(item.description);
+            setAttestationStatistics(item?.meetingRecords ?? null);
             if (item.isEmailVisible) {
               setIsEmailVisible(true);
               setEmailId(item.emailId);
@@ -853,7 +1003,7 @@ function SpecificDelegate({ props }: { props: Type }) {
             }
             setDisplayName(item.displayName);
 
-            if (!isConnected) {
+            if (!authenticated) {
               setIsFollowing(false);
               isNotification(false);
               await fetchDelegateData();
@@ -879,9 +1029,14 @@ function SpecificDelegate({ props }: { props: Type }) {
           console.log(
             "Data not found in the database, fetching from third-party API"
           );
+          const { avatar: fetchedAvatar } = await fetchEnsNameAndAvatar(
+            props.individualDelegate
+          );
+          setDisplayImage(fetchedAvatar ? fetchedAvatar : "");
           setFollowerCountLoading(false);
           setIsFollowStatusLoading(false);
           // Data not found in the database, fetch data from the third-party API
+          // }
         }
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -893,11 +1048,41 @@ function SpecificDelegate({ props }: { props: Type }) {
 
   useEffect(() => {
     const fetchEnsName = async () => {
-      const ensName = await fetchEnsNameAndAvatar(props.individualDelegate);
-      setDisplayEnsName(ensName?.ensName);
+      // const ensName = await fetchEnsNameAndAvatar(props.individualDelegate);
+      const { ensName: fetchedName, avatar: fetchedAvatar } =
+        await fetchEnsNameAndAvatar(props.individualDelegate);
+      setDisplayEnsName(fetchedName);
     };
     fetchEnsName();
   }, [props]);
+
+  const getImageSource = () => {
+    if (!displayImage) {
+      return (
+        delegateInfo?.profilePicture ||
+        (props.daoDelegates === "optimism"
+          ? OPLogo
+          : props.daoDelegates === "arbitrum"
+          ? ArbLogo
+          : ccLogo)
+      );
+    }
+
+    // If image is from database, prepend the IPFS gateway URL
+    if (isFromDatabase) {
+      return `https://gateway.lighthouse.storage/ipfs/${displayImage}`;
+    }
+
+    // If image is from ENS or other source, use it directly
+    return displayImage;
+  };
+
+  const getImageClassName = () => {
+    if (displayImage || delegateInfo?.profilePicture) {
+      return "w-full xs:w-28 xs:h-28 sm:w-36 sm:h-36 lg:w-40 lg:h-40 rounded-3xl";
+    }
+    return "w-14 h-14 sm:w-20 sm:h-20 lg:w-20 lg:h-20 rounded-3xl";
+  };
 
   return (
     <>
@@ -910,7 +1095,9 @@ function SpecificDelegate({ props }: { props: Type }) {
           <Heading />
         </div>
         {isPageLoading && <MainProfileSkeletonLoader />}
-        {!isPageLoading && (isDelegate || selfDelegate) ? (
+        {!isPageLoading &&
+        (isDelegate || selfDelegate) &&
+        errorOccurred == false ? (
           <div className="font-poppins">
             {/* {followed && <Confetti recycle={false} numberOfPieces={550} />} */}
             <div className="flex flex-col md:flex-row pb-5 lg:py-5 px-4 md:px-6 lg:px-14 justify-between items-start">
@@ -927,24 +1114,11 @@ function SpecificDelegate({ props }: { props: Type }) {
                   <div className="w-full h-full xs:w-28 xs:h-28 sm:w-36 sm:h-36 lg:w-40 lg:h-40 flex items-center justify-center ">
                     {/* <div className="flex justify-center items-center w-40 h-40"> */}
                     <Image
-                      src={
-                        displayImage
-                          ? `https://gateway.lighthouse.storage/ipfs/${displayImage}`
-                          : delegateInfo?.profilePicture ||
-                            (props.daoDelegates === "optimism"
-                              ? OPLogo
-                              : props.daoDelegates === "arbitrum"
-                              ? ArbLogo
-                              : ccLogo)
-                      }
+                      src={getImageSource()}
                       alt="user"
                       width={256}
                       height={256}
-                      className={
-                        displayImage || delegateInfo?.profilePicture
-                          ? "w-full xs:w-28 xs:h-28 sm:w-36 sm:h-36 lg:w-40 lg:h-40 rounded-3xl"
-                          : "w-14 h-14 sm:w-20 sm:h-20 lg:w-20 lg:h-20 rounded-3xl"
-                      }
+                      className={getImageClassName()}
                     />
                     {/* </div> */}
 
@@ -1277,7 +1451,7 @@ function SpecificDelegate({ props }: { props: Type }) {
               </div>
               <div className="hidden lg:flex gap-1 xs:gap-2 items-center">
                 <RewardButton />
-                <ConnectWalletWithENS />
+                {/* <ConnectWalletWithENS /> */}
               </div>
             </div>
 
@@ -1370,7 +1544,11 @@ function SpecificDelegate({ props }: { props: Type }) {
 
             <div className="pt-2 xs:pt-4 sm:pt-6 px-4 md:px-6 lg:px-14">
               {searchParams.get("active") === "info" && (
-                <DelegateInfo props={props} desc={description} />
+                <DelegateInfo
+                  props={props}
+                  desc={description}
+                  attestationCounts={attestationStatistics}
+                />
               )}
               {searchParams.get("active") === "pastVotes" && (
                 <DelegateVotes props={props} />
@@ -1385,12 +1563,14 @@ function SpecificDelegate({ props }: { props: Type }) {
           </div>
         ) : (
           !isPageLoading &&
-          !(isDelegate || selfDelegate) && (
+          !(isDelegate || selfDelegate) && errorOccurred &&  (
             <div className="flex flex-col justify-center items-center w-full h-screen">
-              <div className="text-5xl">☹️</div>{" "}
+              {/* <div className="text-5xl">☹️</div>{" "}
               <div className="pt-4 font-semibold text-lg">
                 Oops, no such result available!
-              </div>
+              </div> */}
+
+              <ErrorComponent message="We're sorry, but something went wrong ! We’re Making It Right.." />
             </div>
           )
         )}

@@ -12,7 +12,6 @@ type LobbyPageProps = {
 const IntroPage: React.FC<LobbyPageProps> = ({ roomId }) => {
   const { push } = useRouter();
 
-  console.log("roomid from mainIntro", roomId);
   useEffect(() => {
     push(`${MEETING_BASE_URL}/meeting/session/${roomId}/lobby`);
   }, []);

@@ -26,16 +26,16 @@ import OPLogo from "@/assets/images/daos/op.png";
 import ArbLogo from "@/assets/images/daos/arb.png";
 import ccLogo from "@/assets/images/daos/CCLogo2.png";
 import { Button, useDisclosure } from "@nextui-org/react";
-import { ConnectButton } from "@rainbow-me/rainbowkit";
-import { useAccount } from "wagmi";
+// import { ConnectButton } from "@rainbow-me/rainbowkit";
+import { useAccount, useDisconnect } from "wagmi";
 import WalletAndPublicClient from "@/helpers/signer";
 import dao_abi from "../../artifacts/Dao.sol/GovernanceToken.json";
 import axios from "axios";
-import { Oval } from "react-loader-spinner";
+import { Oval, InfinitySpin } from "react-loader-spinner";
 import lighthouse from "@lighthouse-web3/sdk";
 import InstantMeet from "./InstantMeet";
 import { useSession } from "next-auth/react";
-import { useConnectModal } from "@rainbow-me/rainbowkit";
+// import { useConnectModal } from "@rainbow-me/rainbowkit";
 import ConnectWalletWithENS from "../ConnectWallet/ConnectWalletWithENS";
 import MainProfileSkeletonLoader from "../SkeletonLoader/MainProfileSkeletonLoader";
 import { BASE_URL, LIGHTHOUSE_BASE_API_KEY } from "@/config/constants";
@@ -55,14 +55,20 @@ import MobileResponsiveMessage from "../MobileResponsiveMessage/MobileResponsive
 import RewardButton from "../ClaimReward/RewardButton";
 import Heading from "../ComponentUtils/Heading";
 import { ChevronDownIcon } from "lucide-react";
+import { getAccessToken, usePrivy, useWallets } from "@privy-io/react-auth";
+import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 import { fetchApi } from "@/utils/api";
+import { BrowserProvider, Contract } from "ethers";
+import { MeetingRecords } from "@/types/UserProfileTypes";
+import { createPublicClient, http } from "viem";
+import { optimism, arbitrum } from "viem/chains";
 
 function MainProfile() {
-  const { isConnected, address, chain } = useAccount();
+  const { isConnected, chain } = useAccount();
   // const { isConnected, chain } = useAccount();
   // const address = "0xc622420AD9dE8E595694413F24731Dd877eb84E1";
   const { data: session, status } = useSession();
-  const { openConnectModal } = useConnectModal();
+  // const { openConnectModal } = useConnectModal();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
   const path = usePathname();
@@ -77,6 +83,8 @@ function MainProfile() {
   const [isPageLoading, setIsPageLoading] = useState(true);
   const [selfDelegate, setSelfDelegate] = useState(false);
   const [daoName, setDaoName] = useState("optimism");
+  const [attestationStatistics, setAttestationStatistics] =
+    useState<MeetingRecords | null>(null);
   const [isCopied, setIsCopied] = useState(false);
   const [followings, setFollowings] = useState(0);
   const [followers, setFollowers] = useState(0);
@@ -85,6 +93,13 @@ function MainProfile() {
   const [isOpentoaster, settoaster] = useState(false);
   const [userFollowings, setUserFollowings] = useState<Following[]>([]);
   const [isModalLoading, setIsModalLoading] = useState(false);
+  const { ready, authenticated, login, logout, getAccessToken, user,connectWallet } =
+    usePrivy();
+  const { disconnect } = useDisconnect();
+  const [isspin, setSpin] = useState(false);
+  // const [walletAddress, setWalletAddress] = useState<string | null>(null);
+  const { walletAddress } = useWalletAddress();
+  const { wallets } = useWallets();
   // const [dbResponse, setDbResponse] = useState<any>(null);
   const [modalData, setModalData] = useState({
     displayImage: "",
@@ -123,9 +138,9 @@ function MainProfile() {
   ];
 
   const handleTabChange = (tabValue: string) => {
-    console.log(tabValue);
+    // console.log(tabValue);
     const selected = tabs.find((tab) => tab.value === tabValue);
-    console.log(selected);
+    // console.log(selected);
     if (selected) {
       setSelectedTab(selected.name);
       setIsDropdownOpen(false);
@@ -152,13 +167,30 @@ function MainProfile() {
       ) {
         setIsDropdownOpen(false);
       }
-    };
+    }
 
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
+
+  const handleLogout=async()=>{
+    localStorage.removeItem("persistentWalletAddress"); 
+    await logout();
+    disconnect();
+  }
+
+  useEffect(()=>{
+    const currentWalletAddress = user?.wallet?.address;
+    if (currentWalletAddress && 
+      walletAddress && 
+      currentWalletAddress.toLowerCase() !== walletAddress.toLowerCase()) {
+    
+    handleLogout();
+    login();
+  }
+  },[authenticated,walletAddress])
 
   const handleMouseEnter = () => {
     setIsDropdownOpen(true);
@@ -191,23 +223,23 @@ function MainProfile() {
   }, [chain, chain?.name]);
 
   useEffect(() => {
-    // console.log("path", path);
-    if (isConnected && session && path.includes("profile/undefined")) {
+    if (isConnected && authenticated && path.includes("profile/undefined")) {
       const newPath = path.includes("profile/undefined")
-        ? path.replace("profile/undefined", `profile/${address}?active=info`)
+        ? path.replace("profile/undefined", `profile/${walletAddress}?active=info`)
         : path;
-      // console.log("newPath", newPath);
       router.replace(`${newPath}`);
-    } else if (!isConnected && !session) {
-      if (openConnectModal) {
-        openConnectModal();
+    } else if (!isConnected && !authenticated) {
+      if (!authenticated) {
+        // openConnectModal();
+        login();
+        return;
       } else {
         console.error("openConnectModal is not defined");
       }
     }
   }, [
     isConnected,
-    address,
+    walletAddress,
     router,
     session,
     path.includes("profile/undefined"),
@@ -227,7 +259,6 @@ function MainProfile() {
 
     const output = await lighthouse.upload(selectedFile, apiKey);
 
-    // console.log("File Status:", output);
     setModalData((prevUserData) => ({
       ...prevUserData,
       displayImage: output.data.Hash,
@@ -239,64 +270,169 @@ function MainProfile() {
   };
 
   useEffect(() => {
-    console.log("chain name:::: ", chain?.name);
     const checkDelegateStatus = async () => {
       // const addr = await walletClient.getAddresses();
       // const address1 = addr[0];
+      if (!walletAddress || !chain) return;
       try {
-        const contractAddress = getChainAddress(chain?.name);
-        // console.log(walletClient);
-        if (address) {
-          const delegateTx = await publicClient.readContract({
-            address: contractAddress,
-            abi: dao_abi.abi,
-            functionName: "delegates",
-            args: [address],
-            // account: address1,
-          });
-          // console.log("Delegate tx", delegateTx);
+        const contractAddress = getChainAddress(chain.name);
+        const network = getDaoName(chain.name);
+        // if (walletAddress) {
+        //   const delegateTx = await publicClient?.readContract({
+        //     address: contractAddress as `0x${string}`,
+        //     abi: dao_abi.abi,
+        //     functionName: "delegates",
+        //     args: [walletAddress],
+        //     // account: address1,
+        //   });
 
-          const delegateTxAddr = delegateTx.toLowerCase();
+        //   // console.log("DelegateTx",delegateTx)
 
-          if (delegateTxAddr === "0x0000000000000000000000000000000000000000") {
-            setSelfDelegate(false);
-          } else {
-            setSelfDelegate(true);
-          }
-        }
+        //   const delegateTxAddr = delegateTx.toLowerCase();
+
+        //   if (delegateTxAddr === "0x0000000000000000000000000000000000000000") {
+        //     setSelfDelegate(false);
+        //   } else {
+        //     setSelfDelegate(true);
+        //   }
+        // }
+        const public_client = createPublicClient({
+          chain: network === "optimism" ? optimism : arbitrum,
+          transport: http(),
+        });
+
+        const delegateTx = await public_client.readContract({
+          address: contractAddress as `0x${string}`,
+          abi: dao_abi.abi,
+          functionName: "delegates",
+          args: [walletAddress],
+        }) as string;
+
+        const isSelfDelegate = 
+          delegateTx.toLowerCase() !== "0x0000000000000000000000000000000000000000" &&
+          delegateTx.toLowerCase() === walletAddress.toLowerCase();
+
+        console.log("Is self delegate (MainProfile):", isSelfDelegate);
+        setSelfDelegate(isSelfDelegate);
       } catch (e) {
         console.log("error in function: ", e);
         setSelfDelegate(false);
       }
     };
     checkDelegateStatus();
-  }, [address, daoName, selfDelegate]);
+  }, [walletAddress, chain]);
 
   // Pass the address of whom you want to delegate the voting power to
-  const handleDelegateVotes = async (to: string) => {
+  // const handleDelegateVotes = async (to: string) => {
+  //   try {
+  //     // const addr = await walletClient.getAddresses();
+  //     // const address1 = addr[0];
+  //     const contractAddress = getChainAddress(chain?.name);
+
+  //     const delegateTx = await walletClient.writeContract({
+  //       address: contractAddress,
+  //       abi: dao_abi.abi,
+  //       functionName: "delegate",
+  //       args: [to],
+  //       account: walletAddress,
+  //     });
+
+  //     console.log(delegateTx);
+  //   } catch (error) {
+  //     console.log("Error:", error);
+  //     toast.error("Failed to become delegate. Please try again.");
+  //   }
+  // };
+
+  const handleDelegateVotes = async (
+    to: string
+    // walletAddress: string | undefined,
+    // wallets: any[],
+    // setDelegatingToAddr: (value: boolean) => void,
+    // setConfettiVisible: (value: boolean) => void
+  ) => {
+    if (!walletAddress) {
+      toast.error("Please connect your wallet!");
+      return;
+    }
+
     try {
-      // const addr = await walletClient.getAddresses();
-      // const address1 = addr[0];
-      // console.log("addrrr", address1);
+      // setDelegatingToAddr(true);
 
-      const contractAddress = getChainAddress(chain?.name);
+      // Get provider from Privy wallet
+      const privyProvider = await wallets[0]?.getEthereumProvider();
 
-      console.log("contractAddress: ", contractAddress);
+      if (!privyProvider) {
+        toast.error("Could not get wallet provider");
+        return;
+      }
 
-      // console.log("Contract", contractAddress);
-      console.log("Wallet Client", walletClient);
-      const delegateTx = await walletClient.writeContract({
-        address: contractAddress,
-        abi: dao_abi.abi,
-        functionName: "delegate",
-        args: [to],
-        account: address,
-      });
+      // Create ethers provider
+      const provider = new BrowserProvider(privyProvider);
 
-      console.log(delegateTx);
+      // Get the current network
+      const currentNetwork = await provider.getNetwork();
+      const currentChainId = Number(currentNetwork.chainId);
+
+      // Determine the required network based on current chain
+      const chainConfig = {
+        10: {
+          name: "OP Mainnet",
+          chainId: 10,
+        },
+        42161: {
+          name: "Arbitrum One",
+          chainId: 42161,
+        },
+      };
+
+      const currentChainConfig =
+        chainConfig[currentChainId as keyof typeof chainConfig];
+
+      if (!currentChainConfig) {
+        toast.error("Please connect to OP Mainnet or Arbitrum One");
+        return;
+      }
+
+      // Get contract address for current chain
+      const chainAddress = getChainAddress(currentChainConfig.name);
+      if (!chainAddress) {
+        toast.error("Invalid chain address for current network");
+        return;
+      }
+
+      const signer = await provider.getSigner();
+
+      const contract = new Contract(chainAddress, dao_abi.abi, signer);
+
+      const tx = await contract.delegate(to);
+      await tx.wait();
+
+      // setConfettiVisible(true);
+      // setTimeout(() => setConfettiVisible(false), 5000);
+      toast.success("Delegation successful!");
+      setSpin(false);
     } catch (error) {
-      console.log("Error:", error);
-      toast.error("Failed to become delegate. Please try again.");
+      console.error("Delegation failed:", error);
+      setSpin(false);
+
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+
+      if (errorMessage.includes("eth_chainId is not supported")) {
+        toast.error("Network Error: Please check your network connection");
+      } else if (errorMessage.includes("user rejected")) {
+        toast.error("Transaction was rejected by user");
+      } else if (errorMessage.includes("network")) {
+        toast.error(
+          "Please connect to a supported network (OP Mainnet or Arbitrum One)"
+        );
+      } else {
+        toast.error("Transaction failed. Please try again");
+        console.error("Detailed error:", error);
+      }
+    } finally {
+      // setDelegatingToAddr(false);
     }
   };
 
@@ -315,13 +451,17 @@ function MainProfile() {
   ) => {
     setLoading(true);
     setIsModalLoading(true);
+    const token=await getAccessToken();
     const myHeaders: HeadersInit = {
       "Content-Type": "application/json",
-      ...(address && { "x-wallet-address": address }),
+      ...(walletAddress && {
+        "x-wallet-address": walletAddress,
+        Authorization: `Bearer ${token}`,
+      }),
     };
 
     const raw = JSON.stringify({
-      address: address,
+      address: walletAddress,
       // daoName: dao,
     });
 
@@ -354,7 +494,7 @@ function MainProfile() {
           }
           setUserFollowings(activeFollowings);
         } else {
-          setFollowings(0);
+          // setFollowings(0);
           setUserFollowings([]);
         }
       }
@@ -377,11 +517,14 @@ function MainProfile() {
 
     if (!userupdate.isFollowing) {
       setFollowings(followings + 1);
+      const token=await getAccessToken();
       const myHeaders: HeadersInit = {
         "Content-Type": "application/json",
-        ...(address && { "x-wallet-address": address }),
+        ...(walletAddress && {
+          "x-wallet-address": walletAddress,
+          Authorization: `Bearer ${token}`,
+        }),
       };
-
       try {
         const response = await fetchApi("/delegate-follow/savefollower", {
           method: "PUT",
@@ -389,7 +532,7 @@ function MainProfile() {
           body: JSON.stringify({
             // Add any necessary data
             delegate_address: userupdate.follower_address,
-            follower_address: address,
+            follower_address: walletAddress,
             dao: unfollowDao,
           }),
         });
@@ -400,7 +543,6 @@ function MainProfile() {
 
         const data = await response.json();
         // settoaster(false);
-        // console.log("Follow successful:", data);
       } catch (error) {
         console.error("Error following:", error);
       }
@@ -411,9 +553,13 @@ function MainProfile() {
       setLoading(true);
       // settoaster(true);
       try {
+        const token=await getAccessToken();
         const myHeaders: HeadersInit = {
           "Content-Type": "application/json",
-          ...(address && { "x-wallet-address": address }),
+          ...(walletAddress && {
+            "x-wallet-address": walletAddress,
+            Authorization: `Bearer ${token}`,
+          }),
         };
         const response = await fetchApi("/delegate-follow/updatefollower", {
           method: "PUT",
@@ -421,7 +567,7 @@ function MainProfile() {
           body: JSON.stringify({
             // Add any necessary data
             delegate_address: userupdate.follower_address,
-            follower_address: address,
+            follower_address: walletAddress,
             action: 1,
             dao: unfollowDao,
           }),
@@ -434,7 +580,6 @@ function MainProfile() {
         const data = await response.json();
         // settoaster(false);
         setLoading(false);
-        // console.log("unFollow successful:", data);
       } catch (error) {
         setLoading(false);
         console.error("Error following:", error);
@@ -455,9 +600,13 @@ function MainProfile() {
     // settoaster(true);
 
     try {
+      const token=await getAccessToken();
       const myHeaders: HeadersInit = {
         "Content-Type": "application/json",
-        ...(address && { "x-wallet-address": address }),
+        ...(walletAddress && {
+          "x-wallet-address": walletAddress,
+          Authorization: `Bearer ${token}`,
+        }),
       };
       const response = await fetchApi("/delegate-follow/updatefollower", {
         method: "PUT",
@@ -465,7 +614,7 @@ function MainProfile() {
         body: JSON.stringify({
           // Add any necessary data
           delegate_address: userupdate.follower_address,
-          follower_address: address,
+          follower_address: walletAddress,
           action: 2,
           dao: notificationdao,
           updatenotification: !userupdate.isNotification,
@@ -478,7 +627,6 @@ function MainProfile() {
 
       const data = await response.json();
       // settoaster(false);
-      // console.log("notification successful:", data);
     } catch (error) {
       console.error("Error following:", error);
     }
@@ -534,12 +682,16 @@ function MainProfile() {
     setIsLoading(true);
     const isEmailVisible = !isToggled;
     try {
+      const token=await getAccessToken();
       const myHeaders: HeadersInit = {
         "Content-Type": "application/json",
-        ...(address && { "x-wallet-address": address }),
+        ...(walletAddress && {
+          "x-wallet-address": walletAddress,
+          Authorization: `Bearer ${token}`,
+        }),
       };
       const raw = JSON.stringify({
-        address: address,
+        address: walletAddress,
         isEmailVisible: isEmailVisible,
       });
 
@@ -557,7 +709,6 @@ function MainProfile() {
 
       const data = await response.json();
       setToggle(!isToggled);
-      // console.log("status successfully change!", data);
     } catch (error) {
       console.error("Error following:", error);
     } finally {
@@ -566,21 +717,25 @@ function MainProfile() {
   };
 
   useEffect(() => {
+    if (!walletAddress) return;
     const fetchData = async () => {
       try {
-        // console.log("Fetching from DB");
         // Fetch data from your backend API to check if the address exists
-        // console.log("Fetching from DB");
         // const dbResponse = await axios.get(`/api/profile/${address}`);
+
+        const token=await getAccessToken();
 
         let dao = getDaoName(chain?.name);
         const myHeaders: HeadersInit = {
           "Content-Type": "application/json",
-          ...(address && { "x-wallet-address": address }),
+          ...(walletAddress && {
+            "x-wallet-address": walletAddress,
+            Authorization: `Bearer ${token}`,
+          }),
         };
 
         const raw = JSON.stringify({
-          address: address,
+          address: walletAddress,
           // daoName: dao,
         });
 
@@ -590,7 +745,7 @@ function MainProfile() {
           body: raw,
           redirect: "follow",
         };
-        const res = await fetchApi(`/profile/${address}`, requestOptions);
+        const res = await fetchApi(`/profile/${walletAddress}`, requestOptions);
 
         const dbResponse = await res.json();
 
@@ -598,7 +753,7 @@ function MainProfile() {
 
         try {
           const karmaRes = await fetch(
-            `https://api.karmahq.xyz/api/dao/find-delegate?dao=${dao}&user=${address}`
+            `https://api.karmahq.xyz/api/dao/find-delegate?dao=${dao}&user=${walletAddress}`
           );
           karmaDetails = await karmaRes.json();
 
@@ -617,11 +772,14 @@ function MainProfile() {
         }
 
         if (dbResponse.data.length > 0) {
-          // console.log("db Response", dbResponse.data[0]);
+          // console.log(`Length ${dbResponse.data.length}`);
+          const profileData = dbResponse.data[0];
+          // console.log(profileData);
           // console.log(
           //   "dbResponse.data[0]?.networks:",
           //   dbResponse.data[0]?.networks
           // );
+          // alert(dbResponse.data[0]);
           setUserData({
             displayName: dbResponse.data[0]?.displayName,
             discord: dbResponse.data[0]?.socialHandles?.discord,
@@ -633,6 +791,8 @@ function MainProfile() {
             github: dbResponse.data[0].socialHandles?.github,
             displayImage: dbResponse.data[0]?.image,
           });
+
+          setAttestationStatistics(dbResponse.data[0]?.meetingRecords ?? null);
 
           setModalData({
             displayName: dbResponse.data[0]?.displayName,
@@ -653,7 +813,7 @@ function MainProfile() {
             )?.description || ""
           );
 
-          if (!isConnected) {
+          if (!authenticated) {
             setFollowings(0);
             setFollowers(0);
           } else {
@@ -679,31 +839,30 @@ function MainProfile() {
       }
     };
 
-    fetchData();
-  }, [chain, address]);
+    if (walletAddress != null) {
+      fetchData();
+    }
+  }, [chain, walletAddress]);
 
   const handleSave = async (newDescription?: string) => {
     try {
       // Check if the delegate already exists in the database
       if (newDescription) {
         setDescription(newDescription);
-        // console.log("New Description", description);
       }
       setIsLoading(true);
-      const isExisting = await checkDelegateExists(address);
+      const isExisting = await checkDelegateExists(walletAddress);
 
       if (isExisting) {
         // If delegate exists, update the delegate
         await handleUpdate(newDescription);
         setIsLoading(false);
         onClose();
-        // console.log("Existing True");
       } else {
         // If delegate doesn't exist, add a new delegate
         await handleAdd(newDescription);
         setIsLoading(false);
         onClose();
-        // console.log("Sorry! Doesn't exist");
       }
 
       toast.success("Saved");
@@ -717,11 +876,13 @@ function MainProfile() {
   const checkDelegateExists = async (address: any) => {
     try {
       // Make a request to your backend API to check if the address exists
-      // console.log("Checking");
-
+      const token=await getAccessToken();
       const myHeaders: HeadersInit = {
         "Content-Type": "application/json",
-        ...(address && { "x-wallet-address": address }),
+        ...(walletAddress && {
+          "x-wallet-address": walletAddress,
+          Authorization: `Bearer ${token}`,
+        }),
       };
 
       const raw = JSON.stringify({
@@ -743,7 +904,8 @@ function MainProfile() {
         // Iterate over each item in the response data array
         for (const item of response.data) {
           // Check if address and daoName match
-          if (item.address === address) {
+          const dbAddress = item.address;
+          if (dbAddress.toLowerCase() === address.toLowerCase()) {
             return true; // Return true if match found
           }
         }
@@ -760,15 +922,16 @@ function MainProfile() {
   const handleAdd = async (newDescription?: string) => {
     try {
       // Call the POST API function for adding a new delegate
-      console.log("Adding the delegate..");
-
+      const token=await getAccessToken();
       const myHeaders: HeadersInit = {
         "Content-Type": "application/json",
-        ...(address && { "x-wallet-address": address }),
+        ...(walletAddress && {
+          "x-wallet-address": walletAddress,
+          Authorization: `Bearer ${token}`,
+        }),
       };
-
       const raw = JSON.stringify({
-        address: address,
+        address: walletAddress,
         image: modalData.displayImage,
         isDelegate: true,
         displayName: modalData.displayName,
@@ -797,11 +960,9 @@ function MainProfile() {
       };
 
       const response = await fetchApi("/profile/", requestOptions);
-      console.log("Response Add", response);
 
       if (response.status === 200) {
         // Delegate added successfully
-        console.log("Delegate added successfully:", response.status);
         setIsLoading(false);
         setUserData({
           displayImage: modalData.displayImage,
@@ -824,12 +985,16 @@ function MainProfile() {
   // Function to handle updating an existing delegate
   const handleUpdate = async (newDescription?: string) => {
     try {
+      const token=await getAccessToken();
       const myHeaders: HeadersInit = {
         "Content-Type": "application/json",
-        ...(address && { "x-wallet-address": address }),
+        ...(walletAddress && {
+          "x-wallet-address": walletAddress,
+          Authorization: `Bearer ${token}`,
+        }),
       };
       const raw = JSON.stringify({
-        address: address,
+        address: walletAddress,
         image: modalData.displayImage,
         isDelegate: true,
         displayName: modalData.displayName,
@@ -849,6 +1014,7 @@ function MainProfile() {
         ],
       });
 
+
       const requestOptions: any = {
         method: "PUT",
         headers: myHeaders,
@@ -856,13 +1022,10 @@ function MainProfile() {
         redirect: "follow",
       };
       const response = await fetchApi("/profile", requestOptions);
-      console.log("response", response);
       const result = await response.json();
-      console.log("result", result);
       // Handle response from the PUT API function
-      if (result.data.success) {
+      if (response.status === 200) {
         // Delegate updated successfully
-        // console.log("Delegate updated successfully");
         setIsLoading(false);
         setUserData({
           displayImage: modalData.displayImage,
@@ -952,8 +1115,10 @@ function MainProfile() {
                       userData.displayName
                     ) : (
                       <>
-                        {`${address}`.substring(0, 6)} ...{" "}
-                        {`${address}`.substring(`${address}`.length - 4)}
+                        {`${walletAddress}`.substring(0, 6)} ...{" "}
+                        {`${walletAddress}`.substring(
+                          `${walletAddress}`.length - 4
+                        )}
                       </>
                     )}
                   </div>
@@ -1044,8 +1209,10 @@ function MainProfile() {
 
                 <div className="flex items-center py-1">
                   <div>
-                    {`${address}`.substring(0, 6)} ...{" "}
-                    {`${address}`.substring(`${address}`.length - 4)}
+                    {`${walletAddress}`.substring(0, 6)} ...{" "}
+                    {`${walletAddress}`.substring(
+                      `${walletAddress}`.length - 4
+                    )}
                   </div>
 
                   <Tooltip
@@ -1056,9 +1223,11 @@ function MainProfile() {
                   >
                     <span className="px-2 cursor-pointer" color="#3E3D3D">
                       <IoCopy
-                        onClick={() => handleCopy(`${address}`)}
+                        onClick={() => handleCopy(`${walletAddress}`)}
                         className={`transition-colors duration-300 ${
-                          copiedAddress === `${address}` ? "text-blue-500" : ""
+                          copiedAddress === `${walletAddress}`
+                            ? "text-blue-500"
+                            : ""
                         }`}
                       />
                     </span>
@@ -1077,7 +1246,7 @@ function MainProfile() {
                           navigator.clipboard.writeText(
                             `${BASE_URL}/${getDaoName(
                               chain?.name
-                            )}/${address}?active=info`
+                            )}/${walletAddress}?active=info`
                           );
                           setIsCopied(true);
                           setTimeout(() => {
@@ -1109,9 +1278,17 @@ function MainProfile() {
                     {/* pass address of whom you want to delegate the voting power to */}
                     <button
                       className="bg-blue-shade-200 font-bold text-white rounded-full py-[10px] px-6 xs:py-2 xs:px-4 sm:px-6 xs:text-xs sm:text-sm text-sm lg:px-8 lg:py-[10px] w-full xs:w-auto"
-                      onClick={() => handleDelegateVotes(`${address}`)}
+                      onClick={() => handleDelegateVotes(`${walletAddress}`)}
+                      disabled={isspin}
                     >
-                      Become Delegate
+                      {isspin ? (
+                        <div className="flex justify-center items-center">
+                          <Oval color="#fff" height={20} width={20} />
+                          {/* <InfinitySpin width="" color="#fff" /> */}
+                        </div>
+                      ) : (
+                        "Become Delegate"
+                      )}
                     </button>
 
                     <button
@@ -1158,7 +1335,7 @@ function MainProfile() {
             </div>
             <div className="hidden lg:flex gap-1 xs:gap-2 items-center">
               <RewardButton />
-              <ConnectWalletWithENS />
+              {/* <ConnectWalletWithENS /> */}
             </div>
           </div>
 
@@ -1285,6 +1462,7 @@ function MainProfile() {
                       handleSave(newDescription)
                     }
                     daoName={daoName}
+                    attestationCounts={attestationStatistics}
                   />
                 </div>
               ) : (

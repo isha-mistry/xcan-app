@@ -1,0 +1,5 @@
+.heading{
+    -webkit-text-fill-color:#0000;
+    background: radial-gradient(64.18% 64.18% at 71.16% 35.69%, #3b82f5 .89%, #3972db 17.23%, #3760bc 42.04%, #354f9f 55.12%, #323c80 71.54%, #31316e 100%);
+    background-clip:text;
+}

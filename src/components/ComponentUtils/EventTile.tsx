@@ -9,9 +9,7 @@ import { Oval } from "react-loader-spinner";
 import { useRouter } from "next-nprogress-bar";
 import Link from "next/link";
 import copy from "copy-to-clipboard";
-import toast from "react-hot-toast"
-import text1 from "@/assets/images/daos/texture1.png";
-import text2 from "@/assets/images/daos/texture2.png";
+import toast from "react-hot-toast";
 import oplogo from "@/assets/images/daos/op.png";
 import arblogo from "@/assets/images/daos/arbitrum.jpg";
 import logo from "@/assets/images/daos/CCLogo.png";
@@ -19,20 +17,14 @@ import user1 from "@/assets/images/user/user1.svg";
 import { BsPersonVideo3 } from "react-icons/bs";
 import { fetchEnsNameAndAvatar } from "@/utils/ENSUtils";
 import styles from "./Button.module.css";
-import {
-  Modal,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-  Button,
-  useDisclosure,
-} from "@nextui-org/react";
+import { useDisclosure } from "@nextui-org/react";
 import { IoCopy } from "react-icons/io5";
 import { useAccount } from "wagmi";
 import { SessionInterface } from "@/types/MeetingTypes";
 import { MEETING_BASE_URL } from "@/config/constants";
 import { fetchApi } from "@/utils/api";
+import { usePrivy } from "@privy-io/react-auth";
+import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 
 type Attendee = {
   attendee_address: string;
@@ -56,20 +48,6 @@ const getDaoLogo = (daoName: string): StaticImageData => {
   return daoLogos[normalizedName] || arblogo;
 };
 
-const createRandomRoom = async () => {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_CREATE_ROOM_ENDPOINT}`, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-    },
-  });
-  const result = await res.json();
-  // console.log("result", result);
-  const roomId = await result.data;
-  // console.log("roomId", roomId);
-  return roomId;
-};
-
 function EventTile({ tileIndex, data: initialData, isEvent }: TileProps) {
   const [data, setData] = useState(initialData);
   const [isPageLoading, setIsPageLoading] = useState(true);
@@ -83,27 +61,28 @@ function EventTile({ tileIndex, data: initialData, isEvent }: TileProps) {
   const [ensHostAvatar, setEnsHostAvatar] = useState("");
   const [ensGuestAvatar, setEnsGuestAvatar] = useState("");
   const [loadingEnsData, setLoadingEnsData] = useState(true);
-  const { address } = useAccount();
+  const { address, isConnected } = useAccount();
+  const { user, ready, getAccessToken, authenticated } = usePrivy();
+  const { walletAddress } = useWalletAddress();
   // const address = "0xB351a70dD6E5282A8c84edCbCd5A955469b9b032";
-  const [tooltipContent, setTooltipContent] = useState('Copy');
+  const [tooltipContent, setTooltipContent] = useState("Copy");
   const [isAnimating, setIsAnimating] = useState(false);
   const [copyStates, setCopyStates] = useState({
-    host: { isAnimating: false, tooltipContent: 'Copy' },
-    guest: { isAnimating: false, tooltipContent: 'Copy' }
+    host: { isAnimating: false, tooltipContent: "Copy" },
+    guest: { isAnimating: false, tooltipContent: "Copy" },
   });
-
-  const handleCopy = (addr: string, type: 'host' | 'guest') => {
+  const handleCopy = (addr: string, type: "host" | "guest") => {
     copy(addr);
-    
-    setCopyStates(prev => ({
+
+    setCopyStates((prev) => ({
       ...prev,
-      [type]: { isAnimating: true, tooltipContent: 'Copied' }
+      [type]: { isAnimating: true, tooltipContent: "Copied" },
     }));
 
     setTimeout(() => {
-      setCopyStates(prev => ({
+      setCopyStates((prev) => ({
         ...prev,
-        [type]: { isAnimating: false, tooltipContent: 'Copy' }
+        [type]: { isAnimating: false, tooltipContent: "Copy" },
       }));
     }, 4000);
   };
@@ -140,8 +119,10 @@ function EventTile({ tileIndex, data: initialData, isEvent }: TileProps) {
       }
     };
 
-    fetchEnsData();
-  }, [data.host_address, data.attendees[0]?.attendee_address]);
+    if (walletAddress != null) {
+      fetchEnsData();
+    }
+  }, [data.host_address, data.attendees[0].attendee_address]);
 
   useEffect(() => {
     setIsPageLoading(false);
@@ -175,9 +156,13 @@ function EventTile({ tileIndex, data: initialData, isEvent }: TileProps) {
         attendee_joined_status = "Not Joined";
       }
 
+      const token=await getAccessToken();
       const myHeaders: HeadersInit = {
         "Content-Type": "application/json",
-        ...(address && { "x-wallet-address": address }),
+        ...(walletAddress && {
+          "x-wallet-address": walletAddress,
+          Authorization: `Bearer ${token}`,
+        }),
       };
 
       const raw = await JSON.stringify({
@@ -236,7 +221,9 @@ function EventTile({ tileIndex, data: initialData, isEvent }: TileProps) {
 
     if (timeDifference <= 300000) {
       setStartLoading(true);
-      router.push(`${MEETING_BASE_URL}/meeting/session/${data.meetingId}/lobby`);
+      router.push(
+        `${MEETING_BASE_URL}/meeting/session/${data.meetingId}/lobby`
+      );
     } else {
       toast.error(
         "The meeting can only be started 5 minutes before the meeting time."
@@ -329,11 +316,20 @@ function EventTile({ tileIndex, data: initialData, isEvent }: TileProps) {
                     closeDelay={1}
                     showArrow
                   >
-                    <span className={`cursor-pointer text-xs sm:text-sm ${copyStates.guest.isAnimating ? 'text-blue-500' : 'text-gray-400 hover:text-gray-600'}`}>
+                    <span
+                      className={`cursor-pointer text-xs sm:text-sm ${
+                        copyStates.guest.isAnimating
+                          ? "text-blue-500"
+                          : "text-gray-400 hover:text-gray-600"
+                      }`}
+                    >
                       <IoCopy
                         onClick={(event) => {
                           event.stopPropagation();
-                          handleCopy(data.attendees[0].attendee_address,'guest');
+                          handleCopy(
+                            data.attendees[0].attendee_address,
+                            "guest"
+                          );
                         }}
                       />
                     </span>
@@ -379,11 +375,17 @@ function EventTile({ tileIndex, data: initialData, isEvent }: TileProps) {
                   closeDelay={1}
                   showArrow
                 >
-                  <span className={`cursor-pointer text-xs sm:text-sm ${copyStates.host.isAnimating ? 'text-blue-500' : 'text-gray-400 hover:text-gray-600'}`}>
+                  <span
+                    className={`cursor-pointer text-xs sm:text-sm ${
+                      copyStates.host.isAnimating
+                        ? "text-blue-500"
+                        : "text-gray-400 hover:text-gray-600"
+                    }`}
+                  >
                     <IoCopy
                       onClick={(event) => {
                         event.stopPropagation();
-                        handleCopy(data.host_address,'host');
+                        handleCopy(data.host_address, "host");
                       }}
                     />
                   </span>
@@ -504,7 +506,9 @@ function EventTile({ tileIndex, data: initialData, isEvent }: TileProps) {
               <div
                 onClick={() => {
                   setStartLoading(true);
-                  router.push(`${MEETING_BASE_URL}/meeting/session/${data.meetingId}/lobby`);
+                  router.push(
+                    `${MEETING_BASE_URL}/meeting/session/${data.meetingId}/lobby`
+                  );
                   // handleJoinClick();
                 }}
                 className="text-center rounded-full font-bold text-white mt-2 text-xs cursor-pointer"

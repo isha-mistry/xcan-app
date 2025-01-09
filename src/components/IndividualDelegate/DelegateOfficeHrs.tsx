@@ -1,11 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useRouter } from "next-nprogress-bar";
-import text1 from "@/assets/images/daos/texture1.png";
-import Tile from "../ComponentUtils/Tile";
-import { Oval } from "react-loader-spinner";
-import SessionTileSkeletonLoader from "../SkeletonLoader/SessionTileSkeletonLoader";
-import { useAccount } from "wagmi";
+import { usePrivy } from "@privy-io/react-auth";
+import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 import { fetchApi } from "@/utils/api";
 import OfficeHoursAlertMessage from "../AlertMessage/OfficeHoursAlertMessage";
 
@@ -30,8 +27,8 @@ function DelegateOfficeHrs({ props }: { props: Type }) {
   const router = useRouter();
   const path = usePathname();
   const searchParams = useSearchParams();
-  const { address } = useAccount();
-
+  const { user, ready, getAccessToken, authenticated } = usePrivy();
+  const { walletAddress } = useWalletAddress();
   const [sessionDetails, setSessionDetails] = useState([]);
   const [dataLoading, setDataLoading] = useState(true);
   const dao_name = props.daoDelegates;
@@ -67,9 +64,13 @@ function DelegateOfficeHrs({ props }: { props: Type }) {
     const fetchData = async () => {
       try {
         setDataLoading(true);
+        const token=await getAccessToken();
         const myHeaders: HeadersInit = {
           "Content-Type": "application/json",
-          ...(address && { "x-wallet-address": address }),
+          ...(walletAddress && {
+            "x-wallet-address": walletAddress,
+            Authorization: `Bearer ${token}`,
+          }),
         };
 
         const raw = JSON.stringify({
@@ -87,7 +88,7 @@ function DelegateOfficeHrs({ props }: { props: Type }) {
           requestOptions
         );
         const result = await response.json();
-        console.log(result);
+        // console.log(result);
 
         //api for individual attendees
         const rawData = JSON.stringify({
@@ -105,7 +106,7 @@ function DelegateOfficeHrs({ props }: { props: Type }) {
           requestOption
         );
         const resultData = await responseData.json();
-        console.log(resultData);
+        // console.log(resultData);
 
         if (
           searchParams.get("hours") === "ongoing" ||
@@ -138,7 +139,9 @@ function DelegateOfficeHrs({ props }: { props: Type }) {
       }
     };
 
-    fetchData();
+    if (walletAddress != null) {
+      fetchData();
+    }
   }, [searchParams.get("hours")]); // Re-fetch data when filter changes
 
   useEffect(() => {

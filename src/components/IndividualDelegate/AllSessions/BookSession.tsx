@@ -2,9 +2,11 @@
 
 import React, { useState, useEffect } from "react";
 import DayTimeScheduler from "@captainwalterdev/daytimescheduler";
-import { useAccount } from "wagmi";
+import { useAccount, useSwitchChain } from "wagmi";
 import { DateTime, Duration } from "luxon";
-import dateFns from "date-fns";
+
+import { isSameDay } from "date-fns";
+
 import { useSession } from "next-auth/react";
 import { Oval, ThreeDots } from "react-loader-spinner";
 import styled from "styled-components";
@@ -18,13 +20,15 @@ import {
   useDisclosure,
 } from "@nextui-org/react";
 import toast, { Toaster } from "react-hot-toast";
-import { useConnectModal } from "@rainbow-me/rainbowkit";
+// import { useConnectModal } from "@rainbow-me/rainbowkit";
 import SchedulingSuccessModal from "@/components/UserProfile/UserAllSessions/SchedulingSuccessModal";
 import BookingSuccessModal from "./BookingSuccessModal";
 import AddEmailModal from "@/components/ComponentUtils/AddEmailModal";
 import { RxCross2 } from "react-icons/rx";
 import { MdCancel } from "react-icons/md";
 import { useRouter } from "next-nprogress-bar";
+import { usePrivy } from "@privy-io/react-auth";
+import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 import { fetchApi } from "@/utils/api";
 interface Type {
   daoDelegates: string;
@@ -33,11 +37,11 @@ interface Type {
 
 function BookSession({ props }: { props: Type }) {
   const router = useRouter();
-  const { openConnectModal } = useConnectModal();
+  // const { openConnectModal } = useConnectModal();
   // const host_address = "0x3013bb4E03a7B81106D69C10710EaE148C8410E1";
   const daoName = props.daoDelegates;
   const host_address = props.individualDelegate;
-  const { isConnected, address } = useAccount();
+  // const { isConnected, address } = useAccount();
   const { data: session, status } = useSession();
   const loading = status === "loading";
   const [isScheduling, setIsScheduling] = useState(false);
@@ -61,14 +65,18 @@ function BookSession({ props }: { props: Type }) {
   const [modalOpen, setModalOpen] = useState(false);
 
   const [mailId, setMailId] = useState<string>();
+  const [checkUserMail,setCheckUserMail]=useState(false);
   const [hasEmailID, setHasEmailID] = useState<Boolean>();
   const [showGetMailModal, setShowGetMailModal] = useState<Boolean>();
   const [isValidEmail, setIsValidEmail] = useState(true);
   const [continueAPICalling, setContinueAPICalling] = useState<Boolean>(false);
   const [userRejected, setUserRejected] = useState<Boolean>();
   const [addingEmail, setAddingEmail] = useState<boolean>();
+  const { ready, authenticated, login, logout, getAccessToken, user } =
+    usePrivy();
+  const { walletAddress } = useWalletAddress();
   const { chain } = useAccount();
-
+  const { switchChain } = useSwitchChain();
   const styles = `
   .calendar-container > div > ul {
     height: auto;
@@ -104,72 +112,74 @@ function BookSession({ props }: { props: Type }) {
     };
   }, [isOpen]);
 
-  useEffect(() => {
-    const loadingTimeout = setTimeout(() => {
-      setIsLoading(false);
-    }, 2000);
+  // useEffect(() => {
+  //   const loadingTimeout = setTimeout(() => {
+  //     setIsLoading(false);
+  //   }, 2000);
 
-    getAvailability();
-    getSlotTimeAvailability();
-    return () => {
-      clearTimeout(loadingTimeout);
-    };
-  }, [address, isConnected, session]);
+  //   getAvailability();
+  //   getSlotTimeAvailability();
+  //   return () => {
+  //     clearTimeout(loadingTimeout);
+  //   };
+  // }, [walletAddress, authenticated, session]);
 
-  const getAvailability = async () => {
-    try {
-      const response = await fetch(
-        `/api/get-availability/${host_address}?dao_name=${daoName}`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
+  // const getAvailability = async () => {
+  //   try {
+  //     const response = await fetch(
+  //       `/api/get-availability/${host_address}?dao_name=${daoName}`,
+  //       {
+  //         method: "GET",
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //         },
+  //       }
+  //     );
 
-      const result = await response.json();
-      if (result.success) {
-        setAPIData(result.data);
-        setIsLoading(false);
-      }
-    } catch (error) {}
-  };
+  //     const result = await response.json();
+  //     if (result.success) {
+  //       setAPIData(result.data);
+  //       setIsLoading(false);
+  //     }
+  //   } catch (error) {}
+  // };
 
-  const getSlotTimeAvailability = async () => {
-    try {
-      const response = await fetchApi(
-        `/get-meeting/${host_address}?dao_name=${daoName}`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
+  
 
-      const result = await response.json();
-      if (result.success) {
-        setAPIBookings(result.data);
-        const extractedSlotTimes = result.data.map(
-          (item: any) => new Date(item.slot_time)
-        );
-        setSlotTimes(extractedSlotTimes);
-        setIsPageLoading(false);
+  // const getSlotTimeAvailability = async () => {
+  //   try {
+  //     const response = await fetchApi(
+  //       `/get-meeting/${host_address}?dao_name=${daoName}`,
+  //       {
+  //         method: "GET",
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //         },
+  //       }
+  //     );
 
-        // Assuming bookedSlots is an array of Date objects
-        const newBookedSlots: any = [
-          ...bookedSlots,
-          ...extractedSlotTimes, // Spread the extractedSlotTimes array
-        ];
+  //     const result = await response.json();
+  //     if (result.success) {
+  //       setAPIBookings(result.data);
+  //       const extractedSlotTimes = result.data.map(
+  //         (item: any) => new Date(item.slot_time)
+  //       );
+  //       setSlotTimes(extractedSlotTimes);
+  //       setIsPageLoading(false);
 
-        setBookedSlots(newBookedSlots);
-        setIsLoading(false);
-      }
-    } catch (error) {
-      setIsPageLoading(false);
-    }
-  };
+  //       // Assuming bookedSlots is an array of Date objects
+  //       const newBookedSlots: any = [
+  //         ...bookedSlots,
+  //         ...extractedSlotTimes, // Spread the extractedSlotTimes array
+  //       ];
+
+  //       setBookedSlots(newBookedSlots);
+  //       setIsLoading(false);
+  //     }
+  //   } catch (error) {
+  //     setIsPageLoading(false);
+  //   }
+  // };
 
   const dataRequest = async (data: any) => {
     setIsScheduling(true);
@@ -185,6 +195,52 @@ function BookSession({ props }: { props: Type }) {
     });
   };
 
+
+  useEffect(() => {
+
+    const loadingTimeout = setTimeout(() => {
+      setIsLoading(false);
+    }, 2000)
+
+    const loadData = async () => {
+      try {
+        const [availabilityResponse, slotTimeResponse] = await Promise.all([
+          fetch(`/api/get-availability/${host_address}?dao_name=${daoName}`),
+          fetchApi(`/get-meeting/${host_address}?dao_name=${daoName}`),
+        ]);
+  
+        const availabilityResult = await availabilityResponse.json();
+        const slotTimeResult = await slotTimeResponse.json();
+  
+        if (availabilityResult.success && slotTimeResult.success) {
+          setAPIData(availabilityResult.data);
+          setAPIBookings(slotTimeResult.data);
+          const extractedSlotTimes = slotTimeResult.data.map(
+            (item: any) => new Date(item.slot_time)
+          );
+          setSlotTimes(extractedSlotTimes);
+          setIsPageLoading(false);
+          const newBookedSlots: any = [
+            ...bookedSlots,
+            ...extractedSlotTimes, // Spread the extractedSlotTimes array
+          ];
+  
+          setBookedSlots(newBookedSlots);
+          setIsLoading(false);
+        }
+      } catch (error) {
+        setIsPageLoading(false);
+        setIsLoading(false);
+        // Handle error
+      }
+    };
+  
+    loadData();
+    return () => {
+      clearTimeout(loadingTimeout);
+    };
+  }, [walletAddress, authenticated, session]);
+
   const handleModalInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
@@ -196,8 +252,8 @@ function BookSession({ props }: { props: Type }) {
   };
 
   const handleScheduled = async (data: any) => {
-    if (isConnected) {
-      if (host_address === address) {
+    if (authenticated) {
+      if (host_address === walletAddress) {
         toast("Delegates can not book their own sessions!");
       } else {
         setIsScheduling(true);
@@ -206,8 +262,9 @@ function BookSession({ props }: { props: Type }) {
         onOpen();
       }
     } else {
-      if (openConnectModal) {
-        openConnectModal();
+      if (!authenticated) {
+        // openConnectModal();
+        login();
       }
     }
   };
@@ -225,60 +282,73 @@ function BookSession({ props }: { props: Type }) {
     }
   }, [continueAPICalling]);
 
-  const checkUser = async () => {
-    try {
-      const myHeaders: HeadersInit = {
-        "Content-Type": "application/json",
-        ...(address && { "x-wallet-address": address }),
-      };
-
-      const raw = JSON.stringify({
-        address: address,
-      });
-
-      const requestOptions: any = {
-        method: "POST",
-        headers: myHeaders,
-        body: raw,
-        redirect: "follow",
-      };
-      const response = await fetchApi(`/profile/${address}`, requestOptions);
-      const result = await response.json();
-      if (Array.isArray(result.data) && result.data.length > 0) {
-        for (const item of result.data) {
-          if (item.address === address) {
-            if (item.emailId === null || item.emailId === "") {
-              setHasEmailID(false);
-              return false;
-            } else if (item.emailId) {
-              const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-              const isValid = emailPattern.test(item.emailId);
-              if (isValid) {
-                setMailId(item.emailId);
-                setContinueAPICalling(true);
-                setHasEmailID(true);
-                return true;
-              } else {
-                setContinueAPICalling(false);
+  useEffect(() => {
+    const checkUser = async () => {
+      try {
+        const token = await getAccessToken();
+        const myHeaders: HeadersInit = {
+          "Content-Type": "application/json",
+          ...(walletAddress && {
+            "x-wallet-address": walletAddress,
+            Authorization: `Bearer ${token}`,
+          }),
+        };    
+  
+        const raw = JSON.stringify({
+          address: walletAddress,
+        });
+  
+        const requestOptions: any = {
+          method: "POST",
+          headers: myHeaders,
+          body: raw,
+          redirect: "follow",
+        };
+        const response = await fetchApi(
+          `/profile/${walletAddress}`,
+          requestOptions
+        );
+        const result = await response.json();
+        if (Array.isArray(result.data) && result.data.length > 0) {
+          for (const item of result.data) {
+            if (item.address === walletAddress) {
+              if (item.emailId === null || item.emailId === "") {
+                setHasEmailID(false);
                 return false;
+              } else if (item.emailId) {
+                const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                const isValid = emailPattern.test(item.emailId);
+                if (isValid) {
+                  setMailId(item.emailId);
+                  setHasEmailID(true);
+                  return true;
+                } else {
+                  return false;
+                }
               }
             }
           }
         }
+      } catch (error) {
+        // toast.error("An error occurred while checking user information");
+        return false;
       }
-    } catch (error) {
-      toast.error("An error occurred while checking user information");
-      setHasEmailID(false);
-      setContinueAPICalling(false);
-      return false;
-    }
-  };
+    };
+  
+    const runCheck = async () => {
+      let checkMail = await checkUser();
+      // console.log('ChekMail',checkMail);
+      setCheckUserMail(checkMail?checkMail:false);
+    };
+  
+    runCheck(); // Call the async function inside the effect
+  }, [walletAddress]); // Include walletAddress or other dependencies
+  
 
   const checkBeforeApiCall = async () => {
     if (modalData.title.length > 0 && modalData.description.length > 0) {
       try {
         setConfirmSave(true);
-        const checkUserMail = await checkUser();
         const userRejectedLocal: any = await sessionStorage.getItem(
           "bookingMailRejected"
         );
@@ -310,17 +380,14 @@ function BookSession({ props }: { props: Type }) {
   };
   const apiCall = async () => {
     const ChainName = chain?.name === "OP Mainnet" ? "optimism" : "arbitrum";
-
-    if (props.daoDelegates !== ChainName) {
-      toast(
-        "Please switch to the correct network to book your session seamlessly."
-      );
+    const CHAIN_ID=props.daoDelegates=='optimism'?10:42161;
+   
+    if (props.daoDelegates !== ChainName) {    
+      await switchChain({ chainId: CHAIN_ID});
       setIsLoading(false);
       setConfirmSave(false);
       setIsScheduling(false);
       setContinueAPICalling(false);
-      modalData.title = "";
-      modalData.description = "";
       return;
     }
 
@@ -333,7 +400,7 @@ function BookSession({ props }: { props: Type }) {
       description: modalData.description,
       host_address: host_address,
       attendees: [
-        { attendee_address: address, attendee_joined_status: "Pending" },
+        { attendee_address: walletAddress, attendee_joined_status: "Pending" },
       ],
       meeting_status: "Upcoming",
       booking_status: "Approved",
@@ -342,9 +409,13 @@ function BookSession({ props }: { props: Type }) {
       host_joined_status: "Pending",
     };
 
+    const token = await getAccessToken();
     const myHeaders: HeadersInit = {
       "Content-Type": "application/json",
-      ...(address && { "x-wallet-address": address }),
+      ...(walletAddress && {
+        "x-wallet-address": walletAddress,
+        Authorization: `Bearer ${token}`,
+      }),
     };
 
     const requestOptions: any = {
@@ -457,7 +528,7 @@ function BookSession({ props }: { props: Type }) {
       ) {
         const isBooked = bookedSlots.some((bookedSlot: any) => {
           return (
-            dateFns.isSameDay(startTime, bookedSlot) &&
+          isSameDay(startTime,bookedSlot) &&
             slotTime.getHours() === bookedSlot.getHours() &&
             slotTime.getMinutes() === bookedSlot.getMinutes()
           );
@@ -474,7 +545,7 @@ function BookSession({ props }: { props: Type }) {
 
   const handleModalClose = () => {
     setModalOpen(false);
-    router.push(`/profile/${address}?active=sessions&session=attending`);
+    router.push(`/profile/${walletAddress}?active=sessions&session=attending`);
   };
 
   const handleEmailChange = (email: string) => {
@@ -487,23 +558,22 @@ function BookSession({ props }: { props: Type }) {
     return regex.test(email);
   };
 
-  useEffect(() => {
-    console.log("mailId", mailId);
-  }, [mailId]);
-
   const handleSubmit = async () => {
-    if (address) {
+    if (walletAddress) {
       if (mailId && (mailId !== "" || mailId !== undefined)) {
         if (isValidEmail) {
           try {
             setAddingEmail(true);
+            const token = await getAccessToken();
             const myHeaders: HeadersInit = {
               "Content-Type": "application/json",
-              ...(address && { "x-wallet-address": address }),
+              ...(walletAddress && {
+                "x-wallet-address": walletAddress,
+                Authorization: `Bearer ${token}`,
+              }),
             };
-
             const raw = JSON.stringify({
-              address: address,
+              address: walletAddress,
               emailId: mailId,
             });
 
@@ -595,6 +665,18 @@ function BookSession({ props }: { props: Type }) {
           style={{ boxShadow: " 0px 0px 45px -17px rgba(0,0,0,0.75)" }}
         >
           <div className="bg-white rounded-[41px] overflow-hidden shadow-lg w-full max-w-lg mx-4">
+            <Toaster
+              toastOptions={{
+                style: {
+                  fontSize: "14px",
+                  backgroundColor: "#3E3D3D",
+                  color: "#fff",
+                  boxShadow: "none",
+                  borderRadius: "50px",
+                  padding: "3px 5px",
+                },
+              }}
+            />
             <div className="relative">
               <div className="flex flex-col gap-1 text-white bg-[#292929] p-4 py-7">
                 <div className="flex items-center justify-between mx-4">
@@ -645,7 +727,7 @@ function BookSession({ props }: { props: Type }) {
                   />
                 </div>
 
-                {showGetMailModal && !hasEmailID && (
+                {showGetMailModal && (
                   <div className="mt-4 border rounded-xl p-3 sm:p-4 relative">
                     <button
                       className="absolute top-2 right-2 sm:top-3 sm:right-3"

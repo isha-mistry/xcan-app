@@ -1,0 +1,39 @@
+.customTooltip {
+  font-family: var(--font-poppins);
+  transform-origin: center;
+  animation: expandTooltip 0.3s ease-out forwards;
+}
+
+@keyframes expandTooltip {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+.item::after{
+    content: "";
+    width:0;
+    background-color: #c6d7ff;
+    display: block;
+    height: 1.5px;
+    margin: auto;
+    position: relative;
+    top: 5px;
+    transition: all 0.5s ease;
+}
+.item:hover::after{
+    width: 100%;
+}
+.activeitem::after{
+  content: "";
+  width: 100%;
+  background-color: #c6d7ff;
+    display: block;
+    height: 1.5px;
+    margin: auto;
+    position: relative;
+    top: 5px;
+}

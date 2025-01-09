@@ -14,8 +14,7 @@ export async function PUT(req: NextRequest) {
       ? `${ensName}`
       : `${delegate_address.slice(0, 6)}...${delegate_address.slice(-4)}`;
 
-    console.log("Delegate address:", address);
-    console.log("DAO name:", daoName);
+  
 
     console.log("Connecting to MongoDB...");
     const client = await connectDB();
@@ -27,6 +26,10 @@ export async function PUT(req: NextRequest) {
 
     // Find the document by address in delegate_follow collection
     const document = await delegate_follow_collection.findOne({ address });
+
+    // console.log("Line 31",document);
+    // console.log("Delegate address 32:", address);
+    // console.log("DAO name: 33", daoName);
 
     if (!document) {
       client.close();
