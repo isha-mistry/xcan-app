@@ -21,163 +21,6 @@ interface Type {
   individualDelegate: string;
 }
 
-const op_client = createClient({
-  url: "https://api.studio.thegraph.com/query/68573/v6_proxy/version/latest",
-  exchanges: [cacheExchange, fetchExchange],
-});
-
-const arb_client = createClient({
-  url: "https://api.studio.thegraph.com/query/68573/arbitrum_proposals/v0.0.4",
-  exchanges: [cacheExchange, fetchExchange],
-});
-
-const arbDescription = gql`
-  query MyQuery($proposalId: String!) {
-    proposalCreateds(
-      where: { proposalId: $proposalId }
-      orderBy: blockTimestamp
-      orderDirection: desc
-    ) {
-      description
-    }
-  }
-`;
-
-const VoterQuery = (first: any, skip: any) => gql`
-  query MyQuery($address: String!) {
-    voteCasts(
-      where: { voter: $address}
-      orderDirection: desc
-      orderBy: blockTimestamp
-      first: ${first}
-      skip: ${skip}
-    ) {
-      proposalId
-      reason
-      support
-      weight
-      transactionHash
-      blockTimestamp
-    }
-  
-    voteCastWithParams_collection(
-      where: {voter: $address}
-      orderBy: blockTimestamp
-      orderDirection: desc
-    ) {
-      proposalId
-      reason
-      support
-      weight
-      transactionHash
-      blockTimestamp
-      params
-    }
-  }
-  `;
-const opDescription = gql`
-  query MyDescriptionQuery($proposalId: String!) {
-    proposalCreated1S(where: { proposalId: $proposalId }) {
-      description
-    }
-    proposalCreated2S(where: { proposalId: $proposalId }) {
-      description
-    }
-    proposalCreated3S(where: { proposalId: $proposalId }) {
-      description
-    }
-    proposalCreateds(where: { proposalId: $proposalId }) {
-      description
-    }
-  }
-`;
-
-const arbQuery = gql`
-  query Votes($address: String!) {
-    votes(
-      orderBy: timestamp
-      orderDirection: desc
-      where: { user: $address, organization: "arbitrum.eth" }
-    ) {
-      id
-      proposal {
-        id
-        description
-        timestamp
-      }
-      organization {
-        id
-      }
-      solution
-      timestamp
-      support
-    }
-  }
-`;
-
-export const fetchProposalDescriptions = async (
-  first: any,
-  skip: any,
-  daoName: any,
-  address: any
-) => {
-  let proposalIdsResult: any;
-  if (daoName === "optimism") {
-    proposalIdsResult = await op_client.query(VoterQuery(first, skip), {
-      address: address,
-    });
-  } else if (daoName === "arbitrum") {
-    proposalIdsResult = await arb_client.query(VoterQuery(first, skip), {
-      address: address,
-    });
-  }
-
-  const voteCasts = proposalIdsResult.data.voteCasts || [];
-  const voteCastWithParamsCollection =
-    proposalIdsResult.data.voteCastWithParams_collection || [];
-
-  // Combine the data
-  const combinedData = [...voteCasts, ...voteCastWithParamsCollection];
-
-  // Sort combined data by blockTimestamp in descending order
-  combinedData.sort((a: any, b: any) => b.blockTimestamp - a.blockTimestamp);
-
-  const proposalIds = combinedData.map((voteCast: any) => voteCast);
-
-  let descriptionsPromises;
-  let descriptionsResults: any;
-  if (daoName === "optimism") {
-    descriptionsPromises = proposalIds.map((proposalId: any) => {
-      return op_client
-        .query(opDescription, { proposalId: proposalId.proposalId.toString() })
-        .toPromise();
-    });
-    descriptionsResults = (await Promise.all(descriptionsPromises)) || [];
-  } else if (daoName === "arbitrum") {
-    descriptionsPromises = proposalIds.map((proposalId: any) => {
-      return arb_client
-        .query(arbDescription, { proposalId: proposalId.proposalId.toString() })
-        .toPromise();
-    });
-    descriptionsResults = (await Promise.all(descriptionsPromises)) || [];
-  }
-
-  const FinalResult = descriptionsResults
-    .flatMap((result: any, index: any) =>
-      Object.values(result.data)
-        .flat()
-        .filter((d: any) => d.description)
-        .map((d: any) => ({
-          proposalId: proposalIds[index],
-          proposal: { description: d.description },
-          support: proposalIds[index].support,
-        }))
-    )
-    .filter((item: any) => item.proposal.description.length > 0);
-
-  return FinalResult;
-};
-
 export const fetchGraphData = async (daoName: any, pageData: any) => {
   if (daoName == "optimism") {
     const op_counts = pageData.reduce(
@@ -232,26 +75,52 @@ function ProposalVoted({ daoName, address }: any) {
   const [supportCounts, setSupportCounts] = useState({ 0: 0, 1: 0, 2: 0 });
   const router = useRouter();
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const finalResult = await fetchProposalDescriptions(
-          1000,
-          0,
-          daoName,
-          address
-        );
+    let isSubscribed = true; // For cleanup
 
-        setPageData(finalResult);
-        setGraphData(finalResult);
-        setIsPageLoading(false);
-        setFirst(true);
+    const fetchData = async () => {
+      // Don't fetch if we don't have both required parameters
+      if (!daoName || !address) {
+        return;
+      }
+
+      try {
+        setIsPageLoading(true); // Set loading state before fetch
+        
+        const params = new URLSearchParams({
+          daoName,
+          address,
+          first: '1000',
+          skip: '0'
+        });
+        
+        const response = await fetch(`/api/get-pastvote?${params}`);
+        const finalResult = await response.json();
+        
+        if (!response.ok) throw new Error(finalResult.error);
+
+        // Only update state if component is still mounted
+        if (isSubscribed) {
+          setPageData(finalResult);
+          setGraphData(finalResult);
+          setFirst(true);
+          setIsPageLoading(false);
+        }
       } catch (error) {
         console.error("Error fetching proposal descriptions:", error);
+        if (isSubscribed) {
+          setIsPageLoading(false);
+        }
       }
     };
 
     fetchData();
-  }, [daoName]);
+
+    // Cleanup function
+    return () => {
+      isSubscribed = false;
+    };
+}, [daoName, address]); // Add address to dependencies
+
   useEffect(() => {
     const fetchData = async () => {
       try {
