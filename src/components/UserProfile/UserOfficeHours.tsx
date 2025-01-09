@@ -222,7 +222,11 @@ function UserOfficeHours({
                 </div>
               </div>
             ) : (
-              <OfficeHourTile isUpcoming={true} data={upcomingOfficeHours} />
+              <OfficeHourTile
+                isUpcoming={true}
+                isUserProfile={true}
+                data={upcomingOfficeHours}
+              />
             ))}
 
           {searchParams.get("hours") === "hosted" &&
@@ -236,7 +240,11 @@ function UserOfficeHours({
                 </div>
               </div>
             ) : (
-              <OfficeHourTile isHosted={true} data={hostedOfficeHours} />
+              <OfficeHourTile
+                isHosted={true}
+                isRecorded={true}
+                data={hostedOfficeHours}
+              />
             ))}
           {searchParams.get("hours") === "attended" &&
             (dataLoading ? (
@@ -249,7 +257,11 @@ function UserOfficeHours({
                 </div>
               </div>
             ) : (
-              <OfficeHourTile isAttended={true} data={attendedOfficeHours} />
+              <OfficeHourTile
+                isAttended={true}
+                isRecorded={true}
+                data={attendedOfficeHours}
+              />
             ))}
         </div>
       </div>

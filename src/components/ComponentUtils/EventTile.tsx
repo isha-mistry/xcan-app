@@ -509,7 +509,7 @@ function EventTile({ tileIndex, data: initialData, isEvent }: TileProps) {
                   router.push(
                     `${MEETING_BASE_URL}/meeting/session/${data.meetingId}/lobby`
                   );
-                  // handleJoinClick();
+                  handleJoinClick();
                 }}
                 className="text-center rounded-full font-bold text-white mt-2 text-xs cursor-pointer"
               >

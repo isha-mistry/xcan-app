@@ -5,9 +5,11 @@ import toast from "react-hot-toast";
 import { fetchApi } from "@/utils/api";
 import { usePrivy } from "@privy-io/react-auth";
 import { useWalletAddress } from "@/app/hooks/useWalletAddress";
+import { LuDot } from "react-icons/lu";
 
 interface EditOfficeHoursModalProps {
   slot: TimeSlot;
+  date: Date;
   onClose: () => void;
   onUpdate: (updatedSlot: TimeSlot) => void;
   hostAddress: string;
@@ -16,6 +18,7 @@ interface EditOfficeHoursModalProps {
 
 const EditOfficeHoursModal: React.FC<EditOfficeHoursModalProps> = ({
   slot,
+  date,
   onClose,
   onUpdate,
   hostAddress,
@@ -27,9 +30,6 @@ const EditOfficeHoursModal: React.FC<EditOfficeHoursModalProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const { user, ready, getAccessToken, authenticated } = usePrivy();
   const { walletAddress } = useWalletAddress();
-  // const { toast } = useToast();
-
-  console.log("slot", slot);
 
   const updateMeeting = async () => {
     try {
@@ -138,8 +138,11 @@ const EditOfficeHoursModal: React.FC<EditOfficeHoursModalProps> = ({
           </div>
           <div>
             <p className="text-sm font-medium text-gray-700 mb-1">Time Slot</p>
-            <p className="text-sm text-gray-600">
-              {slot.startTime} - {slot.endTime}
+            <p className="flex items-center text-sm text-gray-600">
+              {slot.startTime} - {slot.endTime} <LuDot />{" "}
+              <span className="font-semibold">
+                {date.toLocaleDateString("en-GB")}
+              </span>
             </p>
           </div>
           <div className="flex justify-end space-x-3">

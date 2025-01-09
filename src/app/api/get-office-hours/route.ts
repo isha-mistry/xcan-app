@@ -14,15 +14,29 @@ export async function GET(req: NextRequest) {
 
     let query: any = {};
 
-    // Base query setup based on host_address and dao_name
+    // Modified query to fetch both hosted meetings and meetings where user is an attendee
     if (host_address && dao_name) {
       query = {
-        host_address: host_address,
-        "dao.name": dao_name,
+        $and: [
+          { "dao.name": dao_name },
+          {
+            $or: [
+              { host_address: host_address },
+              { "dao.meetings.attendees.attendee_address": host_address },
+            ],
+          },
+        ],
       };
     } else if (dao_name) {
       query = {
         "dao.name": dao_name,
+      };
+    } else if (host_address) {
+      query = {
+        $or: [
+          { host_address: host_address },
+          { "dao.meetings.attendees.attendee_address": host_address },
+        ],
       };
     }
 
@@ -30,7 +44,19 @@ export async function GET(req: NextRequest) {
     await client.close();
 
     if (!results.length) {
-      return NextResponse.json({ error: "No meetings found" }, { status: 404 });
+      return NextResponse.json(
+        {
+          success: true,
+          data: {
+            ongoing: [],
+            upcoming: [],
+            recorded: [],
+            hosted: [],
+            attended: [],
+          },
+        },
+        { status: 200 }
+      );
     }
 
     // Create categorized meeting arrays
@@ -77,10 +103,12 @@ export async function GET(req: NextRequest) {
                 hosted.push(meetingDocument);
               }
 
-              // Check if this is an attended meeting
+              // Check if this is an attended meeting (where user is not the host)
               if (
+                host_address &&
+                result.host_address !== host_address &&
                 meeting.attendees?.some(
-                  (attendee) => attendee.address === host_address
+                  (attendee) => attendee.attendee_address === host_address
                 )
               ) {
                 attended.push(meetingDocument);
@@ -102,8 +130,8 @@ export async function GET(req: NextRequest) {
       {
         success: true,
         data: {
-          ongoing: ongoing.sort(sortByDate),
-          upcoming: upcoming.sort(sortByDate),
+          ongoing: ongoing,
+          upcoming: upcoming,
           recorded: recorded.sort(sortByDate),
           hosted: hosted.sort(sortByDate),
           attended: attended.sort(sortByDate),

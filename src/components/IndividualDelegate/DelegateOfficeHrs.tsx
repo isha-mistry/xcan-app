@@ -32,7 +32,6 @@ function DelegateOfficeHrs({ props }: { props: Type }) {
   const searchParams = useSearchParams();
   const { user, ready, getAccessToken, authenticated } = usePrivy();
   const { walletAddress } = useWalletAddress();
-  const [sessionDetails, setSessionDetails] = useState([]);
   const [dataLoading, setDataLoading] = useState(true);
   const dao_name = props.daoDelegates;
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
@@ -99,13 +98,7 @@ function DelegateOfficeHrs({ props }: { props: Type }) {
     if (walletAddress != null) {
       fetchUserOfficeHours();
     }
-  }, [searchParams.get("hours")]); // Re-fetch data when filter changes
-
-  useEffect(() => {
-    // Set initial session details
-    setSessionDetails([]);
-    // setDataLoading(true);
-  }, [props]);
+  }, []); // Re-fetch data when filter changes
 
   return (
     <div>
@@ -205,7 +198,7 @@ function DelegateOfficeHrs({ props }: { props: Type }) {
                 </div>
               </div>
             ) : (
-              <OfficeHourTile isHosted={true} data={hostedOfficeHours} />
+              <OfficeHourTile isRecorded={true} data={hostedOfficeHours} />
             ))}
 
           {searchParams.get("hours") === "attended" &&
@@ -219,7 +212,7 @@ function DelegateOfficeHrs({ props }: { props: Type }) {
                 </div>
               </div>
             ) : (
-              <OfficeHourTile isAttended={true} data={attendedOfficeHours} />
+              <OfficeHourTile isRecorded={true} data={attendedOfficeHours} />
             ))}
         </div>
       </div>

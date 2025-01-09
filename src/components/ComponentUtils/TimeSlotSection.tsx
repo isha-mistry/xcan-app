@@ -34,6 +34,7 @@ const TimeSlotSection: React.FC<TimeSlotSectionProps> = ({
     dateIndex: number;
     slotIndex: number;
     slot: TimeSlot;
+    date: Date;
   } | null>(null);
   const [showEditOptions, setShowEditOptions] = useState<{
     dateIndex: number;
@@ -53,7 +54,12 @@ const TimeSlotSection: React.FC<TimeSlotSectionProps> = ({
     slotIndex: number,
     slot: TimeSlot
   ) => {
-    setEditingSlot({ dateIndex, slotIndex, slot });
+    setEditingSlot({
+      dateIndex,
+      slotIndex,
+      slot,
+      date: selectedDates[dateIndex].date,
+    });
     setShowEditOptions(null);
   };
 
@@ -62,52 +68,37 @@ const TimeSlotSection: React.FC<TimeSlotSectionProps> = ({
     setShowEditOptions(null);
   };
 
-  const confirmDeleteSlot = async () => {
+  const getSlotId = (
+    dateIndex: number,
+    slotIndex: number
+  ): string | undefined => {
+    return selectedDates[dateIndex]?.timeSlots[slotIndex]?.reference_id;
+  };
+
+  const handleDeleteSuccess = () => {
     if (confirmDelete) {
       const { dateIndex, slotIndex } = confirmDelete;
-      try {
-        const slotId =
-          selectedDates[dateIndex].timeSlots[slotIndex].reference_id;
-        console.log("slotId", slotId);
+      console.log("dateIndex", dateIndex, slotIndex);
 
-        const requestOptions = {
-          method: "DELETE",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            host_address: hostAddress,
-            dao_name: daoName,
-            reference_id: slotId,
-          }),
-        };
+      const slotId = getSlotId(dateIndex, slotIndex);
 
-        const result = await fetchApi(`/edit-office-hours`, requestOptions);
-
-        if (result.ok) {
-          // Update the local state to remove the deleted slot
-          setSelectedDates((prevDates) => {
-            const updatedDates = [...prevDates];
-            updatedDates[dateIndex].timeSlots.splice(slotIndex, 1);
-            if (updatedDates[dateIndex].timeSlots.length === 0) {
-              updatedDates.splice(dateIndex, 1);
-            }
-            return updatedDates;
-          });
-
-          // Also update the parent component's state
-          deleteBookedSlot(dateIndex, slotIndex);
-          if (slotId) removeExistingSchedule(slotId);
-
-          // Show a success message
-          toast.success("Time slot deleted successfully");
-        } else {
-          throw new Error("Failed to delete time slot");
+      // Update the local state to remove the deleted slot
+      setSelectedDates((prevDates) => {
+        console.log("prevDates", prevDates);
+        const updatedDates = [...prevDates];
+        console.log("updatedDates", updatedDates);
+        updatedDates[dateIndex].timeSlots.splice(slotIndex, 1);
+        if (updatedDates[dateIndex].timeSlots.length === 0) {
+          updatedDates.splice(dateIndex, 1);
         }
-      } catch (error) {
-        console.error("Error deleting time slot:", error);
-        toast.error("Failed to delete time slot. Please try again.");
-      }
+        return updatedDates;
+      });
+
+      if (slotId) removeExistingSchedule(slotId);
+      deleteBookedSlot(dateIndex, slotIndex);
+
+      setConfirmDelete(null);
     }
-    setConfirmDelete(null);
   };
 
   return (
@@ -320,6 +311,7 @@ const TimeSlotSection: React.FC<TimeSlotSectionProps> = ({
           hostAddress={hostAddress}
           daoName={daoName}
           slot={editingSlot.slot}
+          date={editingSlot.date}
           onClose={() => setEditingSlot(null)}
           onUpdate={(updatedSlot) => {
             updateBookedSlot(
@@ -331,11 +323,20 @@ const TimeSlotSection: React.FC<TimeSlotSectionProps> = ({
           }}
         />
       )}
-      <DeleteOfficeHoursModal
-        isOpen={confirmDelete !== null}
-        onClose={() => setConfirmDelete(null)}
-        onConfirm={confirmDeleteSlot}
-      />
+      {hostAddress && confirmDelete && (
+        <DeleteOfficeHoursModal
+          isOpen={confirmDelete !== null}
+          onClose={() => setConfirmDelete(null)}
+          onSuccess={handleDeleteSuccess}
+          hostAddress={hostAddress}
+          daoName={daoName}
+          slotId={
+            selectedDates[confirmDelete.dateIndex].timeSlots[
+              confirmDelete.slotIndex
+            ].reference_id
+          }
+        />
+      )}
     </div>
   );
 };

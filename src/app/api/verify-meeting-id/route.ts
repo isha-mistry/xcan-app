@@ -7,6 +7,7 @@ type MeetingStatusResponse = {
   success: boolean;
   message: string;
   status: number;
+  includeData: boolean;
 };
 
 // Helper function to create response
@@ -25,14 +26,54 @@ const createResponse = (
 // Helper function to get meeting status response
 const getMeetingStatusResponse = (status: string): MeetingStatusResponse => {
   const responses: { [key: string]: MeetingStatusResponse } = {
-    Upcoming: { success: true, message: "Meeting is upcoming", status: 200 },
-    active: { success: true, message: "Meeting is upcoming", status: 200 },
-    Recorded: { success: true, message: "Meeting has ended", status: 200 },
-    Finished: { success: true, message: "Meeting has ended", status: 200 },
-    inactive: { success: true, message: "Meeting has ended", status: 200 },
-    Ongoing: { success: true, message: "Meeting is ongoing", status: 200 },
-    ongoing: { success: true, message: "Meeting is ongoing", status: 200 },
-    Denied: { success: true, message: "Meeting has been denied", status: 200 },
+    Upcoming: {
+      success: true,
+      message: "Meeting is upcoming",
+      status: 200,
+      includeData: true,
+    },
+    active: {
+      success: true,
+      message: "Meeting is upcoming",
+      status: 200,
+      includeData: true,
+    },
+    Recorded: {
+      success: true,
+      message: "Meeting has ended",
+      status: 200,
+      includeData: true,
+    },
+    Finished: {
+      success: true,
+      message: "Meeting has ended",
+      status: 200,
+      includeData: true,
+    },
+    inactive: {
+      success: true,
+      message: "Meeting has ended",
+      status: 200,
+      includeData: true,
+    },
+    Ongoing: {
+      success: true,
+      message: "Meeting is ongoing",
+      status: 200,
+      includeData: true,
+    },
+    ongoing: {
+      success: true,
+      message: "Meeting is ongoing",
+      status: 200,
+      includeData: true,
+    },
+    Denied: {
+      success: true,
+      message: "Meeting has been denied",
+      status: 200,
+      includeData: true,
+    },
   };
 
   return (
@@ -40,7 +81,19 @@ const getMeetingStatusResponse = (status: string): MeetingStatusResponse => {
       success: false,
       message: "Meeting status is invalid",
       status: 400,
+      includeData: true,
     }
+  );
+};
+
+// Helper function to flatten office hours meetings
+const getFlattenedMeetings = (officeHours: OfficeHoursDocument) => {
+  return officeHours.dao.flatMap((dao) =>
+    dao.meetings.map((meeting) => ({
+      ...meeting,
+      host_address: officeHours.host_address,
+      dao_name: dao.name,
+    }))
   );
 };
 
@@ -63,48 +116,46 @@ export async function POST(req: NextRequest) {
         .findOne({ meetingId: roomId });
 
       if (!meeting) {
-        return createResponse(true, "Meeting does not exist");
+        return createResponse(false, "Meeting does not exist", null, 404);
       }
 
-      const { success, message, status } = getMeetingStatusResponse(
-        meeting.meeting_status
+      const { success, message, status, includeData } =
+        getMeetingStatusResponse(meeting.meeting_status);
+
+      return createResponse(
+        success,
+        message,
+        includeData ? meeting : null,
+        status
       );
-      return createResponse(success, message, meeting, status);
-    } else {
+    } else if (meetingType === "office_hours") {
       const officeHours = await db
         .collection<OfficeHoursDocument>("office_hours")
         .findOne({ "dao.meetings.meetingId": roomId });
 
       if (!officeHours) {
-        return createResponse(true, "Meeting does not exist");
+        return createResponse(false, "Meeting does not exist", null, 404);
       }
 
-      // Find the specific meeting and its DAO
-      const daoInfo = officeHours.dao.reduce<{
-        meeting: Meeting | null;
-        daoName: string;
-      }>(
-        (acc, dao) => {
-          const meeting = dao.meetings.find((m) => m.meetingId === roomId);
-          return meeting ? { meeting, daoName: dao.name } : acc;
-        },
-        { meeting: null, daoName: "" }
-      );
+      // Get all meetings in flattened format
+      const allMeetings = getFlattenedMeetings(officeHours);
 
-      if (!daoInfo.meeting) {
-        return createResponse(true, "Meeting does not exist");
+      // Find the specific meeting
+      const meeting = allMeetings.find((m) => m.meetingId === roomId);
+
+      if (!meeting) {
+        return createResponse(false, "Meeting does not exist", null, 404);
       }
 
-      const meetingWithContext = {
-        ...daoInfo.meeting,
-        host_address: officeHours.host_address,
-        dao_name: daoInfo.daoName,
-      };
+      const { success, message, status, includeData } =
+        getMeetingStatusResponse(meeting.meeting_status!);
 
-      const { success, message, status } = getMeetingStatusResponse(
-        daoInfo.meeting.meeting_status!
+      return createResponse(
+        success,
+        message,
+        includeData ? meeting : null,
+        status
       );
-      return createResponse(success, message, meetingWithContext, status);
     }
   } catch (error) {
     console.error("Error checking meeting status:", error);

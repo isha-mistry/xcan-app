@@ -356,7 +356,9 @@ const UserScheduledHours: React.FC<{ daoName: string }> = ({ daoName }) => {
   const updateBookedSlot = useCallback(
     (dateIndex: number, slotIndex: number, updatedSlot: TimeSlot) => {
       setSelectedDates((prevDates) => {
+        // console.log("prevDates", prevDates);
         const newSchedules = [...prevDates];
+        // console.log("newSchedules", newSchedules);
         newSchedules[dateIndex].timeSlots[slotIndex] = updatedSlot;
         return newSchedules;
       });
@@ -368,21 +370,33 @@ const UserScheduledHours: React.FC<{ daoName: string }> = ({ daoName }) => {
     (dateIndex: number, slotIndex: number) => {
       setSelectedDates((prevDates) => {
         const newSchedules = [...prevDates];
+
+        if (
+          !newSchedules[dateIndex] ||
+          !newSchedules[dateIndex].timeSlots[slotIndex]
+        ) {
+          console.warn("Invalid date or slot index");
+          return prevDates;
+        }
+
         const slot = newSchedules[dateIndex].timeSlots[slotIndex];
 
-        // If it's a booked slot, remove the booking information
         if (slot.bookedTitle) {
-          slot.bookedTitle = undefined;
-          slot.bookedDescription = undefined;
-          return newSchedules;
+          newSchedules[dateIndex].timeSlots[slotIndex] = {
+            ...slot,
+            bookedTitle: undefined,
+            bookedDescription: undefined,
+            reference_id: undefined,
+          };
         } else {
-          // If it's not a booked slot, remove it entirely
           newSchedules[dateIndex].timeSlots.splice(slotIndex, 1);
+
           if (newSchedules[dateIndex].timeSlots.length === 0) {
             newSchedules.splice(dateIndex, 1);
           }
-          return newSchedules;
         }
+
+        return newSchedules;
       });
     },
     []
