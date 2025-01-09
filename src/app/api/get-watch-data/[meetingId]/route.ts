@@ -45,7 +45,7 @@ export async function GET(req: NextRequest, context: { params: Params }) {
           const attendeesProfileDetails = await Promise.all(
             (attendees || []).map(async (attendee: Attendee) => {
               const attendeeInfo = await delegatesCollection.findOne({
-                address: attendee.address,
+                address: attendee.attendee_address,
               });
               return {
                 ...attendee,
@@ -95,7 +95,7 @@ export async function GET(req: NextRequest, context: { params: Params }) {
                 ? await Promise.all(
                     meeting.attendees.map(async (attendee: Attendee) => {
                       const attendeeInfo = await delegatesCollection.findOne({
-                        address: attendee.address,
+                        address: attendee.attendee_address,
                       });
                       return {
                         ...attendee,

@@ -9,16 +9,16 @@ export interface Meeting {
   video_uri?: string;
   thumbnail_image?: string;
   isMeetingRecorded?: boolean;
-  host_uid?: string;
-  host_onchain_uid?: string;
+  uid_host?: string;
+  onchain_host_uid?: string;
   attendees?: Attendee[];
   created_at?: Date;
 }
 
 export interface Attendee {
-  address: string;
-  uid?: string;
-  onchain_uid?: string;
+  attendee_address: string;
+  attendee_uid?: string;
+  attendee_onchain_uid?: string;
 }
 export interface OfficeHoursDocument {
   host_address: string;
@@ -141,8 +141,8 @@ export interface OfficeHoursProps {
   dao_name: string;
   description: string;
   host_address: string;
-  host_onchain_uid?: string;
-  host_uid?: string;
+  onchain_host_uid?: string;
+  uid_host?: string;
   isMeetingRecorded?: boolean;
   meetingId?: string;
   meeting_status: "Ongoing" | "Upcoming" | "Recorded" | "Hosted" | "Attended";
@@ -152,8 +152,10 @@ export interface OfficeHoursProps {
   startTime: string;
   endTime: string;
   reference_id: string;
-  MeetingType:number;
-  IsEligible: boolean;
-  Meeting_StartTime:number;
-  Meeting_EndTime:number;
+  meetingType:number;
+  isEligible: boolean;
+  meeting_starttime:number;
+  meeting_endtime:number;
+  views?: number;
+  nft_image?: string;
 }

@@ -13,7 +13,7 @@ import arb from "@/assets/images/daos/arb.png";
 import { LuDot } from "react-icons/lu";
 import { BiLinkExternal } from "react-icons/bi";
 import buttonStyles from "./Button.module.css";
-import { OfficeHoursProps } from "@/types/OfficeHoursTypes";
+import { OfficeHoursProps, TimeSlot } from "@/types/OfficeHoursTypes";
 import EditOfficeHoursModal from "./EditOfficeHoursModal";
 import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 import { getAccessToken } from "@privy-io/react-auth";
@@ -22,6 +22,11 @@ import toast from "react-hot-toast";
 import { TailSpin } from "react-loader-spinner";
 import ClaimButton from "./ClaimButton";
 import Link from "next/link";
+import DeleteOfficeHoursModal from "./DeleteOfficeHoursModal";
+import { formatTimeAgo } from "@/utils/getRelativeTime";
+import { useRouter } from "next-nprogress-bar";
+import { MEETING_BASE_URL } from "@/config/constants";
+import { Oval } from "react-loader-spinner";
 interface CopyStates {
   [key: number]: boolean;
 }
@@ -30,6 +35,8 @@ interface OfficeHoursTileProps {
   isAttended?: boolean;
   isUpcoming?: boolean;
   isOngoing?: boolean;
+  isUserProfile?: boolean;
+  isRecorded?: boolean;
   data: OfficeHoursProps[];
 }
 
@@ -38,6 +45,8 @@ const OfficeHourTile = ({
   isAttended,
   isUpcoming,
   isOngoing,
+  isUserProfile,
+  isRecorded,
   data,
 }: OfficeHoursTileProps) => {
   const [localData, setLocalData] = useState<OfficeHoursProps[]>(data);
@@ -54,6 +63,15 @@ const OfficeHourTile = ({
     isOpen: false,
     itemData: null,
   });
+  const [deleteModalData, setDeleteModalData] = useState<{
+    isOpen: boolean;
+    itemData: OfficeHoursProps | null;
+  }>({
+    isOpen: false,
+    itemData: null,
+  });
+  const [startLoading, setStartLoading] = useState(false);
+  const router = useRouter();
 
   const truncateAddress = (address: string) => {
     return `${address.slice(0, 6)}...${address.slice(-4)}`;
@@ -191,12 +209,65 @@ const OfficeHourTile = ({
     }
   };
 
+  const handleDeleteModalOpen = (itemData: OfficeHoursProps) => {
+    setDeleteModalData({
+      isOpen: true,
+      itemData,
+    });
+  };
+
+  const handleDeleteModalClose = () => {
+    setDeleteModalData({
+      isOpen: false,
+      itemData: null,
+    });
+  };
+
+  const handleUpdate = (updatedData: TimeSlot) => {
+    setLocalData((prevData) =>
+      prevData.map((item) => {
+        if (item.reference_id === updatedData.reference_id) {
+          return {
+            ...item,
+            title: updatedData.bookedTitle
+              ? updatedData.bookedTitle
+              : item.title,
+            description: updatedData.bookedDescription
+              ? updatedData.bookedDescription
+              : item.description,
+          };
+        }
+        return item;
+      })
+    );
+    handleEditModalClose();
+  };
+
+  const handleDeleteSuccess = () => {
+    // Remove the deleted item from localData
+    if (deleteModalData.itemData) {
+      setLocalData((prevData) =>
+        prevData.filter(
+          (item) => item.reference_id !== deleteModalData.itemData?.reference_id
+        )
+      );
+    }
+  };
+
   return (
     <div
       className={`grid min-[475px]:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 sm:gap-10 py-8 font-poppins`}
     >
       {localData.map((data: OfficeHoursProps, index: number) => (
-        <div className="border border-[#D9D9D9] sm:rounded-3xl" key={index}>
+        <div
+          className={`border border-[#D9D9D9] sm:rounded-3xl ${
+            isRecorded ? "cursor-pointer" : ""
+          }`}
+          key={index}
+          onClick={() => {
+            isRecorded && router.push(`/watch/${data.meetingId}`);
+          }}
+        >
           <div
             className={`w-full h-44 sm:rounded-t-3xl bg-black object-cover object-center relative `}
           >
@@ -258,9 +329,13 @@ const OfficeHourTile = ({
                   </div>
                 </div>
                 <LuDot />
-                <div className="text-xs sm:text-sm capitalize">10 views</div>
+                <div className="text-xs sm:text-sm capitalize">
+                  {data.views ?? 0} views
+                </div>
                 <LuDot />
-                <div className=" text-xs sm:text-sm">5 month ago</div>
+                <div className=" text-xs sm:text-sm">
+                  {formatTimeAgo(data.startTime)}
+                </div>
               </div>
             )}
 
@@ -297,7 +372,7 @@ const OfficeHourTile = ({
               </Tooltip>
             </div>
 
-            {isAttended && data.IsEligible && (
+            {isAttended && data.isEligible && (
               <div className="flex gap-2 w-full">
                 <Tooltip content="Claim Offchain" placement="top" showArrow>
                   <div
@@ -325,10 +400,10 @@ const OfficeHourTile = ({
                 </Tooltip>
               </div>
             )}
-            {isHosted && data.IsEligible && (
+            {isHosted && data.isEligible && (
               <div className="flex gap-2 justify-end w-full">
                 {/* Check if data.onchain exists */}
-                {data.host_onchain_uid ? (
+                {data.onchain_host_uid ? (
                   <Link
                     href={
                       data.dao_name.toLowerCase() === "optimism"
@@ -361,9 +436,9 @@ const OfficeHourTile = ({
                                 handleClaimOffchain(
                                   data.meetingId,
                                   data.dao_name,
-                                  data.MeetingType,
-                                  data.Meeting_StartTime,
-                                  data.Meeting_EndTime
+                                  data.meetingType,
+                                  data.meeting_starttime,
+                                  data.meeting_endtime
                                 )
                             : undefined
                         }
@@ -392,9 +467,9 @@ const OfficeHourTile = ({
                     <Tooltip content="Claim Onchain" placement="top" showArrow>
                       <ClaimButton
                         meetingId={data.meetingId as string}
-                        meetingType={data.MeetingType}
-                        startTime={data.Meeting_StartTime}
-                        endTime={data.Meeting_EndTime}
+                        meetingType={data.meetingType}
+                        startTime={data.meeting_starttime}
+                        endTime={data.meeting_endtime}
                         dao={data.dao_name}
                         address={walletAddress || ""}
                         onChainId={
@@ -417,7 +492,8 @@ const OfficeHourTile = ({
               <div className="flex justify-end w-full">
                 <Tooltip content="Edit Details" placement="top" showArrow>
                   <div
-                    className={`bg-gradient-to-r from-[#8d949e] to-[#555c6629] rounded-full p-1 py-3 cursor-pointer w-10 flex items-center justify-end font-semibold text-sm text-black`}
+                    onClick={() => handleEditModalOpen(data)}
+                    className={`bg-gradient-to-r from-[#8d949e] to-[#555c6629] rounded-full p-1 py-3 cursor-pointer w-10 flex items-center justify-center font-semibold text-sm text-black`}
                   >
                     <FaPencil color="black" size={14} />
                   </div>
@@ -431,39 +507,85 @@ const OfficeHourTile = ({
                   <Clock className="w-4 h-4 text-indigo-500" />
                   <span className="font-medium">Starts at:</span>
                   <span className="text-indigo-600 font-semibold">
-                    {new Date(data.startTime).toLocaleString()}
+                    {new Date(data.startTime).toLocaleString("en-GB")}
                   </span>
                 </div>
 
-                <div className="space-y-3 pt-3 border-t border-gray-100">
-                  <div className="flex gap-2">
+                {isUserProfile && (
+                  <div className="space-y-3 pt-3 border-t border-gray-100">
+                    <div className="flex gap-2">
+                      <button
+                        className="flex items-center justify-center gap-2 w-full px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 rounded-full hover:bg-blue-100 transition-colors"
+                        onClick={() => handleEditModalOpen(data)}
+                      >
+                        <Edit2 className="w-4 h-4" />
+                        <span>Edit</span>
+                      </button>
+                      <button
+                        onClick={() => handleDeleteModalOpen(data)}
+                        className="flex items-center justify-center gap-2 w-full px-4 py-2 text-sm font-medium text-red-600 bg-red-50 rounded-full hover:bg-red-100 transition-colors"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                        <span>Delete</span>
+                      </button>
+                    </div>
+
                     <button
-                      className="flex items-center justify-center gap-2 w-full px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 rounded-full hover:bg-blue-100 transition-colors"
-                      onClick={() => handleEditModalOpen(data)}
+                      onClick={() => {
+                        setStartLoading(true);
+                        router.push(
+                          `${MEETING_BASE_URL}/meeting/officehours/${data.meetingId}/lobby`
+                        );
+                        // handleJoinClick();
+                      }}
+                      className="flex items-center justify-center gap-2 w-full px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-indigo-500 to-blue-500 rounded-full hover:from-indigo-600 hover:to-blue-600 transition-all duration-300 transform hover:scale-[1.02]"
                     >
-                      <Edit2 className="w-4 h-4" />
-                      <span>Edit</span>
-                    </button>
-                    <button
-                      // onClick={}
-                      className="flex items-center justify-center gap-2 w-full px-4 py-2 text-sm font-medium text-red-600 bg-red-50 rounded-full hover:bg-red-100 transition-colors"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                      <span>Delete</span>
+                      {startLoading ? (
+                        <Oval
+                          visible={true}
+                          height="20"
+                          width="20"
+                          color="#fff"
+                          secondaryColor="#cdccff"
+                          ariaLabel="oval-loading"
+                        />
+                      ) : (
+                        <>
+                          <Play className="w-4 h-4" />
+                          <span>Start Session</span>
+                        </>
+                      )}
                     </button>
                   </div>
-
-                  <button className="flex items-center justify-center gap-2 w-full px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-indigo-500 to-blue-500 rounded-full hover:from-indigo-600 hover:to-blue-600 transition-all duration-300 transform hover:scale-[1.02]">
-                    <Play className="w-4 h-4" />
-                    <span>Start Session</span>
-                  </button>
-                </div>
+                )}
               </>
             )}
             {isOngoing && (
-              <button className="flex items-center justify-center gap-2 w-full px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-indigo-500 to-blue-500 rounded-full hover:from-indigo-600 hover:to-blue-600 transition-all duration-300 transform hover:scale-[1.02]">
-                <Play className="w-4 h-4" />
-                <span>Join Session</span>
+              <button
+                onClick={() => {
+                  setStartLoading(true);
+                  router.push(
+                    `${MEETING_BASE_URL}/meeting/officehours/${data.meetingId}/lobby`
+                  );
+                  // handleJoinClick();
+                }}
+                className="flex items-center justify-center gap-2 w-full px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-indigo-500 to-blue-500 rounded-full hover:from-indigo-600 hover:to-blue-600 transition-all duration-300 transform hover:scale-[1.02]"
+              >
+                {startLoading ? (
+                  <Oval
+                    visible={true}
+                    height="20"
+                    width="20"
+                    color="#fff"
+                    secondaryColor="#cdccff"
+                    ariaLabel="oval-loading"
+                  />
+                ) : (
+                  <>
+                    <Play className="w-4 h-4" />
+                    <span>Join Session</span>
+                  </>
+                )}
               </button>
             )}
           </div>
@@ -483,10 +605,21 @@ const OfficeHourTile = ({
               editModalData.itemData.endTime
             ).toLocaleTimeString(),
           }}
+          date={new Date(editModalData.itemData.startTime)}
           onClose={handleEditModalClose}
-          onUpdate={() => {}}
+          onUpdate={handleUpdate}
           hostAddress={editModalData.itemData.host_address}
           daoName={editModalData.itemData.dao_name}
+        />
+      )}
+      {deleteModalData.isOpen && deleteModalData.itemData && (
+        <DeleteOfficeHoursModal
+          isOpen={deleteModalData.isOpen}
+          onClose={handleDeleteModalClose}
+          onSuccess={handleDeleteSuccess}
+          hostAddress={deleteModalData.itemData.host_address}
+          daoName={deleteModalData.itemData.dao_name}
+          slotId={deleteModalData.itemData.reference_id}
         />
       )}
     </div>

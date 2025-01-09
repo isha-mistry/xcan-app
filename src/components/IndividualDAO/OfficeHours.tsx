@@ -271,7 +271,7 @@ function OfficeHours({ props }: { props: string }) {
                 </div>
               </div>
             ) : (
-              <OfficeHourTile isOngoing={true} data={upcomingOfficeHours} />
+              <OfficeHourTile isUpcoming={true} data={upcomingOfficeHours} />
             ))}
           {searchParams.get("hours") === "recorded" &&
             (dataLoading ? (
@@ -284,7 +284,7 @@ function OfficeHours({ props }: { props: string }) {
                 </div>
               </div>
             ) : (
-              <OfficeHourTile isOngoing={true} data={recordedOfficeHours} />
+              <OfficeHourTile isRecorded={ true} data={recordedOfficeHours} />
             ))}
         </div>
       </div>

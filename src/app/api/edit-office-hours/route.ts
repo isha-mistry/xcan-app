@@ -1,45 +1,12 @@
 import { connectDB } from "@/config/connectDB";
+import { Attendee, OfficeHoursProps } from "@/types/OfficeHoursTypes";
 import { NextResponse } from "next/server";
-
-interface Attendee {
-  address: string;
-  uid?: string;
-  onchain_uid?: string;
-}
-
-interface UpdateMeetingRequestBody {
-  host_address: string;
-  dao_name: string;
-  reference_id: string;
-  title?: string;
-  description?: string;
-  startTime?: string;
-  endTime?: string;
-  meeting_status?: string;
-  video_uri?: string;
-  thumbnail_image?: string;
-  isMeetingRecorded?: boolean;
-  host_uid?: string;
-  host_onchain_uid?: string;
-  attendees?: Attendee[];
-  attendee_update?: {
-    address: string;
-    uid?: string;
-    onchain_uid?: string;
-  };
-}
 
 export async function PUT(req: Request) {
   try {
-    const updateData: UpdateMeetingRequestBody = await req.json();
-    const {
-      host_address,
-      dao_name,
-      reference_id,
-      attendees,
-      attendee_update,
-      ...updateFields
-    } = updateData;
+    const updateData: OfficeHoursProps = await req.json();
+    const { host_address, dao_name, reference_id, attendees, ...updateFields } =
+      updateData;
 
     // Validate required fields
     if (!host_address || !dao_name || !reference_id) {
@@ -117,28 +84,19 @@ export async function PUT(req: Request) {
     addFieldIfChanged("video_uri", updateFields.video_uri);
     addFieldIfChanged("thumbnail_image", updateFields.thumbnail_image);
     addFieldIfChanged("isMeetingRecorded", updateFields.isMeetingRecorded);
-    addFieldIfChanged("host_uid", updateFields.host_uid);
-    addFieldIfChanged("host_onchain_uid", updateFields.host_onchain_uid);
+    addFieldIfChanged("host_uid", updateFields.uid_host);
+    addFieldIfChanged("host_onchain_uid", updateFields.onchain_host_uid);
+    addFieldIfChanged("nft_image", updateFields.nft_image);
 
-    // Get current attendees or initialize empty array
-    let currentAttendees = existingMeeting.attendees || [];
-
-    // Handle adding new attendees with UIDs
+    // Handle attendees update
     if (attendees) {
-      // Validate attendees array
-      if (!Array.isArray(attendees)) {
-        await client.close();
-        return NextResponse.json(
-          {
-            success: false,
-            error: "Attendees must be an array",
-          },
-          { status: 400 }
-        );
-      }
+      // Convert single attendee object to array if necessary
+      const attendeesArray = Array.isArray(attendees) ? attendees : [attendees];
 
       // Validate each attendee has required address
-      const invalidAttendee = attendees.find((attendee) => !attendee.address);
+      const invalidAttendee = attendeesArray.find(
+        (attendee) => !attendee.attendee_address
+      );
       if (invalidAttendee) {
         await client.close();
         return NextResponse.json(
@@ -150,73 +108,42 @@ export async function PUT(req: Request) {
         );
       }
 
-      // Process each new attendee
-      attendees.forEach((newAttendee) => {
+      // Get current attendees or initialize empty array
+      let currentAttendees = existingMeeting.attendees || [];
+
+      // Process attendees to maintain unique addresses and update UIDs
+      attendeesArray.forEach((newAttendee) => {
         const existingIndex = currentAttendees.findIndex(
-          (existing: Attendee) => existing.address === newAttendee.address
+          (existing: Attendee) =>
+            existing.attendee_address.toLowerCase() ===
+            newAttendee.attendee_address.toLowerCase()
         );
 
         if (existingIndex === -1) {
-          // Add new attendee with any provided UIDs
+          // Add new attendee with only address if no UIDs provided
           currentAttendees.push({
-            address: newAttendee.address,
-            uid: newAttendee.uid,
-            onchain_uid: newAttendee.onchain_uid,
+            address: newAttendee.attendee_address,
+            ...(newAttendee.attendee_uid && { uid: newAttendee.attendee_uid }),
+            ...(newAttendee.attendee_onchain_uid && {
+              onchain_uid: newAttendee.attendee_onchain_uid,
+            }),
           });
-        } else {
-          // Update existing attendee's UIDs if provided
-          if (newAttendee.uid !== undefined) {
-            currentAttendees[existingIndex].uid = newAttendee.uid;
+        } else if (
+          newAttendee.attendee_uid ||
+          newAttendee.attendee_onchain_uid
+        ) {
+          // Only update UIDs if provided, preserve existing address
+          if (newAttendee.attendee_uid) {
+            currentAttendees[existingIndex].uid = newAttendee.attendee_uid;
           }
-          if (newAttendee.onchain_uid !== undefined) {
+          if (newAttendee.attendee_onchain_uid) {
             currentAttendees[existingIndex].onchain_uid =
-              newAttendee.onchain_uid;
+              newAttendee.attendee_onchain_uid;
           }
         }
       });
-    }
 
-    // Handle updating specific attendee's UIDs
-    if (attendee_update) {
-      const { address, uid, onchain_uid } = attendee_update;
-
-      if (!address) {
-        await client.close();
-        return NextResponse.json(
-          {
-            success: false,
-            error: "Address is required for updating attendee UIDs",
-          },
-          { status: 400 }
-        );
-      }
-
-      const attendeeIndex = currentAttendees.findIndex(
-        (a: Attendee) => a.address === address
-      );
-
-      if (attendeeIndex === -1) {
-        await client.close();
-        return NextResponse.json(
-          {
-            success: false,
-            error: "Attendee not found in the meeting",
-          },
-          { status: 404 }
-        );
-      }
-
-      // Update the specific attendee's UIDs
-      if (uid !== undefined) {
-        currentAttendees[attendeeIndex].uid = uid;
-      }
-      if (onchain_uid !== undefined) {
-        currentAttendees[attendeeIndex].onchain_uid = onchain_uid;
-      }
-    }
-
-    // Always update attendees field if we have processed any attendee changes
-    if (attendees || attendee_update) {
+      // Update attendees field
       fieldsToUpdate["dao.$[daoElem].meetings.$[meetingElem].attendees"] =
         currentAttendees;
     }
@@ -272,127 +199,6 @@ export async function PUT(req: Request) {
     );
   } catch (error) {
     console.error("Error updating meeting:", error);
-    return NextResponse.json(
-      {
-        success: false,
-        error: "Internal Server Error",
-        details: error,
-      },
-      { status: 500 }
-    );
-  }
-}
-
-interface DeleteMeetingRequestBody {
-  host_address: string;
-  dao_name: string;
-  reference_id: string;
-}
-
-export async function DELETE(req: Request) {
-  try {
-    const deleteData: DeleteMeetingRequestBody = await req.json();
-    const { host_address, dao_name, reference_id } = deleteData;
-
-    // Validate required fields
-    if (!host_address || !dao_name || !reference_id) {
-      return NextResponse.json(
-        {
-          success: false,
-          error:
-            "Missing required fields: host_address, dao_name, or reference_id",
-        },
-        { status: 400 }
-      );
-    }
-
-    const client = await connectDB();
-    const db = client.db();
-    const collection = db.collection("office_hours");
-
-    // First, check if the document exists
-    const existingDoc = await collection.findOne({
-      host_address,
-      "dao.name": dao_name,
-      "dao.meetings.reference_id": reference_id,
-    });
-
-    if (!existingDoc) {
-      await client.close();
-      return NextResponse.json(
-        {
-          success: false,
-          message: "Meeting not found",
-        },
-        { status: 404 }
-      );
-    }
-
-    // Remove the meeting from the meetings array
-    const result = await collection.updateOne(
-      {
-        host_address,
-        "dao.name": dao_name,
-      },
-      {
-        /*@ts-ignore*/
-        $pull: {
-          "dao.$[daoElem].meetings": {
-            reference_id: reference_id,
-          },
-        },
-        $set: {
-          updated_at: new Date(),
-        },
-      },
-      {
-        arrayFilters: [{ "daoElem.name": dao_name }],
-      }
-    );
-
-    if (result.modifiedCount === 0) {
-      await client.close();
-      return NextResponse.json(
-        {
-          success: false,
-          message: "Failed to delete meeting",
-        },
-        { status: 500 }
-      );
-    }
-
-    // Check if the DAO now has no meetings
-    const updatedDoc = await collection.findOne({
-      host_address,
-      "dao.name": dao_name,
-    });
-
-    const dao = updatedDoc?.dao.find((d: any) => d.name === dao_name);
-
-    // If DAO has no meetings, remove the entire DAO
-    if (dao && dao.meetings.length === 0) {
-      await collection.updateOne(
-        { host_address },
-        {
-          /*@ts-ignore*/
-          $pull: {
-            dao: { name: dao_name },
-          },
-        }
-      );
-    }
-
-    await client.close();
-
-    return NextResponse.json(
-      {
-        success: true,
-        message: "Meeting deleted successfully",
-      },
-      { status: 200 }
-    );
-  } catch (error) {
-    console.error("Error deleting meeting:", error);
     return NextResponse.json(
       {
         success: false,

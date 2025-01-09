@@ -25,7 +25,7 @@ export async function GET(req: NextRequest) {
           {
             $or: [
               { host_address: host_address },
-              { "dao.meetings.attendees.address": host_address },
+              { "dao.meetings.attendees.attendee_address": host_address },
             ],
           },
         ],
@@ -38,7 +38,7 @@ export async function GET(req: NextRequest) {
       query = {
         $or: [
           { host_address: host_address },
-          { "dao.meetings.attendees.address": host_address },
+          { "dao.meetings.attendees.attendee_address": host_address },
         ],
       };
     }
@@ -46,7 +46,6 @@ export async function GET(req: NextRequest) {
     const results = await collection.find(query).toArray();
 
     if (!results.length) {
-      await client.close();
       return NextResponse.json(
         {
           success: true,
@@ -89,10 +88,10 @@ export async function GET(req: NextRequest) {
               ...meeting,
               host_address: result.host_address,
               dao_name: dao.name,
-              MeetingType: 0,
-              Meeting_StartTime: null,
-              Meeting_EndTime: null,
-              IsEligible: false,
+              meetingType: 0,
+              meeting_starttime: null,
+              meeting_endtime: null,
+              isEligible: false,
             };
 
             const attendanceVerification = await Attestcollction.findOne(
@@ -139,17 +138,17 @@ export async function GET(req: NextRequest) {
 
                 // Check if this is a hosted meeting
                 if (result.host_address === host_address) {
-                  meetingDocument.Meeting_StartTime =
+                  meetingDocument.meeting_starttime =
                     attendanceVerification?.startTime;
-                  meetingDocument.Meeting_EndTime =
+                  meetingDocument.meeting_endtime =
                     attendanceVerification?.endTime;
-                  meetingDocument.MeetingType = 3;
+                  meetingDocument.meetingType = 3;
                   const isHost = attendanceVerification?.hosts?.some(
                     (host: { metadata: { walletAddress: string } }) =>
                       host.metadata?.walletAddress?.toLowerCase() ===
                       host_address?.toLowerCase()
                   );
-                  meetingDocument.IsEligible = isHost;
+                  meetingDocument.isEligible = isHost;
                   hosted.push(meetingDocument);
                 }
 
@@ -158,20 +157,21 @@ export async function GET(req: NextRequest) {
                   host_address &&
                   result.host_address !== host_address &&
                   meeting.attendees?.some(
-                    (attendee) => attendee.address === host_address
+                    (attendee) => attendee.attendee_address === host_address
                   )
                 ) {
-                  meetingDocument.Meeting_StartTime =
+                  meetingDocument.meeting_starttime =
                     attendanceVerification?.startTime;
-                  meetingDocument.Meeting_EndTime =
+                  meetingDocument.meeting_endtime =
                     attendanceVerification?.endTime;
-                  meetingDocument.MeetingType = 4;
-                  const isParticipant =attendanceVerification?.participants?.some(
-                    (participant: { metadata: { walletAddress: string } }) =>
-                      participant.metadata?.walletAddress?.toLowerCase() ===
-                      host_address?.toLowerCase()
-                  );
-                  meetingDocument.IsEligible=isParticipant;
+                  meetingDocument.meetingType = 4;
+                  const isParticipant =
+                    attendanceVerification?.participants?.some(
+                      (participant: { metadata: { walletAddress: string } }) =>
+                        participant.metadata?.walletAddress?.toLowerCase() ===
+                        host_address?.toLowerCase()
+                    );
+                  meetingDocument.isEligible = isParticipant;
                   attended.push(meetingDocument);
                 }
                 break;
