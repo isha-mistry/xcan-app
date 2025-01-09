@@ -1,4 +1,11 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+"use client";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import {
   format,
   isToday,
@@ -19,6 +26,11 @@ import {
 } from "@/types/OfficeHoursTypes";
 import { toast } from "react-hot-toast";
 import { fetchApi } from "@/utils/api";
+import { AlertCircle, CalendarIcon, Clock } from "lucide-react";
+import Image from "next/image";
+import { useAccount, useSwitchChain } from "wagmi";
+import OPLogo from "@/assets/images/daos/op.png";
+import ArbLogo from "@/assets/images/daos/arb.png";
 
 const UserScheduledHours: React.FC<{ daoName: string }> = ({ daoName }) => {
   const [selectedDates, setSelectedDates] = useState<DateSchedule[]>([]);
@@ -31,6 +43,43 @@ const UserScheduledHours: React.FC<{ daoName: string }> = ({ daoName }) => {
   const [isSaving, setIsSaving] = useState(false);
   const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
   const { walletAddress } = useWalletAddress();
+  const { switchChain, chains } = useSwitchChain();
+  const { chain } = useAccount();
+  const [isOpen, setIsOpen] = useState(false);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const hoverDelay = 300;
+  const currentChain = chains.find((chain) => chain.id === chain?.id);
+
+  const desiredChains = [
+    { id: 10, name: "Optimism", icon: OPLogo },
+    { id: 42161, name: "Arbitrum", icon: ArbLogo },
+    { id: 421614, name: "Arbitrum Sepolia", icon: ArbLogo },
+  ];
+
+  const currentChainLogo = currentChain
+    ? desiredChains.find((chain) => chain.id === currentChain.id)?.icon
+    : desiredChains[0].icon;
+
+  const handleMouseEnter = () => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+    setIsOpen(true);
+  };
+
+  const handleMouseLeave = () => {
+    timeoutRef.current = setTimeout(() => {
+      setIsOpen(false);
+    }, hoverDelay);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
 
   const isTimeSlotConflicting = useCallback(
     (
@@ -564,23 +613,111 @@ const UserScheduledHours: React.FC<{ daoName: string }> = ({ daoName }) => {
   }, [selectedDates, title, description, isSaving]);
 
   return (
-    <div className="w-full min-h-screen bg-gray-50">
-      <div className="mx-auto p-8">
+    <div className="min-h-screen  rounded-2xl">
+      <div className="max-w-7xl mx-auto">
+        {/* Header Section */}
         <div className="mb-8">
-          <div className="flex items-center space-x-3 mb-6">
-            <div className="h-10 w-10 bg-blue-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-semibold text-xl">
-                {daoName.charAt(0)}
-              </span>
+        <div className="mr-2 sm:mr-3 md:mr-4 lg:mr-5 flex items-center truncate mb-6">
+                  <Image
+                    src={daoName==="optimism" ? OPLogo : ArbLogo}
+                    alt="Current Chain"
+                    width={48}
+                    height={48}
+                    className="size-12 mr-4"
+                  />
+                  {/* {daoName.charAt(0).toUpperCase() + daoName.slice(1)} */}
+                  <div>
+                    <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
+                      {daoName.charAt(0).toUpperCase() + daoName.slice(1)}
+                    </h1>
+                    <p className="text-sm text-gray-500 mt-1">
+                      Schedule your office hours
+                    </p>
+                  </div>
+                </div>
+          {/* <div
+            className="relative"
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
+          >
+            <div>
+              <div className="w-fit capitalize text-xl sm:text-2xl md:text-3xl lg:text-4xl  bg-white-200 outline-none cursor-pointer flex items-center justify-between transition duration-500 mb-6">
+                <div className="mr-2 sm:mr-3 md:mr-4 lg:mr-5 flex items-center truncate">
+                  <Image
+                    src={currentChainLogo || desiredChains[0].icon}
+                    alt="Current Chain"
+                    width={48}
+                    height={48}
+                    className="size-12 mr-4"
+                  />
+                  <div>
+                    <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
+                      {daoName.charAt(0).toUpperCase() + daoName.slice(1)}
+                    </h1>
+                    <p className="text-sm text-gray-500 mt-1">
+                      Schedule your office hours
+                    </p>
+                  </div>
+                </div>
+                <svg
+                  className={`w-3 h-3 sm:w-3.5 sm:h-3.5 md:w-4 md:h-4 mr-1 sm:mr-1.5 md:mr-2 flex-shrink-0 ${
+                    isOpen
+                      ? "transform rotate-180 transition-transform duration-300"
+                      : "transition-transform duration-300"
+                  }`}
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M19 9l-7 7-7-7"
+                  ></path>
+                </svg>
+              </div>
+              <div
+                className={`absolute top-16 mt-1 p-1.5 w-full min-w-[200px] sm:w-56 md:w-64 lg:w-72 border border-white-shade-100 rounded-xl bg-white shadow-md z-50 ${
+                  isOpen ? "opacity-100" : "opacity-0 pointer-events-none"
+                }`}
+                style={{ transition: "opacity 0.3s" }}
+                onMouseEnter={handleMouseEnter}
+                onMouseLeave={handleMouseLeave}
+              >
+                {desiredChains.map((chain, index) => (
+                  <div key={chain.id}>
+                    <div
+                      className={`option flex items-center cursor-pointer px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg transition duration-300 ease-in-out transform hover:scale-105 capitalize ${
+                        chain.id === currentChain?.id
+                          ? "text-blue-shade-100"
+                          : ""
+                      }`}
+                      onClick={() => switchChain?.({ chainId: chain.id })}
+                    >
+                      <Image
+                        src={chain.icon}
+                        alt={chain.name}
+                        width={20}
+                        height={20}
+                        className="mr-2 w-5 h-5"
+                      />
+                      {chain.name}
+                    </div>
+                    {index !== desiredChains.length - 1 && <hr />}
+                  </div>
+                ))}
+              </div>
             </div>
-            <h1 className="text-3xl font-bold text-gray-900">{daoName}</h1>
-          </div>
+          </div> */}
 
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
+          {/* Schedule Details Card */}
+          <div className="bg-gradient-to-br from-blue-50 to-transparent rounded-2xl shadow-md p-3 0.2xs:p-4 sm:p-6 mb-8 transition-all hover:shadow-lg">
             <div className="space-y-6">
               <div className="space-y-4">
                 <label htmlFor="title" className="block">
-                  <span className="text-lg font-semibold text-gray-900 mb-1 block">
+                  <span className="text-lg font-semibold text-gray-900 mb-2 flex items-center">
+                    <CalendarIcon className="w-5 h-5 mr-2 text-blue-600" />
                     Title
                   </span>
                   <input
@@ -589,53 +726,71 @@ const UserScheduledHours: React.FC<{ daoName: string }> = ({ daoName }) => {
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                     placeholder="Enter a title for your schedule"
-                    className="w-full px-4 py-2 text-gray-900 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-200 focus:border-blue-500 transition-all"
+                    className="w-full px-4 py-3 text-gray-900 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-200 focus:border-blue-500 transition-all"
                   />
                 </label>
               </div>
 
               <div className="space-y-4">
                 <label htmlFor="description" className="block">
-                  <span className="text-lg font-semibold text-gray-900 mb-1 block">
+                  <span className="text-lg font-semibold text-gray-900 mb-2 flex items-center">
+                    <AlertCircle className="w-5 h-5 mr-2 text-blue-600" />
                     Description
                   </span>
                   <textarea
                     id="description"
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
-                    placeholder="Describe the purpose of this schedule"
+                    placeholder="Describe the purpose of this schedule..."
                     rows={3}
-                    className="w-full px-4 py-2 text-gray-900 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-200 focus:border-blue-500 transition-all"
+                    className="w-full px-4 py-3 text-gray-900 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-200 focus:border-blue-500 transition-all"
                   />
                 </label>
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <h3 className="text-xl font-semibold text-gray-900 mb-6">
-              Schedule Availability
-            </h3>
-            <p className="text-sm text-gray-500 mb-6">
-              All times shown in {timezone}
-            </p>
+          {/* Schedule Availability Section */}
+          <div className="bg-gradient-to-br from-blue-50 to-transparent rounded-2xl shadow-md p-3 0.2xs:p-4 sm:p-6 transition-all hover:shadow-lg">
+            <div className="flex items-center mb-6">
+              <Clock className="w-6 h-6 text-blue-600 mr-3" />
+              <div>
+                <h3 className="text-xl font-semibold text-gray-900">
+                  Schedule Availability
+                </h3>
+                <p className="text-sm text-gray-500 mt-1">
+                  All times shown in {timezone}
+                </p>
+              </div>
+            </div>
 
-            <div className="flex gap-8">
-              {memoizedCalendar}
-              {memoizedTimeSlotSection}
+            <div className="flex flex-col 1.5lg:flex-row gap-6 lg:gap-8">
+              <div className="w-full 1.5lg:w-1/3">{memoizedCalendar}</div>
+              <div className="w-full 1.5lg:w-2/3">
+                {memoizedTimeSlotSection}
+              </div>
             </div>
           </div>
         </div>
+
+        {/* Save Button */}
         <button
           onClick={handleSave}
           disabled={!isScheduleValid}
-          className={`w-full mt-4 py-3 px-4 rounded-xl text-base font-medium transition-all ${
+          className={`w-full sm:w-auto sm:min-w-[200px] mt-4 py-4 px-6 rounded-2xl text-base font-medium transition-all ${
             !isScheduleValid
               ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-              : "bg-blue-600 text-white hover:bg-blue-700 shadow-sm hover:shadow"
-          }`}
+              : "bg-blue-600 text-white hover:bg-blue-700 shadow-md hover:shadow-lg active:transform active:scale-95"
+          } relative bottom-auto left-auto right-auto`}
         >
-          {isSaving ? "Saving..." : "Save Schedule"}{" "}
+          {isSaving ? (
+            <div className="flex items-center justify-center">
+              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-gray-400 mr-2"></div>
+              Saving...
+            </div>
+          ) : (
+            "Save Schedule"
+          )}
         </button>
       </div>
     </div>

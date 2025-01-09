@@ -492,7 +492,7 @@ function SpecificDelegate({ props }: { props: Type }) {
 
   useEffect(() => {
     const checkDelegateStatus = async () => {
-      setIsPageLoading(true);
+      // setIsPageLoading(true);
       //   const addr = await walletClient.getAddresses();
       //   const address1 = addr[0];
       let delegateTxAddr = "";
@@ -525,10 +525,10 @@ function SpecificDelegate({ props }: { props: Type }) {
         ) {
           setSelfDelegate(true);
         }
-        setIsPageLoading(false);
+        // setIsPageLoading(false);
       } catch (error) {
         console.error("Error in reading contract", error);
-        setIsPageLoading(false);
+        // setIsPageLoading(false);
       }
     };
     checkDelegateStatus();
@@ -1094,8 +1094,10 @@ function SpecificDelegate({ props }: { props: Type }) {
         <div className="lg:hidden pt-2 xs:pt-4 sm:pt-6 px-4 md:px-6 lg:px-14">
           <Heading />
         </div>
-        {isPageLoading && <MainProfileSkeletonLoader />}
-        {!isPageLoading &&
+        {isPageLoading ? <MainProfileSkeletonLoader /> : (
+
+        
+        // {!isPageLoading &&
         (isDelegate || selfDelegate) &&
         errorOccurred == false ? (
           <div className="font-poppins">
@@ -1562,8 +1564,8 @@ function SpecificDelegate({ props }: { props: Type }) {
             </div>
           </div>
         ) : (
-          !isPageLoading &&
-          !(isDelegate || selfDelegate) && errorOccurred &&  (
+          // !isPageLoading &&
+          // !(isDelegate || selfDelegate) && errorOccurred &&  (
             <div className="flex flex-col justify-center items-center w-full h-screen">
               {/* <div className="text-5xl">☹️</div>{" "}
               <div className="pt-4 font-semibold text-lg">
@@ -1572,8 +1574,10 @@ function SpecificDelegate({ props }: { props: Type }) {
 
               <ErrorComponent message="We're sorry, but something went wrong ! We’re Making It Right.." />
             </div>
-          )
-        )}
+          // )
+        )
+      // }
+      )}
         {delegateOpen && (
           <DelegateTileModal
             tempCpi={tempCpi}

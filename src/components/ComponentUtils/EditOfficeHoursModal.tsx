@@ -90,23 +90,27 @@ const EditOfficeHoursModal: React.FC<EditOfficeHoursModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 backdrop-blur-sm bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-8 w-full max-w-md">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold">Edit Booked Slot</h2>
-          <button
-            onClick={onClose}
-            className="text-gray-500 hover:text-gray-700"
-            disabled={isLoading}
-          >
-            <X className="h-6 w-6" />
-          </button>
-        </div>
-        <form onSubmit={handleSubmit} className="space-y-4">
+    <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
+    <div className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md transform transition-all duration-200 ease-out scale-100 mx-2 0.2xs:mx-4 ">
+      <div className="flex justify-between items-center mb-6 border-b border-gray-100 pb-4">
+        <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">
+          Edit Booked Slot
+        </h2>
+        <button
+          onClick={onClose}
+          className="text-gray-400 hover:text-gray-600 transition-colors p-2 hover:bg-gray-100 rounded-full"
+          disabled={isLoading}
+        >
+          <X className="h-5 w-5" />
+        </button>
+      </div>
+      
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="space-y-4">
           <div>
             <label
               htmlFor="title"
-              className="block text-sm font-medium text-gray-700 mb-1"
+              className="block text-sm font-semibold text-gray-700 mb-2"
             >
               Title
             </label>
@@ -115,15 +119,17 @@ const EditOfficeHoursModal: React.FC<EditOfficeHoursModalProps> = ({
               id="title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+              className="w-full text-sm 0.2xs:text-base px-2 0.2xs:px-4 py-2 0.2xs:py-2.5 border border-gray-200 rounded-xl shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ease-in-out"
               required
               disabled={isLoading}
+              placeholder="Enter meeting title"
             />
           </div>
+          
           <div>
             <label
               htmlFor="description"
-              className="block text-sm font-medium text-gray-700 mb-1"
+              className="block text-sm font-semibold text-gray-700 mb-2"
             >
               Description
             </label>
@@ -132,37 +138,47 @@ const EditOfficeHoursModal: React.FC<EditOfficeHoursModalProps> = ({
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={3}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+              className="w-full text-sm 0.2xs:text-base px-2 0.2xs:px-4 py-2 0.2xs:py-2.5 border border-gray-200 rounded-xl shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ease-in-out resize-none"
               disabled={isLoading}
+              placeholder="Enter meeting description"
             />
           </div>
-          <div>
-            <p className="text-sm font-medium text-gray-700 mb-1">Time Slot</p>
-            <p className="text-sm text-gray-600">
+          
+          <div className="bg-gray-50 p-4 rounded-xl space-y-1">
+            <p className="text-sm font-semibold text-gray-700">Time Slot</p>
+            <p className="text-xs 0.2xs:text-sm text-gray-600">
               {slot.startTime} - {slot.endTime}
             </p>
           </div>
-          <div className="flex justify-end space-x-3">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-              disabled={isLoading}
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-              disabled={isLoading}
-              onClick={handleSubmit}
-            >
-              {isLoading ? "Updating..." : "Update"}
-            </button>
-          </div>
-        </form>
-      </div>
+        </div>
+
+        <div className="flex justify-center xs:justify-end space-x-3 pt-4 border-t border-gray-100">
+          <button
+            type="button"
+            onClick={onClose}
+            className="px-6 py-2.5 border border-gray-200 rounded-xl text-sm font-medium text-gray-600 hover:bg-gray-50 hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 ease-in-out"
+            disabled={isLoading}
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            className="px-6 py-2.5 rounded-xl text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 ease-in-out"
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <span className="flex items-center gap-2">
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                Updating...
+              </span>
+            ) : (
+              "Update"
+            )}
+          </button>
+        </div>
+      </form>
     </div>
+  </div>
   );
 };
 

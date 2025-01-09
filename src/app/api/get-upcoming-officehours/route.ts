@@ -45,8 +45,15 @@ export async function GET(req: NextRequest) {
 
     if (!result || !result.dao.length) {
       return NextResponse.json(
-        { error: "No upcoming meetings found for the specified host and DAO" },
-        { status: 404 }
+        {
+          success: true,
+          data: {
+            host_address: host_address,
+            dao_name: dao_name,
+            meetings: [],
+          },
+        },
+        { status: 200 }
       );
     }
 
