@@ -129,8 +129,7 @@ export async function POST(req: NextRequest) {
         status
       );
     } else if (meetingType === "office_hours") {
-      const officeHours = await db
-        .collection<OfficeHoursDocument>("office_hours")
+      const officeHours = await db.collection("office_hours")
         .findOne({ "dao.meetings.meetingId": roomId });
 
       if (!officeHours) {
