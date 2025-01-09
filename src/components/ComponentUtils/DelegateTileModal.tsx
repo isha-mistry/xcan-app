@@ -28,8 +28,8 @@ interface delegate {
   addressCheck: boolean;
   delegatingToAddr: boolean;
   confettiVisible: boolean;
-  tempCpi: any;
-  tempCpiCalling: boolean;
+  // tempCpi: any;
+  // tempCpiCalling: boolean;
 }
 
 function DelegateTileModal({
@@ -43,12 +43,12 @@ function DelegateTileModal({
   addressCheck,
   delegatingToAddr,
   confettiVisible,
-  tempCpi,
-  tempCpiCalling,
+  // tempCpi,
+  // tempCpiCalling,
 }: delegate) {
   const { isConnected, address, chain } = useAccount();
   const { apiData: cpiData, loading, error: errorApi } = useApiData();
-  const actualCpi = cpiData?.data?.results[0].cpi;
+  // const actualCpi = cpiData?.data?.results[0]?.cpi || "";
   // console.log("cpiData::::", cpiData);
   const [isLoading, setIsLoading] = useState(true);
   const [isHovering, setIsHovering] = useState(false);
@@ -104,7 +104,7 @@ function DelegateTileModal({
           className="absolute inset-0 backdrop-blur-md"
           onClick={closeModal}
         ></div>
-        <div className="bg-white p-5 xs:p-9 rounded-[34px] flex flex-col  z-50 border-[2px] items-center justify-center mx-4 sm:mx-0">
+        <div className="bg-white mt-12 p-5 xs:p-9 rounded-[34px] flex flex-col  z-50 border-[2px] items-center justify-center mx-4 sm:mx-0">
           {confettiVisible && <Confetti />}
           <h1 className="font-semibold text-[26px] mb-2 text-blue-shade-100 text-center">
             Set {delegateName} as your delegate
@@ -183,7 +183,12 @@ function DelegateTileModal({
 
           {daoName === "optimism" && (
             <div className="flex items-center justify-between w-full max-w-md bg-gradient-to-br from-gray-100 to-gray-200 border-2 border-gray-300 rounded-3xl px-4 0.7xs:px-6 py-4 mt-4 shadow-md  ">
-              <div className="flex flex-col items-center">
+              <div className="text-lg font-semibold text-black  px-3 py-1 rounded-lg">
+             <span className="text-red-600 italic">
+             CPI (Concentration Power Index) is taking a coffee break, but don&apos;t worry, it&apos;ll be back in action soon!😉
+             </span>
+           </div>
+              {/* <div className="flex flex-col items-center">
                 <span className="text-black font-medium text-xs 0.7xs:text-sm tracking-wide uppercase mb-2">
                   Current CPI
                 </span>
@@ -205,6 +210,7 @@ function DelegateTileModal({
                 <span className="text-black font-medium text-xs 0.7xs:text-sm tracking-wide uppercase mb-2">
                   CPI if you delegate
                 </span>
+
                 <div
                 className={`${
                   Number(tempCpi?.toFixed(2)) <= Number(actualCpi?.toFixed(2)) ? "text-[#1c8e1c]" : "text-red-600"
@@ -225,7 +231,7 @@ function DelegateTileModal({
                     </span>
                   )}
                 </div>
-              </div>
+              </div> */}
             </div>
           )}
 

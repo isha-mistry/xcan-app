@@ -196,7 +196,7 @@ function PopupGenerateLink({ onclose, dao }: PopupProps) {
                   </div>
                   to
                   <div className="py-1 px-2 xs:py-2 xs:px-4 bg-blue-shade-200 rounded-full text-white">
-                    {ensName || address.slice(0, 4) + "..." + address.slice(-4)}
+                    {ensName || address?.slice(0, 4) + "..." + address?.slice(-4)}
                   </div>
                 </div>
               </div>

@@ -1576,8 +1576,8 @@ function SpecificDelegate({ props }: { props: Type }) {
         )}
         {delegateOpen && (
           <DelegateTileModal
-            tempCpi={tempCpi}
-            tempCpiCalling={tempCpiCalling}
+            // tempCpi={tempCpi}
+            // tempCpiCalling={tempCpiCalling}
             isOpen={delegateOpen}
             closeModal={handleCloseDelegateModal}
             handleDelegateVotes={() =>

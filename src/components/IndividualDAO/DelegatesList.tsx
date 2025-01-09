@@ -479,8 +479,8 @@ function DelegatesList({ props }: { props: string }) {
 
       {delegateOpen && selectedDelegate && (
         <DelegateTileModal
-          tempCpi={tempCpi}
-          tempCpiCalling={tempCpiCalling}
+          // tempCpi={tempCpi}
+          // tempCpiCalling={tempCpiCalling}
           isOpen={delegateOpen}
           closeModal={() => setDelegateOpen(false)}
           handleDelegateVotes={() =>

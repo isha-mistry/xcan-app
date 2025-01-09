@@ -738,7 +738,7 @@ function Proposals({ props }: { props: string }) {
   return (
     <>
       <div className="rounded-[2rem] mt-4">
-        {isShowing && props === "arbitrum" && (
+        {/* {isShowing && props === "arbitrum" && (
           <div
             className="bg-yellow-200 border border-gray-300 rounded-md shadow-md text-gray-700 flex items-center p-3 w-100 mb-4"
             style={{ width: "100%" }}
@@ -756,7 +756,7 @@ function Proposals({ props }: { props: string }) {
               Close
             </button>
           </div>
-        )}
+        )} */}
         {displayedProposals.map((proposal: Proposal, index: number) => (
           <div
             key={index}

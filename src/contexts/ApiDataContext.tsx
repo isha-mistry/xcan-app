@@ -50,6 +50,7 @@ export function ApiDataProvider({ children }: { children: ReactNode }) {
 
       const response = await fetchApi("/calculate-cpi", requestOptions);
       const data: ApiData = await response.json();
+      console.log("Data", data)
       setApiData(data);
     } catch (err) {
       console.error("Error fetching data:", err);
