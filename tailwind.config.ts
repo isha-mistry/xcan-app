@@ -24,6 +24,7 @@ const config: Config = {
         xs: "470px",
         "2md": "950px",
         "2sm": "670px",
+        "2.3sm":"700px",
         "1.5md": "830px",
       },
       backgroundImage: {

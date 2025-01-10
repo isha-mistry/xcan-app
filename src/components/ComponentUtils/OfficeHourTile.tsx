@@ -70,7 +70,9 @@ const OfficeHourTile = ({
     isOpen: false,
     itemData: null,
   });
-  const [startLoading, setStartLoading] = useState(false);
+  const [loadingStates, setLoadingStates] = useState(
+    Object.fromEntries(data.map((item) => [item.meetingId, false]))
+  );
   const router = useRouter();
 
   const truncateAddress = (address: string) => {
@@ -172,7 +174,6 @@ const OfficeHourTile = ({
         tokenforAttestation = "ARB";
       }
 
-
       const raw = JSON.stringify({
         recipient: walletAddress,
         meetingId: `${MeetingId}/${tokenforAttestation}`,
@@ -254,6 +255,11 @@ const OfficeHourTile = ({
     }
   };
 
+  const handleStartSession = (meetingId: string) => {
+    setLoadingStates((prev: any) => ({ ...prev, [meetingId]: true }));
+    router.push(`${MEETING_BASE_URL}/meeting/officehours/${meetingId}/lobby`);
+  };
+
   return (
     <div
       className={`grid min-[475px]:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 sm:gap-10 py-8 font-poppins`}
@@ -272,8 +278,7 @@ const OfficeHourTile = ({
             className={`w-full h-44 sm:rounded-t-3xl bg-black object-cover object-center relative `}
           >
             <Image
-              // src={`https://gateway.lighthouse.storage/ipfs/${data.thumbnail_image}`}
-              src={img1}
+              src={`https://gateway.lighthouse.storage/ipfs/${data.thumbnail_image}`}
               alt=""
               width={200}
               height={200}
@@ -418,8 +423,7 @@ const OfficeHourTile = ({
                       e.stopPropagation();
                     }}
                     className={`${buttonStyles.button} w-full gap-1`}
-                  >
-                  </Link>
+                  ></Link>
                 ) : (
                   <>
                     {/* Tooltip and button section */}
@@ -531,16 +535,12 @@ const OfficeHourTile = ({
                     </div>
 
                     <button
-                      onClick={() => {
-                        setStartLoading(true);
-                        router.push(
-                          `${MEETING_BASE_URL}/meeting/officehours/${data.meetingId}/lobby`
-                        );
-                        // handleJoinClick();
-                      }}
+                      onClick={() =>
+                        data.meetingId && handleStartSession(data.meetingId)
+                      }
                       className="flex items-center justify-center gap-2 w-full px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-indigo-500 to-blue-500 rounded-full hover:from-indigo-600 hover:to-blue-600 transition-all duration-300 transform hover:scale-[1.02]"
                     >
-                      {startLoading ? (
+                      {data.meetingId && loadingStates[data.meetingId] ? (
                         <Oval
                           visible={true}
                           height="20"
@@ -562,16 +562,12 @@ const OfficeHourTile = ({
             )}
             {isOngoing && (
               <button
-                onClick={() => {
-                  setStartLoading(true);
-                  router.push(
-                    `${MEETING_BASE_URL}/meeting/officehours/${data.meetingId}/lobby`
-                  );
-                  // handleJoinClick();
-                }}
+                onClick={() =>
+                  data.meetingId && handleStartSession(data.meetingId)
+                }
                 className="flex items-center justify-center gap-2 w-full px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-indigo-500 to-blue-500 rounded-full hover:from-indigo-600 hover:to-blue-600 transition-all duration-300 transform hover:scale-[1.02]"
               >
-                {startLoading ? (
+                {data.meetingId && loadingStates[data.meetingId] ? (
                   <Oval
                     visible={true}
                     height="20"
