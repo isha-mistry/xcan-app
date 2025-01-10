@@ -197,12 +197,14 @@ function ProposalMain({ props }: { props: Props }) {
       const transactionReceipt = await client.getTransactionReceipt({
         hash: txHash,
       });
-
-      if (transaction.to) {
-        return transaction.to;
-      } else {
-        return "Not a contract interaction or creation";
-      }
+      const treasuryAddress = "0x789fC99093B09aD01C34DC7251D0C89ce743e5a4"
+      const coreGovAddress = "0xf07DeD9dC292157749B6Fd268E37DF6EA38395B9";
+      return coreGovAddress;
+      // if (transaction.to) {
+      //   return transaction.to;
+      // } else {
+      //   return "Not a contract interaction or creation";
+      // }
     } catch (error) {
       console.error("Error:", error);
       return "Error retrieving transaction information";

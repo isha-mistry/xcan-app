@@ -231,7 +231,7 @@ function DelegateTileModal({
           </div>
         </div>
         <div className="mt-4 text-sm font-medium text-gray-700">
-        Data to calculate CPI updates in every 5 minutes!
+        Data for calculating CPI updates every 5 minutes.
       </div>
 
       </div>
