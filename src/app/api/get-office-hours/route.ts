@@ -181,11 +181,16 @@ export async function GET(req: NextRequest) {
       })
     );
 
-    // Sort meetings by date if available
-    const sortByDate = (a: Meeting, b: Meeting) => {
+    const sortAscending = (a: Meeting, b: Meeting) => {
       const dateA = new Date(a.startTime || 0).getTime();
       const dateB = new Date(b.startTime || 0).getTime();
-      return dateB - dateA; // Most recent first
+      return dateA - dateB;
+    };
+
+    const sortDescending = (a: Meeting, b: Meeting) => {
+      const dateA = new Date(a.startTime || 0).getTime();
+      const dateB = new Date(b.startTime || 0).getTime();
+      return dateB - dateA;
     };
 
     await client.close();
@@ -194,11 +199,11 @@ export async function GET(req: NextRequest) {
       {
         success: true,
         data: {
-          ongoing: ongoing,
-          upcoming: upcoming,
-          recorded: recorded.sort(sortByDate),
-          hosted: hosted.sort(sortByDate),
-          attended: attended.sort(sortByDate),
+          ongoing: ongoing.sort(sortAscending),
+          upcoming: upcoming.sort(sortAscending),
+          recorded: recorded.sort(sortDescending),
+          hosted: hosted.sort(sortDescending),
+          attended: attended.sort(sortDescending),
         },
       },
       { status: 200 }
