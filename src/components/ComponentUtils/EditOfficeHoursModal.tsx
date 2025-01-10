@@ -146,7 +146,7 @@ const EditOfficeHoursModal: React.FC<EditOfficeHoursModalProps> = ({
 
             <div className="bg-gray-50 p-4 rounded-xl space-y-1">
               <p className="text-sm font-semibold text-gray-700">Time Slot</p>
-              <p className="text-xs 0.2xs:text-sm text-gray-600">
+              <p className="flex items-center text-xs 0.2xs:text-sm text-gray-600">
                 {slot.startTime} - {slot.endTime}
                 <LuDot />{" "}
                 <span className="font-semibold">

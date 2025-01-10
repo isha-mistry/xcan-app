@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import Image from "next/image";
+import Image, { StaticImageData } from "next/image";
 import img1 from "@/assets/images/daos/thumbnail1.png";
 import logo from "@/assets/images/daos/CCLogo.png";
 import styles from "./OfficeHours.module.css";
@@ -27,6 +27,8 @@ import { formatTimeAgo } from "@/utils/getRelativeTime";
 import { useRouter } from "next-nprogress-bar";
 import { MEETING_BASE_URL } from "@/config/constants";
 import { Oval } from "react-loader-spinner";
+import oplogo from "@/assets/images/daos/op.png";
+import arblogo from "@/assets/images/daos/arbitrum.jpg";
 interface CopyStates {
   [key: number]: boolean;
 }
@@ -260,6 +262,16 @@ const OfficeHourTile = ({
     router.push(`${MEETING_BASE_URL}/meeting/officehours/${meetingId}/lobby`);
   };
 
+  type DaoName = "optimism" | "arbitrum";
+  const daoLogos: Record<DaoName, StaticImageData> = {
+    optimism: oplogo,
+    arbitrum: arblogo,
+  };
+  const getDaoLogo = (daoName: string): StaticImageData => {
+    const normalizedName = daoName.toLowerCase() as DaoName;
+    return daoLogos[normalizedName] || arblogo;
+  };
+
   return (
     <div
       className={`grid min-[475px]:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 sm:gap-10 py-8 font-poppins`}
@@ -325,7 +337,7 @@ const OfficeHourTile = ({
                 <div className=" flex items-center ">
                   <div>
                     <Image
-                      src={op}
+                      src={getDaoLogo(data.dao_name)}
                       alt="image"
                       width={100}
                       height={100}
@@ -405,6 +417,7 @@ const OfficeHourTile = ({
                 </Tooltip>
               </div>
             )}
+
             {isHosted && data.isEligible && (
               <div className="flex gap-2 justify-end w-full">
                 {/* Check if data.onchain exists */}
@@ -434,7 +447,8 @@ const OfficeHourTile = ({
                         } w-full gap-0.5 text-xs py-2.5 ${
                           loadingButton === "offchain" ? "disabled" : ""
                         }`}
-                        onClick={
+                        onClick={(e) => {
+                          e.stopPropagation();
                           loadingButton === ""
                             ? () =>
                                 handleClaimOffchain(
@@ -444,8 +458,8 @@ const OfficeHourTile = ({
                                   data.meeting_starttime,
                                   data.meeting_endtime
                                 )
-                            : undefined
-                        }
+                            : undefined;
+                        }}
                       >
                         {loadingButton === "offchain" ? (
                           <TailSpin
@@ -520,7 +534,10 @@ const OfficeHourTile = ({
                     <div className="flex gap-2">
                       <button
                         className="flex items-center justify-center gap-2 w-full px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 rounded-full hover:bg-blue-100 transition-colors"
-                        onClick={() => handleEditModalOpen(data)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleEditModalOpen(data);
+                        }}
                       >
                         <Edit2 className="w-4 h-4" />
                         <span>Edit</span>
