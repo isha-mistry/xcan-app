@@ -183,7 +183,7 @@ export const config = {
     "/api/calculate-cpi/:path*",
     "/api/calculate-temp-cpi/:path*",
     "/api/delegate-follow/:path*",
-    // "/api/edit-office-hours/:path*",
+    "/api/edit-office-hours/:path*",
     "/api/get-attendee-individual/:path*",
     "/api/get-meeting/:path*",
     "/api/get-officehours-address/:path*",

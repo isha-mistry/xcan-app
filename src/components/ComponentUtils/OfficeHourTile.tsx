@@ -582,7 +582,10 @@ const OfficeHourTile = ({
               <div className="flex justify-end w-full">
                 <Tooltip content="Edit Details" placement="top" showArrow>
                   <div
-                    onClick={() => handleEditModalOpen(data)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleEditModalOpen(data);
+                    }}
                     className={`bg-gradient-to-r from-[#8d949e] to-[#555c6629] rounded-full p-1 py-3 cursor-pointer w-10 flex items-center justify-center font-semibold text-sm text-black`}
                   >
                     <FaPencil color="black" size={14} />

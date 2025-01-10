@@ -13,7 +13,7 @@ export async function GET(req: NextRequest) {
     client = await connectDB();
     const db = client.db();
     const collection = db.collection("office_hours");
-    const Attestcollction = db.collection("attestation");
+    const attestCollection = db.collection("attestation");
 
     let query: any = {};
 
@@ -94,7 +94,7 @@ export async function GET(req: NextRequest) {
               isEligible: false,
             };
 
-            const attendanceVerification = await Attestcollction.findOne(
+            const attendanceVerification = await attestCollection.findOne(
               {
                 roomId: meetingDocument.meetingId,
                 $or: [
