@@ -15,20 +15,85 @@ function getRandomElementFromArray(arr: any[]) {
 }
 const randomImage = getRandomElementFromArray(imageCIDs);
 
-// Helper function for MongoDB operations
+// // Helper function for MongoDB operations
+// const addMeetingsToExistingDAO = async (
+//   collection: Collection<OfficeHoursDocument>,
+//   hostAddress: string,
+//   daoName: string,
+//   meetings: Meeting[]
+// ) => {
+//   const meetingDocument = meetings.map((meeting) => ({
+//     reference_id: uuidv4(),
+//     ...meeting,
+//     meeting_status: "Upcoming",
+//     thumbnail_image: randomImage,
+//     created_at: new Date(),
+//   }));
+
+//   return await collection.updateOne(
+//     { host_address: hostAddress, "dao.name": daoName },
+//     {
+//       $push: {
+//         "dao.$.meetings": {
+//           $each: meetingDocument,
+//         },
+//       },
+//       $set: { updated_at: new Date() },
+//     }
+//   );
+// };
 const addMeetingsToExistingDAO = async (
   collection: Collection<OfficeHoursDocument>,
   hostAddress: string,
   daoName: string,
   meetings: Meeting[]
 ) => {
-  const meetingDocument = meetings.map((meeting) => ({
-    reference_id: uuidv4(),
-    ...meeting,
-    meeting_status: "Upcoming",
-    thumbnail_image: randomImage,
-    created_at: new Date(),
-  }));
+  const today = new Date();
+  today.setHours(0, 0, 0, 0); // Set to start of day
+  
+  // Process meetings sequentially using for...of to maintain order
+  const meetingDocument = [];
+  for (const meeting of meetings) {
+    const meetingDate = new Date(meeting.startTime);
+    meetingDate.setHours(0, 0, 0, 0);
+    
+    const baseDocument = {
+      reference_id: uuidv4(),
+      ...meeting,
+      meeting_status: "Upcoming",
+      thumbnail_image: randomImage,
+      created_at: new Date(),
+    };
+
+    if (meetingDate.getTime() === today.getTime()) {
+      try {
+        // Direct API call since we're already in the API route
+        const response = await fetch(`${process.env.NEXT_PUBLIC_CREATE_ROOM_ENDPOINT}`, {
+          method: 'GET',
+          headers: {
+            // Add any necessary headers for your room service
+            'Content-Type': 'application/json',
+            // Add any authentication headers if required
+          }
+        });
+        
+        if (!response.ok) {
+          throw new Error('Failed to create room');
+        }
+        
+        const result = await response.json();
+        meetingDocument.push({
+          ...baseDocument,
+          meetingId: result.data
+        });
+      } catch (error) {
+        console.error('Error generating meeting ID:', error);
+        meetingDocument.push(baseDocument);
+      }
+    } else {
+      meetingDocument.push(baseDocument);
+    }
+  }
 
   return await collection.updateOne(
     { host_address: hostAddress, "dao.name": daoName },
@@ -42,20 +107,55 @@ const addMeetingsToExistingDAO = async (
     }
   );
 };
-
 const addNewDAOWithMeetings = async (
   collection: Collection<OfficeHoursDocument>,
   hostAddress: string,
   daoName: string,
   meetings: Meeting[]
 ) => {
-  const meetingDocument = meetings.map((meeting) => ({
-    reference_id: uuidv4(),
-    ...meeting,
-    meeting_status: "Upcoming",
-    thumbnail_image: randomImage,
-    created_at: new Date(),
-  }));
+  const today = new Date();
+  today.setHours(0, 0, 0, 0); // Set to start of day
+
+  // Process meetings sequentially
+  const meetingDocument = [];
+  for (const meeting of meetings) {
+    const meetingDate = new Date(meeting.startTime);
+    meetingDate.setHours(0, 0, 0, 0);
+    
+    const baseDocument = {
+      reference_id: uuidv4(),
+      ...meeting,
+      meeting_status: "Upcoming",
+      thumbnail_image: randomImage,
+      created_at: new Date(),
+    };
+    if (meetingDate.getTime() === today.getTime()) {
+      try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_CREATE_ROOM_ENDPOINT}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            // Add any other required headers
+          }
+        });
+        
+        if (!response.ok) {
+          throw new Error('Failed to create room');
+        }
+        
+        const result = await response.json();
+        meetingDocument.push({
+          ...baseDocument,
+          meetingId: result.data
+        });
+      } catch (error) {
+        console.error('Error generating meeting ID:', error);
+        meetingDocument.push(baseDocument);
+      }
+    } else {
+      meetingDocument.push(baseDocument);
+    }
+  }
 
   return await collection.updateOne(
     { host_address: hostAddress },
@@ -70,20 +170,56 @@ const addNewDAOWithMeetings = async (
     }
   );
 };
-
 const createNewHostWithMeetings = async (
   collection: Collection<OfficeHoursDocument>,
   hostAddress: string,
   daoName: string,
   meetings: Meeting[]
 ) => {
-  const meetingDocument = meetings.map((meeting) => ({
-    reference_id: uuidv4(),
-    ...meeting,
-    meeting_status: "Upcoming",
-    thumbnail_image: randomImage,
-    created_at: new Date(),
-  }));
+  const today = new Date();
+  today.setHours(0, 0, 0, 0); // Set to start of day
+
+  // Process meetings sequentially
+  const meetingDocument = [];
+  for (const meeting of meetings) {
+    const meetingDate = new Date(meeting.startTime);
+    meetingDate.setHours(0, 0, 0, 0);
+    
+    const baseDocument = {
+      reference_id: uuidv4(),
+      ...meeting,
+      meeting_status: "Upcoming",
+      thumbnail_image: randomImage,
+      created_at: new Date(),
+    };
+
+    if (meetingDate.getTime() === today.getTime()) {
+      try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_CREATE_ROOM_ENDPOINT}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            // Add any other required headers
+          }
+        });
+        
+        if (!response.ok) {
+          throw new Error('Failed to create room');
+        }
+        
+        const result = await response.json();
+        meetingDocument.push({
+          ...baseDocument,
+          meetingId: result.data
+        });
+      } catch (error) {
+        console.error('Error generating meeting ID:', error);
+        meetingDocument.push(baseDocument);
+      }
+    } else {
+      meetingDocument.push(baseDocument);
+    }
+  }
 
   return await collection.insertOne({
     host_address: hostAddress,
@@ -102,7 +238,6 @@ const createNewHostWithMeetings = async (
 export async function POST(req: NextRequest) {
   try {
     const data: OfficeHoursRequestBody = await req.json();
-    console.log("Received data:", data);
 
     const client = await connectDB();
     const db = client.db();
