@@ -52,6 +52,7 @@ import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 import { fetchApi } from "@/utils/api";
 import { GiConsoleController } from "react-icons/gi";
 import { fetchEnsNameAndAvatar, getENSName } from "@/utils/ENSUtils";
+import ConnectwalletHomePage from "../HomePage/ConnectwalletHomePage";
 
 // Create a client
 const client = createPublicClient({
@@ -147,6 +148,7 @@ function ProposalMain({ props }: { props: Props }) {
   const [ensData, setEnsData] = useState<{
     [key: string]: { name: string | null; avatar: string | null };
   }>({});
+  const [showConnectWallet, setShowConnectWallet] = useState(false);
 
   // Fetch ENS data only for displayed voters
   useEffect(() => {
@@ -232,7 +234,18 @@ function ProposalMain({ props }: { props: Props }) {
       throw new Error("Failed to submit vote");
     }
   };
+
+  useEffect(() => {
+    if (walletAddress && showConnectWallet) {
+      setShowConnectWallet(false);
+    }
+  }, [walletAddress]);
+  
   const voteOnchain = async () => {
+    if (!walletAddress) {
+      setShowConnectWallet(true);
+      return;
+    }
     let chain;
     if (walletClient?.chain.name === "OP Mainnet") {
       chain = "optimism";
@@ -243,7 +256,7 @@ function ProposalMain({ props }: { props: Props }) {
     }
 
     if (chain !== props.daoDelegates) {
-      toast.error("Please switch to appropriate network to delegate!");
+      toast.error("Please switch to appropriate network to vote!");
       // if (openChainModal) {
       //   // openChainModal();
       // }
@@ -1060,6 +1073,11 @@ function ProposalMain({ props }: { props: Props }) {
             )}
           </div>
         </div>
+        {showConnectWallet && (
+        <ConnectwalletHomePage 
+          onClose={() => setShowConnectWallet(false)}
+        />
+      )}
         <VotingPopup
           isOpen={isVotingOpen}
           onClose={() => setIsVotingOpen(false)}
