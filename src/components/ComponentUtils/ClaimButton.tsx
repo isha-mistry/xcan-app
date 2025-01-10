@@ -19,6 +19,9 @@ interface ClaimButtonProps {
   address: string;
   onChainId: string | undefined;
   disabled: boolean;
+  reference_id?:string
+  meetingCategory?:string
+  attendees?:string,
   onClaimStart: () => void;
   onClaimEnd: () => void;
 }
@@ -32,6 +35,9 @@ const ClaimButton: React.FC<ClaimButtonProps> = ({
   address,
   onChainId,
   disabled,
+  reference_id,
+  meetingCategory,
+  attendees,
   onClaimStart,
   onClaimEnd,
 }) => {
@@ -294,7 +300,7 @@ const ClaimButton: React.FC<ClaimButtonProps> = ({
       // Wait for transaction confirmation
       const newAttestationUID = await tx.wait();
 
-      if (newAttestationUID) {
+      if (newAttestationUID && meetingCategory!="officehours") {
         // Update attestation UID in backend
         const updateResponse = await fetchApi(`/update-attestation-uid`, {
           method: "PUT",
@@ -324,6 +330,41 @@ const ClaimButton: React.FC<ClaimButtonProps> = ({
         } else {
           throw new Error("Failed to update attestation UID");
         }
+      }
+      else 
+      { 
+        if(newAttestationUID && meetingCategory==="officehours")
+        {
+          const updateResponse = await fetchApi(`/edit-office-hours`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              host_address: address,
+              dao_name: dao,
+              reference_id: reference_id,
+              onchain_host_uid: newAttestationUID,
+              attendees:attendees,
+            }),
+          });
+  
+          const updateData = await updateResponse.json();
+          
+          if (updateData.success) {
+            // Successful claim
+            setIsClaimed(true);
+            
+            // Trigger confetti with a slight delay
+            setTimeout(() => {
+              triggerConfetti();
+            }, 100);
+  
+            toast.success("On-chain attestation claimed successfully!");
+            onClaimEnd();
+          } else {
+            throw new Error("Failed to update attestation UID");
+          }
+        }
+       
       }
     } catch (error: any) {
       // Comprehensive error handling

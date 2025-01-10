@@ -141,8 +141,8 @@ export interface OfficeHoursProps {
   dao_name: string;
   description: string;
   host_address: string;
-  onchain_host_uid?: string;
-  uid_host?: string;
+  onchain_host_uid?: string; 
+  uid_host?: string; 
   isMeetingRecorded?: boolean;
   meetingId?: string;
   meeting_status: "Ongoing" | "Upcoming" | "Recorded" | "Hosted" | "Attended";

@@ -220,15 +220,33 @@ export async function POST(req: NextRequest, res: NextResponse) {
         const db = client.db();
         const collection = db.collection("office_hours");
 
+        // await collection.findOneAndUpdate(
+        //   { meetingId: requestData.meetingId.split("/")[0] },
+        //   {
+        //     $set: {
+        //       uid_host: response.data.offchainAttestationId,
+        //     },
+        //   }
+        // );
+
         await collection.findOneAndUpdate(
-          { meetingId: requestData.meetingId.split("/")[0] },
+          { 
+            "host_address": requestData.recipient,
+            "dao.name": requestData.daoName,
+            "dao.meetings.meetingId": requestData.meetingId.split("/")[0]
+          },
           {
             $set: {
-              uid_host: response.data.offchainAttestationId,
-            },
+              "dao.$[dao].meetings.$[meeting].uid_host": response.data.offchainAttestationId
+            }
+          },
+          {
+            arrayFilters: [
+              { "dao.name": requestData.daoName },
+              { "meeting.meetingId": requestData.meetingId.split("/")[0] }
+            ]
           }
         );
-
         client.close();
       } else if (requestData.meetingType === 4) {
         const client = await connectDB();
@@ -236,15 +254,38 @@ export async function POST(req: NextRequest, res: NextResponse) {
         const db = client.db();
         const collection = db.collection("office_hours");
 
+        // await collection.findOneAndUpdate(
+        //   {
+        //     meetingId: requestData.meetingId.split("/")[0],
+        //     "attendees.attendee_address": requestData.recipient,
+        //   },
+        //   {
+        //     $set: {
+        //       "attendees.$.attendee_uid": response.data.offchainAttestationId,
+        //     },
+        //   }
+        // );
+
+
         await collection.findOneAndUpdate(
-          {
-            meetingId: requestData.meetingId.split("/")[0],
-            "attendees.attendee_address": requestData.recipient,
+          { 
+            "host_address": requestData.recipient,
+            "dao.name": requestData.daoName,
+            "dao.meetings.meetingId": requestData.meetingId.split("/")[0],
+            "dao.meetings.attendees.attendee_address":  requestData.recipient
           },
           {
             $set: {
-              "attendees.$.attendee_uid": response.data.offchainAttestationId,
-            },
+              "dao.$[dao].meetings.$[meeting].attendees.$[attendee].attendee_uid": 
+                response.data.offchainAttestationId
+            }
+          },
+          {
+            arrayFilters: [
+              { "dao.name": requestData.daoName },
+              { "meeting.meetingId":requestData.meetingId.split("/")[0]},
+              { "attendee.attendee_address": requestData.recipient }
+            ]
           }
         );
 
@@ -271,7 +312,7 @@ export async function POST(req: NextRequest, res: NextResponse) {
       offchainAttestationLink = `https://arbitrum.easscan.org/offchain/attestation/view/${offchainAttestation.uid}`;
     }
 
-    // console.log("Line 258:",offchainAttestationLink);
+    // console.log("Line 258:",offchainAttestationLink);  
 
     let notification_user_role = "";
     if (requestData.meetingType === 1) {
