@@ -15,6 +15,7 @@ import { GoogleTagManager } from "@next/third-parties/google";
 import SidebarMainMobile from "@/components/MainSidebar/SidebarMainMobile";
 import { ApiDataProvider } from "@/contexts/ApiDataContext";
 import TopNavbar from "@/components/TopNavbar/TopNavbar";
+import { Toaster } from "react-hot-toast";
 const poppins = Poppins({
   subsets: ["latin"],
   weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
@@ -120,9 +121,9 @@ export default function RootLayout({
                   </div>*/}
                   <div className="lg:hidden fixed z-10 w-full bg-white border border-b-0">
                     <SidebarMainMobile />
-                  </div> 
+                  </div>
                   <div className="hidden lg:flex items-center fixed h-[60px] bg-blue-shade-100 w-screen z-10">
-                    <TopNavbar/>
+                    <TopNavbar />
                   </div>
                   <div className="w-[100%] ml-auto mt-[78px] sm:mt-[64px] lg:mt-[60px] z-0">
                     <FeedbackTile />
@@ -133,6 +134,18 @@ export default function RootLayout({
             </RootProviders>
           </Suspense>
         </ProgressBarProvider>
+        <Toaster
+          toastOptions={{
+            style: {
+              fontSize: "14px",
+              backgroundColor: "#3E3D3D",
+              color: "#fff",
+              boxShadow: "none",
+              borderRadius: "50px",
+              padding: "3px 5px",
+            },
+          }}
+        />
       </body>
       <GoogleTagManager gtmId="GTM-5KX3QH8T" />
     </html>
