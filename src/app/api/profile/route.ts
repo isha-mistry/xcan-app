@@ -1,4 +1,5 @@
 import { connectDB } from "@/config/connectDB";
+import redis from "@/utils/redis";
 // import { Item } from "@radix-ui/react-dropdown-menu";
 import { NextApiRequest, NextApiResponse } from "next";
 import { NextResponse, NextRequest } from "next/server";
@@ -275,6 +276,9 @@ export async function PUT(
       { $set: updateFields }
     );
     console.log("Delegate document updated:", result);
+
+    const cacheKey = `profile:${address}`;
+    await redis.del(cacheKey);
 
     client.close();
     console.log("MongoDB connection closed");

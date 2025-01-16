@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/config/connectDB";
 import { promises } from "dns";
+import redis from "@/utils/redis";
 
 export async function PUT(req: NextRequest) {
   try {
@@ -11,6 +12,10 @@ export async function PUT(req: NextRequest) {
       updatenotification,
       dao,
     } = await req.json();
+
+    //removing cache key for maintain consistency of user data
+    const cacheKey = `Follower:${delegate_address}`;
+    await redis.del(cacheKey);
 
     // console.log("Connecting to MongoDB...");
     const client = await connectDB();
