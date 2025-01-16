@@ -468,6 +468,7 @@ function RecordedSessionsTile({
                       disabled={
                         claimInProgress && claimingMeetingId !== data.meetingId
                       }
+                      meetingCategory="session"
                       onClaimStart={() => handleClaimStart(data.meetingId)}
                       onClaimEnd={handleClaimEnd}
                     />
@@ -528,6 +529,7 @@ function RecordedSessionsTile({
                           claimInProgress &&
                           claimingMeetingId !== data.meetingId
                         }
+                        meetingCategory="session"
                         onClaimStart={() => handleClaimStart(data.meetingId)}
                         onClaimEnd={handleClaimEnd}
                         onChainId={

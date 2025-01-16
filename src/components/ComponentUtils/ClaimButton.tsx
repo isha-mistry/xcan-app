@@ -9,6 +9,7 @@ import toast from "react-hot-toast";
 import confetti from "canvas-confetti";
 import { fetchApi } from "@/utils/api";
 import { usePrivy, useWallets } from "@privy-io/react-auth";
+import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 
 interface ClaimButtonProps {
   meetingId: string;
@@ -45,6 +46,7 @@ const ClaimButton: React.FC<ClaimButtonProps> = ({
   const [isClaimed, setIsClaimed] = useState(!!onChainId);
   const { user, ready, getAccessToken } = usePrivy();
   const { wallets } = useWallets();
+  const {walletAddress}=useWalletAddress();
   useEffect(() => {
     setIsClaimed(!!onChainId);
   }, [onChainId]);
@@ -300,11 +302,20 @@ const ClaimButton: React.FC<ClaimButtonProps> = ({
       // Wait for transaction confirmation
       const newAttestationUID = await tx.wait();
 
-      if (newAttestationUID && meetingCategory!="officehours") {
+      if (newAttestationUID && meetingCategory==="session") {
         // Update attestation UID in backend
+        const ClientToken = await getAccessToken();
+        const myHeaders: HeadersInit = {
+          "Content-Type": "application/json",
+          ...(walletAddress && {
+            "x-wallet-address": walletAddress,
+            Authorization: `Bearer ${ClientToken}`,
+          }),
+        };
+
         const updateResponse = await fetchApi(`/update-attestation-uid`, {
           method: "PUT",
-          headers: { "Content-Type": "application/json" },
+          headers: myHeaders,
           body: JSON.stringify({
             meetingId: meetingId,
             meetingType: meetingType,
@@ -335,9 +346,18 @@ const ClaimButton: React.FC<ClaimButtonProps> = ({
       { 
         if(newAttestationUID && meetingCategory==="officehours")
         {
+          // console.log("Line 338:",newAttestationUID);
+          const ClientToken = await getAccessToken();
+          const myHeaders: HeadersInit = {
+            "Content-Type": "application/json",
+            ...(walletAddress && {
+              "x-wallet-address": walletAddress,
+              Authorization: `Bearer ${ClientToken}`,
+            }),
+          };
           const updateResponse = await fetchApi(`/edit-office-hours`, {
             method: "PUT",
-            headers: { "Content-Type": "application/json" },
+            headers: myHeaders,
             body: JSON.stringify({
               host_address: address,
               dao_name: dao,
@@ -348,6 +368,8 @@ const ClaimButton: React.FC<ClaimButtonProps> = ({
           });
   
           const updateData = await updateResponse.json();
+
+          // console.log("Line 353:",updateData);
           
           if (updateData.success) {
             // Successful claim
