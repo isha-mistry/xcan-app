@@ -8,6 +8,9 @@ export async function PUT(req: Request) {
     const { host_address, dao_name, reference_id, attendees, ...updateFields } =
       updateData;
 
+    
+    //console.log("Line 12:",host_address,dao_name,reference_id,attendees,updateFields);  
+
     // Validate required fields
     if (!host_address || !dao_name || !reference_id) {
       return NextResponse.json(
@@ -71,6 +74,7 @@ export async function PUT(req: Request) {
       prefix = "dao.$[daoElem].meetings.$[meetingElem]."
     ) => {
       if (value !== undefined && value !== existingMeeting[fieldName]) {
+        //console.log("Line 77:",value);
         fieldsToUpdate[`${prefix}${fieldName}`] = value;
       }
     };
@@ -85,7 +89,7 @@ export async function PUT(req: Request) {
     addFieldIfChanged("thumbnail_image", updateFields.thumbnail_image);
     addFieldIfChanged("isMeetingRecorded", updateFields.isMeetingRecorded);
     addFieldIfChanged("host_uid", updateFields.uid_host);
-    addFieldIfChanged("host_onchain_uid", updateFields.onchain_host_uid);
+    addFieldIfChanged("onchain_host_uid", updateFields.onchain_host_uid);
     addFieldIfChanged("nft_image", updateFields.nft_image);
 
     // Handle attendees update

@@ -154,6 +154,7 @@ const OfficeHourTile = ({
   ) => {
     // console.log(
     //   "Line 112:",
+    //   address,
     //   MeetingId,
     //   MeetingType,
     //   dao_name,
@@ -397,9 +398,9 @@ const OfficeHourTile = ({
                 <Link
                   href={
                     data.dao_name.toLowerCase() === "optimism"
-                      ? `https://optimism.easscan.org/offchain/attestation/view/${data.uid_host}`
+                      ? `https://optimism.easscan.org/offchain/attestation/view/${data.attendees?data.attendees[0].attendee_uid:''}`
                       : data.dao_name.toLowerCase() === "arbitrum"
-                      ? `https://arbitrum.easscan.org/offchain/attestation/view/${data.uid_host}`
+                      ? `https://arbitrum.easscan.org/offchain/attestation/view/${data.attendees?data.attendees[0].attendee_uid:''}`
                       : "#"
                   }
                   target="_blank"
@@ -428,7 +429,7 @@ const OfficeHourTile = ({
                       loadingButton === ""
                         ? () =>
                             handleClaimOffchain(
-                              data.attendees?data.attendees[0].attendee_address:'',
+                              walletAddress?walletAddress:'',
                               data.meetingId,
                               data.dao_name,
                               data.meetingType,
@@ -523,7 +524,7 @@ const OfficeHourTile = ({
                         loadingButton === ""
                           ? () =>
                               handleClaimOffchain(
-                                data.host_address,
+                                walletAddress?walletAddress:'',
                                 data.meetingId,
                                 data.dao_name,
                                 data.meetingType,
@@ -570,6 +571,7 @@ const OfficeHourTile = ({
                     disabled={
                       claimInProgress && claimingMeetingId !== data.meetingId
                     }
+                    meetingCategory="officehours"
                     reference_id={data.reference_id}
                     onClaimStart={() => handleClaimStart(data.meetingId)}
                     onClaimEnd={handleClaimEnd}
