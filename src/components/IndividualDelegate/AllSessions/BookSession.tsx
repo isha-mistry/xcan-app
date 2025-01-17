@@ -65,7 +65,7 @@ function BookSession({ props }: { props: Type }) {
   const [modalOpen, setModalOpen] = useState(false);
 
   const [mailId, setMailId] = useState<string>();
-  const [checkUserMail,setCheckUserMail]=useState(false);
+  const [checkUserMail, setCheckUserMail] = useState(false);
   const [hasEmailID, setHasEmailID] = useState<Boolean>();
   const [showGetMailModal, setShowGetMailModal] = useState<Boolean>();
   const [isValidEmail, setIsValidEmail] = useState(true);
@@ -144,8 +144,6 @@ function BookSession({ props }: { props: Type }) {
   //   } catch (error) {}
   // };
 
-  
-
   // const getSlotTimeAvailability = async () => {
   //   try {
   //     const response = await fetchApi(
@@ -195,12 +193,10 @@ function BookSession({ props }: { props: Type }) {
     });
   };
 
-
   useEffect(() => {
-
     const loadingTimeout = setTimeout(() => {
       setIsLoading(false);
-    }, 2000)
+    }, 2000);
 
     const loadData = async () => {
       try {
@@ -208,10 +204,10 @@ function BookSession({ props }: { props: Type }) {
           fetch(`/api/get-availability/${host_address}?dao_name=${daoName}`),
           fetchApi(`/get-meeting/${host_address}?dao_name=${daoName}`),
         ]);
-  
+
         const availabilityResult = await availabilityResponse.json();
         const slotTimeResult = await slotTimeResponse.json();
-  
+
         if (availabilityResult.success && slotTimeResult.success) {
           setAPIData(availabilityResult.data);
           setAPIBookings(slotTimeResult.data);
@@ -224,7 +220,7 @@ function BookSession({ props }: { props: Type }) {
             ...bookedSlots,
             ...extractedSlotTimes, // Spread the extractedSlotTimes array
           ];
-  
+
           setBookedSlots(newBookedSlots);
           setIsLoading(false);
         }
@@ -234,7 +230,7 @@ function BookSession({ props }: { props: Type }) {
         // Handle error
       }
     };
-  
+
     loadData();
     return () => {
       clearTimeout(loadingTimeout);
@@ -292,12 +288,12 @@ function BookSession({ props }: { props: Type }) {
             "x-wallet-address": walletAddress,
             Authorization: `Bearer ${token}`,
           }),
-        };    
-  
+        };
+
         const raw = JSON.stringify({
           address: walletAddress,
         });
-  
+
         const requestOptions: any = {
           method: "POST",
           headers: myHeaders,
@@ -334,16 +330,15 @@ function BookSession({ props }: { props: Type }) {
         return false;
       }
     };
-  
+
     const runCheck = async () => {
       let checkMail = await checkUser();
       // console.log('ChekMail',checkMail);
-      setCheckUserMail(checkMail?checkMail:false);
+      setCheckUserMail(checkMail ? checkMail : false);
     };
-  
+
     runCheck(); // Call the async function inside the effect
   }, [walletAddress]); // Include walletAddress or other dependencies
-  
 
   const checkBeforeApiCall = async () => {
     if (modalData.title.length > 0 && modalData.description.length > 0) {
@@ -380,10 +375,10 @@ function BookSession({ props }: { props: Type }) {
   };
   const apiCall = async () => {
     const ChainName = chain?.name === "OP Mainnet" ? "optimism" : "arbitrum";
-    const CHAIN_ID=props.daoDelegates=='optimism'?10:42161;
-   
-    if (props.daoDelegates !== ChainName) {    
-      await switchChain({ chainId: CHAIN_ID});
+    const CHAIN_ID = props.daoDelegates == "optimism" ? 10 : 42161;
+
+    if (props.daoDelegates !== ChainName) {
+      await switchChain({ chainId: CHAIN_ID });
       setIsLoading(false);
       setConfirmSave(false);
       setIsScheduling(false);
@@ -528,7 +523,7 @@ function BookSession({ props }: { props: Type }) {
       ) {
         const isBooked = bookedSlots.some((bookedSlot: any) => {
           return (
-          isSameDay(startTime,bookedSlot) &&
+            isSameDay(startTime, bookedSlot) &&
             slotTime.getHours() === bookedSlot.getHours() &&
             slotTime.getMinutes() === bookedSlot.getMinutes()
           );
@@ -629,7 +624,7 @@ function BookSession({ props }: { props: Type }) {
         </div>
       ) : (
         <div className="flex justify-center w-full px-4 sm:px-6 md:px-8">
-          <Toaster
+          {/* <Toaster
             toastOptions={{
               style: {
                 fontSize: "14px",
@@ -638,9 +633,10 @@ function BookSession({ props }: { props: Type }) {
                 boxShadow: "none",
                 borderRadius: "50px",
                 padding: "3px 5px",
+                marginTop: "64px",
               },
             }}
-          />
+          /> */}
           <div className="w-full max-w-md mx-auto mt-8 rounded-2xl shadow-lg bg-white">
             <div className="calendar-container">
               <DayTimeScheduler
@@ -665,7 +661,7 @@ function BookSession({ props }: { props: Type }) {
           style={{ boxShadow: " 0px 0px 45px -17px rgba(0,0,0,0.75)" }}
         >
           <div className="bg-white rounded-[41px] overflow-hidden shadow-lg w-full max-w-lg mx-4">
-            <Toaster
+            {/* <Toaster
               toastOptions={{
                 style: {
                   fontSize: "14px",
@@ -674,9 +670,10 @@ function BookSession({ props }: { props: Type }) {
                   boxShadow: "none",
                   borderRadius: "50px",
                   padding: "3px 5px",
+                  marginTop: "64px",
                 },
               }}
-            />
+            /> */}
             <div className="relative">
               <div className="flex flex-col gap-1 text-white bg-[#292929] p-4 py-7">
                 <div className="flex items-center justify-between mx-4">

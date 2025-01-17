@@ -1,10 +1,10 @@
-"use client";
-import ExploreDAOs from "@/components/DAOs/ExploreDAOs";
+import Homepage from "@/components/HomePage/Homepage";
+
 
 export default function Home() {
   return (
     <main>
-      <ExploreDAOs />
+      <Homepage/>
     </main>
   );
 }

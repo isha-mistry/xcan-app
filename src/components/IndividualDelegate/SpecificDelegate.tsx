@@ -134,6 +134,7 @@ function SpecificDelegate({ props }: { props: Type }) {
   const [tempCpiCalling, setTempCpiCalling] = useState(true);
   const [isFromDatabase, setFromDatabase] = useState(false);
   const [errorOccurred, setErrorOccurred] = useState(false);
+  const [avatar,setAvatar] = useState("");
 
   const handleCopy = (addr: string) => {
     copy(addr);
@@ -1052,6 +1053,7 @@ function SpecificDelegate({ props }: { props: Type }) {
       const { ensName: fetchedName, avatar: fetchedAvatar } =
         await fetchEnsNameAndAvatar(props.individualDelegate);
       setDisplayEnsName(fetchedName);
+      setAvatar(avatar)
     };
     fetchEnsName();
   }, [props]);
@@ -1076,7 +1078,33 @@ function SpecificDelegate({ props }: { props: Type }) {
     // If image is from ENS or other source, use it directly
     return displayImage;
   };
+  
+  const getDisplayImageUrl = () => {
+    // Case 1: Image from database (IPFS)
+    if (displayImage && isFromDatabase) {
+      return `https://gateway.lighthouse.storage/ipfs/${displayImage}`;
+    }
 
+    // Case 2: ENS Avatar
+    if (avatar && !isFromDatabase) {
+      return avatar;
+    }
+
+    // Case 3: Profile picture from delegateInfo
+    if (delegateInfo?.profilePicture) {
+      return delegateInfo.profilePicture;
+    }
+
+    // Case 4: DAO-specific logos
+    if (props.daoDelegates === "optimism") {
+      return OPLogo;
+    } else if (props.daoDelegates === "arbitrum") {
+      return ArbLogo;
+    }
+
+    // Case 5: Default fallback
+    return ccLogo;
+  };
   const getImageClassName = () => {
     if (displayImage || delegateInfo?.profilePicture) {
       return "w-full xs:w-28 xs:h-28 sm:w-36 sm:h-36 lg:w-40 lg:h-40 rounded-3xl";
@@ -1453,7 +1481,7 @@ function SpecificDelegate({ props }: { props: Type }) {
               </div>
               <div className="hidden lg:flex gap-1 xs:gap-2 items-center">
                 <RewardButton />
-                <ConnectWalletWithENS />
+                {/* <ConnectWalletWithENS /> */}
               </div>
             </div>
 
@@ -1598,14 +1626,7 @@ function SpecificDelegate({ props }: { props: Type }) {
               )
             }
             displayImage={
-              displayImage
-                ? `https://gateway.lighthouse.storage/ipfs/${displayImage}`
-                : delegateInfo?.profilePicture ||
-                  (props.daoDelegates === "optimism"
-                    ? OPLogo
-                    : props.daoDelegates === "arbitrum"
-                    ? ArbLogo
-                    : ccLogo)
+              getDisplayImageUrl()
             }
             daoName={props.daoDelegates}
             addressCheck={same}

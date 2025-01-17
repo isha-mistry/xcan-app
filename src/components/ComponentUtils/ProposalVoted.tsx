@@ -22,12 +22,12 @@ interface Type {
 }
 
 const op_client = createClient({
-  url: "https://api.studio.thegraph.com/query/68573/v6_proxy/version/latest",
+  url:process.env.NEXT_PUBLIC_OPTIMISM_PROPOSALS_GRAPH_URL || "https://api.studio.thegraph.com/query/68573/v6_proxy/version/latest",
   exchanges: [cacheExchange, fetchExchange],
 });
 
 const arb_client = createClient({
-  url: "https://api.studio.thegraph.com/query/68573/arbitrum_proposals/v0.0.4",
+  url:process.env.NEXT_PUBLIC_ARBITRUM_PROPOSALS_GRAPH_URL || "https://api.studio.thegraph.com/query/68573/arbitrum_proposals/v0.0.4",
   exchanges: [cacheExchange, fetchExchange],
 });
 
