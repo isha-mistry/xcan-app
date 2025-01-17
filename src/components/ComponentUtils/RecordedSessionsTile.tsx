@@ -63,6 +63,21 @@ function RecordedSessionsTile({
   const [claimInProgress, setClaimInProgress] = useState(false);
   const [claimingMeetingId, setClaimingMeetingId] = useState(null);
   const [copiedStates, setCopiedStates] = useState<Record<string, boolean>>({});
+    const renderStartTime = useRef<number | null>(null);
+
+    useEffect(() => {
+      // Capture the start time
+      renderStartTime.current = performance.now();
+    }, []);
+  
+    useEffect(() => {
+      if (meetingData) {
+        // Capture the end time and calculate render duration
+        const renderEndTime = performance.now();
+        const renderDuration = renderEndTime - (renderStartTime.current || 0);
+        //console.log(`RecordedSessionsTile component rendered in ${renderDuration.toFixed(2)} ms`);
+      }
+    }, [meetingData]);
 
   const handleCopy = (addr: string, buttonId: string) => {
     copy(addr);

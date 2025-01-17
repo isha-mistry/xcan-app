@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/config/connectDB";
+import redis from "@/utils/redis";
 
 export const revalidate = 0;
 
@@ -19,6 +20,16 @@ export async function GET(req: NextRequest, res: NextResponse) {
     const page = parseInt(url.searchParams.get("page") || "1");
     const limit = parseInt(url.searchParams.get("limit") || "20");
     const offset = (page - 1) * limit;
+
+    const cacheKey = "meetings"; // Single cache key for all meeting data
+
+    // Check Redis for cached data
+    const cachedData = await redis.get(cacheKey);
+    if (cachedData) {
+      console.log("Serving from cache!");
+      // return NextResponse.json(JSON.parse(cachedData), { status: 200 });
+      return NextResponse.json({success:true,data:JSON.parse(cachedData)},{status:200})
+    }
 
     // Fetch total count of recorded meetings
     const totalCount = await meetingsCollection.countDocuments({
@@ -61,7 +72,10 @@ export async function GET(req: NextRequest, res: NextResponse) {
       return { ...meeting, hostInfo, attendees };
     });
 
+    await redis.set(cacheKey, JSON.stringify(mergedData), "EX", 600); // Cache for 10 mintues
+
     await client.close();
+    console.log("Serving from database!");
 
     // Return the merged data with pagination info
     return NextResponse.json(
