@@ -1,4 +1,3 @@
-import { ReportRequestBody, VideoReport } from "@/app/api/report-session/route";
 // import { useConnectModal } from "@rainbow-me/rainbowkit";
 import React, { useEffect, useState } from "react";
 import { RxCross2 } from "react-icons/rx";
@@ -45,7 +44,7 @@ function ReportAdditionalDetailsModal({
     video_reports: any
   ) => {
     setIsLoading(true);
-    const token=await getAccessToken();
+    const token = await getAccessToken();
     const myHeaders: HeadersInit = {
       "Content-Type": "application/json",
       ...(walletAddress && {
@@ -60,6 +59,7 @@ function ReportAdditionalDetailsModal({
         meetingId,
         host_address,
         video_reports,
+        collection: collection,
       }),
     };
 
@@ -102,17 +102,17 @@ function ReportAdditionalDetailsModal({
           video_reports
         );
 
+        console.log("Report result:", result);
+
         if (result.success) {
-          toast("Report submitted successfully");
+          toast.success("Report submitted successfully");
+          onClose();
+        } else if (result.exists) {
+          toast.error("You have already reported this session");
+          onClose();
         } else {
-          if (result.exists) {
-            toast.error("You have already reported this session.");
-          } else {
-            console.error("Failed to submit report:", result);
-            toast.error(result.error || "Failed to submit report");
-          }
+          toast.error(result.error || "Failed to submit report");
         }
-        onClose();
         setIsLoading(false);
       } catch (error) {
         onClose();
