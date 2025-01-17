@@ -13,7 +13,7 @@ import arb from "@/assets/images/daos/arb.png";
 import { LuDot } from "react-icons/lu";
 import { BiLinkExternal } from "react-icons/bi";
 import buttonStyles from "./Button.module.css";
-import { OfficeHoursProps, TimeSlot } from "@/types/OfficeHoursTypes";
+import { Attendee, OfficeHoursProps, TimeSlot } from "@/types/OfficeHoursTypes";
 import EditOfficeHoursModal from "./EditOfficeHoursModal";
 import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 import { getAccessToken } from "@privy-io/react-auth";
@@ -274,6 +274,26 @@ const OfficeHourTile = ({
     return daoLogos[normalizedName] || arblogo;
   };
 
+  const getAttendeeUid = (address: string | null, attendees?: Attendee[]) => {
+    if (!attendees || !address) return null;
+    const attendee = attendees.find(
+      (a) => a.attendee_address.toLowerCase() === address.toLowerCase()
+    );
+    return attendee?.attendee_uid;
+  };
+
+  const getAttestationUrl = (
+    daoName: string,
+    attendeeUid?: string | null
+  ): string => {
+    if (!attendeeUid) return "#";
+    return daoName.toLowerCase() === "optimism"
+      ? `https://optimism.easscan.org/offchain/attestation/view/${attendeeUid}`
+      : daoName.toLowerCase() === "arbitrum"
+      ? `https://arbitrum.easscan.org/offchain/attestation/view/${attendeeUid}`
+      : "#";
+  };
+
   return (
     <div
       className={`grid min-[475px]:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 sm:gap-10 py-8 font-poppins`}
@@ -394,25 +414,19 @@ const OfficeHourTile = ({
             {isAttended && data.isEligible && (
               <div className="px-4 pb-2 flex justify-center space-x-2">
                 {/* Check if data.host_uid exists */}
-                {data.uid_host ? (
+                {walletAddress &&
+                getAttendeeUid(walletAddress, data.attendees) ? (
                   <Link
-                    href={
-                      data.dao_name.toLowerCase() === "optimism"
-                        ? `https://optimism.easscan.org/offchain/attestation/view/${
-                            data.attendees ? data.attendees[0].attendee_uid : ""
-                          }`
-                        : data.dao_name.toLowerCase() === "arbitrum"
-                        ? `https://arbitrum.easscan.org/offchain/attestation/view/${
-                            data.attendees ? data.attendees[0].attendee_uid : ""
-                          }`
-                        : "#"
-                    }
+                    href={getAttestationUrl(
+                      data.dao_name,
+                      getAttendeeUid(walletAddress, data.attendees)
+                    )}
                     target="_blank"
                     rel="noopener noreferrer"
                     onClick={(e) => {
                       e.stopPropagation();
                     }}
-                    className={`${buttonStyles.button} w-full gap-1`}
+                    className={`${buttonStyles.button} w-full gap-1 text-xs`}
                   >
                     Offchain
                     <BiLinkExternal
@@ -530,7 +544,8 @@ const OfficeHourTile = ({
                       }`}
                       onClick={
                         loadingButton === ""
-                          ? () =>
+                          ? (e) => {
+                              e.stopPropagation();
                               handleClaimOffchain(
                                 walletAddress ? walletAddress : "",
                                 data.meetingId,
@@ -538,7 +553,8 @@ const OfficeHourTile = ({
                                 data.meetingType,
                                 data.meeting_starttime,
                                 data.meeting_endtime
-                              )
+                              );
+                            }
                           : undefined
                       }
                     >
@@ -604,7 +620,7 @@ const OfficeHourTile = ({
               </div>
             )}
 
-            {isUpcoming && (
+            {(isUpcoming || isOngoing) && (
               <>
                 <div className="flex items-center space-x-2 text-sm text-gray-700">
                   <Clock className="w-4 h-4 text-indigo-500" />

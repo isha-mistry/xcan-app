@@ -76,6 +76,9 @@ export async function GET(req: NextRequest) {
       Meeting & { host_address: string; dao_name: string }
     > = [];
 
+    const currentTime = new Date().getTime();
+    const bufferTime = currentTime - 60 * 60 * 1000;
+
     await Promise.all(
       results.flatMap((result) => {
         const relevantDaos = dao_name
@@ -123,15 +126,20 @@ export async function GET(req: NextRequest) {
               }
             );
 
-            // console.log("Line 124:", attendanceVerification);
+            const meetingStartTime = new Date(meeting.startTime || 0).getTime();
+            const oneDayAgo = currentTime - 6 * 60 * 60 * 1000;
 
             // Categorize meetings
             switch (meeting.meeting_status) {
               case "Ongoing":
-                ongoing.push(meetingDocument);
+                if (meetingStartTime > oneDayAgo) {
+                  ongoing.push(meetingDocument);
+                }
                 break;
               case "Upcoming":
-                upcoming.push(meetingDocument);
+                if (meetingStartTime > bufferTime) {
+                  upcoming.push(meetingDocument);
+                }
                 break;
               case "Recorded":
                 recorded.push(meetingDocument);
@@ -152,51 +160,52 @@ export async function GET(req: NextRequest) {
                       host_address?.toLowerCase()
                   );
                   meetingDocument.isEligible = isHost;
-                  if(meeting.attendees?.some(
-                    (attendee) => attendee.attendee_address === host_address
-                  ))
-                  {
-                    meetingDocument.meeting_starttime =
-                      attendanceVerification?.startTime;
-                    meetingDocument.meeting_endtime =
-                      attendanceVerification?.endTime;
-                    meetingDocument.meetingType = 4;
-                    const isParticipant =
-                      attendanceVerification?.participants?.some(
-                        (participant: { metadata: { walletAddress: string } }) =>
-                          participant.metadata?.walletAddress?.toLowerCase() ===
-                          host_address?.toLowerCase()
-                      );
-                    meetingDocument.isEligible = isParticipant;
-                    attended.push(meetingDocument);
-
-                  }
                   hosted.push(meetingDocument);
                 }
 
-                // Check if this is an attended meeting (where user is not the host)
-                // if (
-                //   host_address &&
-                //   result.host_address !== host_address &&
-                //   meeting.attendees?.some(
-                //     (attendee) => attendee.attendee_address === host_address
-                //   )
-                // ) {
-                //   meetingDocument.meeting_starttime =
-                //     attendanceVerification?.startTime;
-                //   meetingDocument.meeting_endtime =
-                //     attendanceVerification?.endTime;
-                //   meetingDocument.meetingType = 4;
-                //   const isParticipant =
-                //     attendanceVerification?.participants?.some(
-                //       (participant: { metadata: { walletAddress: string } }) =>
-                //         participant.metadata?.walletAddress?.toLowerCase() ===
-                //         host_address?.toLowerCase()
-                //     );
-                //   meetingDocument.isEligible = isParticipant;
-                //   attended.push(meetingDocument);
-                // }
-                // break;
+                if (
+                  meeting.attendees?.some(
+                    (attendee) => attendee.attendee_address === host_address
+                  )
+                ) {
+                  meetingDocument.meeting_starttime =
+                    attendanceVerification?.startTime;
+                  meetingDocument.meeting_endtime =
+                    attendanceVerification?.endTime;
+                  meetingDocument.meetingType = 4;
+                  const isParticipant =
+                    attendanceVerification?.participants?.some(
+                      (participant: { metadata: { walletAddress: string } }) =>
+                        participant.metadata?.walletAddress?.toLowerCase() ===
+                        host_address?.toLowerCase()
+                    );
+                  meetingDocument.isEligible = isParticipant;
+                  attended.push(meetingDocument);
+                }
+
+              // Check if this is an attended meeting (where user is not the host)
+              // if (
+              //   host_address &&
+              //   result.host_address !== host_address &&
+              //   meeting.attendees?.some(
+              //     (attendee) => attendee.attendee_address === host_address
+              //   )
+              // ) {
+              //   meetingDocument.meeting_starttime =
+              //     attendanceVerification?.startTime;
+              //   meetingDocument.meeting_endtime =
+              //     attendanceVerification?.endTime;
+              //   meetingDocument.meetingType = 4;
+              //   const isParticipant =
+              //     attendanceVerification?.participants?.some(
+              //       (participant: { metadata: { walletAddress: string } }) =>
+              //         participant.metadata?.walletAddress?.toLowerCase() ===
+              //         host_address?.toLowerCase()
+              //     );
+              //   meetingDocument.isEligible = isParticipant;
+              //   attended.push(meetingDocument);
+              // }
+              // break;
             }
           });
         });

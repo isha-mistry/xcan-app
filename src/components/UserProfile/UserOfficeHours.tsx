@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import UserScheduledHours from "./UserAllOfficeHrs/UserScheduledHours";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useRouter } from "next-nprogress-bar";
@@ -73,29 +73,33 @@ function UserOfficeHours({
     }
   };
 
-  useEffect(() => {
-    const fetchUserOfficeHours = async () => {
+  const fetchUserOfficeHours = useCallback(async () => {
+    try {
+      const token = await getAccessToken();
       const response = await fetchApi(
         `/get-office-hours?host_address=${walletAddress}&dao_name=${daoName}`,
         {
           headers: {
-            Authorization: `Bearer ${await getAccessToken()}`,
+            Authorization: `Bearer ${token}`,
           },
         }
       );
 
       const result = await response.json();
-
-      console.log("result", result);
       setOngoingOfficeHours(result.data.ongoing);
       setUpcomingOfficeHours(result.data.upcoming);
       setHostedOfficeHours(result.data.hosted);
       setAttendedOfficeHours(result.data.attended);
+    } catch (error) {
+      console.error("Error fetching office hours:", error);
+    } finally {
       setDataLoading(false);
-    };
+    }
+  }, [walletAddress, daoName, getAccessToken]);
 
+  useEffect(() => {
     fetchUserOfficeHours();
-  }, [walletAddress, daoName]);
+  }, [fetchUserOfficeHours]);
 
   useEffect(() => {
     // Set initial session details
@@ -192,7 +196,10 @@ function UserOfficeHours({
         <div className="py-10">
           {selfDelegate === true &&
             searchParams.get("hours") === "schedule" && (
-              <UserScheduledHours daoName={daoName} />
+              <UserScheduledHours
+                daoName={daoName}
+                onScheduleSave={fetchUserOfficeHours}
+              />
             )}
 
           {selfDelegate === true &&

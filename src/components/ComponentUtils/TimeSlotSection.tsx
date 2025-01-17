@@ -46,10 +46,10 @@ const TimeSlotSection: React.FC<TimeSlotSectionProps> = ({
   } | null>(null);
 
   const editOptionsRef = useRef<HTMLDivElement>(null);
-const editButtonRef = useRef<HTMLButtonElement>(null);
-  
+  const editButtonRef = useRef<HTMLButtonElement>(null);
+
   useEffect(() => {
-    const handleClickOutside = (event:MouseEvent) => {
+    const handleClickOutside = (event: MouseEvent) => {
       // Check if click is outside both the edit button and popup
       const target = event.target as Element;
       if (
@@ -64,11 +64,11 @@ const editButtonRef = useRef<HTMLButtonElement>(null);
     };
 
     // Add event listener
-    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
 
     // Cleanup
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [showEditOptions]);
 
@@ -129,9 +129,6 @@ const editButtonRef = useRef<HTMLButtonElement>(null);
   };
 
   return (
-    
-
-    // max-h-[calc(100vh-8rem)]
     <div className="flex-1 1.5lg:max-h-[350px] max-h-[600px] overflow-y-auto px-1 mt-6 md:mt-0 1.5lg:mr-6 xl:mr-0 scroll-smooth [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar]:transition-all [&::-webkit-scrollbar]:duration-300  [&::-webkit-scrollbar-track]:rounded-full  [&::-webkit-scrollbar-thumb]:rounded-full  [&::-webkit-scrollbar-thumb]:bg-blue-200  [&::-webkit-scrollbar-track]:bg-blue-50  hover:[&::-webkit-scrollbar-thumb]:bg-blue-100">
       {selectedDates.length > 0 ? (
         <div className="mb-4 space-y-6">
@@ -151,7 +148,12 @@ const editButtonRef = useRef<HTMLButtonElement>(null);
                       </div>
                       <div className="space-y-1">
                         <h3 className="font-semibold text-gray-900">
-                          {format(schedule.date, "EEEE, MMMM d, yyyy")}
+                          {new Date(schedule.date).toLocaleDateString("en-US", {
+                            weekday: "long",
+                            year: "numeric",
+                            month: "long",
+                            day: "numeric",
+                          })}
                         </h3>
                         <p className="text-sm text-gray-500">
                           {schedule.timeSlots.length} time slot
@@ -183,149 +185,149 @@ const editButtonRef = useRef<HTMLButtonElement>(null);
                         }`}
                       >
                         {slot.bookedTitle && (
-                           <div className="absolute -top-3 left-2 bg-amber-100 text-amber-800 px-2 py-1 rounded-full text-xs font-medium">
+                          <div className="absolute -top-3 left-2 bg-amber-100 text-amber-800 px-2 py-1 rounded-full text-xs font-medium">
                             Booked
                           </div>
                         )}
                         <div className="w-4 h-4 mt-2.5 sm:mt-0">
-                        <Clock
-                          className={`h-4 w-4 ${
-                            slot.bookedTitle
-                              ? "text-amber-500"
-                              : "text-gray-400"
-                          }`}
-                        />
+                          <Clock
+                            className={`h-4 w-4 ${
+                              slot.bookedTitle
+                                ? "text-amber-500"
+                                : "text-gray-400"
+                            }`}
+                          />
                         </div>
                         <div className="flex flex-col sm:flex-row sm:items-center gap-3 flex-1 w-full">
                           <div className="flex justify-between w-full">
-                          <div className="flex items-center space-x-1 0.5xs:space-x-2 w-full sm:w-auto">
-                            <select
-                              value={slot.startTime}
-                              onChange={(e) =>
-                                updateTime(
-                                  dateIndex,
-                                  slotIndex,
-                                  "startTime",
-                                  e.target.value
-                                )
-                              }
-                              disabled={Boolean(slot.bookedTitle)}
-                              className={`rounded-xl px-1 py-1.5 0.5xs:px-3 0.5xs:py-2 text-xs sm:text-sm bg-white border flex-1 sm:flex-none
-                                ${slot.bookedTitle
-                                  ? "border-amber-200 text-amber-900 bg-amber-50"
-                                  : "border-gray-200 hover:border-gray-300"
+                            <div className="flex items-center space-x-1 0.5xs:space-x-2 w-full sm:w-auto">
+                              <select
+                                value={slot.startTime}
+                                onChange={(e) =>
+                                  updateTime(
+                                    dateIndex,
+                                    slotIndex,
+                                    "startTime",
+                                    e.target.value
+                                  )
+                                }
+                                disabled={Boolean(slot.bookedTitle)}
+                                className={`rounded-xl px-1 py-1.5 0.5xs:px-3 0.5xs:py-2 text-xs sm:text-sm bg-white border flex-1 sm:flex-none
+                                ${
+                                  slot.bookedTitle
+                                    ? "border-amber-200 text-amber-900 bg-amber-50"
+                                    : "border-gray-200 hover:border-gray-300"
                                 }`}
-                            >
-                              {generateTimeOptions(schedule.date, true).map(
-                                (time) => (
+                              >
+                                {generateTimeOptions(schedule.date, true).map(
+                                  (time) => (
+                                    <option key={time} value={time}>
+                                      {time}
+                                    </option>
+                                  )
+                                )}
+                              </select>
+                              <span className="text-xs sm:text-sm text-gray-400">
+                                to
+                              </span>
+                              <select
+                                value={slot.endTime}
+                                onChange={(e) =>
+                                  updateTime(
+                                    dateIndex,
+                                    slotIndex,
+                                    "endTime",
+                                    e.target.value
+                                  )
+                                }
+                                disabled={Boolean(slot.bookedTitle)}
+                                className={`rounded-xl px-1 py-1.5 0.5xs:px-3 0.5xs:py-2 text-xs sm:text-sm bg-white border flex-1 sm:flex-none
+                                ${
+                                  slot.bookedTitle
+                                    ? "border-amber-200 text-amber-900 bg-amber-50"
+                                    : "border-gray-200 hover:border-gray-300"
+                                }`}
+                              >
+                                {generateTimeOptions(
+                                  schedule.date,
+                                  false,
+                                  slot.startTime
+                                ).map((time) => (
                                   <option key={time} value={time}>
                                     {time}
                                   </option>
-                                )
-                              )}
-                            </select>
-                            <span className="text-xs sm:text-sm text-gray-400">
-                              to
-                            </span>
-                            <select
-                              value={slot.endTime}
-                              onChange={(e) =>
-                                updateTime(
-                                  dateIndex,
-                                  slotIndex,
-                                  "endTime",
-                                  e.target.value
-                                )
-                              }
-                              disabled={Boolean(slot.bookedTitle)}
-                              className={`rounded-xl px-1 py-1.5 0.5xs:px-3 0.5xs:py-2 text-xs sm:text-sm bg-white border flex-1 sm:flex-none
-                                ${slot.bookedTitle
-                                  ? "border-amber-200 text-amber-900 bg-amber-50"
-                                  : "border-gray-200 hover:border-gray-300"
-                                }`}
-                            >
-                              {generateTimeOptions(
-                                schedule.date,
-                                false,
-                                slot.startTime
-                              ).map((time) => (
-                                <option key={time} value={time}>
-                                  {time}
-                                </option>
-                              ))}
-                            </select>
-                          </div>
-                          {!slot.bookedTitle && (
-                          <button
-                            onClick={() => removeTimeSlot(dateIndex, slotIndex)}
-                            className="text-gray-400 hover:text-red-500 transition-all p-2 ml-auto"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </button>
-                        )}
-                          </div>
-                          {/* {slot.bookedTitle && (
-                            <div className="flex items-center space-x-2 bg-white px-3 py-2 rounded-xl border border-amber-200 w-full sm:w-auto">
-                              <div className="size-4">
-                            <User className="h-4 w-4 text-amber-500" />
+                                ))}
+                              </select>
                             </div>
-                            <span className="text-xs sm:text-sm text-amber-900 font-medium line-clamp-1">
-                                {slot.bookedTitle}
-                              </span>
-                            </div>
-                          )} */}
-                        
-                        {slot.bookedTitle && (
-                          <div className="flex items-center gap-2">
-                          <div className="flex items-center space-x-2 bg-white px-3 py-2 rounded-xl border border-amber-200 w-[180px] 0.5xs:w-[190px] ">
-                          <div className="size-4">
-                        <User className="h-4 w-4 text-amber-500" />
-                        </div>
-                        <span className="text-xs sm:text-sm text-amber-900 font-medium truncate block">
-                            {slot.bookedTitle}
-                          </span>
-                        </div> 
-                          <div className="relative mr-auto">
-                            <button
-                            ref={editButtonRef}
-                              onClick={() =>
-                                handleEditClick(dateIndex, slotIndex)
-                              }
-                              className="text-amber-600 hover:text-amber-700 p-2 transition-all"
-                              aria-label="Edit booked slot size-4"
-                            >
-                              <Edit className="h-4 w-4" />
-                            </button>
-                            {showEditOptions?.dateIndex === dateIndex &&
-                              showEditOptions?.slotIndex === slotIndex && (
-                                <div ref={editOptionsRef} className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg z-10 border border-gray-200">
-                                  <div className="py-1">
-                                    <button
-                                      onClick={() =>
-                                        handleUpdateClick(
-                                          dateIndex,
-                                          slotIndex,
-                                          slot
-                                        )
-                                      }
-                                      className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                                    >
-                                      Update
-                                    </button>
-                                    <button
-                                      onClick={() =>
-                                        handleDeleteClick(dateIndex, slotIndex)
-                                      }
-                                      className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
-                                    >
-                                      Delete
-                                    </button>
-                                  </div>
+                            {!slot.bookedTitle && (
+                              <button
+                                onClick={() =>
+                                  removeTimeSlot(dateIndex, slotIndex)
+                                }
+                                className="text-gray-400 hover:text-red-500 transition-all p-2 ml-auto"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </button>
+                            )}
+                          </div>
+
+                          {slot.bookedTitle && (
+                            <div className="flex items-center gap-2">
+                              <div className="flex items-center space-x-2 bg-white px-3 py-2 rounded-xl border border-amber-200 w-[180px] 0.5xs:w-[190px] ">
+                                <div className="size-4">
+                                  <User className="h-4 w-4 text-amber-500" />
                                 </div>
-                              )}
-                          </div>
-                          </div>
-                        ) } 
+                                <span className="text-xs sm:text-sm text-amber-900 font-medium truncate block">
+                                  {slot.bookedTitle}
+                                </span>
+                              </div>
+                              <div className="relative mr-auto">
+                                <button
+                                  ref={editButtonRef}
+                                  onClick={() =>
+                                    handleEditClick(dateIndex, slotIndex)
+                                  }
+                                  className="text-amber-600 hover:text-amber-700 p-2 transition-all"
+                                  aria-label="Edit booked slot size-4"
+                                >
+                                  <Edit className="h-4 w-4" />
+                                </button>
+                                {showEditOptions?.dateIndex === dateIndex &&
+                                  showEditOptions?.slotIndex === slotIndex && (
+                                    <div
+                                      ref={editOptionsRef}
+                                      className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg z-10 border border-gray-200"
+                                    >
+                                      <div className="py-1">
+                                        <button
+                                          onClick={() =>
+                                            handleUpdateClick(
+                                              dateIndex,
+                                              slotIndex,
+                                              slot
+                                            )
+                                          }
+                                          className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                        >
+                                          Update
+                                        </button>
+                                        <button
+                                          onClick={() =>
+                                            handleDeleteClick(
+                                              dateIndex,
+                                              slotIndex
+                                            )
+                                          }
+                                          className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                                        >
+                                          Delete
+                                        </button>
+                                      </div>
+                                    </div>
+                                  )}
+                              </div>
+                            </div>
+                          )}
                         </div>
                       </div>
                     ))}

@@ -21,7 +21,6 @@ function ReportAdditionalDetailsModal({
   onClose: () => void;
 }) {
   // const { openConnectModal } = useConnectModal();
-  const { address, isConnected } = useAccount();
   const [details, setDetails] = useState("");
   const [isLoading, setIsLoading] = useState<boolean>();
   const { ready, authenticated, login, logout, getAccessToken, user } =
