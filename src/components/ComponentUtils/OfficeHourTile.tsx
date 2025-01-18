@@ -29,6 +29,7 @@ import { MEETING_BASE_URL } from "@/config/constants";
 import { Oval } from "react-loader-spinner";
 import oplogo from "@/assets/images/daos/op.png";
 import arblogo from "@/assets/images/daos/arbitrum.jpg";
+import OffchainAttestationButton from "./OffchainAttestationButton";
 interface CopyStates {
   [key: number]: boolean;
 }
@@ -314,6 +315,36 @@ const OfficeHourTile = ({
     return `${baseUrl}${uid}`;
   };
 
+  const handleAttestationSuccess = (
+    uid: string,
+    meetingId: string | undefined
+  ) => {
+    setLocalData((prevData) =>
+      prevData.map((item) => {
+        if (item.meetingId === meetingId) {
+          if (isAttended) {
+            return {
+              ...item,
+              attendees:
+                item.attendees?.map((attendee) =>
+                  attendee.attendee_address.toLowerCase() ===
+                  walletAddress?.toLowerCase()
+                    ? { ...attendee, attendee_uid: uid }
+                    : attendee
+                ) || [],
+            };
+          } else if (isHosted) {
+            return {
+              ...item,
+              uid_host: uid,
+            };
+          }
+        }
+        return item;
+      })
+    );
+  };
+
   return (
     <div
       className={`grid min-[475px]:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 sm:gap-10 py-8 font-poppins`}
@@ -442,72 +473,18 @@ const OfficeHourTile = ({
             {isAttended && data.isEligible && (
               <div className="px-4 pb-2 flex justify-center space-x-2">
                 {/* Check if data.host_uid exists */}
-                {walletAddress &&
-                getAttendeeUid(walletAddress, data.attendees) ? (
-                  <Link
-                    href={getAttestationUrl(
-                      data.dao_name,
-                      getAttendeeUid(walletAddress, data.attendees)
-                    )}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                    }}
-                    className={`${buttonStyles.button} w-full gap-1 text-xs`}
-                  >
-                    Offchain
-                    <BiLinkExternal
-                      size={20}
-                      className="text-white hover:text-blue-600 transition-colors duration-200"
-                      title="Open link in new tab"
-                    />
-                  </Link>
-                ) : (
-                  <Tooltip content="Claim Offchain" placement="top" showArrow>
-                    <div
-                      className={`${
-                        buttonStyles.button
-                      } w-full gap-0.5 text-xs py-2.5 ${
-                        loadingButton === "offchain" ? "disabled" : ""
-                      }`}
-                      onClick={
-                        loadingButton === ""
-                          ? (e) => {
-                              e.stopPropagation();
-                              handleClaimOffchain(
-                                walletAddress ? walletAddress : "",
-                                data.meetingId,
-                                data.dao_name,
-                                data.meetingType,
-                                data.meeting_starttime,
-                                data.meeting_endtime
-                              );
-                            }
-                          : undefined
-                      }
-                    >
-                      {loadingButton === "offchain" ? (
-                        <TailSpin
-                          visible={true}
-                          height="30"
-                          width="40"
-                          color="black"
-                          ariaLabel="oval-loading"
-                        />
-                      ) : (
-                        <>
-                          Offchain
-                          <FaGift
-                            size={14}
-                            className="text-white hover:text-blue-600 transition-colors duration-200"
-                            title="Open link in new tab"
-                          />
-                        </>
-                      )}
-                    </div>
-                  </Tooltip>
-                )}
+                <OffchainAttestationButton
+                  meetingId={data.meetingId}
+                  daoName={data.dao_name}
+                  meetingType={data.meetingType}
+                  startTime={data.meeting_starttime}
+                  endTime={data.meeting_endtime}
+                  uid={getAttendeeUid(walletAddress, data.attendees)}
+                  attendeeAddress={walletAddress}
+                  onSuccess={(uid) =>
+                    handleAttestationSuccess(uid, data.meetingId)
+                  }
+                />
 
                 {/* ClaimButton Component */}
                 <Tooltip content="Claim Onchain" placement="top" showArrow>
@@ -539,74 +516,18 @@ const OfficeHourTile = ({
             {isHosted && data.isEligible && (
               <div className="px-4 pb-2 flex justify-center space-x-2">
                 {/* Check if data.host_uid exists */}
-                {data.uid_host ? (
-                  <Link
-                    href={
-                      data.dao_name.toLowerCase() === "optimism"
-                        ? `https://optimism.easscan.org/offchain/attestation/view/${data.uid_host}`
-                        : data.dao_name.toLowerCase() === "arbitrum"
-                        ? `https://arbitrum.easscan.org/offchain/attestation/view/${data.uid_host}`
-                        : "#"
-                    }
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                    }}
-                    className={`${buttonStyles.button} w-full gap-1 text-xs`}
-                  >
-                    Offchain
-                    <BiLinkExternal
-                      size={20}
-                      className="text-white hover:text-blue-600 transition-colors duration-200"
-                      title="Open link in new tab"
-                    />
-                  </Link>
-                ) : (
-                  <Tooltip content="Claim Offchain" placement="top" showArrow>
-                    <div
-                      className={`${
-                        buttonStyles.button
-                      } w-full gap-0.5 text-xs py-2.5 ${
-                        loadingButton === "offchain" ? "disabled" : ""
-                      }`}
-                      onClick={
-                        loadingButton === ""
-                          ? (e) => {
-                              e.stopPropagation();
-                              handleClaimOffchain(
-                                walletAddress ? walletAddress : "",
-                                data.meetingId,
-                                data.dao_name,
-                                data.meetingType,
-                                data.meeting_starttime,
-                                data.meeting_endtime
-                              );
-                            }
-                          : undefined
-                      }
-                    >
-                      {loadingButton === "offchain" ? (
-                        <TailSpin
-                          visible={true}
-                          height="30"
-                          width="40"
-                          color="black"
-                          ariaLabel="oval-loading"
-                        />
-                      ) : (
-                        <>
-                          Offchain
-                          <FaGift
-                            size={14}
-                            className="text-white hover:text-blue-600 transition-colors duration-200"
-                            title="Open link in new tab"
-                          />
-                        </>
-                      )}
-                    </div>
-                  </Tooltip>
-                )}
+                <OffchainAttestationButton
+                  meetingId={data.meetingId}
+                  daoName={data.dao_name}
+                  meetingType={data.meetingType}
+                  startTime={data.meeting_starttime}
+                  endTime={data.meeting_endtime}
+                  uid={data.uid_host}
+                  isHost={true}
+                  onSuccess={(uid) =>
+                    handleAttestationSuccess(uid, data.meetingId)
+                  }
+                />
 
                 {/* ClaimButton Component */}
                 <Tooltip content="Claim Onchain" placement="top" showArrow>
