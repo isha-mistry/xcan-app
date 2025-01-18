@@ -12,6 +12,14 @@ import toast, { Toaster } from "react-hot-toast";
 import { disconnect } from "process";
 import { Wallet } from "lucide-react";
 
+interface GTMEvent {
+  event: string;
+  category: string;
+  action: string;
+  label?: string;
+  value?: number;
+}
+
 function ConnectWalletWithENS() {
   const [userProfileImage, setUserProfileImage] = useState<string | null>(null);
   const [ensAvatar, setEnsAvatar] = useState<string | null>(null);
@@ -25,10 +33,24 @@ function ConnectWalletWithENS() {
   const { wallets } = useWallets();
   const activeWallet = wallets[0]; // Primary wallet
 
+  const pushToGTM = (eventData: GTMEvent) => {
+    if (typeof window !== 'undefined' && window.dataLayer) {
+      window.dataLayer.push(eventData);
+    }
+  };
+
   useEffect(() => {
     if (isConnected && address) {
       setWalletAddress(address); // External wallet address
-    } else if (authenticated && user?.wallet?.address) {
+      if(authenticated){
+        pushToGTM({
+        event: 'wallet_auth_success',
+        category: 'Wallet',
+        action: 'Authentication Success',
+        label: address
+      });
+      }
+    } else if (authenticated && user?.wallet?.address) {      
       // If authenticated with Privy and no external wallet, use embedded wallet address
       setWalletAddress(user.wallet.address); // Embedded wallet address
     }
@@ -114,11 +136,48 @@ function ConnectWalletWithENS() {
     return null; // or loading spinner
   }
   const handleLogin = async () => {
+    pushToGTM({
+      event: 'wallet_connect_click',
+      category: 'Wallet',
+      action: 'Connect Button Click',
+      label: 'Initial Connect Attempt'
+    });
     if (!authenticated) {
-      login();
+      try{
+        await login();
+      pushToGTM({
+        event: 'wallet_connect_start',
+        category: 'Wallet',
+        action: 'Connect Flow Started',
+        label: 'Login Modal Opened'
+      });
+      }catch(error){
+        pushToGTM({
+          event: 'wallet_connect_error',
+          category: 'Wallet',
+          action: 'Connect Error',
+          label: error instanceof Error ? error.message : 'Unknown error'
+        });
+      }
+      
     } else {
       if (!user?.google && !user?.farcaster) {
-        connectWallet();
+        try{
+          await connectWallet();
+          pushToGTM({
+            event: 'wallet_connected',
+            category: 'Wallet',
+            action: 'Wallet Connected',
+            label: 'Additional Wallet Connected'
+          });
+        }catch(error){
+          pushToGTM({
+            event: 'wallet_connect_error',
+            category: 'Wallet',
+            action: 'Connect Error',
+            label: error instanceof Error ? error.message : 'Unknown error'
+          });
+        }
       }
     }
   };
@@ -138,6 +197,7 @@ function ConnectWalletWithENS() {
   };
 
   const isValid = canAccessProtectedResources();
+
 
   return (
     <div className="wallet z-10 font-poppins">
