@@ -376,36 +376,19 @@ function SpecificDelegate({ props }: { props: Type }) {
     const fetchData = async () => {
       setIsPageLoading(true);
       try {
+        // const res = await fetch(
+        //   `https://api.karmahq.xyz/api/dao/find-delegate?dao=${props.daoDelegates}&user=${props.individualDelegate}`
+        // );
+        // const details = await res.json();
         const res = await fetch(
-          `https://api.karmahq.xyz/api/dao/find-delegate?dao=${props.daoDelegates}&user=${props.individualDelegate}`
+          `/api/search-delegate?address=${props.individualDelegate}&dao=${props.daoDelegates}`
         );
         const details = await res.json();
-
-        // console.log("Line 379:", details.data);
-
-        setDelegateInfo(details.data.delegate);
-        if (
-          props.individualDelegate.toLowerCase() ===
-          details.data.delegate.publicAddress.toLowerCase()
-        ) {
+        // setDelegateInfo(details.data.delegate);
+        if (details.length > 0) {
           setIsDelegate(true);
         }
-
-        setKarmaSocials({
-          twitter: details.data.delegate.twitterHandle
-            ? details.data.delegate.twitterHandle
-            : "",
-          discourse: details.data.delegate.discourseHandle
-            ? details.data.delegate.discourseHandle
-            : "",
-          discord: details.data.delegate.discordHandle
-            ? details.data.delegate.discordHandle
-            : "",
-          github: details.data.delegate.githubHandle
-            ? details.data.delegate.githubHandle
-            : "",
-        });
-        // await updateFollowerState();
+      // await updateFollowerState();
         // await setFollowerscount();
 
         // Only fetch delegate data if we have a wallet address
