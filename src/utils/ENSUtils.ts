@@ -4,6 +4,7 @@ import { truncateAddress } from "./text";
 import { ethers } from "ethers";
 import { getEnsAvatar } from "@wagmi/core";
 import { getEnsName } from "@wagmi/core";
+import { getEnsAddress } from '@wagmi/core'
 import { config } from "./config";
 import { normalize } from "viem/ens";
 import { mainnet } from "@wagmi/core/chains";
@@ -83,6 +84,12 @@ export async function fetchEnsNameAndAvatar(address: any) {
     console.error(`Error fetching ENS details for address ${address}:`, error);
     return { avatar: null, ensName: truncatedAddress };
   }
+}
+export async function fetchEnsAddress(ensName: any) {
+  const ensAddress = getEnsAddress(config, {
+    name: normalize(ensName),
+  })
+  return ensAddress;
 }
 
 export async function fetchEnsName(address: any) {
