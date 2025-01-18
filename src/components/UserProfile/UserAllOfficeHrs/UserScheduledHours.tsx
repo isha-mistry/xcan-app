@@ -487,6 +487,7 @@ const UserScheduledHours: React.FC<{
 
       toast.success("Schedule saved successfully!");
       resetState();
+      getOfficeHours();
       onScheduleSave?.();
     } catch (error) {
       console.error("Error saving office hours:", error);
