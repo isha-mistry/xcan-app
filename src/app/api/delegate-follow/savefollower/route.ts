@@ -102,7 +102,7 @@ export async function PUT(req: NextRequest) {
     // }
 
     //removing cache key for maintain consistency of user data 
-    const cacheKey = `Follower:${delegate_address}`;
+    const cacheKey = `Follower:${follower_address}`;
     await redis.del(cacheKey);
 
     const collection = db.collection("delegate_follow");

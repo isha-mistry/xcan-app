@@ -72,7 +72,7 @@ export async function GET(req: NextRequest, res: NextResponse) {
       return { ...meeting, hostInfo, attendees };
     });
 
-    await redis.set(cacheKey, JSON.stringify(mergedData), "EX", 600); // Cache for 10 mintues
+    await redis.set(cacheKey, JSON.stringify(mergedData), "EX", 300); // Cache for 10 mintues
 
     await client.close();
     console.log("Serving from database!");

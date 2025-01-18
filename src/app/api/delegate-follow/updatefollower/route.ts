@@ -14,7 +14,7 @@ export async function PUT(req: NextRequest) {
     } = await req.json();
 
     //removing cache key for maintain consistency of user data
-    const cacheKey = `Follower:${delegate_address}`;
+    const cacheKey = `Follower:${follower_address}`;
     await redis.del(cacheKey);
 
     // console.log("Connecting to MongoDB...");

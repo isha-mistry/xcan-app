@@ -13,7 +13,7 @@ import ArbLogo from "@/assets/images/daos/arb.png";
 import { usePrivy } from "@privy-io/react-auth";
 import Image from "next/image";
 import { user } from "@nextui-org/react";
-import redis from "@/utils/redis";
+// import redis from "@/utils/redis";
 
 interface ChainSwitcherHeaderProps {
   address?: string;
@@ -59,8 +59,8 @@ const ChainSwitcherHeader: React.FC<ChainSwitcherHeaderProps> = ({
   const handleLogout = async () => {
     try {
       if (isConnected) disconnect();
-      const cacheKey = `profile:${address}`;
-      await redis.del(cacheKey);
+      // const cacheKey = `profile:${address}`;
+      // await redis.del(cacheKey);
       await logout();
       localStorage.removeItem("persistentWalletAddress");
 
