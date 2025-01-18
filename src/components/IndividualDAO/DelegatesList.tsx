@@ -28,9 +28,9 @@ import { truncateAddress } from "@/utils/text";
 import DelegateListSkeletonLoader from "../SkeletonLoader/DelegateListSkeletonLoader";
 import { ChevronDown } from "lucide-react";
 import debounce from "lodash/debounce";
-import { getAccessToken, usePrivy,useWallets } from "@privy-io/react-auth";
+import { getAccessToken, usePrivy, useWallets } from "@privy-io/react-auth";
 import { useWalletAddress } from "@/app/hooks/useWalletAddress";
-import { BrowserProvider, Contract, JsonRpcSigner } from 'ethers';
+import { BrowserProvider, Contract, JsonRpcSigner } from "ethers";
 import { motion } from "framer-motion";
 import { calculateTempCpi } from "@/actions/calculatetempCpi";
 
@@ -63,8 +63,8 @@ function DelegatesList({ props }: { props: string }) {
   // const { openConnectModal } = useConnectModal();
   const { isConnected, address, chain } = useAccount();
   const { publicClient, walletClient } = WalletAndPublicClient();
-  const { ready, authenticated, login, logout,user } = usePrivy();
-  const {walletAddress}=useWalletAddress();
+  const { ready, authenticated, login, logout, user } = usePrivy();
+  const { walletAddress } = useWalletAddress();
   const [tempCpi, setTempCpi] = useState();
   const [tempCpiCalling, setTempCpiCalling] = useState(true);
 
@@ -161,13 +161,13 @@ function DelegatesList({ props }: { props: string }) {
 
   const handleDelegateModal = async (delegateObject: any) => {
     setSelectedDelegate(delegateObject);
-    if (!isConnected || !authenticated)  {
-      login()
+    if (!isConnected || !authenticated) {
+      login();
       return;
     }
     const delegatorAddress = walletAddress;
     const toAddress = delegateObject.delegate;
-    const token=await getAccessToken();
+    const token = await getAccessToken();
     setDelegateOpen(true);
     try {
       const data = await (props === "optimism" ? op_client : arb_client).query(
@@ -249,91 +249,87 @@ function DelegatesList({ props }: { props: string }) {
       toast.error("Please connect your wallet!");
       return;
     }
-  
+
     const chainAddress = getChainAddress(chain?.name);
     if (!chainAddress) {
       toast.error("Invalid chain address,try again!");
       return;
     }
-  
+
     const network = props === "optimism" ? "OP Mainnet" : "Arbitrum One";
     const chainId = props === "optimism" ? 10 : 42161;
-  
+
     try {
       setDelegatingToAddr(true);
-  
+
       // For Privy wallets, we should get the provider from the wallet instance
       // Assuming you have access to the Privy wallet instance
       const privyProvider = await wallets[0]?.getEthereumProvider();
-      
+
       if (!privyProvider) {
         toast.error("Could not get wallet provider");
         return;
       }
-  
+
       // Create ethers provider
       const provider = new BrowserProvider(privyProvider);
-      
+
       // Get the current network
       const currentNetwork = await provider.getNetwork();
       const currentChainId = Number(currentNetwork.chainId);
-  
+
       // Check if we're on the correct network
       if (currentChainId !== chainId) {
         // toast.error(`Please switch to ${network} (Chain ID: ${chainId})`);
-        toast('Switching to correct netwotk,try again!');
-        
+        toast("Switching to correct netwotk,try again!");
+
         // Try to switch network
         try {
           await privyProvider.request({
-            method: 'wallet_switchEthereumChain',
+            method: "wallet_switchEthereumChain",
             params: [{ chainId: `0x${chainId.toString(16)}` }],
           });
         } catch (switchError) {
-          console.error('Failed to switch network:', switchError);
+          console.error("Failed to switch network:", switchError);
           return;
         }
         return;
       }
-  
+
       // console.log('Getting signer...');
       const signer = await provider.getSigner();
-      
+
       // console.log('Creating contract instance...');
-      const contract = new Contract(
-        chainAddress,
-        dao_abi.abi,
-        signer
-      );
-  
+      const contract = new Contract(chainAddress, dao_abi.abi, signer);
+
       // console.log('Initiating delegation transaction...');
       const tx = await contract.delegate(to);
       // console.log('Waiting for transaction confirmation...');
       await tx.wait();
-  
+
       setConfettiVisible(true);
       setTimeout(() => setConfettiVisible(false), 5000);
       toast.success("Delegation successful!");
-  
     } catch (error) {
       console.error("Delegation failed:", error);
-      
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      
-      if (errorMessage.includes('eth_chainId is not supported')) {
-        console.log('Provider state:', {
+
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+
+      if (errorMessage.includes("eth_chainId is not supported")) {
+        console.log("Provider state:", {
           provider: await wallets[0]?.getEthereumProvider(),
           network,
-          chainId
+          chainId,
         });
         toast.error(`Network Error: Make sure you're connected to ${network}`);
-      } else if (errorMessage.includes('user rejected')) {
+      } else if (errorMessage.includes("user rejected")) {
         toast.error("Transaction was rejected by user");
-      } else if (errorMessage.includes('network')) {
+      } else if (errorMessage.includes("network")) {
         toast.error(`Please connect to ${network} (Chain ID: ${chainId})`);
       } else {
         toast.error("Transaction failed. Please try again");
-        console.error('Detailed error:', error);
+        console.error("Detailed error:", error);
       }
     } finally {
       setDelegatingToAddr(false);
@@ -450,7 +446,7 @@ function DelegatesList({ props }: { props: string }) {
 
   return (
     <div className="container mx-auto px-4 py-8">
-       <Toaster
+      {/* <Toaster
                   toastOptions={{
                     style: {
                       fontSize: "14px",
@@ -459,9 +455,10 @@ function DelegatesList({ props }: { props: string }) {
                       boxShadow: "none",
                       borderRadius: "50px",
                       padding: "3px 5px",
+                      marginTop: "64px",
                     },
                   }}
-                />
+                /> */}
       <div className="flex flex-col md:flex-row justify-between items-center mb-8">
         <div className="relative w-full md:w-96 mb-4 md:mb-0">
           <input

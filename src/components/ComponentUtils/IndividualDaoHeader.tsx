@@ -106,7 +106,7 @@ function IndividualDaoHeader() {
 
       <div className="flex gap-1 xs:gap-2 items-center">
               <RewardButton />
-              <ConnectWalletWithENS />
+              {/* <ConnectWalletWithENS /> */}
             </div>
     </div>
   );

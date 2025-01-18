@@ -52,6 +52,7 @@ import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 import { fetchApi } from "@/utils/api";
 import { GiConsoleController } from "react-icons/gi";
 import { fetchEnsNameAndAvatar, getENSName } from "@/utils/ENSUtils";
+import ConnectwalletHomePage from "../HomePage/ConnectwalletHomePage";
 
 // Create a client
 const client = createPublicClient({
@@ -144,7 +145,10 @@ function ProposalMain({ props }: { props: Props }) {
     network: string;
   }
   // State to store ENS data for displayed voters only
-  const [ensData, setEnsData] = useState<{ [key: string]: { name: string | null; avatar: string | null } }>({});
+  const [ensData, setEnsData] = useState<{
+    [key: string]: { name: string | null; avatar: string | null };
+  }>({});
+  const [showConnectWallet, setShowConnectWallet] = useState(false);
 
   // Fetch ENS data only for displayed voters
   useEffect(() => {
@@ -162,29 +166,31 @@ function ProposalMain({ props }: { props: Props }) {
           const { ensName, avatar } = await fetchEnsNameAndAvatar(voter.voter);
           return {
             address: voter.voter,
-            data: { name: ensName, avatar: avatar }
+            data: { name: ensName, avatar: avatar },
           };
         } catch (error) {
           console.error(`Error fetching ENS data for ${voter.voter}:`, error);
           return {
             address: voter.voter,
-            data: { name: null, avatar: null }
+            data: { name: null, avatar: null },
           };
         }
       });
 
       // Update state with new ENS data
       const results = await Promise.allSettled(promises);
-      const newEnsData: { [key: string]: { name: string | null; avatar: string | null } } = {};
+      const newEnsData: {
+        [key: string]: { name: string | null; avatar: string | null };
+      } = {};
       results.forEach((result) => {
-        if (result.status === 'fulfilled' && result.value) {
+        if (result.status === "fulfilled" && result.value) {
           newEnsData[result.value.address] = result.value.data;
         }
       });
 
-      setEnsData(prev => ({
+      setEnsData((prev) => ({
         ...prev,
-        ...newEnsData
+        ...newEnsData,
       }));
     };
 
@@ -197,12 +203,14 @@ function ProposalMain({ props }: { props: Props }) {
       const transactionReceipt = await client.getTransactionReceipt({
         hash: txHash,
       });
-
-      if (transaction.to) {
-        return transaction.to;
-      } else {
-        return "Not a contract interaction or creation";
-      }
+      const treasuryAddress = "0x789fC99093B09aD01C34DC7251D0C89ce743e5a4"
+      const coreGovAddress = "0xf07DeD9dC292157749B6Fd268E37DF6EA38395B9";
+      return coreGovAddress;
+      // if (transaction.to) {
+      //   return transaction.to;
+      // } else {
+      //   return "Not a contract interaction or creation";
+      // }
     } catch (error) {
       console.error("Error:", error);
       return "Error retrieving transaction information";
@@ -211,7 +219,7 @@ function ProposalMain({ props }: { props: Props }) {
 
   const StoreData = async (voteData: VoteData) => {
     // Make the API call to submit the vote
-    const token=await getAccessToken();
+    const token = await getAccessToken();
     const myHeaders: HeadersInit = {
       "Content-Type": "application/json",
       ...(walletAddress && {
@@ -228,7 +236,18 @@ function ProposalMain({ props }: { props: Props }) {
       throw new Error("Failed to submit vote");
     }
   };
+
+  useEffect(() => {
+    if (walletAddress && showConnectWallet) {
+      setShowConnectWallet(false);
+    }
+  }, [walletAddress]);
+  
   const voteOnchain = async () => {
+    if (!walletAddress) {
+      setShowConnectWallet(true);
+      return;
+    }
     let chain;
     if (walletClient?.chain.name === "OP Mainnet") {
       chain = "optimism";
@@ -239,7 +258,7 @@ function ProposalMain({ props }: { props: Props }) {
     }
 
     if (chain !== props.daoDelegates) {
-      toast.error("Please switch to appropriate network to delegate!");
+      toast.error("Please switch to appropriate network to vote!");
       // if (openChainModal) {
       //   // openChainModal();
       // }
@@ -422,8 +441,9 @@ function ProposalMain({ props }: { props: Props }) {
         text = `<em>${matchem[1]}</em>`;
       }
 
-      return `<a href="${href}" title="${title || ""
-        }" target="_blank" rel="noopener noreferrer" class="text-blue-shade-100">${text}</a>`;
+      return `<a href="${href}" title="${
+        title || ""
+      }" target="_blank" rel="noopener noreferrer" class="text-blue-shade-100">${text}</a>`;
     };
 
     marked.setOptions({
@@ -570,8 +590,8 @@ function ProposalMain({ props }: { props: Props }) {
     }
 
     const data = await response.json();
-    setVoterList(data.voterDetails)
-    setDailyVotes(data.proposalDailyVoteSummaries)
+    setVoterList(data.voterDetails);
+    setDailyVotes(data.proposalDailyVoteSummaries);
     return data;
   };
 
@@ -588,43 +608,42 @@ function ProposalMain({ props }: { props: Props }) {
 
     try {
       // while (pageCount < MAX_PAGES) {
-        pageCount++;
+      pageCount++;
 
-        // Implement retry logic
-        let retryCount = 0;
-        let pageData = null;
+      // Implement retry logic
+      let retryCount = 0;
+      let pageData = null;
 
-        while (retryCount < MAX_RETRIES && !pageData) {
-          try {
-            pageData = await fetchVotePage(blockTimestamp, BATCH_SIZE);
-          } catch (err) {
-            retryCount++;
-            if (retryCount === MAX_RETRIES) throw err;
-            await new Promise((resolve) =>
-              setTimeout(resolve, 2000 * retryCount)
-            );
-          }
+      while (retryCount < MAX_RETRIES && !pageData) {
+        try {
+          pageData = await fetchVotePage(blockTimestamp, BATCH_SIZE);
+        } catch (err) {
+          retryCount++;
+          if (retryCount === MAX_RETRIES) throw err;
+          await new Promise((resolve) =>
+            setTimeout(resolve, 2000 * retryCount)
+          );
         }
-
-        if (!pageData) {
-          throw new Error("Failed to fetch page after retries");
-        }
-
-        // const newVoteCastWithParams = pageData?.voteCastWithParams || [];
-        const newVoteCasts = pageData?.voterDetails || [];
-        const newVotes = [...newVoteCasts];
-
-        // Break if no new votes
-        // if (newVotes.length == 1000) {
-        //   break;
-        // }
       }
-    // } catch (err: any) {
-    //   console.error("Error fetching votes:", err);
-    //   setError(err.message);
-    //   throw err;
-    // }
-  finally {
+
+      if (!pageData) {
+        throw new Error("Failed to fetch page after retries");
+      }
+
+      // const newVoteCastWithParams = pageData?.voteCastWithParams || [];
+      const newVoteCasts = pageData?.voterDetails || [];
+      const newVotes = [...newVoteCasts];
+
+      // Break if no new votes
+      // if (newVotes.length == 1000) {
+      //   break;
+      // }
+    } finally {
+      // } catch (err: any) {
+      //   console.error("Error fetching votes:", err);
+      //   setError(err.message);
+      //   throw err;
+      // }
       setIsLoading(false);
     }
   }, [props.id, props.daoDelegates]);
@@ -677,7 +696,7 @@ function ProposalMain({ props }: { props: Props }) {
   };
   const processProposalDailyVoteSummaries = (data: any[]) => {
     // Transform the data directly from the new query
-    const processedData = data.map(summary => ({
+    const processedData = data.map((summary) => ({
       name: summary.dayString,
       For: parseFloat(summary.weightFor) / 1e18,
       Against: parseFloat(summary.weightAgainst) / 1e18,
@@ -687,38 +706,50 @@ function ProposalMain({ props }: { props: Props }) {
     }));
 
     // Optional: Sort the data by date
-    const sortedData = processedData.sort((a, b) =>
-      a.date.getTime() - b.date.getTime()
+    const sortedData = processedData.sort(
+      (a, b) => a.date.getTime() - b.date.getTime()
     );
 
     // Optional: Create cumulative data if needed
-    const cumulativeData = sortedData.reduce((acc: { name: any; For: number; Against: number; Abstain: number; totalVotes: number; date: Date; }[], current, index) => {
-      const previousItem = index > 0 ? acc[index - 1] : null;
+    const cumulativeData = sortedData.reduce(
+      (
+        acc: {
+          name: any;
+          For: number;
+          Against: number;
+          Abstain: number;
+          totalVotes: number;
+          date: Date;
+        }[],
+        current,
+        index
+      ) => {
+        const previousItem = index > 0 ? acc[index - 1] : null;
 
-      const cumulativeItem = {
-        ...current,
-        For: previousItem
-          ? previousItem.For + current.For
-          : current.For,
-        Against: previousItem
-          ? previousItem.Against + current.Against
-          : current.Against,
-        Abstain: previousItem
-          ? previousItem.Abstain + current.Abstain
-          : current.Abstain,
-      };
-      return [...acc, cumulativeItem];
-    }, []);
+        const cumulativeItem = {
+          ...current,
+          For: previousItem ? previousItem.For + current.For : current.For,
+          Against: previousItem
+            ? previousItem.Against + current.Against
+            : current.Against,
+          Abstain: previousItem
+            ? previousItem.Abstain + current.Abstain
+            : current.Abstain,
+        };
+        return [...acc, cumulativeItem];
+      },
+      []
+    );
     const lastCumulativeItem = cumulativeData[cumulativeData.length - 1];
 
     if (lastCumulativeItem) {
       // Set the final cumulative vote totals
-      setSupport1Weight(lastCumulativeItem.For);      // Votes "For"
-      setSupport0Weight(lastCumulativeItem.Against);  // Votes "Against"
-      setSupport2Weight(lastCumulativeItem.Abstain);  // Votes "Abstain"
+      setSupport1Weight(lastCumulativeItem.For); // Votes "For"
+      setSupport0Weight(lastCumulativeItem.Against); // Votes "Against"
+      setSupport2Weight(lastCumulativeItem.Abstain); // Votes "Abstain"
     }
     // Format the data for chart
-    const chartData = cumulativeData.map(item => ({
+    const chartData = cumulativeData.map((item) => ({
       name: item.name,
       For: item.For,
       Against: item.Against,
@@ -757,9 +788,9 @@ function ProposalMain({ props }: { props: Props }) {
     isArbitrum
       ? window.open(`https://arbiscan.io/tx/${transactionHash}`, "_blank")
       : window.open(
-        `https://optimistic.etherscan.io/tx/${transactionHash}`,
-        "_blank"
-      );
+          `https://optimistic.etherscan.io/tx/${transactionHash}`,
+          "_blank"
+        );
   };
 
   const shareOnTwitter = () => {
@@ -806,7 +837,7 @@ function ProposalMain({ props }: { props: Props }) {
     const votingPeriodEnd = new Date(
       proposalTime.getTime() + votingPeriod * 24 * 60 * 60 * 1000
     );
-    console.log('day diffrence', daysDifference)
+    console.log("day diffrence", daysDifference);
     if (canceledProposals.some((item: any) => item.proposalId === props.id)) {
       return { status: "Closed", votingPeriodEnd };
     }
@@ -877,13 +908,13 @@ function ProposalMain({ props }: { props: Props }) {
         return !votingPeriodEndData
           ? "PENDING"
           : currentDate > votingPeriodEndData
-            ? support1Weight > support0Weight
-              ? "SUCCEEDED"
-              : "DEFEATED"
-            : "PENDING";
+          ? support1Weight > support0Weight
+            ? "SUCCEEDED"
+            : "DEFEATED"
+          : "PENDING";
       }
     } else {
-      console.log("endinggg propossal ", votingPeriodEndData, currentDate)
+      console.log("endinggg propossal ", votingPeriodEndData, currentDate);
 
       return currentDate > votingPeriodEndData!
         ? support1Weight! > support0Weight!
@@ -909,7 +940,13 @@ function ProposalMain({ props }: { props: Props }) {
   };
 
   const proposal_status = getProposalStatusData();
-  console.log('proposal status', proposal_status, data, support1Weight >= 0, support1Weight)
+  console.log(
+    "proposal status",
+    proposal_status,
+    data,
+    support1Weight >= 0,
+    support1Weight
+  );
   const Proposalstatus =
     (data && support1Weight >= 0) || support1Weight ? proposal_status : null;
 
@@ -987,10 +1024,11 @@ function ProposalMain({ props }: { props: Props }) {
       </div>
 
       <div
-        className={`rounded-[1rem] mx-4 md:mx-6 px-4 lg:mx-16 pb-6 pt-16 transition-shadow duration-300 ease-in-out shadow-xl bg-gray-50 font-poppins relative ${isExpanded ? "h-fit" : "h-fit"
-          }`}
+        className={`rounded-[1rem] mx-4 md:mx-6 px-4 lg:mx-16 pb-6 pt-[68px] transition-shadow duration-300 ease-in-out shadow-xl bg-gray-50 font-poppins relative ${
+          isExpanded ? "h-fit" : "h-fit"
+        }`}
       >
-        <div className="w-full flex items-center justify-end gap-2 absolute top-6 right-12">
+        <div className="w-full flex items-center justify-end gap-2 absolute top-6 right-6 sm:right-12">
           <div className="">
             <Tooltips
               showArrow
@@ -1003,25 +1041,24 @@ function ProposalMain({ props }: { props: Props }) {
             </Tooltips>
           </div>
           {isActive && (
-            <div className="">
-              <button
-                className="w-fit align-middle select-none font-poppins font-medium text-center uppercase transition-all disabled:opacity-50 disabled:shadow-none disabled:pointer-events-none text-xs py-2 px-3 rounded-full bg-blue-600 text-white shadow-md shadow-blue-600/10 hover:shadow-lg hover:shadow-blue-600/20 focus:opacity-[0.85] focus:shadow-none active:opacity-[0.85] active:shadow-none"
-                type="button"
-                onClick={voteOnchain}
-                disabled={hasVoted}
-              >
-                Vote onchain
-              </button>
-            </div>
+            <button
+              className="rounded-full bg-blue-600 text-white hover:bg-blue-500 hover:shadow-lg shadow-md px-3 py-1.5"
+              type="button"
+              onClick={voteOnchain}
+              disabled={hasVoted}
+            >
+              Vote onchain
+            </button>
           )}
           <div className="flex-shrink-0">
             <div
-              className={`rounded-full flex items-center justify-center text-xs py-1 px-2 font-medium ${status
-                ? status === "Closed"
-                  ? "bg-[#f4d3f9] border border-[#77367a] text-[#77367a]"
-                  : "bg-[#f4d3f9] border border-[#77367a] text-[#77367a]"
-                : "bg-gray-200 animate-pulse rounded-full"
-                }`}
+              className={`rounded-full flex items-center justify-center text-xs py-1 px-2 font-medium ${
+                status
+                  ? status === "Closed"
+                    ? "bg-[#f4d3f9] border border-[#77367a] text-[#77367a]"
+                    : "bg-[#f4d3f9] border border-[#77367a] text-[#77367a]"
+                  : "bg-gray-200 animate-pulse rounded-full"
+              }`}
             >
               {status ? status : <div className="h-4 w-16"></div>}
             </div>
@@ -1038,6 +1075,11 @@ function ProposalMain({ props }: { props: Props }) {
             )}
           </div>
         </div>
+        {showConnectWallet && (
+        <ConnectwalletHomePage 
+          onClose={() => setShowConnectWallet(false)}
+        />
+      )}
         <VotingPopup
           isOpen={isVotingOpen}
           onClose={() => setIsVotingOpen(false)}
@@ -1064,10 +1106,11 @@ function ProposalMain({ props }: { props: Props }) {
             </div>
           ) : (
             <div
-              className={`rounded-full flex items-center justify-center text-xs h-fit py-0.5 border font-medium w-24 ${Proposalstatus
-                ? getStatusColor(Proposalstatus)
-                : "bg-gray-200 animate-pulse rounded-full"
-                }`}
+              className={`rounded-full flex items-center justify-center text-xs h-fit py-0.5 border font-medium w-24 ${
+                Proposalstatus
+                  ? getStatusColor(Proposalstatus)
+                  : "bg-gray-200 animate-pulse rounded-full"
+              }`}
             >
               {Proposalstatus ? (
                 Proposalstatus
@@ -1087,8 +1130,9 @@ function ProposalMain({ props }: { props: Props }) {
             <>
               <div
                 ref={contentRef}
-                className={` transition-max-height duration-500 ease-in-out overflow-hidden ${isExpanded ? "max-h-full" : "max-h-36"
-                  }`}
+                className={` transition-max-height duration-500 ease-in-out overflow-hidden ${
+                  isExpanded ? "max-h-full" : "max-h-36"
+                }`}
               >
                 <div
                   className="description-content"
@@ -1120,10 +1164,11 @@ function ProposalMain({ props }: { props: Props }) {
               </div>
             ) : (
               <div
-                className={`flex flex-col gap-2 py-3 pl-2 pr-1 w-full xl:pl-3 xl:pr-2 my-3 border-gray-200 ${voterList?.length > 5
-                  ? `h-[440px] overflow-y-auto ${style.scrollbar}`
-                  : "h-fit"
-                  }`}
+                className={`flex flex-col gap-2 py-3 pl-2 pr-1 w-full xl:pl-3 xl:pr-2 my-3 border-gray-200 ${
+                  voterList?.length > 5
+                    ? `h-[440px] overflow-y-auto ${style.scrollbar}`
+                    : "h-fit"
+                }`}
               >
                 {voterList && voterList?.length === 0 ? (
                   <div className="flex items-center justify-center h-full text-gray-500">
@@ -1141,7 +1186,10 @@ function ProposalMain({ props }: { props: Props }) {
                         <div className="flex-grow flex items-center space-x-2 1.3lg:space-x-4">
                           {ensData[voter.voter]?.avatar ? (
                             <Image
-                              src={ensData[voter.voter].avatar || (isArbitrum ? user2 : user5)}
+                              src={
+                                ensData[voter.voter].avatar ||
+                                (isArbitrum ? user2 : user5)
+                              }
                               alt="ENS Avatar"
                               className="xl:w-10 w-8 xl:h-10 h-8 rounded-full"
                               width={40}
@@ -1160,34 +1208,37 @@ function ProposalMain({ props }: { props: Props }) {
                               onClick={() => handleAddressClick(voter.voter)}
                               className="text-gray-800 xl:text-sm hover:text-blue-600 transition-colors duration-200 cursor-pointer text-xs xs:text-sm 2md:text-xs overflow-hidden text-ellipsis whitespace-nowrap"
                             >
-                             {ensData[voter.voter]?.name || `${voter.voter.slice(0, 6)}...${voter.voter.slice(-4)}`}
-
+                              {ensData[voter.voter]?.name ||
+                                `${voter.voter.slice(
+                                  0,
+                                  6
+                                )}...${voter.voter.slice(-4)}`}
                             </p>
                           </div>
                         </div>
                         <div className="flex items-center space-x-1 0.5xs:space-x-2 1.3lg:space-x-4">
                           <div
-                            className={`py-1 xs:py-2 rounded-full 1.5lg:text-sm w-24 0.2xs:w-28 xs:w-36 2md:w-28 lg:w-[100px] 1.3lg:w-28 1.5xl:w-36 flex items-center justify-center xl:font-medium text-xs ${voter.support === 1
-                              ? "bg-green-100 text-green-800"
-                              : voter.support === 0
+                            className={`py-1 xs:py-2 rounded-full 1.5lg:text-sm w-24 0.2xs:w-28 xs:w-36 2md:w-28 lg:w-[100px] 1.3lg:w-28 1.5xl:w-36 flex items-center justify-center xl:font-medium text-xs ${
+                              voter.support === 1
+                                ? "bg-green-100 text-green-800"
+                                : voter.support === 0
                                 ? "bg-red-100 text-red-800"
                                 : "bg-blue-100 text-blue-800"
-                              }`}
+                            }`}
                           >
                             {formatWeight(voter.votingPower / 10 ** 18)}
                             &nbsp;
                             {voter.support === 1
                               ? "For"
                               : voter.support === 0
-                                ? "Against"
-                                : "Abstain"}
+                              ? "Against"
+                              : "Abstain"}
                           </div>
                           <Tooltips
                             showArrow
                             content={
                               <div className="font-poppins">
                                 Transaction Hash
-                                (Coming Soon)
                               </div>
                             }
                             placement="right"
@@ -1195,10 +1246,9 @@ function ProposalMain({ props }: { props: Props }) {
                             closeDelay={1}
                           >
                             <button
-                              // onClick={() =>
-                              //   handleTransactionClick(voter.transactionHash)
-                              // }
-                              disabled
+                              onClick={() =>
+                                handleTransactionClick(voter.transactionHash)
+                              }
                               className="text-blue-600 hover:text-blue-800 transition-colors duration-200"
                             >
                               <RiExternalLinkLine className="w-5 h-5" />

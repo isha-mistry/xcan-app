@@ -152,15 +152,6 @@ const OfficeHourTile = ({
     StartTime: number,
     EndTime: number
   ) => {
-    // console.log(
-    //   "Line 112:",
-    //   address,
-    //   MeetingId,
-    //   MeetingType,
-    //   dao_name,
-    //   StartTime,
-    //   EndTime
-    // );
     try {
       const token = await getAccessToken();
       const myHeaders: HeadersInit = {
@@ -187,7 +178,6 @@ const OfficeHourTile = ({
         daoName: dao_name,
       });
 
-      // console.log("Line 131:", raw);
       setLoadingButton("offchain");
 
       const requestOptions: any = {
@@ -198,10 +188,40 @@ const OfficeHourTile = ({
       };
 
       const response = await fetchApi("/attest-offchain", requestOptions);
-      // console.log("Line 154", response);
       if (response.ok) {
+        const responseData = await response.json();
+
+        // Update the localData state with the new attestation UID
+        setLocalData((prevData) =>
+          prevData.map((item) => {
+            if (item.meetingId === MeetingId) {
+              // If the user is an attendee
+              if (isAttended) {
+                return {
+                  ...item,
+                  attendees:
+                    item.attendees?.map((attendee) =>
+                      attendee.attendee_address.toLowerCase() ===
+                      address?.toLowerCase()
+                        ? { ...attendee, attendee_uid: responseData.uid }
+                        : attendee
+                    ) || [],
+                };
+              }
+              // If the user is the host
+              else if (isHosted) {
+                return {
+                  ...item,
+                  uid_host: responseData.uid,
+                };
+              }
+              return item;
+            }
+            return item;
+          })
+        );
+
         setLoadingButton("");
-        console.log("Attestation successful");
         toast.success("Attestation successful!");
       } else {
         console.error("Attestation failed");
@@ -282,16 +302,16 @@ const OfficeHourTile = ({
     return attendee?.attendee_uid;
   };
 
-  const getAttestationUrl = (
-    daoName: string,
-    attendeeUid?: string | null
-  ): string => {
-    if (!attendeeUid) return "#";
-    return daoName.toLowerCase() === "optimism"
-      ? `https://optimism.easscan.org/offchain/attestation/view/${attendeeUid}`
-      : daoName.toLowerCase() === "arbitrum"
-      ? `https://arbitrum.easscan.org/offchain/attestation/view/${attendeeUid}`
-      : "#";
+  const getAttestationUrl = (daoName: string, uid?: string | null): string => {
+    if (!uid) return "#";
+    const baseUrl =
+      daoName.toLowerCase() === "optimism"
+        ? "https://optimism.easscan.org/offchain/attestation/view/"
+        : daoName.toLowerCase() === "arbitrum"
+        ? "https://arbitrum.easscan.org/offchain/attestation/view/"
+        : "#";
+
+    return `${baseUrl}${uid}`;
   };
 
   return (
@@ -386,12 +406,20 @@ const OfficeHourTile = ({
                 className="rounded-full size-4 sm:size-5"
               />
               <span className="font-medium text-sm">Host:</span>
-              <span
-                className="text-sm font-medium hover:text-blue-shade-200 cursor-pointer"
-                title={data.host_address}
+              <Link
+                href={`/${data.dao_name}/${data.host_address}?active=info`}
+                passHref
+                onClick={(event: any) => {
+                  event.stopPropagation();
+                }}
               >
-                {truncateAddress(data.host_address)}
-              </span>
+                <span
+                  className="text-sm font-medium hover:text-blue-shade-200 cursor-pointer"
+                  title={data.host_address}
+                >
+                  {truncateAddress(data.host_address)}
+                </span>
+              </Link>
               <Tooltip
                 content={copyStates[index] ? "Copied!" : "Copy"}
                 placement="right"

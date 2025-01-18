@@ -80,11 +80,16 @@ const config: Config = {
           "50%": { transform: "rotate(180deg) scale(1.1)" },
           "100%": { transform: "rotate(360deg) scale(1)" },
         },
+        slideDown: {
+          '0%': { opacity: "0", transform: 'translateY(-20px)' },
+          '100%': { opacity: "1", transform: 'translateY(0)' },
+        },
         
       },
       animation: {
         fadeIn: "fadeIn 1s ease-out",
         "spin-subtle": "spin-subtle 3s ease-in-out infinite",
+        'slide-down': 'slideDown 0.5s ease-out',
       },
     },
   },

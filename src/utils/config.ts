@@ -1,6 +1,6 @@
 "use client";
-import { http, createConfig } from "@wagmi/core";
-// import { WagmiProvider, createConfig } from "@privy-io/wagmi";
+import { http } from "@wagmi/core";
+import { WagmiProvider, createConfig } from "@privy-io/wagmi";
 import { mainnet, arbitrum } from "@wagmi/core/chains";
 
 export const config = createConfig({

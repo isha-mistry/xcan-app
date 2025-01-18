@@ -39,7 +39,7 @@ const WalletAndPublicClient = () => {
       });
       walletClient = createWalletClient({
         chain: chainConfig,
-        transport: http()
+        transport: custom(window.ethereum)
       });
       
     } catch (error) {
