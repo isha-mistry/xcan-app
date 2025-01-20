@@ -40,21 +40,36 @@ function ConnectWalletWithENS() {
   };
 
   useEffect(() => {
+
+    if (isDisconnected && !authenticated) {
+      window.walletAuthTracked = false;
+    }
+    
     if (isConnected && address) {
       setWalletAddress(address); // External wallet address
-      if(authenticated){
+      if (authenticated && !window.walletAuthTracked) {
+        window.walletAuthTracked = true; // Set flag to prevent duplicate tracking
         pushToGTM({
-        event: 'wallet_auth_success',
-        category: 'Wallet',
-        action: 'Authentication Success',
-        label: address
-      });
+          event: 'wallet_auth_success',
+          category: 'Wallet',
+          action: 'Authentication Success',
+          label: address
+        });
       }
     } else if (authenticated && user?.wallet?.address) {      
       // If authenticated with Privy and no external wallet, use embedded wallet address
       setWalletAddress(user.wallet.address); // Embedded wallet address
+      if(!window.walletAuthTracked){
+        window.walletAuthTracked = true; // Set flag to prevent duplicate tracking
+        pushToGTM({
+          event: 'wallet_auth_success',
+          category: 'Wallet',
+          action: 'Authentication Success',
+          label: user.wallet.address
+        });
+      }
     }
-  }, [authenticated, user, isConnected, walletAddress2]);
+  }, [authenticated, user, isConnected, address]);
 
   useEffect(() => {
     const fetchUserProfile = async () => {
