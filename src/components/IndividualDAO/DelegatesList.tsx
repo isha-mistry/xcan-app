@@ -6,7 +6,7 @@ import toast, { Toaster } from "react-hot-toast";
 import { useAccount, useReadContract } from "wagmi";
 import WalletAndPublicClient from "@/helpers/signer";
 import ErrorDisplay from "../ComponentUtils/ErrorDisplay";
-import { fetchEnsNameAndAvatar } from "@/utils/ENSUtils";
+import { fetchEnsAddress } from "@/utils/ENSUtils";
 import DelegateTileModal from "../ComponentUtils/DelegateTileModal";
 import {
   arb_client,
@@ -32,6 +32,7 @@ import { getAccessToken, usePrivy, useWallets } from "@privy-io/react-auth";
 import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 import { BrowserProvider, Contract, JsonRpcSigner } from "ethers";
 import { motion } from "framer-motion";
+import { Select, SelectItem } from "@nextui-org/react";
 import { calculateTempCpi } from "@/actions/calculatetempCpi";
 import { fetchApi } from "@/utils/api";
 import { Address } from "viem";
@@ -58,13 +59,13 @@ function DelegatesList({ props }: { props: string }) {
   const [same, setSame] = useState(false);
   const [delegatingToAddr, setDelegatingToAddr] = useState(false);
   const [confettiVisible, setConfettiVisible] = useState(false);
+  const [sortOption, setSortOption] = useState("random");
   const { wallets } = useWallets();
 
   const router = useRouter();
   // const { openChainModal } = useChainModal();
   // const { openConnectModal } = useConnectModal();
   const { isConnected, address, chain } = useAccount();
-  const { publicClient, walletClient } = WalletAndPublicClient();
   const { ready, authenticated, login, logout, user } = usePrivy();
   const { walletAddress } = useWalletAddress();
   const [tempCpi, setTempCpi] = useState();
@@ -82,7 +83,7 @@ function DelegatesList({ props }: { props: string }) {
     setIsAPICalling(true);
     try {
       const res = await fetch(
-        `/api/get-delegate?skip=${skip}&dao=${props}&limit=${DELEGATES_PER_PAGE}`
+        `/api/get-delegate?skip=${skip}&dao=${props}&limit=${DELEGATES_PER_PAGE}&sort=${sortOption}`
       );
       if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
 
@@ -108,11 +109,22 @@ function DelegatesList({ props }: { props: string }) {
     } finally {
       setIsAPICalling(false);
     }
-  }, [skip, props, hasMore, isAPICalling]);
+  }, [skip, props, hasMore, isAPICalling, sortOption]);
 
   useEffect(() => {
     fetchDelegates();
-  }, []);
+  }, [sortOption]);
+  // Add handler for sort change
+  const handleSortChange = (value: string) => {
+    if (value === "most-delegators") {
+      toast("Coming soon 🚀");
+      return;
+    }
+    setSortOption(value);
+    setDelegateData([]); // Clear existing data
+    setSkip(0); // Reset pagination
+    setHasMore(true);
+  };
 
   const debouncedSearch = useMemo(
     () =>
@@ -153,15 +165,48 @@ function DelegatesList({ props }: { props: string }) {
       }, DEBOUNCE_DELAY),
     [props, fetchDelegates]
   );
-
   const handleSearchChange = useCallback(
-    (event: React.ChangeEvent<HTMLInputElement>) => {
-      const query = event.target.value;
-      setSearchQuery(query);
-      debouncedSearch(query);
+    async (event: React.ChangeEvent<HTMLInputElement>) => {
+      const query = event.target.value.trim(); // Get the input value
+      setSearchQuery(query); // Immediately update the input field
+   // If the input is cleared, reset any search-related processing
+      if (query === "") {
+        console.log("Input cleared");
+        debouncedSearch(""); // Optionally reset the query results
+        return;
+      }
+      // Regex to check if the input is an Ethereum address
+      const isEthereumAddress = /^0x[a-fA-F0-9]{40}$/.test(query);
+  
+      if (isEthereumAddress) {
+        // If it's an Ethereum address, directly query it
+        debouncedSearch(query);
+      } else {
+         // Validate input as a potential ENS name before resolving
+          const isValidEnsName = /^[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)+$/.test(query);
+
+          if (!isValidEnsName) {
+            console.warn("Invalid ENS name");
+            return;
+          }
+        // Treat it as an ENS name and resolve the address
+        try {
+          const resolvedAddress = await fetchEnsAddress(query); // Resolve ENS to address
+          if (resolvedAddress) {
+            console.log("Resolved ENS address:", resolvedAddress);
+            debouncedSearch(resolvedAddress); // Query using the resolved address
+          } else {
+            console.log("No address found for ENS name.");
+          }
+        } catch (error) {
+          console.error("Error resolving ENS name:", error);
+        }
+      }
     },
-    [debouncedSearch]
+    [debouncedSearch] // Ensure debounce function is included in dependencies
   );
+  
+  
 
   // useEffect(() => {
   //   return () => {
@@ -518,15 +563,27 @@ function DelegatesList({ props }: { props: string }) {
                 /> */}
       <div className="flex flex-col md:flex-row justify-between items-center mb-8">
         <div className="relative w-full md:w-96 mb-4 md:mb-0">
-          <input
-            type="text"
-            placeholder="Search by Address"
-            className="w-full pl-10 pr-4 py-2 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            value={searchQuery}
-            onChange={handleSearchChange}
-          />
+        <input
+          type="text"
+          placeholder="Search by exact ENS or Address"
+          className="w-full pl-10 pr-4 py-2 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          value={searchQuery}
+          onChange={handleSearchChange}
+        />
+
           <CiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
         </div>
+        <Select
+          className="w-full md:w-48"
+          value={sortOption}
+          onChange={(e) => handleSortChange(e.target.value)}
+          aria-label="Sort delegates"
+          defaultSelectedKeys={["random"]}
+        >
+        <SelectItem key="random" value="random">Random Delegates</SelectItem>
+        <SelectItem key="default" value="default">High-Weight Delegates</SelectItem>
+          {/* <SelectItem key="most-delegators" value="most-delegators">Most Delegators</SelectItem> */}
+        </Select>
       </div>
 
       {renderContent()}
