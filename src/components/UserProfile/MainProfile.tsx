@@ -357,6 +357,8 @@ function MainProfile() {
       return;
     }
 
+    
+
     try {
       // setDelegatingToAddr(true);
 
@@ -412,6 +414,42 @@ function MainProfile() {
       // setConfettiVisible(true);
       // setTimeout(() => setConfettiVisible(false), 5000);
       toast.success("Delegation successful!");
+      const currentNetworkDAO = await provider.getNetwork();
+
+      const apiCallData = {
+        address: walletAddress,
+        delegation: {
+          [currentNetworkDAO.name]: [
+            {
+              delegator: walletAddress,
+              to_delegator: "0x0000000000000000000000000000000000000000",
+              from_delegate: "0x0000000000000000000000000000000000000000",
+              token: "0.00",
+              page: 1,
+              timestamp:new Date().toISOString(), // Add timestamp
+            },
+          ],
+        },
+      };
+
+      const Clienttoken=await getAccessToken();
+        const myHeaders: HeadersInit = {
+          "Content-Type": "application/json",
+          ...(walletAddress && {
+            "x-wallet-address": walletAddress,
+            Authorization: `Bearer ${Clienttoken}`,
+          }),
+        };
+        const response = await fetchApi("/track-delegation", {
+          method: "POST",
+          headers: myHeaders,
+          body: JSON.stringify(apiCallData),
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to save delegation data!");
+        }
+
       setSpin(false);
     } catch (error) {
       console.error("Delegation failed:", error);

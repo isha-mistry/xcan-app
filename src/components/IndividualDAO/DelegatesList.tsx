@@ -3,7 +3,7 @@ import React, { useEffect, useState, useCallback, useMemo } from "react";
 import { useRouter } from "next-nprogress-bar";
 import toast, { Toaster } from "react-hot-toast";
 // import { useConnectModal, useChainModal } from "@rainbow-me/rainbowkit";
-import { useAccount } from "wagmi";
+import { useAccount, useReadContract } from "wagmi";
 import WalletAndPublicClient from "@/helpers/signer";
 import ErrorDisplay from "../ComponentUtils/ErrorDisplay";
 import { fetchEnsNameAndAvatar } from "@/utils/ENSUtils";
@@ -33,6 +33,8 @@ import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 import { BrowserProvider, Contract, JsonRpcSigner } from "ethers";
 import { motion } from "framer-motion";
 import { calculateTempCpi } from "@/actions/calculatetempCpi";
+import { fetchApi } from "@/utils/api";
+import { Address } from "viem";
 
 const DELEGATES_PER_PAGE = 20;
 const DEBOUNCE_DELAY = 500;
@@ -67,6 +69,14 @@ function DelegatesList({ props }: { props: string }) {
   const { walletAddress } = useWalletAddress();
   const [tempCpi, setTempCpi] = useState();
   const [tempCpiCalling, setTempCpiCalling] = useState(true);
+
+  const { data: accountBalance }: any = useReadContract({
+    abi: dao_abi.abi,
+    address: "0x4200000000000000000000000000000000000042",
+    functionName: "balanceOf",
+    // args:['0x6eda5acaff7f5964e1ecc3fd61c62570c186ca0c' as Address]
+    args: [walletAddress as Address],
+  });
 
   const fetchDelegates = useCallback(async () => {
     setIsAPICalling(true);
@@ -244,7 +254,11 @@ function DelegatesList({ props }: { props: string }) {
   //   }
   // };
 
-  const handleDelegateVotes = async (to: string) => {
+  const handleDelegateVotes = async (
+    to: string,
+    from_delegate: string,
+    tokens: any
+  ) => {
     if (!walletAddress) {
       toast.error("Please connect your wallet!");
       return;
@@ -261,9 +275,9 @@ function DelegatesList({ props }: { props: string }) {
 
     try {
       setDelegatingToAddr(true);
+      // // console.log(`delegator:${walletAddress},to_delegate :${to},from_delegate :${from_delegate},token : ${tokens}`)
 
       // For Privy wallets, we should get the provider from the wallet instance
-      // Assuming you have access to the Privy wallet instance
       const privyProvider = await wallets[0]?.getEthereumProvider();
 
       if (!privyProvider) {
@@ -304,12 +318,55 @@ function DelegatesList({ props }: { props: string }) {
 
       // console.log('Initiating delegation transaction...');
       const tx = await contract.delegate(to);
-      // console.log('Waiting for transaction confirmation...');
       await tx.wait();
 
       setConfettiVisible(true);
       setTimeout(() => setConfettiVisible(false), 5000);
       toast.success("Delegation successful!");
+
+      const DAO = props;
+      const Votes = Number(tokens / BigInt(Math.pow(10, 18))).toFixed(2); //For serialize bigInt
+      const Clienttoken = await getAccessToken();
+      const myHeaders: HeadersInit = {
+        "Content-Type": "application/json",
+        ...(walletAddress && {
+          "x-wallet-address": walletAddress,
+          Authorization: `Bearer ${Clienttoken}`,
+        }),
+      };
+
+      const apiCallData = {
+        address: walletAddress,
+        delegation: {
+          [DAO]: [
+            {
+              delegator: walletAddress,
+              to_delegator: to,
+              from_delegate:
+                from_delegate === "N/A"
+                  ? "0x0000000000000000000000000000000000000000"
+                  : from_delegate,
+              token: Votes,
+              page: 2,
+              timestamp: new Date().toISOString(), // Add timestamp
+            },
+          ],
+        },
+      };
+
+      const response = await fetchApi("/track-delegation", {
+        method: "POST",
+        headers: myHeaders,
+        body: JSON.stringify(apiCallData),
+      });
+
+      if (response.status === 200) {
+        console.log("Done!");
+      } else {
+        throw new Error(
+          `Failed to save delegation data! Status: ${response.status}`
+        );
+      }
     } catch (error) {
       console.error("Delegation failed:", error);
 
@@ -481,7 +538,11 @@ function DelegatesList({ props }: { props: string }) {
           isOpen={delegateOpen}
           closeModal={() => setDelegateOpen(false)}
           handleDelegateVotes={() =>
-            handleDelegateVotes(selectedDelegate.delegate)
+            handleDelegateVotes(
+              selectedDelegate.delegate,
+              delegateDetails || "N/A",
+              accountBalance
+            )
           }
           fromDelegate={delegateDetails || "N/A"}
           delegateName={

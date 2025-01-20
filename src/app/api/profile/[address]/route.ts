@@ -124,7 +124,7 @@ export async function POST(
 
     //Cache the data for the specific address
     await redis.set(cacheKey, JSON.stringify(documents));
-    await redis.expire(cacheKey, 3600);
+    await redis.expire(cacheKey, 3600); //1 hour cache
 
     client.close();
 
