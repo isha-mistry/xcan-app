@@ -75,6 +75,13 @@ const Homepage = () => {
       buttonText: "Generate Link",
       image: feature1,
       onclick: () => {
+        pushToGTM({
+          event: 'feature_button_click',
+          category: 'Feature Engagement',
+          action: 'Button Click',
+          label: 'Generate Link',
+          value: 1
+        });
         if (!isConnected) {
           setShowConnectWalletGenerate(true);
         } else if (!authenticated) {
@@ -90,6 +97,13 @@ const Homepage = () => {
       buttonText: "Book Session",
       image: feature2,
       onclick: async () => {
+        pushToGTM({
+          event: 'feature_button_click',
+          category: 'Feature Engagement',
+          action: 'Button Click',
+          label: 'Book Session',
+          value: 2
+        });
         setLoadingFeature(1);
         try {
           if (!isConnected) {
@@ -115,6 +129,13 @@ const Homepage = () => {
       image: feature3,
       // onclick: handleSchedule,
       onclick: () => {
+        pushToGTM({
+          event: 'feature_button_click',
+          category: 'Feature Engagement',
+          action: 'Button Click',
+          label: 'Schedule Now',
+          value: 3
+        });
         if (!isConnected) {
           setShowConnectWalletFeature(true);
         } else if (!authenticated) {
@@ -131,6 +152,13 @@ const Homepage = () => {
       buttonText: "Learn How to Earn",
       image: feature4,
       onclick: () => {
+        pushToGTM({
+          event: 'feature_button_click',
+          category: 'Feature Engagement',
+          action: 'Button Click',
+          label: 'Learn How to Earn',
+          value: 4
+        });
         router.push(
           "https://docs.chora.club/earn-rewards/create-referral-reward"
         );
