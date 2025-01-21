@@ -169,7 +169,7 @@ function DelegatesList({ props }: { props: string }) {
     async (event: React.ChangeEvent<HTMLInputElement>) => {
       const query = event.target.value.trim(); // Get the input value
       setSearchQuery(query); // Immediately update the input field
-   // If the input is cleared, reset any search-related processing
+      // If the input is cleared, reset any search-related processing
       if (query === "") {
         console.log("Input cleared");
         debouncedSearch(""); // Optionally reset the query results
@@ -177,18 +177,18 @@ function DelegatesList({ props }: { props: string }) {
       }
       // Regex to check if the input is an Ethereum address
       const isEthereumAddress = /^0x[a-fA-F0-9]{40}$/.test(query);
-  
+
       if (isEthereumAddress) {
         // If it's an Ethereum address, directly query it
         debouncedSearch(query);
       } else {
-         // Validate input as a potential ENS name before resolving
-          const isValidEnsName = /^[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)+$/.test(query);
+        // Validate input as a potential ENS name before resolving
+        const isValidEnsName = /^[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)+$/.test(query);
 
-          if (!isValidEnsName) {
-            console.warn("Invalid ENS name");
-            return;
-          }
+        if (!isValidEnsName) {
+          console.warn("Invalid ENS name");
+          return;
+        }
         // Treat it as an ENS name and resolve the address
         try {
           const resolvedAddress = await fetchEnsAddress(query); // Resolve ENS to address
@@ -205,8 +205,6 @@ function DelegatesList({ props }: { props: string }) {
     },
     [debouncedSearch] // Ensure debounce function is included in dependencies
   );
-  
-  
 
   // useEffect(() => {
   //   return () => {
@@ -370,7 +368,10 @@ function DelegatesList({ props }: { props: string }) {
       toast.success("Delegation successful!");
 
       const DAO = props;
-      const Votes = Number(tokens / BigInt(Math.pow(10, 18))).toFixed(2); //For serialize bigInt
+      const Token =
+        tokens === BigInt(0) || tokens === undefined
+          ? "0.00"
+          : Number(tokens / BigInt(Math.pow(10, 18))).toFixed(2); //For serialize bigInt
       const Clienttoken = await getAccessToken();
       const myHeaders: HeadersInit = {
         "Content-Type": "application/json",
@@ -391,9 +392,9 @@ function DelegatesList({ props }: { props: string }) {
                 from_delegate === "N/A"
                   ? "0x0000000000000000000000000000000000000000"
                   : from_delegate,
-              token: Votes,
-              page: 2,
-              timestamp: new Date().toISOString(), // Add timestamp
+              token: Token,
+              page: "Delegatelist",
+              timestamp: new Date(),
             },
           ],
         },
@@ -563,13 +564,13 @@ function DelegatesList({ props }: { props: string }) {
                 /> */}
       <div className="flex flex-col md:flex-row justify-between items-center mb-8">
         <div className="relative w-full md:w-96 mb-4 md:mb-0">
-        <input
-          type="text"
-          placeholder="Search by exact ENS or Address"
-          className="w-full pl-10 pr-4 py-2 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          value={searchQuery}
-          onChange={handleSearchChange}
-        />
+          <input
+            type="text"
+            placeholder="Search by exact ENS or Address"
+            className="w-full pl-10 pr-4 py-2 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            value={searchQuery}
+            onChange={handleSearchChange}
+          />
 
           <CiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
         </div>
@@ -580,8 +581,12 @@ function DelegatesList({ props }: { props: string }) {
           aria-label="Sort delegates"
           defaultSelectedKeys={["random"]}
         >
-        <SelectItem key="random" value="random">Random Delegates</SelectItem>
-        <SelectItem key="default" value="default">High-Weight Delegates</SelectItem>
+          <SelectItem key="random" value="random">
+            Random Delegates
+          </SelectItem>
+          <SelectItem key="default" value="default">
+            High-Weight Delegates
+          </SelectItem>
           {/* <SelectItem key="most-delegators" value="most-delegators">Most Delegators</SelectItem> */}
         </Select>
       </div>

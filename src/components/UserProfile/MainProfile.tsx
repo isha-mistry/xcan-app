@@ -358,7 +358,6 @@ function MainProfile() {
     }
 
     
-
     try {
       // setDelegatingToAddr(true);
 
@@ -425,8 +424,8 @@ function MainProfile() {
               to_delegator: "0x0000000000000000000000000000000000000000",
               from_delegate: "0x0000000000000000000000000000000000000000",
               token: "0.00",
-              page: 1,
-              timestamp:new Date().toISOString(), // Add timestamp
+              page: "Mainprofile",
+              timestamp:new Date()
             },
           ],
         },

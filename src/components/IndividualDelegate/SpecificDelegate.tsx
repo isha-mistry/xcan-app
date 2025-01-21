@@ -397,7 +397,7 @@ function SpecificDelegate({ props }: { props: Type }) {
         if (details.length > 0) {
           setIsDelegate(true);
         }
-      // await updateFollowerState();
+        // await updateFollowerState();
         // await setFollowerscount();
 
         // Only fetch delegate data if we have a wallet address
@@ -905,7 +905,10 @@ function SpecificDelegate({ props }: { props: Type }) {
       toast.success("Delegation successful!");
 
       const currentNetworkDAO = await provider.getNetwork();
-      const Votes = Number(tokens / BigInt(Math.pow(10, 18))).toFixed(2); //For serialize bigInt
+      const Token =
+        tokens === BigInt(0) || tokens === undefined
+          ? "0.00"
+          : Number(tokens / BigInt(Math.pow(10, 18))).toFixed(2); //For serialize bigInt
 
       const apiCallData = {
         address: walletAddress,
@@ -918,9 +921,9 @@ function SpecificDelegate({ props }: { props: Type }) {
                 from_delegate === "N/A"
                   ? "0x0000000000000000000000000000000000000000"
                   : from_delegate,
-              token: Votes,
-              page: 3,
-              timestamp: new Date().toISOString() // Add timestamp
+              token: Token,
+              page: "Specificdelegate",
+              timestamp: new Date(),
             },
           ],
         },
@@ -963,7 +966,6 @@ function SpecificDelegate({ props }: { props: Type }) {
       setDelegatingToAddr(false);
     }
   };
-
 
   useEffect(() => {
     const fetchData = async () => {

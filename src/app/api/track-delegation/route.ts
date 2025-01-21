@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/config/connectDB";
-import { Collection, Timestamp } from "mongodb";
-import { timeStamp } from "console";
+import { Collection } from "mongodb";
 
 interface DelegateSchema {
   address: string;
@@ -18,7 +17,7 @@ interface DelegationDetails {
   to_delegator: string;
   from_delegate: string;
   token: string;
-  page: 1 | 2 | 3; // 1 for Profilepage | 2 for Delegatelist | 3 for Specificdelegate
+  page: string;
   timestamp: Date;
 }
 
@@ -95,7 +94,7 @@ export async function POST(req: NextRequest, res: NextResponse) {
             updateData.$push[`delegation.${network}`] = {
               $each: details.map((detail) => ({
                 ...detail,
-                timestamp: new Date(),
+                timestamp: detail.timestamp
               })),
             };
           }
@@ -146,7 +145,7 @@ function validateDelegationDetails(detail: any): detail is DelegationDetails {
     typeof detail.to_delegator === "string" &&
     typeof detail.from_delegate === "string" &&
     typeof detail.token === "string" &&
-    [1, 2, 3].includes(detail.page) &&
+    typeof detail.page==="string" &&
     detail.timestamp !== undefined
   );
 }
