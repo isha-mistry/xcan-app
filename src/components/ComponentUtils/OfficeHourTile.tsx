@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Image, { StaticImageData } from "next/image";
 import img1 from "@/assets/images/daos/thumbnail1.png";
 import logo from "@/assets/images/daos/CCLogo.png";
@@ -78,6 +78,10 @@ const OfficeHourTile = ({
   );
   const router = useRouter();
 
+  useEffect(() => {
+    setLocalData(data);
+  }, [data]);
+
   const truncateAddress = (address: string) => {
     return `${address.slice(0, 6)}...${address.slice(-4)}`;
   };
@@ -123,116 +127,6 @@ const OfficeHourTile = ({
       isOpen: false,
       itemData: null,
     });
-  };
-
-  // const handleUpdate = (updatedSlot: any) => {
-  //   if (editModalData.itemIndex !== null && editModalData.itemData) {
-  //     // Update the local data
-  //     const updatedData = [...localData];
-  //     updatedData[editModalData.itemIndex] = {
-  //       ...updatedData[editModalData.itemIndex],
-  //       title: updatedSlot.bookedTitle,
-  //       description: updatedSlot.bookedDescription,
-  //     };
-
-  //     setLocalData(updatedData);
-
-  //     if (onDataUpdate) {
-  //       onDataUpdate(updatedData);
-  //     }
-
-  //     handleEditModalClose();
-  //   }
-  // };
-
-  const handleClaimOffchain = async (
-    address: string | undefined,
-    MeetingId: string | undefined,
-    dao_name: string,
-    MeetingType: number,
-    StartTime: number,
-    EndTime: number
-  ) => {
-    try {
-      const token = await getAccessToken();
-      const myHeaders: HeadersInit = {
-        "Content-Type": "application/json",
-        ...(walletAddress && {
-          "x-wallet-address": walletAddress,
-          Authorization: `Bearer ${token}`,
-        }),
-      };
-
-      let tokenforAttestation = "";
-      if (dao_name === "optimism") {
-        tokenforAttestation = "OP";
-      } else if (dao_name === "arbitrum") {
-        tokenforAttestation = "ARB";
-      }
-
-      const raw = JSON.stringify({
-        recipient: address,
-        meetingId: `${MeetingId}/${tokenforAttestation}`,
-        meetingType: MeetingType,
-        startTime: StartTime,
-        endTime: EndTime,
-        daoName: dao_name,
-      });
-
-      setLoadingButton("offchain");
-
-      const requestOptions: any = {
-        method: "POST",
-        headers: myHeaders,
-        body: raw,
-        redirect: "follow",
-      };
-
-      const response = await fetchApi("/attest-offchain", requestOptions);
-      if (response.ok) {
-        const responseData = await response.json();
-
-        // Update the localData state with the new attestation UID
-        setLocalData((prevData) =>
-          prevData.map((item) => {
-            if (item.meetingId === MeetingId) {
-              // If the user is an attendee
-              if (isAttended) {
-                return {
-                  ...item,
-                  attendees:
-                    item.attendees?.map((attendee) =>
-                      attendee.attendee_address.toLowerCase() ===
-                      address?.toLowerCase()
-                        ? { ...attendee, attendee_uid: responseData.uid }
-                        : attendee
-                    ) || [],
-                };
-              }
-              // If the user is the host
-              else if (isHosted) {
-                return {
-                  ...item,
-                  uid_host: responseData.uid,
-                };
-              }
-              return item;
-            }
-            return item;
-          })
-        );
-
-        setLoadingButton("");
-        toast.success("Attestation successful!");
-      } else {
-        console.error("Attestation failed");
-        toast.error("Attestation failed!");
-      }
-    } catch (error: any) {
-      setLoadingButton("");
-      console.error("Error during attestation", error);
-      toast.error("An error occurred during attestation!");
-    }
   };
 
   const handleDeleteModalOpen = (itemData: OfficeHoursProps) => {
@@ -378,17 +272,13 @@ const OfficeHourTile = ({
                 className="w-7 h-7"
               />
             </div>
-            <div
-              className={`${
-                !isUpcoming ? "hidden" : ""
-              } absolute top-2 left-2 bg-black rounded-full`}
-            >
+            <div className={`absolute top-2 left-2 bg-black rounded-full`}>
               <Image
-                src={op}
+                src={getDaoLogo(data.dao_name)}
                 alt="image"
                 width={100}
                 height={100}
-                className="w-6 h-6"
+                className="size-4 sm:size-6 rounded-full"
               />
             </div>
           </div>
@@ -405,7 +295,7 @@ const OfficeHourTile = ({
               {data.description}
             </p>
 
-            {(isAttended || isHosted) && (
+            {(isAttended || isHosted || isRecorded) && (
               <div className="flex items-center text-sm gap-0.5 sm:gap-1 py-1">
                 <div className=" flex items-center ">
                   <div>
@@ -459,7 +349,10 @@ const OfficeHourTile = ({
               >
                 <span className="cursor-pointer text-xs sm:text-sm">
                   <IoCopy
-                    onClick={(e) => handleCopy(data.host_address, index, e)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleCopy(data.host_address, index, e);
+                    }}
                     className={`transition-colors duration-300 ${
                       copyStates[index]
                         ? "text-blue-500"
