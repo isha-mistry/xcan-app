@@ -23,6 +23,14 @@ import ErrorPopup from "./ErrorPopup";
 import { usePrivy } from "@privy-io/react-auth";
 import { IoIosPause } from "react-icons/io";
 
+interface GTMEvent {
+  event: string;
+  category: string;
+  action: string;
+  label?: string;
+  value?: number;
+}
+
 const Homepage = () => {
   const [isButtonHovered, setIsButtonHovered] = useState(false);
   const [isButtonHoveredTwo, setIsButtonHoveredTwo] = useState(false);
@@ -52,6 +60,12 @@ const Homepage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [loadingFeature, setLoadingFeature] = useState<number | null>(null);
   const { authenticated } = usePrivy();
+
+  const pushToGTM = (eventData: GTMEvent) => {
+    if (typeof window !== 'undefined' && window.dataLayer) {
+      window.dataLayer.push(eventData);
+    }
+  };
 
   const features = [
     {
@@ -222,6 +236,13 @@ const Homepage = () => {
 
   const handleGetStarted = () => {
     setIsLoading(true);
+    pushToGTM({
+      event: 'get_started_click',
+      category: 'User Flow',
+      action: 'Button Click',
+      label: 'Join As a User',
+      value: 1
+    });
     if (!isConnected) {
       setShowConnectWallet(true);
       setIsLoading(false);
@@ -233,6 +254,13 @@ const Homepage = () => {
     }
   };
   const handleGetStartedDelegate = () => {
+    pushToGTM({
+      event: 'get_started_click',
+      category: 'User Flow',
+      action: 'Button Click',
+      label: 'Join As a Delegate',
+      value: 2
+    });
     console.log(isConnected, "is connect?", authenticated, "authenicate");
     if (!isConnected) {
       setShowConnectWalletDelegate(true);
