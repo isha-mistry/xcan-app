@@ -46,12 +46,12 @@ function DaoSelection({
     checkDelegateStatus("optimism");
     setDao("optimism");
   };
-
+  
   const handleArbitrum = () => {
     checkDelegateStatus("arbitrum");
     setDao("arbitrum");
   };
-
+  
   const checkDelegateStatus = async (network: "optimism" | "arbitrum") => {
     setShowError(false);
     setIsLoading(true);
@@ -61,26 +61,46 @@ function DaoSelection({
         : network === "arbitrum"
         ? "0x912CE59144191C1204E64559FE8253a0e49E6548"
         : "";
-
+  
     try {
-      const public_client = createPublicClient({
-        chain: network === "optimism" ? optimism : arbitrum,
-        transport: http(),
-      });
-
-      const delegateTx = (await public_client.readContract({
-        address: contractAddress as `0x${string}`,
-        abi: dao_abi.abi,
-        functionName: "delegates",
-        args: [address],
-      })) as string;
-
-      const isSelfDelegate =
-        delegateTx.toLowerCase() === address?.toLowerCase();
-      {
-        console.log(isSelfDelegate, "self delegate 123");
+      // Check contract status
+      let isContractDelegate = false;
+      try {
+        const public_client = createPublicClient({
+          chain: network === "optimism" ? optimism : arbitrum,
+          transport: http(),
+        });
+  
+        const delegateTx = (await public_client.readContract({
+          address: contractAddress as `0x${string}`,
+          abi: dao_abi.abi,
+          functionName: "delegates",
+          args: [address],
+        })) as string;
+  
+        isContractDelegate = delegateTx.toLowerCase() === address?.toLowerCase();
+        console.log("Contract delegate status:", isContractDelegate);
+      } catch (error) {
+        console.error("Error in reading contract:", error);
       }
-      if (isSelfDelegate) {
+  
+      // Check API status
+      let isApiDelegate = false;
+      try {
+        const response = await fetch(
+          `/api/search-delegate?address=${address}&dao=${network}`
+        );
+        const details = await response.json();
+        isApiDelegate = details.length > 0;
+        console.log("API delegate status:", isApiDelegate);
+      } catch (error) {
+        console.error("Error fetching from API:", error);
+      }
+  
+      // If either check passes, consider them a delegate
+      const isDelegate = isContractDelegate || isApiDelegate;
+  
+      if (isDelegate) {
         if (feature) {
           setShowPopup(true);
         } else if (joinAsDelegate || featureSchedule) {
@@ -97,13 +117,12 @@ function DaoSelection({
         setShowError(true);
       }
     } catch (error) {
-      console.error("Error in reading contract", error);
+      console.error("Error in delegate status check:", error);
       setShowError(true);
     } finally {
       setIsLoading(false);
     }
   };
-
   useEffect(() => {
     if (isConnected && authenticated && showWalletPopup) {
       // Close the wallet modal and redirect
