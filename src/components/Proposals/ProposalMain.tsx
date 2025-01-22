@@ -197,25 +197,25 @@ function ProposalMain({ props }: { props: Props }) {
     fetchEnsDataForDisplayed();
   }, [voterList, displayCount]); // Dependencies include display parameters
 
-  const getContractAddress = async (txHash: `0x${string}`) => {
-    try {
-      const transaction = await client.getTransaction({ hash: txHash });
-      const transactionReceipt = await client.getTransactionReceipt({
-        hash: txHash,
-      });
-      const treasuryAddress = "0x789fC99093B09aD01C34DC7251D0C89ce743e5a4"
-      const coreGovAddress = "0xf07DeD9dC292157749B6Fd268E37DF6EA38395B9";
-      return coreGovAddress;
-      // if (transaction.to) {
-      //   return transaction.to;
-      // } else {
-      //   return "Not a contract interaction or creation";
-      // }
-    } catch (error) {
-      console.error("Error:", error);
-      return "Error retrieving transaction information";
-    }
-  };
+  // const getContractAddress = async (txHash: `0x${string}`) => {
+  //   try {
+  //     const transaction = await client.getTransaction({ hash: txHash });
+  //     const transactionReceipt = await client.getTransactionReceipt({
+  //       hash: txHash,
+  //     });
+  //     const treasuryAddress = "0x789fC99093B09aD01C34DC7251D0C89ce743e5a4"
+  //     const coreGovAddress = "0xf07DeD9dC292157749B6Fd268E37DF6EA38395B9";
+  //     return coreGovAddress;
+  //     // if (transaction.to) {
+  //     //   return transaction.to;
+  //     // } else {
+  //     //   return "Not a contract interaction or creation";
+  //     // }
+  //   } catch (error) {
+  //     console.error("Error:", error);
+  //     return "Error retrieving transaction information";
+  //   }
+  // };
 
   const StoreData = async (voteData: VoteData) => {
     // Make the API call to submit the vote
@@ -282,7 +282,7 @@ function ProposalMain({ props }: { props: Props }) {
       chainAddress = "0xcDF27F107725988f2261Ce2256bDfCdE8B382B10";
       currentChain = "optimism";
     } else if (chain?.name === "Arbitrum One") {
-      chainAddress = await getContractAddress(data.transactionHash);
+      chainAddress = data.contractSource.contractAddress;
       currentChain = "arbitrum";
     } else {
       currentChain = "";
@@ -837,7 +837,6 @@ function ProposalMain({ props }: { props: Props }) {
     const votingPeriodEnd = new Date(
       proposalTime.getTime() + votingPeriod * 24 * 60 * 60 * 1000
     );
-    console.log("day diffrence", daysDifference);
     if (canceledProposals.some((item: any) => item.proposalId === props.id)) {
       return { status: "Closed", votingPeriodEnd };
     }
@@ -914,7 +913,6 @@ function ProposalMain({ props }: { props: Props }) {
           : "PENDING";
       }
     } else {
-      console.log("endinggg propossal ", votingPeriodEndData, currentDate);
 
       return currentDate > votingPeriodEndData!
         ? support1Weight! > support0Weight!
@@ -940,13 +938,6 @@ function ProposalMain({ props }: { props: Props }) {
   };
 
   const proposal_status = getProposalStatusData();
-  console.log(
-    "proposal status",
-    proposal_status,
-    data,
-    support1Weight >= 0,
-    support1Weight
-  );
   const Proposalstatus =
     (data && support1Weight >= 0) || support1Weight ? proposal_status : null;
 
