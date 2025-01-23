@@ -19,6 +19,7 @@ import {
   SOCKET_BASE_URL,
 } from "@/config/constants";
 import { io } from "socket.io-client";
+import redis from "@/utils/redis";
 
 interface AttestOffchainRequestBody {
   recipient: string;
@@ -381,6 +382,7 @@ export async function POST(req: NextRequest, res: NextResponse) {
       console.error("WebSocket error:", err);
     });
     await client.close();
+    await redis.del(`Notification:${requestData.recipient}`)
 
     return NextResponse.json(
       { success: true, offchainAttestation, url, uploadstatus },

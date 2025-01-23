@@ -9,6 +9,7 @@ import {
   getDisplayNameOrAddr,
 } from "@/utils/NotificationUtils";
 import { sendMail } from "@/lib/mail";
+import redis from "@/utils/redis";
 
 interface UpdateBookingStatusResponse {
   success: boolean;
@@ -180,6 +181,8 @@ export async function PUT(
               subject: "Session Rejected",
               body: `The session you have booked has been rejected by the delegate due to following reason: ${rejectionReason}`,
             });
+            await redis.del(`Notification:${attendeeAddress}`);
+            await redis.del(`Notification:${host_address}`);
           } catch (error) {
             console.error("Error sending mail:", error);
           }
