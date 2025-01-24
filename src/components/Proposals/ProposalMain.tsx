@@ -326,8 +326,21 @@ function ProposalMain({ props }: { props: Props }) {
             account: walletAddress,
           });
           StoreData(voteData);
+          pushToGTM({
+            event: "vote_submitted",
+            category: "Proposal Voting",
+            action: "Vote Submitted",
+            label: `Vote Submitted - Chain: ${currentChain}`,
+          });
+
         } catch (e) {
           toast.error("Transaction failed");
+          pushToGTM({
+            event: "vote_submission_failed",
+            category: "Proposal Voting",
+            action: "Vote Submission Failed",
+            label: `Vote Submission Failed - Chain: ${currentChain}`,
+          });
         }
       }
     } else if (!comment) {
@@ -345,8 +358,21 @@ function ProposalMain({ props }: { props: Props }) {
             account: walletAddress,
           });
           StoreData(voteData);
+          pushToGTM({
+            event: "vote_submitted",
+            category: "Proposal Voting",
+            action: "Vote Submitted",
+            label: `Vote Submitted - Chain: ${currentChain}`,
+          });
+
         } catch (e) {
           toast.error("Transaction failed");
+          pushToGTM({
+            event: "vote_submission_failed",
+            category: "Proposal Voting",
+            action: "Vote Submission Failed",
+            label: `Vote Submission Failed - Chain: ${currentChain}`,
+          });
         }
       }
     }
@@ -1075,7 +1101,7 @@ function ProposalMain({ props }: { props: Props }) {
             >
               Vote onchain
             </button>
-          )}
+          )} 
           <div className="flex-shrink-0">
             <div
               className={`rounded-full flex items-center justify-center text-xs py-1 px-2 font-medium ${
