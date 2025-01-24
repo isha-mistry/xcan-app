@@ -106,6 +106,14 @@ interface VoteData {
   network: string;
 }
 
+interface GTMEvent {
+  event: string;
+  category: string;
+  action: string;
+  label: string;
+  // [key: string]: any;
+}
+
 function ProposalMain({ props }: { props: Props }) {
   const router = useRouter();
   const [link, setLink] = useState("");
@@ -136,6 +144,12 @@ function ProposalMain({ props }: { props: Props }) {
   const chartContainerRef = useRef<HTMLDivElement | null>(null);
   const { user, ready, getAccessToken, authenticated } = usePrivy();
   const { walletAddress } = useWalletAddress();
+
+  const pushToGTM = (eventData: GTMEvent) => {
+    if (typeof window !== "undefined" && window.dataLayer) {
+      window.dataLayer.push(eventData);
+    }
+  };
 
   interface VoteData {
     address: string;
@@ -203,7 +217,7 @@ function ProposalMain({ props }: { props: Props }) {
       const transactionReceipt = await client.getTransactionReceipt({
         hash: txHash,
       });
-      const treasuryAddress = "0x789fC99093B09aD01C34DC7251D0C89ce743e5a4"
+      const treasuryAddress = "0x789fC99093B09aD01C34DC7251D0C89ce743e5a4";
       const coreGovAddress = "0xf07DeD9dC292157749B6Fd268E37DF6EA38395B9";
       return coreGovAddress;
       // if (transaction.to) {
@@ -242,7 +256,7 @@ function ProposalMain({ props }: { props: Props }) {
       setShowConnectWallet(false);
     }
   }, [walletAddress]);
-  
+
   const voteOnchain = async () => {
     if (!walletAddress) {
       setShowConnectWallet(true);
@@ -264,6 +278,12 @@ function ProposalMain({ props }: { props: Props }) {
       // }
     } else {
       setIsVotingOpen(true);
+      pushToGTM({
+        event: "vote_onchain_button_click",
+        category: "Proposal Engagement",
+        action: "Vote Onchain Button Click",
+        label: `Vote Onchain Button Click - Proposal ID: ${props.id}`,
+      });
     }
   };
   const handleVoteSubmit = async (
@@ -400,6 +420,12 @@ function ProposalMain({ props }: { props: Props }) {
   }, [isExpanded, data?.description]);
   const toggleExpansion = () => {
     setIsExpanded(!isExpanded);
+    pushToGTM({
+      event: "view_more_less_click",
+      category: "Proposal Description",
+      action: isExpanded ? "View Less Click" : "View More Click",
+      label: `View More/Less Click - Proposal ID: ${props.id}`,
+    });
   };
 
   const getLineCount = (text: string) => {
@@ -1076,10 +1102,8 @@ function ProposalMain({ props }: { props: Props }) {
           </div>
         </div>
         {showConnectWallet && (
-        <ConnectwalletHomePage 
-          onClose={() => setShowConnectWallet(false)}
-        />
-      )}
+          <ConnectwalletHomePage onClose={() => setShowConnectWallet(false)} />
+        )}
         <VotingPopup
           isOpen={isVotingOpen}
           onClose={() => setIsVotingOpen(false)}
