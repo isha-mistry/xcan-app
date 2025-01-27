@@ -109,6 +109,14 @@ interface VoteData {
   network: string;
 }
 
+interface GTMEvent {
+  event: string;
+  category: string;
+  action: string;
+  label: string;
+  // [key: string]: any;
+}
+
 function ProposalMain({ props }: { props: Props }) {
   const router = useRouter();
   const [link, setLink] = useState("");
@@ -141,6 +149,13 @@ function ProposalMain({ props }: { props: Props }) {
   const { walletAddress } = useWalletAddress();
   const [optimismVoteOptions, setOptimismVoteOptions] = useState<any[]>([]);
   const [winners, setWinners] = useState<string[]>([]);
+
+  const pushToGTM = (eventData: GTMEvent) => {
+    if (typeof window !== "undefined" && window.dataLayer) {
+      window.dataLayer.push(eventData);
+    }
+  };
+
   interface VoteData {
     address: string;
     proposalId: string;
@@ -268,6 +283,12 @@ function ProposalMain({ props }: { props: Props }) {
       // }
     } else {
       setIsVotingOpen(true);
+      pushToGTM({
+        event: "vote_onchain_button_click",
+        category: "Proposal Engagement",
+        action: "Vote Onchain Button Click",
+        label: `Vote Onchain Button Click - Proposal ID: ${props.id}`,
+      });
     }
   };
   const handleVoteSubmit = async (
@@ -310,8 +331,21 @@ function ProposalMain({ props }: { props: Props }) {
             account: walletAddress,
           });
           StoreData(voteData);
+          pushToGTM({
+            event: "vote_submitted",
+            category: "Proposal Voting",
+            action: "Vote Submitted",
+            label: `Vote Submitted - Chain: ${currentChain}`,
+          });
+
         } catch (e) {
           toast.error("Transaction failed");
+          pushToGTM({
+            event: "vote_submission_failed",
+            category: "Proposal Voting",
+            action: "Vote Submission Failed",
+            label: `Vote Submission Failed - Chain: ${currentChain}`,
+          });
         }
       }
     } else if (!comment) {
@@ -329,8 +363,21 @@ function ProposalMain({ props }: { props: Props }) {
             account: walletAddress,
           });
           StoreData(voteData);
+          pushToGTM({
+            event: "vote_submitted",
+            category: "Proposal Voting",
+            action: "Vote Submitted",
+            label: `Vote Submitted - Chain: ${currentChain}`,
+          });
+
         } catch (e) {
           toast.error("Transaction failed");
+          pushToGTM({
+            event: "vote_submission_failed",
+            category: "Proposal Voting",
+            action: "Vote Submission Failed",
+            label: `Vote Submission Failed - Chain: ${currentChain}`,
+          });
         }
       }
     }
@@ -477,6 +524,12 @@ function ProposalMain({ props }: { props: Props }) {
   }, [isExpanded, data?.description]);
   const toggleExpansion = () => {
     setIsExpanded(!isExpanded);
+    pushToGTM({
+      event: "view_more_less_click",
+      category: "Proposal Description",
+      action: isExpanded ? "View Less Click" : "View More Click",
+      label: `View More/Less Click - Proposal ID: ${props.id}`,
+    });
   };
 
   const getLineCount = (text: string) => {
@@ -1115,7 +1168,7 @@ function ProposalMain({ props }: { props: Props }) {
             >
               Vote onchain
             </button>
-          )}
+          )} 
           <div className="flex-shrink-0">
             <div
               className={`rounded-full flex items-center justify-center text-xs py-1 px-2 font-medium ${status
