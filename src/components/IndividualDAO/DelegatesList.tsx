@@ -34,6 +34,16 @@ import { motion } from "framer-motion";
 import { Select, SelectItem } from "@nextui-org/react";
 import { calculateTempCpi } from "@/actions/calculatetempCpi";
 
+interface GTMEvent {
+  event: string;
+  category: string;
+  action: string;
+  label: string;
+  value?: number;
+  delegateFrom?: "delegateList" | "specificDelegate";
+  delegationStatus?: "success" | "failure" | "pending";
+}
+
 const DELEGATES_PER_PAGE = 20;
 const DEBOUNCE_DELAY = 500;
 
@@ -67,6 +77,12 @@ function DelegatesList({ props }: { props: string }) {
   const { walletAddress } = useWalletAddress();
   const [tempCpi, setTempCpi] = useState();
   const [tempCpiCalling, setTempCpiCalling] = useState(true);
+
+  const pushToGTM = (eventData: GTMEvent) => {
+    if (typeof window !== "undefined" && window.dataLayer) {
+      window.dataLayer.push(eventData);
+    }
+  };
 
   const fetchDelegates = useCallback(async () => {
     setIsAPICalling(true);
@@ -158,7 +174,7 @@ function DelegatesList({ props }: { props: string }) {
     async (event: React.ChangeEvent<HTMLInputElement>) => {
       const query = event.target.value.trim(); // Get the input value
       setSearchQuery(query); // Immediately update the input field
-   // If the input is cleared, reset any search-related processing
+      // If the input is cleared, reset any search-related processing
       if (query === "") {
         console.log("Input cleared");
         debouncedSearch(""); // Optionally reset the query results
@@ -166,18 +182,18 @@ function DelegatesList({ props }: { props: string }) {
       }
       // Regex to check if the input is an Ethereum address
       const isEthereumAddress = /^0x[a-fA-F0-9]{40}$/.test(query);
-  
+
       if (isEthereumAddress) {
         // If it's an Ethereum address, directly query it
         debouncedSearch(query);
       } else {
-         // Validate input as a potential ENS name before resolving
-          const isValidEnsName = /^[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)+$/.test(query);
+        // Validate input as a potential ENS name before resolving
+        const isValidEnsName = /^[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)+$/.test(query);
 
-          if (!isValidEnsName) {
-            console.warn("Invalid ENS name");
-            return;
-          }
+        if (!isValidEnsName) {
+          console.warn("Invalid ENS name");
+          return;
+        }
         // Treat it as an ENS name and resolve the address
         try {
           const resolvedAddress = await fetchEnsAddress(query); // Resolve ENS to address
@@ -194,8 +210,6 @@ function DelegatesList({ props }: { props: string }) {
     },
     [debouncedSearch] // Ensure debounce function is included in dependencies
   );
-  
-  
 
   // useEffect(() => {
   //   return () => {
@@ -209,6 +223,13 @@ function DelegatesList({ props }: { props: string }) {
       login();
       return;
     }
+    pushToGTM({
+      event: "delegate_modal_open",
+      category: "Delegate Engagement",
+      action: "Delegate Modal Open",
+      label: "Delegate Modal Open - Delegate List",
+      delegateFrom: "delegateList",
+    });
     const delegatorAddress = walletAddress;
     const toAddress = delegateObject.delegate;
     const token = await getAccessToken();
@@ -288,15 +309,40 @@ function DelegatesList({ props }: { props: string }) {
   //   }
   // };
 
+  function getDaoNameFromUrl() {
+    if (typeof window !== "undefined") {
+      const url = window.location.href;
+      if (url.includes("optimism")) return "optimism";
+      if (url.includes("arbitrum")) return "arbitrum";
+    }
+    return "";
+  }
+
   const handleDelegateVotes = async (to: string) => {
     if (!walletAddress) {
       toast.error("Please connect your wallet!");
+      pushToGTM({
+        event: "delegation_attempt",
+        category: "Delegate Engagement",
+        action: "Delegation Attempt",
+        label: "Delegation Attempt - Delegate Tile Modal",
+        delegateFrom: "delegateList",
+        delegationStatus: "failure",
+      });
       return;
     }
 
     const chainAddress = getChainAddress(chain?.name);
     if (!chainAddress) {
       toast.error("Invalid chain address,try again!");
+      pushToGTM({
+        event: "delegation_attempt",
+        category: "Delegate Engagement",
+        action: "Delegation Attempt",
+        label: "Delegation Attempt - Delegate Tile Modal",
+        delegateFrom: "delegateList",
+        delegationStatus: "failure",
+      });
       return;
     }
 
@@ -305,6 +351,14 @@ function DelegatesList({ props }: { props: string }) {
 
     try {
       setDelegatingToAddr(true);
+      pushToGTM({
+        event: "delegation_attempt",
+        category: "Delegate Engagement",
+        action: "Delegation Attempt",
+        label: "Delegation Attempt - Delegate Tile Modal",
+        delegateFrom: "delegateList",
+        delegationStatus: "pending",
+      });
 
       // For Privy wallets, we should get the provider from the wallet instance
       // Assuming you have access to the Privy wallet instance
@@ -312,6 +366,14 @@ function DelegatesList({ props }: { props: string }) {
 
       if (!privyProvider) {
         toast.error("Could not get wallet provider");
+        pushToGTM({
+          event: "delegation_attempt",
+          category: "Delegate Engagement",
+          action: "Delegation Attempt",
+          label: "Delegation Attempt - Delegate Tile Modal",
+          delegateFrom: "delegateList",
+          delegationStatus: "failure",
+        });
         return;
       }
 
@@ -335,6 +397,14 @@ function DelegatesList({ props }: { props: string }) {
           });
         } catch (switchError) {
           console.error("Failed to switch network:", switchError);
+          pushToGTM({
+            event: "delegation_attempt",
+            category: "Delegate Engagement",
+            action: "Delegation Attempt",
+            label: "Delegation Attempt - Delegate Tile Modal",
+            delegateFrom: "delegateList",
+            delegationStatus: "failure",
+          });
           return;
         }
         return;
@@ -350,6 +420,14 @@ function DelegatesList({ props }: { props: string }) {
       const tx = await contract.delegate(to);
       // console.log('Waiting for transaction confirmation...');
       await tx.wait();
+      pushToGTM({
+        event: "delegation_success",
+        category: "Delegate Engagement",
+        action: "Delegation Success",
+        label: `Delegation Success - Delegate Tile Modal - ${getDaoNameFromUrl()}`,
+        delegateFrom: "delegateList",
+        delegationStatus: "success",
+      });
 
       setConfettiVisible(true);
       setTimeout(() => setConfettiVisible(false), 5000);
@@ -375,6 +453,14 @@ function DelegatesList({ props }: { props: string }) {
         toast.error("Transaction failed. Please try again");
         console.error("Detailed error:", error);
       }
+      pushToGTM({
+        event: "delegation_failure",
+        category: "Delegate Engagement",
+        action: "Delegation Failure",
+        label: `Delegation Failure - Delegate Tile Modal - ${getDaoNameFromUrl()}`,
+        delegateFrom: "delegateList",
+        delegationStatus: "failure",
+      });
     } finally {
       setDelegatingToAddr(false);
     }
@@ -505,13 +591,13 @@ function DelegatesList({ props }: { props: string }) {
                 /> */}
       <div className="flex flex-col md:flex-row justify-between items-center mb-8">
         <div className="relative w-full md:w-96 mb-4 md:mb-0">
-        <input
-          type="text"
-          placeholder="Search by exact ENS or Address"
-          className="w-full pl-10 pr-4 py-2 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          value={searchQuery}
-          onChange={handleSearchChange}
-        />
+          <input
+            type="text"
+            placeholder="Search by exact ENS or Address"
+            className="w-full pl-10 pr-4 py-2 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            value={searchQuery}
+            onChange={handleSearchChange}
+          />
 
           <CiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
         </div>
@@ -522,8 +608,12 @@ function DelegatesList({ props }: { props: string }) {
           aria-label="Sort delegates"
           defaultSelectedKeys={["random"]}
         >
-        <SelectItem key="random" value="random">Random Delegates</SelectItem>
-        <SelectItem key="default" value="default">High-Weight Delegates</SelectItem>
+          <SelectItem key="random" value="random">
+            Random Delegates
+          </SelectItem>
+          <SelectItem key="default" value="default">
+            High-Weight Delegates
+          </SelectItem>
           {/* <SelectItem key="most-delegators" value="most-delegators">Most Delegators</SelectItem> */}
         </Select>
       </div>

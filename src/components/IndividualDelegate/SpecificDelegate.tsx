@@ -77,6 +77,16 @@ interface Type {
   individualDelegate: string;
 }
 
+interface GTMEvent {
+  event: string;
+  category: string;
+  action: string;
+  label: string;
+  value?: number;
+  delegateFrom?: "delegateList" | "specificDelegate";
+  delegationStatus?: "success" | "failure" | "pending";
+}
+
 function SpecificDelegate({ props }: { props: Type }) {
   const { chain } = useAccount();
   // const { openChainModal } = useChainModal();
@@ -134,7 +144,13 @@ function SpecificDelegate({ props }: { props: Type }) {
   const [tempCpiCalling, setTempCpiCalling] = useState(true);
   const [isFromDatabase, setFromDatabase] = useState(false);
   const [errorOccurred, setErrorOccurred] = useState(false);
-  const [avatar,setAvatar] = useState("");
+  const [avatar, setAvatar] = useState("");
+
+  const pushToGTM = (eventData: GTMEvent) => {
+    if (typeof window !== "undefined" && window.dataLayer) {
+      window.dataLayer.push(eventData);
+    }
+  };
 
   const handleCopy = (addr: string) => {
     copy(addr);
@@ -207,7 +223,23 @@ function SpecificDelegate({ props }: { props: Type }) {
     }
   }, [searchParams, tabs]);
 
+  function getDaoNameFromUrl() {
+    if (typeof window !== "undefined") {
+      const url = window.location.href;
+      if (url.includes("optimism")) return "optimism";
+      if (url.includes("arbitrum")) return "arbitrum";
+    }
+    return "";
+  }
+
   const handleDelegateModal = async () => {
+    pushToGTM({
+      event: "delegate_button_click",
+      category: "Delegate Engagement",
+      action: "Delegate Button Click",
+      label: `Delegate Button Click - Specific Delegate - ${getDaoNameFromUrl()}`,
+      delegateFrom: "specificDelegate",
+    });
     if (!isConnected) {
       if (!authenticated) {
         // openConnectModal();
@@ -215,6 +247,13 @@ function SpecificDelegate({ props }: { props: Type }) {
         login();
       }
     } else {
+      pushToGTM({
+        event: "delegate_modal_open",
+        category: "Delegate Engagement",
+        action: "Delegate Modal Open",
+        label: "Delegate Modal Open - Specific Delegate",
+        delegateFrom: "specificDelegate",
+      });
       const delegatorAddress = walletAddress;
       const toAddress = props.individualDelegate;
       setDelegateOpen(true);
@@ -388,7 +427,7 @@ function SpecificDelegate({ props }: { props: Type }) {
         if (details.length > 0) {
           setIsDelegate(true);
         }
-      // await updateFollowerState();
+        // await updateFollowerState();
         // await setFollowerscount();
 
         // Only fetch delegate data if we have a wallet address
@@ -832,12 +871,28 @@ function SpecificDelegate({ props }: { props: Type }) {
   const handleDelegateVotes = async (to: string) => {
     if (!walletAddress) {
       toast.error("Please connect your wallet!");
+      pushToGTM({
+        event: "delegation_attempt",
+        category: "Delegate Engagement",
+        action: "Delegation Attempt",
+        label: "Delegation Attempt - Specific Delegate",
+        delegateFrom: "specificDelegate",
+        delegationStatus: "failure",
+      });
       return;
     }
 
     const chainAddress = getChainAddress(chain?.name);
     if (!chainAddress) {
       toast.error("Invalid chain address,try again!");
+      pushToGTM({
+        event: "delegation_attempt",
+        category: "Delegate Engagement",
+        action: "Delegation Attempt",
+        label: "Delegation Attempt - Specific Delegate",
+        delegateFrom: "specificDelegate",
+        delegationStatus: "failure",
+      });
       return;
     }
 
@@ -847,6 +902,14 @@ function SpecificDelegate({ props }: { props: Type }) {
 
     try {
       setDelegatingToAddr(true);
+      pushToGTM({
+        event: "delegation_attempt",
+        category: "Delegate Engagement",
+        action: "Delegation Attempt",
+        label: "Delegation Attempt - Specific Delegate",
+        delegateFrom: "specificDelegate",
+        delegationStatus: "pending",
+      });
 
       // For Privy wallets, we should get the provider from the wallet instance
       // Assuming you have access to the Privy wallet instance
@@ -854,6 +917,14 @@ function SpecificDelegate({ props }: { props: Type }) {
 
       if (!privyProvider) {
         toast.error("Could not get wallet provider");
+        pushToGTM({
+          event: "delegation_attempt",
+          category: "Delegate Engagement",
+          action: "Delegation Attempt",
+          label: "Delegation Attempt - Specific Delegate",
+          delegateFrom: "specificDelegate",
+          delegationStatus: "failure",
+        });
         return;
       }
 
@@ -876,6 +947,14 @@ function SpecificDelegate({ props }: { props: Type }) {
           });
         } catch (switchError) {
           console.error("Failed to switch network:", switchError);
+          pushToGTM({
+            event: "delegation_attempt",
+            category: "Delegate Engagement",
+            action: "Delegation Attempt",
+            label: "Delegation Attempt - Specific Delegate",
+            delegateFrom: "specificDelegate",
+            delegationStatus: "failure",
+          });
           return;
         }
         return;
@@ -887,6 +966,14 @@ function SpecificDelegate({ props }: { props: Type }) {
 
       const tx = await contract.delegate(to);
       await tx.wait();
+      pushToGTM({
+        event: "delegation_success",
+        category: "Delegate Engagement",
+        action: "Delegation Success",
+        label: `Delegation Success - Specific Delegate - ${getDaoNameFromUrl()}`,
+        delegateFrom: "specificDelegate",
+        delegationStatus: "success",
+      });
 
       setConfettiVisible(true);
       setTimeout(() => setConfettiVisible(false), 5000);
@@ -907,6 +994,14 @@ function SpecificDelegate({ props }: { props: Type }) {
         toast.error("Transaction failed. Please try again");
         console.error("Detailed error:", error);
       }
+      pushToGTM({
+        event: "delegation_failure",
+        category: "Delegate Engagement",
+        action: "Delegation Failure",
+        label: `Delegation Failure - Specific Delegate - ${getDaoNameFromUrl()}`,
+        delegateFrom: "specificDelegate",
+        delegationStatus: "failure",
+      });
     } finally {
       setDelegatingToAddr(false);
     }
@@ -1036,7 +1131,7 @@ function SpecificDelegate({ props }: { props: Type }) {
       const { ensName: fetchedName, avatar: fetchedAvatar } =
         await fetchEnsNameAndAvatar(props.individualDelegate);
       setDisplayEnsName(fetchedName);
-      setAvatar(avatar)
+      setAvatar(avatar);
     };
     fetchEnsName();
   }, [props]);
@@ -1061,7 +1156,7 @@ function SpecificDelegate({ props }: { props: Type }) {
     // If image is from ENS or other source, use it directly
     return displayImage;
   };
-  
+
   const getDisplayImageUrl = () => {
     // Case 1: Image from database (IPFS)
     if (displayImage && isFromDatabase) {
@@ -1608,9 +1703,7 @@ function SpecificDelegate({ props }: { props: Type }) {
                 </>
               )
             }
-            displayImage={
-              getDisplayImageUrl()
-            }
+            displayImage={getDisplayImageUrl()}
             daoName={props.daoDelegates}
             addressCheck={same}
             delegatingToAddr={delegatingToAddr}
