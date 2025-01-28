@@ -20,6 +20,7 @@ interface AttestationButtonProps {
   isHost?: boolean;
   attendeeAddress?: string | null;
   onSuccess: (uid: string) => void;
+  meetingData?: any;
 }
 
 function OffchainAttestationButton({
@@ -32,6 +33,7 @@ function OffchainAttestationButton({
   isHost = false,
   attendeeAddress,
   onSuccess,
+  meetingData,
 }: AttestationButtonProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [localUid, setLocalUid] = useState<string | null>(uid || null);
@@ -78,6 +80,7 @@ function OffchainAttestationButton({
         startTime,
         endTime,
         daoName,
+        meetingData,
       };
 
       const requestOptions = {

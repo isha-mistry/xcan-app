@@ -377,6 +377,7 @@ const OfficeHourTile = ({
                   onSuccess={(uid) =>
                     handleAttestationSuccess(uid, data.meetingId)
                   }
+                  meetingData={data}
                 />
 
                 {/* ClaimButton Component */}
@@ -420,6 +421,7 @@ const OfficeHourTile = ({
                   onSuccess={(uid) =>
                     handleAttestationSuccess(uid, data.meetingId)
                   }
+                  meetingData={data}
                 />
 
                 {/* ClaimButton Component */}
