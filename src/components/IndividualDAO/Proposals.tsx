@@ -12,6 +12,7 @@ import { dao_details } from "@/config/daoDetails";
 import ErrorDisplay from "../ComponentUtils/ErrorDisplay";
 import { fetchApi } from "@/utils/api";
 import VotedOnOptions from "@/assets/images/votedOnOption.png";
+import { Tooltip as NextUITooltip } from "@nextui-org/react";
 
 interface Proposal {
   proposalId: string;
@@ -938,11 +939,11 @@ function Proposals({ props }: { props: string }) {
               )} */}
               {proposal.votesLoaded ? (
               <div
-                className={`py-0.5 rounded-md text-xs xs:text-sm font-medium border flex justify-center items-center w-28 xs:w-32 
+                className={`py-0.5 rounded-md text-xs xs:text-sm font-medium flex justify-center items-center w-28 xs:w-32 
                   ${proposal?.proposalData ? '' : getProposalStatusYet(proposal, canceledProposals).style}`}
               >
                 {proposal?.proposalData 
-                  ? <Image src={VotedOnOptions} alt="Voted Options" className="w-6 h-6" />
+                  ? <NextUITooltip content='Multiple Options'><Image src={VotedOnOptions} alt="Multiple Options" className="w-6 h-6" /></NextUITooltip>
                   : getProposalStatusYet(proposal, canceledProposals).text}
               </div>
               ) : (
