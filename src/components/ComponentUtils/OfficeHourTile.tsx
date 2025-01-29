@@ -470,11 +470,19 @@ const OfficeHourTile = ({
                   <Clock className="w-4 h-4 text-indigo-500" />
                   <span className="font-medium">Starts at:</span>
                   <span className="text-indigo-600 font-semibold">
-                    {new Date(data.startTime).toLocaleString("en-US", {
+                    {`${new Date(data.startTime)
+                      .toLocaleDateString("en-GB", {
+                        day: "2-digit",
+                        month: "2-digit",
+                        year: "numeric",
+                      })
+                      .replace(/\//g, "/")}, ${new Date(
+                      data.startTime
+                    ).toLocaleString("en-US", {
                       hour: "2-digit",
                       minute: "2-digit",
                       hour12: true,
-                    })}
+                    })}`}
                   </span>
                 </div>
 
@@ -518,7 +526,7 @@ const OfficeHourTile = ({
                       ) : (
                         <>
                           <Play className="w-4 h-4" />
-                          <span>Start Session</span>
+                          <span>Start Meeting</span>
                         </>
                       )}
                     </button>
@@ -545,7 +553,7 @@ const OfficeHourTile = ({
                 ) : (
                   <>
                     <Play className="w-4 h-4" />
-                    <span>Join Session</span>
+                    <span>Join Meeting</span>
                   </>
                 )}
               </button>
