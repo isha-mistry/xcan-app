@@ -470,7 +470,11 @@ const OfficeHourTile = ({
                   <Clock className="w-4 h-4 text-indigo-500" />
                   <span className="font-medium">Starts at:</span>
                   <span className="text-indigo-600 font-semibold">
-                    {new Date(data.startTime).toLocaleString("en-GB")}
+                    {new Date(data.startTime).toLocaleString("en-GB", {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      hour12: true,
+                    })}
                   </span>
                 </div>
 

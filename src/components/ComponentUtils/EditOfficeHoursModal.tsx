@@ -150,7 +150,11 @@ const EditOfficeHoursModal: React.FC<EditOfficeHoursModalProps> = ({
                 {slot.startTime} - {slot.endTime}
                 <LuDot />{" "}
                 <span className="font-semibold">
-                  {date.toLocaleDateString("en-GB")}
+                  {date.toLocaleDateString("en-GB", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    hour12: true,
+                  })}
                 </span>
               </p>
             </div>
