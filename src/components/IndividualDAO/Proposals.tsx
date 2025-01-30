@@ -11,6 +11,8 @@ import ArbLogo from "@/assets/images/daos/arb.png";
 import { dao_details } from "@/config/daoDetails";
 import ErrorDisplay from "../ComponentUtils/ErrorDisplay";
 import { fetchApi } from "@/utils/api";
+import VotedOnOptions from "@/assets/images/votedOnOption.png";
+import { Tooltip as NextUITooltip } from "@nextui-org/react";
 
 interface Proposal {
   proposalId: string;
@@ -21,6 +23,7 @@ interface Proposal {
   support1Weight?: number;
   support2Weight?: number;
   votersCount?: number;
+  proposalData?: string;
   status?: string;
   proposer: string;
   queueStartTime?: number;
@@ -576,7 +579,6 @@ function Proposals({ props }: { props: string }) {
         setLoading(false);
       } else {
         const allData = await fetchProposals();
-        console.log("allData", allData);
       }
     };
     proposals();
@@ -936,16 +938,16 @@ function Proposals({ props }: { props: string }) {
                 <VoteLoader />
               )} */}
               {proposal.votesLoaded ? (
-                <div
-                  className={`py-0.5 rounded-md text-xs xs:text-sm font-medium border flex justify-center items-center w-28 xs:w-32 
-                      ${
-                        getProposalStatusYet(proposal, canceledProposals).style
-                      }`}
-                >
-                  {getProposalStatusYet(proposal, canceledProposals).text}
-                </div>
+              <div
+                className={`py-0.5 rounded-md text-xs xs:text-sm font-medium flex justify-center items-center w-28 xs:w-32 
+                  ${proposal?.proposalData ? '' : getProposalStatusYet(proposal, canceledProposals).style}`}
+              >
+                {proposal?.proposalData 
+                  ? <NextUITooltip content='Multiple Options'><Image src={VotedOnOptions} alt="Multiple Options" className="w-6 h-6" /></NextUITooltip>
+                  : getProposalStatusYet(proposal, canceledProposals).text}
+              </div>
               ) : (
-                <VoteLoader />
+              <VoteLoader />
               )}
               {/* <div className="flex items-center justify-center w-[15%]"> */}
               <div className="rounded-full bg-[#f4d3f9] border border-[#77367a] flex text-[#77367a] text-[10px] xs:text-xs h-[22px] items-center justify-center w-[19%] xs:h-fit py-[1px] xs:py-0.5 font-medium px-2 ">
