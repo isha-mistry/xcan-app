@@ -515,7 +515,7 @@ function SpecificDelegate({ props }: { props: Type }) {
 
   useEffect(() => {
     const checkDelegateStatus = async () => {
-      setIsPageLoading(true);
+      // setIsPageLoading(true);
       //   const addr = await walletClient.getAddresses();
       //   const address1 = addr[0];
       let delegateTxAddr = "";
@@ -548,10 +548,10 @@ function SpecificDelegate({ props }: { props: Type }) {
         ) {
           setSelfDelegate(true);
         }
-        setIsPageLoading(false);
+        // setIsPageLoading(false);
       } catch (error) {
         console.error("Error in reading contract", error);
-        setIsPageLoading(false);
+        // setIsPageLoading(false);
       }
     };
     checkDelegateStatus();
@@ -1383,6 +1383,12 @@ function SpecificDelegate({ props }: { props: Type }) {
                             navigator.clipboard.writeText(
                               `${BASE_URL}/${props.daoDelegates}/${props.individualDelegate}?active=info`
                             );
+                            pushToGTM({
+                              event: "share_profile_button_click_specificDelegate",
+                              category: "Delegate Engagement",
+                              action: "Share Profile Button Click",
+                              label: `Share Profile Button Click - Specific Delegate - ${getDaoNameFromUrl()}`,
+                            });
                             setIsCopied(true);
                             setTimeout(() => {
                               setIsCopied(false);
