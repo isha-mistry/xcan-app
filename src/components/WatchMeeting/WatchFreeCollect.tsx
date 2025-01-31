@@ -227,27 +227,49 @@ const WatchFreeCollect = ({
   };
 
   const handleContractSubmit = async (contractAddress: string) => {
-    const token=await getAccessToken();
+    const token = await getAccessToken();
     const myHeaders: HeadersInit = {
       "Content-Type": "application/json",
-      ...(walletAddress && { "x-wallet-address": walletAddress , 
-      "Authorization": `Bearer ${token}`}),
+      ...(walletAddress && {
+        "x-wallet-address": walletAddress,
+        Authorization: `Bearer ${token}`,
+      }),
     };
 
-    const raw = JSON.stringify({
-      meetingId: data.meetingId,
-      host_address: data.host_address,
-      deployedContractAddress: contractAddress,
-    });
+    let raw;
 
     try {
-      const response = await fetchApi("/update-recorded-session", {
-        method: "PUT",
-        headers: myHeaders,
-        body: raw,
-      });
-      const responseData = await response.json();
-      return responseData;
+      if (collection === "office_hours") {
+        raw = JSON.stringify({
+          host_address: data.host_address,
+          dao_name: data.dao_name,
+          reference_id: data.reference_id,
+          deployedContractAddress: contractAddress,
+        });
+
+        const response = await fetchApi("/edit-office-hours", {
+          method: "PUT",
+          headers: myHeaders,
+          body: raw,
+        });
+        const responseData = await response.json();
+        return responseData;
+      } else if (collection === "meetings") {
+        raw = JSON.stringify({
+          meetingId: data.meetingId,
+          host_address: data.host_address,
+          deployedContractAddress: contractAddress,
+        });
+        const response = await fetchApi("/update-recorded-session", {
+          method: "PUT",
+          headers: myHeaders,
+          body: raw,
+        });
+        const responseData = await response.json();
+        return responseData;
+      } else {
+        console.log("No collection found!");
+      }
     } catch (error) {
       console.error("Error submitting contract:", error);
     }
