@@ -7,7 +7,7 @@ export const arbitrum = {
   description:
     "The Arbitrum DAO is a Decentralized Autonomous Organization (DAO) built on the Ethereum blockchain. At its core, the Arbitrum DAO is a community-driven governance mechanism that allows $ARB token holders to propose and vote on changes to the organization and the technologies it governs.",
   contract_address: "",
-  number_of_delegates: "312k",
+  number_of_delegates: "442k",
   token_name: "ARB",
   logo: arb_logo,
   links: {

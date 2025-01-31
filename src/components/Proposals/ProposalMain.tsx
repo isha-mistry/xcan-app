@@ -5,6 +5,7 @@ import React, {
   useRef,
   useCallback,
   RefObject,
+  PureComponent
 } from "react";
 import ConnectWalletWithENS from "../ConnectWallet/ConnectWalletWithENS";
 import Image from "next/image";
@@ -24,9 +25,9 @@ import arb_proposals_abi from "../../artifacts/Dao.sol/arb_proposals_abi.json";
 import op_proposals_abi from "../../artifacts/Dao.sol/op_proposals_abi.json";
 import WalletAndPublicClient from "@/helpers/signer";
 import toast, { Toaster } from "react-hot-toast";
-import { useAccount } from "wagmi";
+import { useAccount, useReadContract } from "wagmi";
 import { hash } from "crypto";
-import { marked } from "marked";
+import { marked, options } from "marked";
 import { createPublicClient, http } from "viem";
 import { optimism, arbitrum } from "viem/chains";
 import { Tooltip as Tooltips } from "@nextui-org/react";
@@ -39,6 +40,7 @@ import {
   CartesianGrid,
   Tooltip,
   Legend,
+  Treemap,
   ResponsiveContainer,
 } from "recharts";
 import { RiArrowRightUpLine, RiExternalLinkLine } from "react-icons/ri";
@@ -53,6 +55,7 @@ import { fetchApi } from "@/utils/api";
 import { GiConsoleController } from "react-icons/gi";
 import { fetchEnsNameAndAvatar, getENSName } from "@/utils/ENSUtils";
 import ConnectwalletHomePage from "../HomePage/ConnectwalletHomePage";
+import VotingTreemap from "./VotingOptions";
 
 // Create a client
 const client = createPublicClient({
@@ -144,6 +147,8 @@ function ProposalMain({ props }: { props: Props }) {
   const chartContainerRef = useRef<HTMLDivElement | null>(null);
   const { user, ready, getAccessToken, authenticated } = usePrivy();
   const { walletAddress } = useWalletAddress();
+  const [optimismVoteOptions, setOptimismVoteOptions] = useState<any[]>([]);
+  const [winners, setWinners] = useState<string[]>([]);
 
   const pushToGTM = (eventData: GTMEvent) => {
     if (typeof window !== "undefined" && window.dataLayer) {
@@ -211,25 +216,25 @@ function ProposalMain({ props }: { props: Props }) {
     fetchEnsDataForDisplayed();
   }, [voterList, displayCount]); // Dependencies include display parameters
 
-  const getContractAddress = async (txHash: `0x${string}`) => {
-    try {
-      const transaction = await client.getTransaction({ hash: txHash });
-      const transactionReceipt = await client.getTransactionReceipt({
-        hash: txHash,
-      });
-      const treasuryAddress = "0x789fC99093B09aD01C34DC7251D0C89ce743e5a4";
-      const coreGovAddress = "0xf07DeD9dC292157749B6Fd268E37DF6EA38395B9";
-      return coreGovAddress;
-      // if (transaction.to) {
-      //   return transaction.to;
-      // } else {
-      //   return "Not a contract interaction or creation";
-      // }
-    } catch (error) {
-      console.error("Error:", error);
-      return "Error retrieving transaction information";
-    }
-  };
+  // const getContractAddress = async (txHash: `0x${string}`) => {
+  //   try {
+  //     const transaction = await client.getTransaction({ hash: txHash });
+  //     const transactionReceipt = await client.getTransactionReceipt({
+  //       hash: txHash,
+  //     });
+  //     const treasuryAddress = "0x789fC99093B09aD01C34DC7251D0C89ce743e5a4"
+  //     const coreGovAddress = "0xf07DeD9dC292157749B6Fd268E37DF6EA38395B9";
+  //     return coreGovAddress;
+  //     // if (transaction.to) {
+  //     //   return transaction.to;
+  //     // } else {
+  //     //   return "Not a contract interaction or creation";
+  //     // }
+  //   } catch (error) {
+  //     console.error("Error:", error);
+  //     return "Error retrieving transaction information";
+  //   }
+  // };
 
   const StoreData = async (voteData: VoteData) => {
     // Make the API call to submit the vote
@@ -302,7 +307,7 @@ function ProposalMain({ props }: { props: Props }) {
       chainAddress = "0xcDF27F107725988f2261Ce2256bDfCdE8B382B10";
       currentChain = "optimism";
     } else if (chain?.name === "Arbitrum One") {
-      chainAddress = await getContractAddress(data.transactionHash);
+      chainAddress = data.contractSource.contractAddress;
       currentChain = "arbitrum";
     } else {
       currentChain = "";
@@ -377,14 +382,36 @@ function ProposalMain({ props }: { props: Props }) {
       }
     }
   };
+  const { data: hasVotedOptimism } = useReadContract({
+    abi: op_proposals_abi,
+    address: '0xcDF27F107725988f2261Ce2256bDfCdE8B382B10',
+    functionName: "hasVoted",
+    args: [props.id, walletAddress],
+  });
 
+  const { data: hasVotedArbitrum } = useReadContract({
+    abi: arb_proposals_abi,
+    address: data?.contractSource?.contractAddress,
+    functionName: "hasVoted",
+    args: [props.id, walletAddress],
+  });
+
+  // Use the appropriate data based on the network
+  const hasUserVoted = props.daoDelegates === "optimism" 
+  ? Boolean(hasVotedOptimism) 
+  : Boolean(hasVotedArbitrum);
+
+  useEffect(() => {
+    setHasVoted(hasUserVoted);
+  }, [hasUserVoted]);
+  
   const checkVoteStatus = async () => {
     const queryParams = new URLSearchParams({
       proposalId: props.id,
       network: props.daoDelegates,
       voterAddress: walletAddress,
     } as any);
-
+    console.log("this is the wallet address", walletAddress, address)
     try {
       const response = await fetchApi(
         `/get-vote-detail?${queryParams.toString()}`,
@@ -399,18 +426,69 @@ function ProposalMain({ props }: { props: Props }) {
       if (!response.ok) {
         // console.log("Network response was not ok");
       }
+      const result = await response.json();
 
-      const data = await response.json();
-
-      setHasVoted(data.voterExists);
     } catch (error) {
       console.error("Error fetching vote status:", error);
     }
   };
+  const selectWinners = (options: any[], criteria: string, criteriaValue: number): string[] => {
+    if (criteria === 'TOP_CHOICES') {
+      // Sort options by votes in descending order
+      const sortedOptions = [...options].sort((a, b) =>
+        Number(b.votes) - Number(a.votes)
+      );
+
+      // Select top winners based on criteriaValue
+      return sortedOptions
+        .slice(0, criteriaValue)
+        .map(option => option.option);
+    }
+
+    if (criteria === 'THRESHOLD') {
+      // Select options that meet or exceed the threshold
+      return options
+        .filter(option =>
+          Number(option.votes) >= criteriaValue
+        )
+        .map(option => option.option);
+    }
+
+    // If no valid criteria, return empty array
+    return [];
+  };
+  // Updated useEffect hook
+  useEffect(() => {
+    const fetchOptimismOption = async () => {
+      const response = await fetch(`/api/get-optimism-vote-options?id=${props.id}`);
+      const result = await response.json();
+
+      const criteriaType = {
+        criteria: result.criteria,
+        criteriaValue: result.criteriaValue
+      };
+
+      // Set vote options
+      setOptimismVoteOptions(result.options);
+
+      // Select winners based on criteria
+      const winners = selectWinners(
+        result.options,
+        criteriaType.criteria,
+        criteriaType.criteriaValue
+      );
+
+      // Set winners state if you have a setter for it
+      setWinners(winners);
+    };
+
+    fetchOptimismOption();
+  }, [props.id]);
 
   useEffect(() => {
-    checkVoteStatus();
+  checkVoteStatus();
   }, [props, walletAddress]);
+ 
   const loadMore = () => {
     const newDisplayCount = displayCount + 20;
     setDisplayCount(newDisplayCount);
@@ -493,9 +571,8 @@ function ProposalMain({ props }: { props: Props }) {
         text = `<em>${matchem[1]}</em>`;
       }
 
-      return `<a href="${href}" title="${
-        title || ""
-      }" target="_blank" rel="noopener noreferrer" class="text-blue-shade-100">${text}</a>`;
+      return `<a href="${href}" title="${title || ""
+        }" target="_blank" rel="noopener noreferrer" class="text-blue-shade-100">${text}</a>`;
     };
 
     marked.setOptions({
@@ -840,9 +917,9 @@ function ProposalMain({ props }: { props: Props }) {
     isArbitrum
       ? window.open(`https://arbiscan.io/tx/${transactionHash}`, "_blank")
       : window.open(
-          `https://optimistic.etherscan.io/tx/${transactionHash}`,
-          "_blank"
-        );
+        `https://optimistic.etherscan.io/tx/${transactionHash}`,
+        "_blank"
+      );
   };
 
   const shareOnTwitter = () => {
@@ -889,7 +966,6 @@ function ProposalMain({ props }: { props: Props }) {
     const votingPeriodEnd = new Date(
       proposalTime.getTime() + votingPeriod * 24 * 60 * 60 * 1000
     );
-    console.log("day diffrence", daysDifference);
     if (canceledProposals.some((item: any) => item.proposalId === props.id)) {
       return { status: "Closed", votingPeriodEnd };
     }
@@ -960,13 +1036,12 @@ function ProposalMain({ props }: { props: Props }) {
         return !votingPeriodEndData
           ? "PENDING"
           : currentDate > votingPeriodEndData
-          ? support1Weight > support0Weight
-            ? "SUCCEEDED"
-            : "DEFEATED"
-          : "PENDING";
+            ? support1Weight > support0Weight
+              ? "SUCCEEDED"
+              : "DEFEATED"
+            : "PENDING";
       }
     } else {
-      console.log("endinggg propossal ", votingPeriodEndData, currentDate);
 
       return currentDate > votingPeriodEndData!
         ? support1Weight! > support0Weight!
@@ -992,13 +1067,6 @@ function ProposalMain({ props }: { props: Props }) {
   };
 
   const proposal_status = getProposalStatusData();
-  console.log(
-    "proposal status",
-    proposal_status,
-    data,
-    support1Weight >= 0,
-    support1Weight
-  );
   const Proposalstatus =
     (data && support1Weight >= 0) || support1Weight ? proposal_status : null;
 
@@ -1076,9 +1144,8 @@ function ProposalMain({ props }: { props: Props }) {
       </div>
 
       <div
-        className={`rounded-[1rem] mx-4 md:mx-6 px-4 lg:mx-16 pb-6 pt-[68px] transition-shadow duration-300 ease-in-out shadow-xl bg-gray-50 font-poppins relative ${
-          isExpanded ? "h-fit" : "h-fit"
-        }`}
+        className={`rounded-[1rem] mx-4 md:mx-6 px-4 lg:mx-16 pb-6 pt-[68px] transition-shadow duration-300 ease-in-out shadow-xl bg-gray-50 font-poppins relative ${isExpanded ? "h-fit" : "h-fit"
+          }`}
       >
         <div className="w-full flex items-center justify-end gap-2 absolute top-6 right-6 sm:right-12">
           <div className="">
@@ -1104,13 +1171,12 @@ function ProposalMain({ props }: { props: Props }) {
           )} 
           <div className="flex-shrink-0">
             <div
-              className={`rounded-full flex items-center justify-center text-xs py-1 px-2 font-medium ${
-                status
+              className={`rounded-full flex items-center justify-center text-xs py-1 px-2 font-medium ${status
                   ? status === "Closed"
                     ? "bg-[#f4d3f9] border border-[#77367a] text-[#77367a]"
                     : "bg-[#f4d3f9] border border-[#77367a] text-[#77367a]"
                   : "bg-gray-200 animate-pulse rounded-full"
-              }`}
+                }`}
             >
               {status ? status : <div className="h-4 w-16"></div>}
             </div>
@@ -1128,7 +1194,9 @@ function ProposalMain({ props }: { props: Props }) {
           </div>
         </div>
         {showConnectWallet && (
-          <ConnectwalletHomePage onClose={() => setShowConnectWallet(false)} />
+          <ConnectwalletHomePage
+            onClose={() => setShowConnectWallet(false)}
+          />
         )}
         <VotingPopup
           isOpen={isVotingOpen}
@@ -1138,6 +1206,7 @@ function ProposalMain({ props }: { props: Props }) {
           proposalTitle={truncateText(data?.description, 50)}
           address={walletAddress || ""}
           dao={props.daoDelegates}
+          customOptions={optimismVoteOptions}
         />
 
         <div className="flex gap-1 my-1 items-center">
@@ -1156,11 +1225,10 @@ function ProposalMain({ props }: { props: Props }) {
             </div>
           ) : (
             <div
-              className={`rounded-full flex items-center justify-center text-xs h-fit py-0.5 border font-medium w-24 ${
-                Proposalstatus
+              className={`rounded-full flex items-center justify-center text-xs h-fit py-0.5 border font-medium w-24 ${Proposalstatus
                   ? getStatusColor(Proposalstatus)
                   : "bg-gray-200 animate-pulse rounded-full"
-              }`}
+                }`}
             >
               {Proposalstatus ? (
                 Proposalstatus
@@ -1180,9 +1248,8 @@ function ProposalMain({ props }: { props: Props }) {
             <>
               <div
                 ref={contentRef}
-                className={` transition-max-height duration-500 ease-in-out overflow-hidden ${
-                  isExpanded ? "max-h-full" : "max-h-36"
-                }`}
+                className={` transition-max-height duration-500 ease-in-out overflow-hidden ${isExpanded ? "max-h-full" : "max-h-36"
+                  }`}
               >
                 <div
                   className="description-content"
@@ -1200,7 +1267,19 @@ function ProposalMain({ props }: { props: Props }) {
             </>
           )}
         </div>
+        
       </div>
+      {props.daoDelegates === "optimism" && optimismVoteOptions ? (
+  <div className={`rounded-[1rem] mx-4 my-3 md:mx-6 px-4 lg:mx-16 pb-6 pt-6 transition-shadow duration-300 ease-in-out shadow-xl bg-gray-50 font-poppins relative flex justify-center items-center font-extralight`}>
+    {loading ? (
+      <div className="flex items-center justify-center w-full h-[500px]">
+        <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-black-shade-900"></div>
+      </div>
+    ) : (
+      <VotingTreemap votingData={optimismVoteOptions} winners={winners} />
+    )}
+  </div>
+) : null}
 
       <h1 className="my-8 mx-4 md:mx-6 lg:mx-16 text-2xl lg:text-4xl font-semibold text-blue-shade-100 font-poppins">
         Voters
@@ -1214,11 +1293,10 @@ function ProposalMain({ props }: { props: Props }) {
               </div>
             ) : (
               <div
-                className={`flex flex-col gap-2 py-3 pl-2 pr-1 w-full xl:pl-3 xl:pr-2 my-3 border-gray-200 ${
-                  voterList?.length > 5
+                className={`flex flex-col gap-2 py-3 pl-2 pr-1 w-full xl:pl-3 xl:pr-2 my-3 border-gray-200 ${voterList?.length > 5
                     ? `h-[440px] overflow-y-auto ${style.scrollbar}`
                     : "h-fit"
-                }`}
+                  }`}
               >
                 {voterList && voterList?.length === 0 ? (
                   <div className="flex items-center justify-center h-full text-gray-500">
@@ -1268,21 +1346,20 @@ function ProposalMain({ props }: { props: Props }) {
                         </div>
                         <div className="flex items-center space-x-1 0.5xs:space-x-2 1.3lg:space-x-4">
                           <div
-                            className={`py-1 xs:py-2 rounded-full 1.5lg:text-sm w-24 0.2xs:w-28 xs:w-36 2md:w-28 lg:w-[100px] 1.3lg:w-28 1.5xl:w-36 flex items-center justify-center xl:font-medium text-xs ${
-                              voter.support === 1
+                            className={`py-1 xs:py-2 rounded-full 1.5lg:text-sm w-24 0.2xs:w-28 xs:w-36 2md:w-28 lg:w-[100px] 1.3lg:w-28 1.5xl:w-36 flex items-center justify-center xl:font-medium text-xs ${voter.support === 1
                                 ? "bg-green-100 text-green-800"
                                 : voter.support === 0
-                                ? "bg-red-100 text-red-800"
-                                : "bg-blue-100 text-blue-800"
-                            }`}
+                                  ? "bg-red-100 text-red-800"
+                                  : "bg-blue-100 text-blue-800"
+                              }`}
                           >
                             {formatWeight(voter.votingPower / 10 ** 18)}
                             &nbsp;
                             {voter.support === 1
                               ? "For"
                               : voter.support === 0
-                              ? "Against"
-                              : "Abstain"}
+                                ? "Against"
+                                : "Abstain"}
                           </div>
                           <Tooltips
                             showArrow
@@ -1381,7 +1458,7 @@ function ProposalMain({ props }: { props: Props }) {
                         "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
                       padding: "10px",
                     }}
-                    labelStyle={{ color: "#2d3748", fontWeight: "bold" }}
+                    labelStyle={{ color: "#000000", fontWeight: "bold" }}
                   />
                   <Legend
                     wrapperStyle={{
@@ -1434,7 +1511,9 @@ function ProposalMain({ props }: { props: Props }) {
           )}
         </div>
       </div>
-    </>
+
+
+</>
   );
 }
 
