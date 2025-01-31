@@ -1160,15 +1160,17 @@ function ProposalMain({ props }: { props: Props }) {
             </Tooltips>
           </div>
           {isActive && (
-            <button
-              className="rounded-full bg-blue-600 text-white hover:bg-blue-500 hover:shadow-lg shadow-md px-3 py-1.5"
-              type="button"
-              onClick={voteOnchain}
-              disabled={hasVoted}
-            >
-              Vote onchain
-            </button>
-          )} 
+              <button
+                className={`rounded-full px-3 py-1.5 text-white shadow-md ${
+                  hasVoted ? "bg-green-400 cursor-default" : "bg-blue-600 hover:bg-blue-500 hover:shadow-lg"
+                }`}
+                type="button"
+                onClick={!hasVoted ? voteOnchain : undefined}
+                disabled={hasVoted}
+              >
+                {hasVoted ? "Voted" : "Vote onchain"}
+              </button>
+            )}
           <div className="flex-shrink-0">
             <div
               className={`rounded-full flex items-center justify-center text-xs py-1 px-2 font-medium ${status
