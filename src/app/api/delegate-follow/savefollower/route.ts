@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/config/connectDB";
+import { cacheWrapper } from "@/utils/cacheWrapper";
 
 type follow_activity = {
   action: string;
@@ -41,17 +42,34 @@ export async function POST(
     const collection = db.collection("delegate_follow");
     const { address } = await req.json();
 
-    // console.log("Finding documents for address in save follower:", address);
+    //  Generate a unique cache key based on the address
+    const cacheKey = `Follower:${address}`;
+
+    // Try to get from cache first
+    if (cacheWrapper.isAvailable) {
+      const cacheValue = await cacheWrapper.get(cacheKey);
+      if (cacheValue) {
+        console.log("Serving from cache followers!");
+        return NextResponse.json(
+          { success: true, data: JSON.parse(cacheValue) },
+          { status: 200 }
+        );
+      }
+    }
+
+  
     const documents = await collection
       .find({
         address: { $regex: `^${address}$`, $options: "i" },
       })
       .toArray();
 
-    // console.log(documents[0]);
+    if(cacheWrapper.isAvailable){
+      await cacheWrapper.set(cacheKey,JSON.stringify(documents),3600);
+    }
 
     client.close();
-
+    console.log("Serving from database!");
     return NextResponse.json(
       { success: true, data: documents },
       { status: 200 }
@@ -82,6 +100,13 @@ export async function PUT(req: NextRequest) {
     // if (collections.length === 0) {
     //   await db.createCollection("delegate_follow");
     // }
+
+    //removing cache key for maintain consistency of user data
+    const cacheKey = `Follower:${follower_address}`;
+
+    if(cacheWrapper.isAvailable){
+      await cacheWrapper.delete(cacheKey);
+    }
 
     const collection = db.collection("delegate_follow");
 
@@ -329,7 +354,6 @@ export async function GET(req: Request) {
     const url = new URL(req.url);
     const address = url.searchParams.get("address");
 
-
     if (!address) {
       return NextResponse.json(
         { success: false, error: "Address is required" },
@@ -343,7 +367,6 @@ export async function GET(req: Request) {
       })
       .toArray();
 
-    
     client.close();
 
     return NextResponse.json(

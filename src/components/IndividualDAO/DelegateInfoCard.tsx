@@ -16,6 +16,16 @@ interface DelegateInfoCardProps {
   formatNumber: (number: number) => string;
 }
 
+interface GTMEvent {
+  event: string;
+  category: string;
+  action: string;
+  label: string;
+  value?: number;
+  delegateFrom?: "delegateList" | "specificDelegate";
+  delegationStatus?: "success" | "failure" | "pending";
+}
+
 const DelegateInfoCard: React.FC<DelegateInfoCardProps> = ({
   delegate,
   daoName,
@@ -29,13 +39,20 @@ const DelegateInfoCard: React.FC<DelegateInfoCardProps> = ({
   const [isLoading, setIsLoading] = useState(true);
   const [isHovered, setIsHovered] = useState(false);
   const [isButtonHovered, setIsButtonHovered] = useState(false);
-  const [tooltipContent, setTooltipContent] = useState('Copy');
+  const [tooltipContent, setTooltipContent] = useState("Copy");
   const [isAnimating, setIsAnimating] = useState(false);
+
+  const pushToGTM = (eventData: GTMEvent) => {
+    if (typeof window !== "undefined" && window.dataLayer) {
+      window.dataLayer.push(eventData);
+    }
+  };
 
   useEffect(() => {
     const fetchEnsData = async () => {
       setIsLoading(true);
-      const { ensName: fetchedName, avatar: fetchedAvatar } =await fetchEnsNameAndAvatar(delegate.delegate);
+      const { ensName: fetchedName, avatar: fetchedAvatar } =
+        await fetchEnsNameAndAvatar(delegate.delegate);
       setEnsName(fetchedName);
       setAvatar(fetchedAvatar);
       setIsLoading(false);
@@ -49,15 +66,23 @@ const DelegateInfoCard: React.FC<DelegateInfoCardProps> = ({
     fetchEnsData();
   }, [delegate.delegate]);
 
-  
+  function getDaoNameFromUrl() {
+    if (typeof window !== "undefined") {
+      const url = window.location.href;
+      if (url.includes("optimism")) return "optimism";
+      if (url.includes("arbitrum")) return "arbitrum";
+    }
+    return "";
+  }
+
   const handleCopyAddress = (e: React.MouseEvent) => {
     e.stopPropagation();
     navigator.clipboard.writeText(delegate.delegate);
-    setTooltipContent('Copied');
+    setTooltipContent("Copied");
     setIsAnimating(true);
 
     setTimeout(() => {
-      setTooltipContent('Copy');
+      setTooltipContent("Copy");
       setIsAnimating(false);
     }, 4000);
   };
@@ -65,6 +90,19 @@ const DelegateInfoCard: React.FC<DelegateInfoCardProps> = ({
   const displayName = isLoading
     ? truncateAddress(delegate.delegate)
     : ensName || truncateAddress(delegate.delegate);
+
+  const handleDelegateButtonClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onDelegateClick(delegate);
+
+    pushToGTM({
+      event: "delegate_button_click",
+      category: "Delegate Engagement",
+      action: "Delegate Button Click",
+      label: `Delegate Button Click - Delegate List - ${getDaoNameFromUrl()}`,
+      delegateFrom: "delegateList",
+    });
+  };
 
   return (
     <motion.div
@@ -122,7 +160,11 @@ const DelegateInfoCard: React.FC<DelegateInfoCardProps> = ({
             <Tooltip content={tooltipContent}>
               <button
                 onClick={handleCopyAddress}
-                className={` ${isAnimating ? 'text-blue-500' :'text-gray-400 hover:text-gray-600'}  transition-colors duration-200`}
+                className={` ${
+                  isAnimating
+                    ? "text-blue-500"
+                    : "text-gray-400 hover:text-gray-600"
+                }  transition-colors duration-200`}
               >
                 <IoCopy size={16} />
               </button>
@@ -140,10 +182,11 @@ const DelegateInfoCard: React.FC<DelegateInfoCardProps> = ({
           transition={{ duration: 0.2 }}
           onMouseEnter={() => setIsButtonHovered(true)}
           onMouseLeave={() => setIsButtonHovered(false)}
-          onClick={(e) => {
-            e.stopPropagation();
-            onDelegateClick(delegate);
-          }}
+          // onClick={(e) => {
+          //   e.stopPropagation();
+          //   onDelegateClick(delegate);
+          // }}
+          onClick={handleDelegateButtonClick}
         >
           <motion.div
             className="flex items-center justify-center"

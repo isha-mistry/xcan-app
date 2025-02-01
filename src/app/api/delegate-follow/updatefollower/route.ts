@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/config/connectDB";
-import { promises } from "dns";
+import { cacheWrapper } from "@/utils/cacheWrapper";
+
 
 export async function PUT(req: NextRequest) {
   try {
@@ -11,6 +12,13 @@ export async function PUT(req: NextRequest) {
       updatenotification,
       dao,
     } = await req.json();
+
+    //removing cache key for maintain consistency of user data
+    const cacheKey = `Follower:${follower_address}`;
+
+    if(cacheWrapper.isAvailable){
+      await cacheWrapper.delete(cacheKey);
+    }
 
     // console.log("Connecting to MongoDB...");
     const client = await connectDB();
