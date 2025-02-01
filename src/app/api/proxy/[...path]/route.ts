@@ -1,5 +1,4 @@
 import { BASE_URL } from "@/config/constants";
-import { getToken } from "next-auth/jwt";
 import { NextRequest, NextResponse } from "next/server";
 
 async function handler(
@@ -11,10 +10,8 @@ async function handler(
   const searchParams = request.nextUrl.searchParams.toString();
 
   let requestBody;
-
   if (["POST", "PUT", "PATCH", "DELETE"].includes(method)) {
     const contentType = request.headers.get("content-type");
-
     if (contentType?.includes("application/json")) {
       try {
         requestBody = await request.json();
@@ -23,34 +20,24 @@ async function handler(
       }
     }
   }
+
   try {
-    // Get all headers from the incoming request
+    // Filter out problematic headers
     const headers = Object.fromEntries(
       Array.from(request.headers.entries()).filter(
         ([key]) =>
-          !["content-length", "content-type"].includes(key.toLowerCase())
+          ![
+            "connection",
+            "content-length",
+            "host",
+            "transfer-encoding",
+          ].includes(key.toLowerCase())
       )
     );
-
-    // const headers = Object.fromEntries(request.headers);
-    // console.log("header from incoming request::", headers);
 
     const url = `${BASE_URL}/api/${path}${
       searchParams ? `?${searchParams}` : ""
     }`;
-
-    const fetchOptions: any = {
-      method,
-      headers: {
-        ...Object.fromEntries(request.headers),
-        "x-api-key": `${process.env.CHORA_CLUB_API_KEY}`,
-      },
-    };
-
-    if (requestBody) {
-      fetchOptions.body = JSON.stringify(requestBody);
-      fetchOptions.headers["Content-Type"] = "application/json";
-    }
 
     const response = await fetch(url, {
       method,

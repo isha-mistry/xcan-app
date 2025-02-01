@@ -25,6 +25,7 @@ export async function PUT(req: Request) {
     const client = await connectDB();
     const db = client.db();
     const collection = db.collection("office_hours");
+    const delegatesCollection = db.collection("delegates");
 
     // First, get the existing document
     const existingDoc = await collection.findOne({
@@ -91,16 +92,64 @@ export async function PUT(req: Request) {
     addFieldIfChanged("onchain_host_uid", updateFields.onchain_host_uid);
     addFieldIfChanged("nft_image", updateFields.nft_image);
 
+    if (
+      updateFields.onchain_host_uid &&
+      updateFields.onchain_host_uid !== existingMeeting.onchain_host_uid
+    ) {
+      addFieldIfChanged("onchain_host_uid", updateFields.onchain_host_uid);
+
+      // Update host's onchain count in delegates collection
+      await delegatesCollection.findOneAndUpdate(
+        { address: host_address },
+        {
+          $inc: {
+            [`meetingRecords.${dao_name}.officeHoursHosted.onchainCounts`]: 1,
+          },
+        }
+      );
+    }
+
+    if (
+      updateFields.meeting_status &&
+      updateFields.meeting_status !== existingMeeting.meeting_status
+    ) {
+      addFieldIfChanged("meeting_status", updateFields.meeting_status);
+
+      // Check if the new status is "Recorded" or "Finished"
+      if (["Recorded", "Finished"].includes(updateFields.meeting_status)) {
+        // Update host's total hosted count
+        await delegatesCollection.findOneAndUpdate(
+          { address: host_address },
+          {
+            $inc: {
+              [`meetingRecords.${dao_name}.officeHoursHosted.totalHostedOfficeHours`]: 1,
+            },
+          }
+        );
+
+        // Update total attended count for all attendees
+        if (existingMeeting.attendees && existingMeeting.attendees.length > 0) {
+          const updatePromises = existingMeeting.attendees.map(
+            (attendee: Attendee) =>
+              delegatesCollection.findOneAndUpdate(
+                { address: attendee.attendee_address },
+                {
+                  $inc: {
+                    [`meetingRecords.${dao_name}.officeHoursAttended.totalAttendedOfficeHours`]: 1,
+                  },
+                }
+              )
+          );
+          await Promise.all(updatePromises);
+        }
+      }
+    }
+
     // Handle attendees update
     if (attendees) {
-      // Convert single attendee object to array if necessary
       const attendeesArray = Array.isArray(attendees) ? attendees : [attendees];
 
-      // Validate each attendee has required address
-      const invalidAttendee = attendeesArray.find(
-        (attendee) => !attendee.attendee_address
-      );
-      if (invalidAttendee) {
+      if (attendeesArray.find((attendee) => !attendee.attendee_address)) {
         await client.close();
         return NextResponse.json(
           {
@@ -111,10 +160,12 @@ export async function PUT(req: Request) {
         );
       }
 
-      // Get current attendees or initialize empty array
       let currentAttendees = existingMeeting.attendees || [];
 
-      // Process attendees to maintain unique addresses and update UIDs
+      // Track new onchain UIDs to update counts
+      const newOnchainUids = new Set();
+
+      // Process attendees
       attendeesArray.forEach((newAttendee) => {
         const existingIndex = currentAttendees.findIndex(
           (existing: Attendee) =>
@@ -123,7 +174,7 @@ export async function PUT(req: Request) {
         );
 
         if (existingIndex === -1) {
-          // Add new attendee with only address if no UIDs provided
+          // Add new attendee
           currentAttendees.push({
             address: newAttendee.attendee_address,
             ...(newAttendee.attendee_uid && { uid: newAttendee.attendee_uid }),
@@ -131,20 +182,55 @@ export async function PUT(req: Request) {
               onchain_uid: newAttendee.attendee_onchain_uid,
             }),
           });
+
+          // Track new onchain UIDs
+          if (newAttendee.attendee_onchain_uid) {
+            newOnchainUids.add(newAttendee.attendee_address);
+          }
+
+          // If meeting is already Recorded or Finished, increment total attended count for new attendee
+          if (
+            ["Recorded", "Finished"].includes(existingMeeting.meeting_status)
+          ) {
+            delegatesCollection.findOneAndUpdate(
+              { address: newAttendee.attendee_address },
+              {
+                $inc: {
+                  [`meetingRecords.${dao_name}.officeHoursAttended.totalAttendedOfficeHours`]: 1,
+                },
+              }
+            );
+          }
         } else if (
           newAttendee.attendee_uid ||
           newAttendee.attendee_onchain_uid
         ) {
-          // Only update UIDs if provided, preserve existing address
+          // Update existing attendee
           if (newAttendee.attendee_uid) {
             currentAttendees[existingIndex].uid = newAttendee.attendee_uid;
           }
-          if (newAttendee.attendee_onchain_uid) {
+          if (
+            newAttendee.attendee_onchain_uid &&
+            !currentAttendees[existingIndex].onchain_uid
+          ) {
             currentAttendees[existingIndex].onchain_uid =
               newAttendee.attendee_onchain_uid;
+            newOnchainUids.add(newAttendee.attendee_address);
           }
         }
       });
+
+      // Update onchain counts for attendees
+      for (const attendeeAddress of newOnchainUids) {
+        await delegatesCollection.findOneAndUpdate(
+          { address: attendeeAddress },
+          {
+            $inc: {
+              [`meetingRecords.${dao_name}.officeHoursAttended.onchainCounts`]: 1,
+            },
+          }
+        );
+      }
 
       // Update attendees field
       fieldsToUpdate["dao.$[daoElem].meetings.$[meetingElem].attendees"] =

@@ -242,6 +242,16 @@ export async function POST(req: NextRequest, res: NextResponse) {
             ],
           }
         );
+
+        const usersCollection = db.collection("delegates");
+        await usersCollection.findOneAndUpdate(
+          { address: requestData.recipient },
+          {
+            $inc: {
+              [`meetingRecords.${requestData.daoName}.officeHoursHosted.offchainCounts`]: 1,
+            },
+          }
+        );
         client.close();
       } else if (requestData.meetingType === 4) {
         const client = await connectDB();
@@ -280,6 +290,16 @@ export async function POST(req: NextRequest, res: NextResponse) {
               { "meeting.meetingId": requestData.meetingId.split("/")[0] },
               { "attendee.attendee_address": requestData.recipient },
             ],
+          }
+        );
+
+        const usersCollection = db.collection("delegates");
+        await usersCollection.findOneAndUpdate(
+          { address: requestData.recipient },
+          {
+            $inc: {
+              [`meetingRecords.${requestData.daoName}.officeHoursAttended.offchainCounts`]: 1,
+            },
           }
         );
 
