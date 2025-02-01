@@ -3,7 +3,8 @@ import React, { useEffect, useState, useCallback, useMemo } from "react";
 import { useRouter } from "next-nprogress-bar";
 import toast, { Toaster } from "react-hot-toast";
 // import { useConnectModal, useChainModal } from "@rainbow-me/rainbowkit";
-import { useAccount } from "wagmi";
+import { useAccount, useReadContract } from "wagmi";
+import WalletAndPublicClient from "@/helpers/signer";
 import ErrorDisplay from "../ComponentUtils/ErrorDisplay";
 import { fetchEnsAddress } from "@/utils/ENSUtils";
 import DelegateTileModal from "../ComponentUtils/DelegateTileModal";
@@ -33,6 +34,18 @@ import { BrowserProvider, Contract, JsonRpcSigner } from "ethers";
 import { motion } from "framer-motion";
 import { Select, SelectItem } from "@nextui-org/react";
 import { calculateTempCpi } from "@/actions/calculatetempCpi";
+import { fetchApi } from "@/utils/api";
+import { Address } from "viem";
+
+interface GTMEvent {
+  event: string;
+  category: string;
+  action: string;
+  label: string;
+  value?: number;
+  delegateFrom?: "delegateList" | "specificDelegate";
+  delegationStatus?: "success" | "failure" | "pending";
+}
 
 const DELEGATES_PER_PAGE = 20;
 const DEBOUNCE_DELAY = 500;
@@ -67,6 +80,19 @@ function DelegatesList({ props }: { props: string }) {
   const { walletAddress } = useWalletAddress();
   const [tempCpi, setTempCpi] = useState();
   const [tempCpiCalling, setTempCpiCalling] = useState(true);
+
+  const pushToGTM = (eventData: GTMEvent) => {
+    if (typeof window !== "undefined" && window.dataLayer) {
+      window.dataLayer.push(eventData);
+    }
+  };
+  const { data: accountBalance }: any = useReadContract({
+    abi: dao_abi.abi,
+    address: "0x4200000000000000000000000000000000000042",
+    functionName: "balanceOf",
+    // args:['0x6eda5acaff7f5964e1ecc3fd61c62570c186ca0c' as Address]
+    args: [walletAddress as Address],
+  });
 
   const fetchDelegates = useCallback(async () => {
     setIsAPICalling(true);
@@ -158,7 +184,7 @@ function DelegatesList({ props }: { props: string }) {
     async (event: React.ChangeEvent<HTMLInputElement>) => {
       const query = event.target.value.trim(); // Get the input value
       setSearchQuery(query); // Immediately update the input field
-   // If the input is cleared, reset any search-related processing
+      // If the input is cleared, reset any search-related processing
       if (query === "") {
         console.log("Input cleared");
         debouncedSearch(""); // Optionally reset the query results
@@ -166,18 +192,18 @@ function DelegatesList({ props }: { props: string }) {
       }
       // Regex to check if the input is an Ethereum address
       const isEthereumAddress = /^0x[a-fA-F0-9]{40}$/.test(query);
-  
+
       if (isEthereumAddress) {
         // If it's an Ethereum address, directly query it
         debouncedSearch(query);
       } else {
-         // Validate input as a potential ENS name before resolving
-          const isValidEnsName = /^[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)+$/.test(query);
+        // Validate input as a potential ENS name before resolving
+        const isValidEnsName = /^[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)+$/.test(query);
 
-          if (!isValidEnsName) {
-            console.warn("Invalid ENS name");
-            return;
-          }
+        if (!isValidEnsName) {
+          console.warn("Invalid ENS name");
+          return;
+        }
         // Treat it as an ENS name and resolve the address
         try {
           const resolvedAddress = await fetchEnsAddress(query); // Resolve ENS to address
@@ -194,8 +220,6 @@ function DelegatesList({ props }: { props: string }) {
     },
     [debouncedSearch] // Ensure debounce function is included in dependencies
   );
-  
-  
 
   // useEffect(() => {
   //   return () => {
@@ -209,6 +233,13 @@ function DelegatesList({ props }: { props: string }) {
       login();
       return;
     }
+    pushToGTM({
+      event: "delegate_modal_open",
+      category: "Delegate Engagement",
+      action: "Delegate Modal Open",
+      label: "Delegate Modal Open - Delegate List",
+      delegateFrom: "delegateList",
+    });
     const delegatorAddress = walletAddress;
     const toAddress = delegateObject.delegate;
     const token = await getAccessToken();
@@ -288,15 +319,44 @@ function DelegatesList({ props }: { props: string }) {
   //   }
   // };
 
-  const handleDelegateVotes = async (to: string) => {
+  function getDaoNameFromUrl() {
+    if (typeof window !== "undefined") {
+      const url = window.location.href;
+      if (url.includes("optimism")) return "optimism";
+      if (url.includes("arbitrum")) return "arbitrum";
+    }
+    return "";
+  }
+
+  const handleDelegateVotes = async (
+    to: string,
+    from_delegate: string,
+    tokens: any
+  ) => {
     if (!walletAddress) {
       toast.error("Please connect your wallet!");
+      pushToGTM({
+        event: "delegation_attempt",
+        category: "Delegate Engagement",
+        action: "Delegation Attempt",
+        label: "Delegation Attempt - Delegate Tile Modal",
+        delegateFrom: "delegateList",
+        delegationStatus: "failure",
+      });
       return;
     }
 
     const chainAddress = getChainAddress(chain?.name);
     if (!chainAddress) {
       toast.error("Invalid chain address,try again!");
+      pushToGTM({
+        event: "delegation_attempt",
+        category: "Delegate Engagement",
+        action: "Delegation Attempt",
+        label: "Delegation Attempt - Delegate Tile Modal",
+        delegateFrom: "delegateList",
+        delegationStatus: "failure",
+      });
       return;
     }
 
@@ -305,13 +365,28 @@ function DelegatesList({ props }: { props: string }) {
 
     try {
       setDelegatingToAddr(true);
+      pushToGTM({
+        event: "delegation_attempt",
+        category: "Delegate Engagement",
+        action: "Delegation Attempt",
+        label: "Delegation Attempt - Delegate Tile Modal",
+        delegateFrom: "delegateList",
+        delegationStatus: "pending",
+      });
 
       // For Privy wallets, we should get the provider from the wallet instance
-      // Assuming you have access to the Privy wallet instance
       const privyProvider = await wallets[0]?.getEthereumProvider();
 
       if (!privyProvider) {
         toast.error("Could not get wallet provider");
+        pushToGTM({
+          event: "delegation_attempt",
+          category: "Delegate Engagement",
+          action: "Delegation Attempt",
+          label: "Delegation Attempt - Delegate Tile Modal",
+          delegateFrom: "delegateList",
+          delegationStatus: "failure",
+        });
         return;
       }
 
@@ -335,6 +410,14 @@ function DelegatesList({ props }: { props: string }) {
           });
         } catch (switchError) {
           console.error("Failed to switch network:", switchError);
+          pushToGTM({
+            event: "delegation_attempt",
+            category: "Delegate Engagement",
+            action: "Delegation Attempt",
+            label: "Delegation Attempt - Delegate Tile Modal",
+            delegateFrom: "delegateList",
+            delegationStatus: "failure",
+          });
           return;
         }
         return;
@@ -348,12 +431,66 @@ function DelegatesList({ props }: { props: string }) {
 
       // console.log('Initiating delegation transaction...');
       const tx = await contract.delegate(to);
-      // console.log('Waiting for transaction confirmation...');
       await tx.wait();
+      pushToGTM({
+        event: "delegation_success",
+        category: "Delegate Engagement",
+        action: "Delegation Success",
+        label: `Delegation Success - Delegate Tile Modal - ${getDaoNameFromUrl()}`,
+        delegateFrom: "delegateList",
+        delegationStatus: "success",
+      });
 
       setConfettiVisible(true);
       setTimeout(() => setConfettiVisible(false), 5000);
       toast.success("Delegation successful!");
+
+      const DAO = props;
+      const Token =
+        tokens === BigInt(0) || tokens === undefined
+          ? "0.00"
+          : Number(tokens / BigInt(Math.pow(10, 18))).toFixed(2); //For serialize bigInt
+      const Clienttoken = await getAccessToken();
+      const myHeaders: HeadersInit = {
+        "Content-Type": "application/json",
+        ...(walletAddress && {
+          "x-wallet-address": walletAddress,
+          Authorization: `Bearer ${Clienttoken}`,
+        }),
+      };
+
+      const apiCallData = {
+        address: walletAddress,
+        delegation: {
+          [DAO]: [
+            {
+              delegator: walletAddress,
+              to_delegator: to,
+              from_delegate:
+                from_delegate === "N/A"
+                  ? "0x0000000000000000000000000000000000000000"
+                  : from_delegate,
+              token: Token,
+              page: "Delegatelist",
+              timestamp: new Date(),
+            },
+          ],
+        },
+      };
+
+      const response = await fetchApi("/track-delegation", {
+        method: "POST",
+        headers: myHeaders,
+        body: JSON.stringify(apiCallData),
+      });
+
+      if (response.status === 200) {
+        console.log("Done!");
+      } else {
+        throw new Error(
+          `Failed to save delegation data! Status: ${response.status}`
+        );
+      }
     } catch (error) {
       console.error("Delegation failed:", error);
 
@@ -375,6 +512,14 @@ function DelegatesList({ props }: { props: string }) {
         toast.error("Transaction failed. Please try again");
         console.error("Detailed error:", error);
       }
+      pushToGTM({
+        event: "delegation_failure",
+        category: "Delegate Engagement",
+        action: "Delegation Failure",
+        label: `Delegation Failure - Delegate Tile Modal - ${getDaoNameFromUrl()}`,
+        delegateFrom: "delegateList",
+        delegationStatus: "failure",
+      });
     } finally {
       setDelegatingToAddr(false);
     }
@@ -505,13 +650,13 @@ function DelegatesList({ props }: { props: string }) {
                 /> */}
       <div className="flex flex-col md:flex-row justify-between items-center mb-8">
         <div className="relative w-full md:w-96 mb-4 md:mb-0">
-        <input
-          type="text"
-          placeholder="Search by exact ENS or Address"
-          className="w-full pl-10 pr-4 py-2 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          value={searchQuery}
-          onChange={handleSearchChange}
-        />
+          <input
+            type="text"
+            placeholder="Search by exact ENS or Address"
+            className="w-full pl-10 pr-4 py-2 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            value={searchQuery}
+            onChange={handleSearchChange}
+          />
 
           <CiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
         </div>
@@ -522,8 +667,12 @@ function DelegatesList({ props }: { props: string }) {
           aria-label="Sort delegates"
           defaultSelectedKeys={["random"]}
         >
-        <SelectItem key="random" value="random">Random Delegates</SelectItem>
-        <SelectItem key="default" value="default">High-Weight Delegates</SelectItem>
+          <SelectItem key="random" value="random">
+            Random Delegates
+          </SelectItem>
+          <SelectItem key="default" value="default">
+            High-Weight Delegates
+          </SelectItem>
           {/* <SelectItem key="most-delegators" value="most-delegators">Most Delegators</SelectItem> */}
         </Select>
       </div>
@@ -537,7 +686,11 @@ function DelegatesList({ props }: { props: string }) {
           isOpen={delegateOpen}
           closeModal={() => setDelegateOpen(false)}
           handleDelegateVotes={() =>
-            handleDelegateVotes(selectedDelegate.delegate)
+            handleDelegateVotes(
+              selectedDelegate.delegate,
+              delegateDetails || "N/A",
+              accountBalance
+            )
           }
           fromDelegate={delegateDetails || "N/A"}
           delegateName={

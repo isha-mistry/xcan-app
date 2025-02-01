@@ -161,4 +161,5 @@ export interface OfficeHoursProps {
   meeting_endtime:number;
   views?: number;
   nft_image?: string;
+  deployedContractAddress:string;
 }

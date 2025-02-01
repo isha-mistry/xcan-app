@@ -29,6 +29,21 @@ function RecordedSessions() {
   const [activeButton, setActiveButton] = useState("all");
   const [error, setError] = useState<string | null>(null);
   const [openSearch, setOpenSearch] = useState(false);
+  const renderStartTime = useRef<number | null>(null);
+
+  useEffect(() => {
+    // Capture the start time
+    renderStartTime.current = performance.now();
+  }, []);
+
+  useEffect(() => {
+    if (!isLoading) {
+      // Capture the end time and calculate render duration
+      const renderEndTime = performance.now();
+      const renderDuration = renderEndTime - (renderStartTime.current || 0);
+      //console.log(`RecordedSessions component rendered in ${renderDuration.toFixed(2)} ms`);
+    }
+  }, [isLoading]);
 
   useEffect(() => {
     getRecordedMeetings();

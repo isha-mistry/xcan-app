@@ -19,6 +19,8 @@ import {
   SOCKET_BASE_URL,
 } from "@/config/constants";
 import { io } from "socket.io-client";
+// import redis from "@/utils/redis";
+import { cacheWrapper } from "@/utils/cacheWrapper";
 
 interface AttestOffchainRequestBody {
   recipient: string;
@@ -390,6 +392,10 @@ export async function POST(req: NextRequest, res: NextResponse) {
       console.error("WebSocket error:", err);
     });
     await client.close();
+    if(cacheWrapper.isAvailable){
+      const cacheKey = `Notification:${requestData.recipient}`;
+      await cacheWrapper.delete(cacheKey);
+    }
 
     return NextResponse.json(
       { success: true, offchainAttestation, url, uploadstatus },

@@ -20,6 +20,14 @@ interface DaoSelectionProps {
   featureSchedule?: boolean;
 }
 
+interface GTMEvent {
+  event: string;
+  category: string;
+  action: string;
+  label?: string;
+  value?: number;
+}
+
 function DaoSelection({
   onClose,
   joinAsDelegate,
@@ -37,17 +45,37 @@ function DaoSelection({
   const { authenticated } = usePrivy();
   const [showWalletPopup, setShowWalletPopup] = useState(false);
 
+  const pushToGTM = (eventData: GTMEvent) => {
+    if (typeof window !== 'undefined' && window.dataLayer) {
+      window.dataLayer.push(eventData);
+    }
+  };
+
   const handleNavigation = (url: string) => {
     setIsNavigating(true);
     router.push(url);
   };
 
   const handleOptimism = () => {
+    pushToGTM({
+      event: 'dao_selection',
+      category: 'DAO Selection',
+      action: 'Optimism DAO Selected',
+      label: 'optimism',  // This will be tracked as dao_name
+      value: joinAsDelegate ? 1 : feature ? 2 : 3  // This will be tracked as journey_type
+    });
     checkDelegateStatus("optimism");
     setDao("optimism");
   };
   
   const handleArbitrum = () => {
+    pushToGTM({
+      event: 'dao_selection',
+      category: 'DAO Selection',
+      action: 'Arbitrum DAO Selected',
+      label: 'arbitrum',
+      value: joinAsDelegate ? 1 : feature ? 2 : 3
+    });
     checkDelegateStatus("arbitrum");
     setDao("arbitrum");
   };
@@ -101,6 +129,13 @@ function DaoSelection({
       const isDelegate = isContractDelegate || isApiDelegate;
   
       if (isDelegate) {
+        pushToGTM({
+          event: 'delegate_verification',
+          category: 'Verification',
+          action: 'Delegate Success',
+          label: network,
+          value: 1
+        });
         if (feature) {
           setShowPopup(true);
         } else if (joinAsDelegate || featureSchedule) {
@@ -114,9 +149,23 @@ function DaoSelection({
           }
         }
       } else {
+        pushToGTM({
+          event: 'delegate_verification',
+          category: 'Verification',
+          action: 'Delegate Failed',
+          label: network,
+          value: 0
+        });
         setShowError(true);
       }
     } catch (error) {
+      pushToGTM({
+        event: 'delegate_verification',
+        category: 'Verification',
+        action: 'Delegate Failed',
+        label: error instanceof Error ? error.message : 'Unknown error',
+        value: 0
+      });
       console.error("Error in delegate status check:", error);
       setShowError(true);
     } finally {

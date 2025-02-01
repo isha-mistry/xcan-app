@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/config/connectDB";
+import { cacheWrapper } from "@/utils/cacheWrapper";
 
 export const revalidate = 0;
 
@@ -7,7 +8,7 @@ export async function GET(req: NextRequest, res: NextResponse) {
   let client;
   try {
     // Connect to MongoDB
-   client = await connectDB();
+    client = await connectDB();
 
     // Access the collections
     const db = client.db();
@@ -19,6 +20,20 @@ export async function GET(req: NextRequest, res: NextResponse) {
     const page = parseInt(url.searchParams.get("page") || "1");
     const limit = parseInt(url.searchParams.get("limit") || "20");
     const offset = (page - 1) * limit;
+
+    const cacheKey = "meetings"; // Single cache key for all meeting data
+
+    // Try to get from cache first
+    if (cacheWrapper.isAvailable) {
+      const cacheValue = await cacheWrapper.get(cacheKey);
+      if (cacheValue) {
+        console.log("Serving from cache meetings!");
+        return NextResponse.json(
+          { success: true, data: JSON.parse(cacheValue) },
+          { status: 200 }
+        );
+      }
+    }
 
     // Fetch total count of recorded meetings
     const totalCount = await meetingsCollection.countDocuments({
@@ -61,7 +76,12 @@ export async function GET(req: NextRequest, res: NextResponse) {
       return { ...meeting, hostInfo, attendees };
     });
 
+    if(cacheWrapper.isAvailable){
+      await cacheWrapper.set(cacheKey,JSON.stringify(mergedData),300);
+    }
+
     await client.close();
+    console.log("Serving from database!");
 
     // Return the merged data with pagination info
     return NextResponse.json(
@@ -80,9 +100,8 @@ export async function GET(req: NextRequest, res: NextResponse) {
       { success: false, error: "Internal Server Error" },
       { status: 500 }
     );
-  }
-  finally{
-    if(client){
+  } finally {
+    if (client) {
       client.close();
     }
   }

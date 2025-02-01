@@ -1,4 +1,5 @@
 import { connectDB } from "@/config/connectDB";
+import { cacheWrapper } from "@/utils/cacheWrapper";
 // import { Item } from "@radix-ui/react-dropdown-menu";
 import { NextApiRequest, NextApiResponse } from "next";
 import { NextResponse, NextRequest } from "next/server";
@@ -275,6 +276,11 @@ export async function PUT(
       { $set: updateFields }
     );
     console.log("Delegate document updated:", result);
+
+    if(cacheWrapper.isAvailable){
+      const cacheKey = `profile:${address}`;
+      await cacheWrapper.delete(cacheKey);
+    }
 
     client.close();
     console.log("MongoDB connection closed");

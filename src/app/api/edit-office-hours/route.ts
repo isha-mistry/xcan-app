@@ -91,6 +91,7 @@ export async function PUT(req: Request) {
     addFieldIfChanged("host_uid", updateFields.uid_host);
     addFieldIfChanged("onchain_host_uid", updateFields.onchain_host_uid);
     addFieldIfChanged("nft_image", updateFields.nft_image);
+    addFieldIfChanged("deployedContractAddress",updateFields.deployedContractAddress);
 
     if (
       updateFields.onchain_host_uid &&
