@@ -10,7 +10,7 @@ import {
 import { imageCIDs } from "@/config/staticDataUtils";
 import { SessionInterface } from "@/types/MeetingTypes";
 import { compileBookedSessionTemplate, sendMail } from "@/lib/mail";
-import redis from "@/utils/redis";
+import { cacheWrapper } from "@/utils/cacheWrapper";
 
 function getRandomElementFromArray(arr: any[]) {
   const randomIndex = Math.floor(Math.random() * arr.length);
@@ -177,8 +177,12 @@ export async function POST(req: NextRequest) {
                   notificationToGuest.content
                 ),
               });
-              await redis.del(`Notification:${guestAddress}`)
-              await redis.del(`Notification:${host_address}`)
+              if(cacheWrapper.isAvailable){
+                const cacheKey1 = `Notification:${guestAddress}`;
+                const cacheKey2 = `Notification:${host_address}`;
+                await cacheWrapper.delete(cacheKey1);
+                await cacheWrapper.delete(cacheKey2);
+              }
             } catch (error) {
               console.error("Error sending mail:", error);
             }
