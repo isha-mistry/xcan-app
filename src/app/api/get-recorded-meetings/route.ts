@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/config/connectDB";
-import redis from "@/utils/redis";
+import { cacheWrapper } from "@/utils/cacheWrapper";
 
 export const revalidate = 0;
 
@@ -8,7 +8,7 @@ export async function GET(req: NextRequest, res: NextResponse) {
   let client;
   try {
     // Connect to MongoDB
-   client = await connectDB();
+    client = await connectDB();
 
     // Access the collections
     const db = client.db();
@@ -23,12 +23,16 @@ export async function GET(req: NextRequest, res: NextResponse) {
 
     const cacheKey = "meetings"; // Single cache key for all meeting data
 
-    // Check Redis for cached data
-    const cachedData = await redis.get(cacheKey);
-    if (cachedData) {
-      console.log("Serving from cache!");
-      // return NextResponse.json(JSON.parse(cachedData), { status: 200 });
-      return NextResponse.json({success:true,data:JSON.parse(cachedData)},{status:200})
+    // Try to get from cache first
+    if (cacheWrapper.isAvailable) {
+      const cacheValue = await cacheWrapper.get(cacheKey);
+      if (cacheValue) {
+        console.log("Serving from cache meetings!");
+        return NextResponse.json(
+          { success: true, data: JSON.parse(cacheValue) },
+          { status: 200 }
+        );
+      }
     }
 
     // Fetch total count of recorded meetings
@@ -72,7 +76,9 @@ export async function GET(req: NextRequest, res: NextResponse) {
       return { ...meeting, hostInfo, attendees };
     });
 
-    await redis.set(cacheKey, JSON.stringify(mergedData), "EX", 300); // Cache for 10 mintues
+    if(cacheWrapper.isAvailable){
+      await cacheWrapper.set(cacheKey,JSON.stringify(mergedData),300);
+    }
 
     await client.close();
     console.log("Serving from database!");
@@ -94,9 +100,8 @@ export async function GET(req: NextRequest, res: NextResponse) {
       { success: false, error: "Internal Server Error" },
       { status: 500 }
     );
-  }
-  finally{
-    if(client){
+  } finally {
+    if (client) {
       client.close();
     }
   }

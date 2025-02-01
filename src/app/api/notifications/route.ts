@@ -1,21 +1,24 @@
 // api/fetch-notifications.ts
 import { connectDB } from "@/config/connectDB";
 import { NextRequest, NextResponse } from "next/server";
-import redis from "@/utils/redis";
+import { cacheWrapper } from "@/utils/cacheWrapper";
 
 export async function POST(req: NextRequest) {
   const { address } = await req.json();
   let client;
   try {
     const cacheKey = `Notification:${address}`;
-    const cacheValue = await redis.get(cacheKey);
 
-    if (cacheValue) {
-      console.log("Serving from cache notifications!");
-      return NextResponse.json(
-        { success: true, data: JSON.parse(cacheValue) },
-        { status: 200 }
-      );
+    // Try to get from cache first
+    if (cacheWrapper.isAvailable) {
+      const cacheValue = await cacheWrapper.get(cacheKey);
+      if (cacheValue) {
+        console.log("Serving from cache notifications!");
+        return NextResponse.json(
+          { success: true, data: JSON.parse(cacheValue) },
+          { status: 200 }
+        );
+      }
     }
 
     client = await connectDB();
@@ -25,12 +28,12 @@ export async function POST(req: NextRequest) {
     const notifications = await collection
       .find({ receiver_address: address })
       .toArray();
-   
-      await redis.set(cacheKey, JSON.stringify(notifications));
-      await redis.expire(cacheKey, 600); //10 Mintues
 
+    if (cacheWrapper.isAvailable) {
+      await cacheWrapper.set(cacheKey, JSON.stringify(notifications), 300);
+    }
 
-      console.log("Serving from database for notifications.");
+    console.log("Serving from database for notifications.");
 
     if (notifications.length > 0) {
       return NextResponse.json(

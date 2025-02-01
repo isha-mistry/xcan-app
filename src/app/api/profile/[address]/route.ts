@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/config/connectDB";
-import redis from "@/utils/redis";
+import { cacheWrapper } from "@/utils/cacheWrapper";
 
 type network_details = {
   dao_name: string;
@@ -97,16 +97,16 @@ export async function POST(
     const address = req.url.split("profile/")[1];
     const cacheKey = `profile:${address}`;
 
-    // Check if data for the specific address is in the cache
-
-    const cacheValue = await redis.get(cacheKey);
-
-    if (cacheValue) {
-      console.log("Serving from cache profile!");
-      return NextResponse.json(
-        { success: true, data: JSON.parse(cacheValue) },
-        { status: 200 }
-      );
+    // Try to get from cache first
+    if (cacheWrapper.isAvailable) {
+      const cacheValue = await cacheWrapper.get(cacheKey);
+      if (cacheValue) {
+        console.log("Serving from cache profile!");
+        return NextResponse.json(
+          { success: true, data: JSON.parse(cacheValue) },
+          { status: 200 }
+        );
+      }
     }
 
     const client = await connectDB();
@@ -122,13 +122,13 @@ export async function POST(
       })
       .toArray();
 
-    //Cache the data for the specific address
-    await redis.set(cacheKey, JSON.stringify(documents));
-    await redis.expire(cacheKey, 3600);
+
+    // Try to cache the result if Redis is available
+    if (cacheWrapper.isAvailable) {
+      await cacheWrapper.set(cacheKey, JSON.stringify(documents), 3600);
+    }
 
     client.close();
-
-    console.log("Serving from database and updating cache");
 
     // Return the found documents
     return NextResponse.json(

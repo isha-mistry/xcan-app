@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/config/connectDB";
-import redis from "@/utils/redis";
+import { cacheWrapper } from "@/utils/cacheWrapper";
 
 type follow_activity = {
   action: string;
@@ -45,31 +45,31 @@ export async function POST(
     //  Generate a unique cache key based on the address
     const cacheKey = `Follower:${address}`;
 
-    // Check if data for the specific address is in the cache
-    const cacheValue = await redis.get(cacheKey);
-
-    if (cacheValue) {
-      console.log('Serving from cache followers!');
-      return NextResponse.json(
-        { success: true, data: JSON.parse(cacheValue) },
-        { status: 200 }
-      );
+    // Try to get from cache first
+    if (cacheWrapper.isAvailable) {
+      const cacheValue = await cacheWrapper.get(cacheKey);
+      if (cacheValue) {
+        console.log("Serving from cache followers!");
+        return NextResponse.json(
+          { success: true, data: JSON.parse(cacheValue) },
+          { status: 200 }
+        );
+      }
     }
 
-    // console.log("Finding documents for address in save follower:", address);
+  
     const documents = await collection
       .find({
         address: { $regex: `^${address}$`, $options: "i" },
       })
       .toArray();
 
-    // console.log(documents[0]);
-
-    await redis.set(cacheKey, JSON.stringify(documents)); 
-    await redis.expire(cacheKey, 3600); // 1 hour
+    if(cacheWrapper.isAvailable){
+      await cacheWrapper.set(cacheKey,JSON.stringify(documents),3600);
+    }
 
     client.close();
-    console.log('Serving from database!');
+    console.log("Serving from database!");
     return NextResponse.json(
       { success: true, data: documents },
       { status: 200 }
@@ -101,9 +101,12 @@ export async function PUT(req: NextRequest) {
     //   await db.createCollection("delegate_follow");
     // }
 
-    //removing cache key for maintain consistency of user data 
+    //removing cache key for maintain consistency of user data
     const cacheKey = `Follower:${follower_address}`;
-    await redis.del(cacheKey);
+
+    if(cacheWrapper.isAvailable){
+      await cacheWrapper.delete(cacheKey);
+    }
 
     const collection = db.collection("delegate_follow");
 
