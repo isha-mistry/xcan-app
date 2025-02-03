@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/config/connectDB";
+import { cacheWrapper } from "@/utils/cacheWrapper";
 
 type network_details = {
   dao_name: string;
@@ -33,7 +34,7 @@ interface DelegateResponseBody {
     displayName: string;
     emailId: string;
     isEmailVisible: boolean;
-    createdAt:Date;
+    createdAt: Date;
     socialHandles: {
       twitter: string;
       discord: string;
@@ -93,18 +94,26 @@ export async function POST(
 
   try {
     // Connect to MongoDB
-    // console.log("Connecting to MongoDB...");
+    const address = req.url.split("profile/")[1];
+    const cacheKey = `profile:${address}`;
+
+    // Try to get from cache first
+    if (cacheWrapper.isAvailable) {
+      const cacheValue = await cacheWrapper.get(cacheKey);
+      if (cacheValue) {
+        console.log("Serving from cache profile!");
+        return NextResponse.json(
+          { success: true, data: JSON.parse(cacheValue) },
+          { status: 200 }
+        );
+      }
+    }
+
     const client = await connectDB();
-    // console.log("Connected to MongoDB");
 
     // Access the collection
     const db = client.db();
     const collection = db.collection("delegates");
-
-    // Extract address from request parameters
-    const address = req.url.split("profile/")[1];
-
-    // console.log("Line 171 of front-end side...",address)
 
     // Find documents based on address
     const documents = await collection
@@ -113,10 +122,13 @@ export async function POST(
       })
       .toArray();
 
-    // console.log("Line 182...",documents);  
+
+    // Try to cache the result if Redis is available
+    if (cacheWrapper.isAvailable) {
+      await cacheWrapper.set(cacheKey, JSON.stringify(documents), 3600);
+    }
 
     client.close();
-    // console.log("MongoDB connection closed");
 
     // Return the found documents
     return NextResponse.json(

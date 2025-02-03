@@ -1,60 +1,253 @@
-// Import necessary modules and interfaces
 import { connectDB } from "@/config/connectDB";
 import { NextResponse, NextRequest } from "next/server";
+import { Meeting, OfficeHoursDocument } from "@/types/OfficeHoursTypes";
 
-// Define the response body type
-interface OfficeHours {
-  _id: string;
-  host_address: string;
-  office_hours_slot: Date;
-  title: string;
-  description: string;
-  meeting_status: string;
-  dao_name: string;
-  office_hours_status: string;
-}
+export async function GET(req: NextRequest) {
+  let client;
 
-// Define enum for office hours status
-enum OfficeHoursStatus {
-  Active = "active",
-  Inactive = "inactive",
-  Ongoing = "ongoing",
-}
-
-export async function POST(req: NextRequest, res: NextResponse<OfficeHours[]>) {
   try {
-    // Extract the office_hours_status query parameter from the request
-    const { office_hours_status } = await req.json();
+    const url = new URL(req.url);
+    const host_address = url.searchParams.get("host_address");
+    const dao_name = url.searchParams.get("dao_name");
 
-    // Connect to MongoDB database
-    // console.log("Connecting to MongoDB...");
-    const client = await connectDB();
-    // console.log("Connected to MongoDB");
-
-    // Access the collection
+    client = await connectDB();
     const db = client.db();
     const collection = db.collection("office_hours");
+    const attestCollection = db.collection("attestation");
 
-    // Find office hours documents based on the provided office_hours_status
-    // console.log(`Fetching ${office_hours_status} office hours documents...`);
-    const officeHours = await collection
-      .find({ meeting_status: office_hours_status })
-      .toArray();
+    let query: any = {};
 
-    // console.log(
-    //   `${office_hours_status} office hours documents found:`,
-    //   officeHours
-    // );
+    // Modified query to fetch both hosted meetings and meetings where user is an attendee
+    if (host_address && dao_name) {
+      query = {
+        $and: [
+          { "dao.name": dao_name },
+          {
+            $or: [
+              { host_address: host_address },
+              { "dao.meetings.attendees.attendee_address": host_address },
+            ],
+          },
+        ],
+      };
+    } else if (dao_name) {
+      query = {
+        "dao.name": dao_name,
+      };
+    } else if (host_address) {
+      query = {
+        $or: [
+          { host_address: host_address },
+          { "dao.meetings.attendees.attendee_address": host_address },
+        ],
+      };
+    }
 
-    client.close();
-    // console.log("MongoDB connection closed");
+    const results = await collection.find(query).toArray();
 
-    return NextResponse.json(officeHours, { status: 200 });
+    if (!results.length) {
+      return NextResponse.json(
+        {
+          success: true,
+          data: {
+            ongoing: [],
+            upcoming: [],
+            recorded: [],
+            hosted: [],
+            attended: [],
+          },
+        },
+        { status: 200 }
+      );
+    }
+
+    // Create categorized meeting arrays
+    const ongoing: Array<Meeting & { host_address: string; dao_name: string }> =
+      [];
+    const upcoming: Array<
+      Meeting & { host_address: string; dao_name: string }
+    > = [];
+    const recorded: Array<
+      Meeting & { host_address: string; dao_name: string }
+    > = [];
+    const hosted: Array<Meeting & { host_address: string; dao_name: string }> =
+      [];
+    const attended: Array<
+      Meeting & { host_address: string; dao_name: string }
+    > = [];
+
+    const currentTime = new Date().getTime();
+    const bufferTime = currentTime - 60 * 60 * 1000;
+
+    await Promise.all(
+      results.flatMap((result) => {
+        const relevantDaos = dao_name
+          ? result.dao.filter((d: any) => d.name === dao_name)
+          : result.dao;
+
+        return relevantDaos.flatMap((dao: any) => {
+          return (dao.meetings || []).map(async (meeting: Meeting) => {
+            const meetingDocument = {
+              ...meeting,
+              host_address: result.host_address,
+              dao_name: dao.name,
+              meetingType: 0,
+              meeting_starttime: null,
+              meeting_endtime: null,
+              isEligible: false,
+            };
+
+            const attendanceVerification = await attestCollection.findOne(
+              {
+                roomId: meetingDocument.meetingId,
+                $or: [
+                  {
+                    "hosts.metadata.walletAddress": {
+                      $regex: `^${host_address}$`,
+                      $options: "i",
+                    },
+                  },
+                  {
+                    "participants.metadata.walletAddress": {
+                      $regex: `^${host_address}$`,
+                      $options: "i",
+                    },
+                  },
+                ],
+              },
+              {
+                projection: {
+                  "hosts.metadata.walletAddress": 1,
+                  "participants.metadata.walletAddress": 1,
+                  startTime: 1,
+                  endTime: 1,
+                  meetingType: 1,
+                },
+              }
+            );
+
+            const meetingStartTime = new Date(meeting.startTime || 0).getTime();
+            const oneDayAgo = currentTime - 6 * 60 * 60 * 1000;
+
+            // Categorize meetings
+            switch (meeting.meeting_status) {
+              case "Ongoing":
+                if (meetingStartTime > oneDayAgo) {
+                  ongoing.push(meetingDocument);
+                }
+                break;
+              case "Upcoming":
+                if (meetingStartTime > bufferTime) {
+                  upcoming.push(meetingDocument);
+                }
+                break;
+              case "Recorded":
+                recorded.push(meetingDocument);
+
+                // Check if this is a hosted meeting
+                if (result.host_address === host_address) {
+                  // console.log(
+                  //   `Line 141 ${result.host_address} and ${host_address}`
+                  // );
+                  meetingDocument.meeting_starttime =
+                    attendanceVerification?.startTime;
+                  meetingDocument.meeting_endtime =
+                    attendanceVerification?.endTime;
+                  meetingDocument.meetingType = 3;
+                  const isHost = attendanceVerification?.hosts?.some(
+                    (host: { metadata: { walletAddress: string } }) =>
+                      host.metadata?.walletAddress?.toLowerCase() ===
+                      host_address?.toLowerCase()
+                  );
+                  meetingDocument.isEligible = isHost;
+                  hosted.push(meetingDocument);
+                }
+
+                if (
+                  meeting.attendees?.some(
+                    (attendee) => attendee.attendee_address === host_address
+                  )
+                ) {
+                  meetingDocument.meeting_starttime =
+                    attendanceVerification?.startTime;
+                  meetingDocument.meeting_endtime =
+                    attendanceVerification?.endTime;
+                  meetingDocument.meetingType = 4;
+                  const isParticipant =
+                    attendanceVerification?.participants?.some(
+                      (participant: { metadata: { walletAddress: string } }) =>
+                        participant.metadata?.walletAddress?.toLowerCase() ===
+                        host_address?.toLowerCase()
+                    );
+                  meetingDocument.isEligible = isParticipant;
+                  attended.push(meetingDocument);
+                }
+
+              // Check if this is an attended meeting (where user is not the host)
+              // if (
+              //   host_address &&
+              //   result.host_address !== host_address &&
+              //   meeting.attendees?.some(
+              //     (attendee) => attendee.attendee_address === host_address
+              //   )
+              // ) {
+              //   meetingDocument.meeting_starttime =
+              //     attendanceVerification?.startTime;
+              //   meetingDocument.meeting_endtime =
+              //     attendanceVerification?.endTime;
+              //   meetingDocument.meetingType = 4;
+              //   const isParticipant =
+              //     attendanceVerification?.participants?.some(
+              //       (participant: { metadata: { walletAddress: string } }) =>
+              //         participant.metadata?.walletAddress?.toLowerCase() ===
+              //         host_address?.toLowerCase()
+              //     );
+              //   meetingDocument.isEligible = isParticipant;
+              //   attended.push(meetingDocument);
+              // }
+              // break;
+            }
+          });
+        });
+      })
+    );
+
+    const sortAscending = (a: Meeting, b: Meeting) => {
+      const dateA = new Date(a.startTime || 0).getTime();
+      const dateB = new Date(b.startTime || 0).getTime();
+      return dateA - dateB;
+    };
+
+    const sortDescending = (a: Meeting, b: Meeting) => {
+      const dateA = new Date(a.startTime || 0).getTime();
+      const dateB = new Date(b.startTime || 0).getTime();
+      return dateB - dateA;
+    };
+
+    await client.close();
+
+    return NextResponse.json(
+      {
+        success: true,
+        data: {
+          ongoing: ongoing.sort(sortAscending),
+          upcoming: upcoming.sort(sortAscending),
+          recorded: recorded.sort(sortDescending),
+          hosted: hosted.sort(sortDescending),
+          attended: attended.sort(sortDescending),
+        },
+      },
+      { status: 200 }
+    );
   } catch (error) {
-    console.error(`Error fetching office hours:`, error);
+    console.error("Error fetching meetings:", error);
     return NextResponse.json(
       { error: "Internal Server Error" },
       { status: 500 }
     );
+  } finally {
+    if (client) {
+      await client.close();
+    }
   }
 }

@@ -10,7 +10,14 @@ export async function PUT(req: NextRequest, res: NextResponse) {
 
   try {
     // Parse the request body once
-    const { clientToken, meetingId } = await req.json();
+    const { clientToken, meetingId, collection } = await req.json();
+
+    if (!clientToken || !meetingId || !collection) {
+      return NextResponse.json(
+        { error: "Invalid request body" },
+        { status: 400 }
+      );
+    }
 
     // Create a unique identifier based on clientToken
     const identifier = createHash("sha256").update(clientToken).digest("hex");
@@ -32,31 +39,95 @@ export async function PUT(req: NextRequest, res: NextResponse) {
 
     client = await connectDB();
     const db = client.db();
-    const collection = db.collection("meetings");
+    const collectionRef = db.collection(collection);
 
-    // Use findOneAndUpdate with an aggregation pipeline
-    const result = await collection.findOneAndUpdate(
-      { meetingId: meetingId, meeting_status: "Recorded" },
-      [
-        {
-          $set: {
-            views: {
-              $cond: {
-                if: { $isNumber: "$views" },
-                then: { $add: ["$views", 1] },
-                else: 1,
+    if (collection === "meetings") {
+      // Handle meetings collection
+      const result = await collectionRef.findOneAndUpdate(
+        { meetingId: meetingId, meeting_status: "Recorded" },
+        [
+          {
+            $set: {
+              views: {
+                $cond: {
+                  if: { $isNumber: "$views" },
+                  then: { $add: ["$views", 1] },
+                  else: 1,
+                },
               },
             },
           },
-        },
-      ],
-      { returnDocument: "after", upsert: false }
-    );
+        ],
+        { returnDocument: "after", upsert: false }
+      );
 
-    if (result == null) {
+      if (result == null) {
+        return NextResponse.json(
+          { success: true, data: "Meeting status is not valid!" },
+          { status: 200 }
+        );
+      }
+    } else if (collection === "office_hours") {
+      // First, find the document and identify the specific meeting
+      const document = await collectionRef.findOne({
+        "dao.meetings": {
+          $elemMatch: {
+            meetingId: meetingId,
+            meeting_status: "Recorded",
+          },
+        },
+      });
+
+      if (!document) {
+        return NextResponse.json(
+          { success: true, data: "Meeting not found or status is not valid!" },
+          { status: 200 }
+        );
+      }
+
+      // Find the indices for the dao and meeting
+      let daoIndex = -1;
+      let meetingIndex = -1;
+
+      for (let i = 0; i < document.dao.length; i++) {
+        const meetingIdx = document.dao[i].meetings.findIndex(
+          (m: any) =>
+            m.meetingId === meetingId && m.meeting_status === "Recorded"
+        );
+        if (meetingIdx !== -1) {
+          daoIndex = i;
+          meetingIndex = meetingIdx;
+          break;
+        }
+      }
+
+      if (daoIndex === -1 || meetingIndex === -1) {
+        return NextResponse.json(
+          { success: true, data: "Meeting not found in any DAO!" },
+          { status: 200 }
+        );
+      }
+
+      // Update the specific meeting's views using the found indices
+      const updatePath = `dao.${daoIndex}.meetings.${meetingIndex}.views`;
+      const currentViews =
+        document.dao[daoIndex].meetings[meetingIndex].views || 0;
+
+      const result = await collectionRef.updateOne(
+        { _id: document._id },
+        { $set: { [updatePath]: currentViews + 1 } }
+      );
+
+      if (!result.modifiedCount) {
+        return NextResponse.json(
+          { success: false, data: "Failed to update view count!" },
+          { status: 200 }
+        );
+      }
+    } else {
       return NextResponse.json(
-        { success: true, data: "Meeting status is not valid!" },
-        { status: 200 }
+        { error: "Invalid collection specified" },
+        { status: 400 }
       );
     }
 
@@ -71,6 +142,8 @@ export async function PUT(req: NextRequest, res: NextResponse) {
       { status: 500 }
     );
   } finally {
-    client?.close();
+    if (client) {
+      await client.close();
+    }
   }
 }

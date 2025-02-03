@@ -59,9 +59,9 @@ function RecordedSessionsTile({
   const videoRefs = useRef<any>([]);
   const [videoDurations, setVideoDurations] = useState<any>({});
   const router = useRouter();
-  const { address,isConnected } = useAccount();
+  const { address, isConnected } = useAccount();
   const { ready, authenticated, login, logout, user } = usePrivy();
-  const {walletAddress}=useWalletAddress();
+  const { walletAddress } = useWalletAddress();
   // const address = "0xc622420AD9dE8E595694413F24731Dd877eb84E1";
   const [ensHostNames, setEnsHostNames] = useState<any>({});
   const [ensGuestNames, setEnsGuestNames] = useState<any>({});
@@ -71,6 +71,21 @@ function RecordedSessionsTile({
   const [claimInProgress, setClaimInProgress] = useState(false);
   const [claimingMeetingId, setClaimingMeetingId] = useState(null);
   const [copiedStates, setCopiedStates] = useState<Record<string, boolean>>({});
+    const renderStartTime = useRef<number | null>(null);
+
+    useEffect(() => {
+      // Capture the start time
+      renderStartTime.current = performance.now();
+    }, []);
+  
+    useEffect(() => {
+      if (meetingData) {
+        // Capture the end time and calculate render duration
+        const renderEndTime = performance.now();
+        const renderDuration = renderEndTime - (renderStartTime.current || 0);
+        //console.log(`RecordedSessionsTile component rendered in ${renderDuration.toFixed(2)} ms`);
+      }
+    }, [meetingData]);
 
   const pushToGTM = (eventData: GTMEvent) => {
     if (typeof window !== "undefined" && window.dataLayer) {
@@ -81,22 +96,21 @@ function RecordedSessionsTile({
   const handleCopy = (addr: string, buttonId: string) => {
     copy(addr);
     toast("Address Copied");
-    
+
     // Update only the specific button state
-    setCopiedStates(prev => ({
+    setCopiedStates((prev) => ({
       ...prev,
-      [buttonId]: true
+      [buttonId]: true,
     }));
-    
+
     // Reset after 4 seconds
     setTimeout(() => {
-      setCopiedStates(prev => ({
+      setCopiedStates((prev) => ({
         ...prev,
-        [buttonId]: false
+        [buttonId]: false,
       }));
     }, 4000);
   };
-
 
   function formatViews(views: number): string {
     // Handle negative numbers or NaN
@@ -373,7 +387,11 @@ function RecordedSessionsTile({
                     </div>
                     <div>
                       <Tooltip
-                        content={copiedStates[`host-${index}-${data.host_address}`] ? "Copied!" : "Copy"}
+                        content={
+                          copiedStates[`host-${index}-${data.host_address}`]
+                            ? "Copied!"
+                            : "Copy"
+                        }
                         placement="right"
                         closeDelay={1}
                         showArrow
@@ -382,10 +400,15 @@ function RecordedSessionsTile({
                           <IoCopy
                             onClick={(event) => {
                               event.stopPropagation();
-                              handleCopy(data.host_address, `host-${index}-${data.host_address}`);
+                              handleCopy(
+                                data.host_address,
+                                `host-${index}-${data.host_address}`
+                              );
                             }}
                             className={`transition-colors duration-300 ${
-                              copiedStates[`host-${index}-${data.host_address}`] ? 'text-blue-500' : ''
+                              copiedStates[`host-${index}-${data.host_address}`]
+                                ? "text-blue-500"
+                                : ""
                             }`}
                           />
                         </span>
@@ -421,7 +444,13 @@ function RecordedSessionsTile({
                       </div>
                       <div className="">
                         <Tooltip
-                          content={copiedStates[`guest-${index}-${data.attendees[0]?.attendee_address}`] ? "Copied!" : "Copy"}
+                          content={
+                            copiedStates[
+                              `guest-${index}-${data.attendees[0]?.attendee_address}`
+                            ]
+                              ? "Copied!"
+                              : "Copy"
+                          }
                           placement="right"
                           closeDelay={1}
                           showArrow
@@ -436,7 +465,11 @@ function RecordedSessionsTile({
                                 );
                               }}
                               className={`transition-colors duration-300 ${
-                                copiedStates[`guest-${index}-${data.attendees[0]?.attendee_address}`] ? 'text-blue-500' : ''
+                                copiedStates[
+                                  `guest-${index}-${data.attendees[0]?.attendee_address}`
+                                ]
+                                  ? "text-blue-500"
+                                  : ""
                               }`}
                             />
                           </span>
@@ -466,7 +499,7 @@ function RecordedSessionsTile({
                       onClick={(e) => {
                         e.stopPropagation();
                       }}
-                      className={`${buttonStyles.button} w-full gap-1`}
+                      className={`${buttonStyles.button} w-full gap-1 text-xs`}
                     >
                       Offchain{" "}
                       <BiLinkExternal
@@ -488,6 +521,7 @@ function RecordedSessionsTile({
                       disabled={
                         claimInProgress && claimingMeetingId !== data.meetingId
                       }
+                      meetingCategory="session"
                       onClaimStart={() => handleClaimStart(data.meetingId)}
                       onClaimEnd={handleClaimEnd}
                     />
@@ -548,6 +582,7 @@ function RecordedSessionsTile({
                           claimInProgress &&
                           claimingMeetingId !== data.meetingId
                         }
+                        meetingCategory="session"
                         onClaimStart={() => handleClaimStart(data.meetingId)}
                         onClaimEnd={handleClaimEnd}
                         onChainId={

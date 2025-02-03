@@ -1,96 +1,277 @@
 import { connectDB } from "@/config/connectDB";
-import { NextApiRequest, NextApiResponse } from "next";
 import { NextResponse, NextRequest } from "next/server";
+import { Collection } from "mongodb";
+import {
+  Meeting,
+  OfficeHoursDocument,
+  OfficeHoursRequestBody,
+} from "@/types/OfficeHoursTypes";
+import { v4 as uuidv4 } from "uuid";
+import { imageCIDs } from "@/config/staticDataUtils";
 
-// Define the request body type
-interface OfficeHoursRequestBody {
-  host_address: string;
-  office_hours_slot: string;
-  title: string;
-  description: string;
-  meeting_status: string;
-  dao_name: string;
-  video_uri: string;
-  meetingId: string;
+function getRandomElementFromArray(arr: any[]) {
+  const randomIndex = Math.floor(Math.random() * arr.length);
+  return arr[randomIndex];
 }
+const randomImage = getRandomElementFromArray(imageCIDs);
 
-// Define the response body type
-interface OfficeHoursResponseBody {
-  success: boolean;
-  data?: {
-    id: string;
-    host_address: string;
-    office_hours_slot: string;
-    title: string;
-    description: string;
-    dao_name: string;
-    meeting_status: string;
-    video_uri: string;
-    meetingId: string;
-  } | null;
-  error?: string;
-}
+// // Helper function for MongoDB operations
+// const addMeetingsToExistingDAO = async (
+//   collection: Collection<OfficeHoursDocument>,
+//   hostAddress: string,
+//   daoName: string,
+//   meetings: Meeting[]
+// ) => {
+//   const meetingDocument = meetings.map((meeting) => ({
+//     reference_id: uuidv4(),
+//     ...meeting,
+//     meeting_status: "Upcoming",
+//     thumbnail_image: randomImage,
+//     created_at: new Date(),
+//   }));
 
-export async function POST(
-  req: NextRequest,
-  res: NextApiResponse<OfficeHoursResponseBody>
-) {
-  const {
-    host_address,
-    office_hours_slot,
-    title,
-    description,
-    meeting_status,
-    dao_name,
-    video_uri,
-    meetingId,
-  }: OfficeHoursRequestBody = await req.json();
+//   return await collection.updateOne(
+//     { host_address: hostAddress, "dao.name": daoName },
+//     {
+//       $push: {
+//         "dao.$.meetings": {
+//           $each: meetingDocument,
+//         },
+//       },
+//       $set: { updated_at: new Date() },
+//     }
+//   );
+// };
 
-  try {
-    // Connect to your MongoDB database
-    // console.log("Connecting to MongoDB...");
-    const client = await connectDB();
-    // console.log("Connected to MongoDB");
+const getRoomId = async () => {
+  const response = await fetch("https://api.huddle01.com/api/v1/create-room", {
+    method: "POST",
+    body: JSON.stringify({
+      title: "Test Room",
+    }),
+    headers: {
+      "Content-Type": "application/json",
+      "x-api-key": process.env.NEXT_PUBLIC_API_KEY ?? "",
+    },
+    cache: "no-store",
+  });
 
-    // Access the collection
-    const db = client.db();
-    const collection = db.collection("office_hours");
+  if (!response.ok) {
+    throw new Error("Failed to create room");
+  } else {
+    return response.json();
+  }
+};
 
-    // Insert the new office hours document
-    // console.log("Inserting office hours document...");
-    const result = await collection.insertOne({
-      host_address,
-      office_hours_slot,
-      title,
-      description,
-      meeting_status,
-      dao_name,
-      video_uri,
-      meetingId,
-    });
-    // console.log("Office hours document inserted:", result);
+const addMeetingsToExistingDAO = async (
+  collection: Collection<OfficeHoursDocument>,
+  hostAddress: string,
+  daoName: string,
+  meetings: Meeting[]
+) => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0); // Set to start of day
 
-    client.close();
-    // console.log("MongoDB connection closed");
+  // Process meetings sequentially using for...of to maintain order
+  const meetingDocument = [];
+  for (const meeting of meetings) {
+    const meetingDate = new Date(meeting.startTime);
+    meetingDate.setHours(0, 0, 0, 0);
 
-    if (result.insertedId) {
-      // Retrieve the inserted document using the insertedId
-      // console.log("Retrieving inserted document...");
-      const insertedDocument = await collection.findOne({
-        _id: result.insertedId,
-      });
-      // console.log("Inserted document retrieved");
-      return NextResponse.json({ result: insertedDocument }, { status: 200 });
+    const baseDocument = {
+      reference_id: uuidv4(),
+      ...meeting,
+      meeting_status: "Upcoming",
+      thumbnail_image: randomImage,
+      created_at: new Date(),
+    };
+
+    if (meetingDate.getTime() === today.getTime()) {
+      try {
+        // Direct API call since we're already in the API route
+        const result = await getRoomId();
+        meetingDocument.push({
+          ...baseDocument,
+          meetingId: result.data.roomId,
+        });
+      } catch (error) {
+        console.error("Error generating meeting ID:", error);
+        meetingDocument.push(baseDocument);
+      }
     } else {
-      return NextResponse.json(
-        { error: "Failed to retrieve inserted document" },
-        { status: 500 }
+      meetingDocument.push(baseDocument);
+    }
+  }
+
+  return await collection.updateOne(
+    { host_address: hostAddress, "dao.name": daoName },
+    {
+      $push: {
+        "dao.$.meetings": {
+          $each: meetingDocument,
+        },
+      },
+      $set: { updated_at: new Date() },
+    }
+  );
+};
+const addNewDAOWithMeetings = async (
+  collection: Collection<OfficeHoursDocument>,
+  hostAddress: string,
+  daoName: string,
+  meetings: Meeting[]
+) => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0); // Set to start of day
+
+  // Process meetings sequentially
+  const meetingDocument = [];
+  for (const meeting of meetings) {
+    const meetingDate = new Date(meeting.startTime);
+    meetingDate.setHours(0, 0, 0, 0);
+
+    const baseDocument = {
+      reference_id: uuidv4(),
+      ...meeting,
+      meeting_status: "Upcoming",
+      thumbnail_image: randomImage,
+      created_at: new Date(),
+    };
+    if (meetingDate.getTime() === today.getTime()) {
+      try {
+        const result = await getRoomId();
+        meetingDocument.push({
+          ...baseDocument,
+          meetingId: result.data.roomId,
+        });
+      } catch (error) {
+        console.error("Error generating meeting ID:", error);
+        meetingDocument.push(baseDocument);
+      }
+    } else {
+      meetingDocument.push(baseDocument);
+    }
+  }
+
+  return await collection.updateOne(
+    { host_address: hostAddress },
+    {
+      $push: {
+        dao: {
+          name: daoName,
+          meetings: meetingDocument,
+        },
+      },
+      $set: { updated_at: new Date() },
+    }
+  );
+};
+const createNewHostWithMeetings = async (
+  collection: Collection<OfficeHoursDocument>,
+  hostAddress: string,
+  daoName: string,
+  meetings: Meeting[]
+) => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0); // Set to start of day
+
+  // Process meetings sequentially
+  const meetingDocument = [];
+  for (const meeting of meetings) {
+    const meetingDate = new Date(meeting.startTime);
+    meetingDate.setHours(0, 0, 0, 0);
+
+    const baseDocument = {
+      reference_id: uuidv4(),
+      ...meeting,
+      meeting_status: "Upcoming",
+      thumbnail_image: randomImage,
+      created_at: new Date(),
+    };
+
+    if (meetingDate.getTime() === today.getTime()) {
+      try {
+        const result = await getRoomId();
+        meetingDocument.push({
+          ...baseDocument,
+          meetingId: result.data.roomId,
+        });
+      } catch (error) {
+        console.error("Error generating meeting ID:", error);
+        meetingDocument.push(baseDocument);
+      }
+    } else {
+      meetingDocument.push(baseDocument);
+    }
+  }
+
+  return await collection.insertOne({
+    host_address: hostAddress,
+    dao: [
+      {
+        name: daoName,
+        meetings: meetingDocument,
+      },
+    ],
+    created_at: new Date(),
+    updated_at: new Date(),
+  });
+};
+
+// Main API handler
+export async function POST(req: NextRequest) {
+  try {
+    const data: OfficeHoursRequestBody = await req.json();
+
+    const client = await connectDB();
+    const db = client.db();
+    const collection: Collection<OfficeHoursDocument> =
+      db.collection("office_hours");
+
+    const { host_address: hostAddress, dao_name: daoName, meetings } = data;
+
+    const existingHost = await collection.findOne({
+      host_address: hostAddress,
+    });
+
+    if (existingHost) {
+      const existingDAO = existingHost.dao?.find((dao) => dao.name === daoName);
+      if (existingDAO) {
+        await addMeetingsToExistingDAO(
+          collection,
+          hostAddress,
+          daoName,
+          meetings
+        );
+      } else {
+        await addNewDAOWithMeetings(collection, hostAddress, daoName, meetings);
+      }
+    } else {
+      await createNewHostWithMeetings(
+        collection,
+        hostAddress,
+        daoName,
+        meetings
       );
     }
+
+    const updatedDocument = await collection.findOne({
+      host_address: hostAddress,
+    });
+    await client.close();
+
+    return NextResponse.json(
+      {
+        success: true,
+        data: updatedDocument,
+        message: "Meetings stored successfully",
+      },
+      { status: 200 }
+    );
   } catch (error) {
     console.error("Error storing office hours:", error);
     return NextResponse.json(
-      { error: "Internal Server Error" },
+      { success: false, error: "Internal Server Error", details: error },
       { status: 500 }
     );
   }

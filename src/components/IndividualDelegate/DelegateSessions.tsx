@@ -97,8 +97,8 @@ function DelegateSessions({ props }: { props: Type }) {
             filteredData = resultData.filter((session: SessionInterface) => {
               return (
                 session.meeting_status === "Recorded" &&
-                session.host_address.toLowerCase() ===
-                  props.individualDelegate.toLowerCase()
+                session.host_address?.toLowerCase() ===
+                  props.individualDelegate?.toLowerCase()
               );
             });
             setSessionDetails(filteredData);
@@ -108,8 +108,8 @@ function DelegateSessions({ props }: { props: Type }) {
                 session.meeting_status === "Recorded" &&
                 session.attendees?.some(
                   (attendee) =>
-                    attendee.attendee_address.toLowerCase() ===
-                    props.individualDelegate.toLowerCase()
+                    attendee.attendee_address?.toLowerCase() ===
+                    props.individualDelegate?.toLowerCase()
                 )
               );
             });

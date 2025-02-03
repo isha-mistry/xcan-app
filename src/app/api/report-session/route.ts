@@ -1,35 +1,31 @@
 import { connectDB } from "@/config/connectDB";
+import { Meeting } from "@/types/OfficeHoursTypes";
+import { VideoReport } from "@/types/ReportVideoTypes";
 import { NextResponse, NextRequest } from "next/server";
-
-export interface Report {
-  report_id: string;
-  user_wallet_address: string;
-  report_type: string;
-  description: string;
-  timestamp: number;
-  status: string;
-  admin_notes: string;
-}
-
-export type Reports = Array<Report>;
-
-export interface VideoReport {
-  report_counts?: number;
-  reports: Reports;
-}
 
 // Define the request body type
 export interface ReportRequestBody {
   meetingId: string;
   host_address: string;
   video_reports: VideoReport;
+  collection: string;
 }
 
 export async function POST(req: NextRequest, res: NextResponse) {
-  const { meetingId, host_address, video_reports }: ReportRequestBody =
-    await req.json();
+  const {
+    meetingId,
+    host_address,
+    video_reports,
+    collection,
+  }: ReportRequestBody = await req.json();
 
-  if (!meetingId || !host_address || !video_reports || !video_reports.reports) {
+  if (
+    !meetingId ||
+    !host_address ||
+    !video_reports ||
+    !video_reports.reports ||
+    !collection
+  ) {
     return NextResponse.json(
       { error: "Invalid request body" },
       { status: 400 }
@@ -39,12 +35,37 @@ export async function POST(req: NextRequest, res: NextResponse) {
   try {
     const client = await connectDB();
     const db = client.db();
-    const collection = db.collection("meetings");
+    const collectionRef = db.collection(collection);
 
-    const existingDocument = await collection.findOne({
-      meetingId,
-      host_address,
-    });
+    let existingDocument;
+    let query;
+
+    if (collection === "meetings") {
+      query = { meetingId, host_address };
+      existingDocument = await collectionRef.findOne(query);
+    } else if (collection === "office_hours") {
+      query = { host_address };
+      existingDocument = await collectionRef.findOne(query);
+
+      // Check if the meetingId exists in any of the dao's meetings
+      const meetingExists = existingDocument?.dao?.some((dao: any) =>
+        dao.meetings.some((meeting: Meeting) => meeting.meetingId === meetingId)
+      );
+
+      if (!meetingExists) {
+        client.close();
+        return NextResponse.json(
+          { error: "Meeting not found in office hours" },
+          { status: 404 }
+        );
+      }
+    } else {
+      client.close();
+      return NextResponse.json(
+        { error: "Invalid collection specified" },
+        { status: 400 }
+      );
+    }
 
     if (!existingDocument) {
       client.close();
@@ -57,36 +78,73 @@ export async function POST(req: NextRequest, res: NextResponse) {
     const userWalletAddresses = video_reports.reports.map(
       (report) => report.user_wallet_address
     );
-    const existingReports = existingDocument.video_reports?.reports || [];
 
-    const userAlreadyReported = existingReports.some(
-      (report: { user_wallet_address: string }) =>
-        userWalletAddresses.includes(report.user_wallet_address)
-    );
-
-    if (userAlreadyReported) {
-      client.close();
-      return NextResponse.json(
-        { exists: true, error: "User already reported the session before" },
-        { status: 400 }
+    if (collection === "meetings") {
+      const existingReports = existingDocument.video_reports?.reports || [];
+      const userAlreadyReported = existingReports.some(
+        (report: { user_wallet_address: string }) =>
+          userWalletAddresses.includes(report.user_wallet_address)
       );
-    }
 
-    if (existingDocument.video_reports) {
-      await collection.updateOne(
-        { meetingId, host_address },
-        {
-          /*@ts-ignore*/
+      if (userAlreadyReported) {
+        client.close();
+        return NextResponse.json(
+          { exists: true, error: "User already reported the session before" },
+          { status: 200 }
+        );
+      }
+
+      if (existingDocument.video_reports) {
+        await collectionRef.updateOne(query, {
+          /* @ts-ignore */
           $push: {
             "video_reports.reports": { $each: video_reports.reports },
           },
-        }
+        });
+      } else {
+        await collectionRef.updateOne(query, { $set: { video_reports } });
+      }
+    } else if (collection === "office_hours") {
+      // Find the specific meeting in the nested structure
+      const daoIndex = existingDocument.dao.findIndex((dao: any) =>
+        dao.meetings.some((meeting: Meeting) => meeting.meetingId === meetingId)
       );
-    } else {
-      await collection.updateOne(
-        { meetingId, host_address },
-        { $set: { video_reports } }
+
+      const meetingIndex = existingDocument.dao[daoIndex].meetings.findIndex(
+        (meeting: Meeting) => meeting.meetingId === meetingId
       );
+
+      const existingReports =
+        existingDocument.dao[daoIndex].meetings[meetingIndex].video_reports
+          ?.reports || [];
+
+      const userAlreadyReported = existingReports.some(
+        (report: { user_wallet_address: string }) =>
+          userWalletAddresses.includes(report.user_wallet_address)
+      );
+
+      if (userAlreadyReported) {
+        client.close();
+        return NextResponse.json(
+          { exists: true, error: "User already reported the session before" },
+          { status: 200 }
+        );
+      }
+
+      const updatePath = `dao.${daoIndex}.meetings.${meetingIndex}.video_reports`;
+
+      if (existingDocument.dao[daoIndex].meetings[meetingIndex].video_reports) {
+        await collectionRef.updateOne(query, {
+          /* @ts-ignore */
+          $push: {
+            [`${updatePath}.reports`]: { $each: video_reports.reports },
+          },
+        });
+      } else {
+        await collectionRef.updateOne(query, {
+          $set: { [updatePath]: video_reports },
+        });
+      }
     }
 
     client.close();

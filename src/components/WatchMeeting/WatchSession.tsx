@@ -39,6 +39,7 @@ interface Meeting extends SessionInterface {
   attendees: Attendee[];
   views: any;
   hostProfileInfo: UserProfileInterface;
+  startTime: string;
 }
 
 function WatchSession({
@@ -286,7 +287,11 @@ function WatchSession({
                   className="w-5 h-5"
                 />
                 <div className="text-[#1E1E1E]">
-                  {formatTimeAgo(data.slot_time)}
+                  {collection === "meetings"
+                    ? formatTimeAgo(data.slot_time)
+                    : collection === "office_hours"
+                    ? formatTimeAgo(data.startTime)
+                    : ""}
                 </div>
               </div>
               {path.includes("/watch") && (
@@ -331,7 +336,7 @@ function WatchSession({
             </div>
             {showPopup && (
               <div
-                className="absolute bg-white rounded-xl mt-1 py-2 duration-200 ease-in-out"
+                className="absolute bg-white rounded-xl mt-1 py-2 duration-200 ease-in-out z-30 max-h-64 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100"
                 style={{ boxShadow: "0px 4px 9.1px 0px rgba(0,0,0,0.04)" }}
               >
                 {data.attendees.map((attendee, index) => (
