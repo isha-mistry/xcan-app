@@ -1,6 +1,7 @@
 import { connectDB } from "@/config/connectDB";
 import { NextResponse, NextRequest } from "next/server";
 import { Meeting, OfficeHoursDocument } from "@/types/OfficeHoursTypes";
+import { cacheWrapper } from "@/utils/cacheWrapper";
 
 export async function GET(req: NextRequest) {
   let client;
@@ -9,11 +10,6 @@ export async function GET(req: NextRequest) {
     const url = new URL(req.url);
     const host_address = url.searchParams.get("host_address");
     const dao_name = url.searchParams.get("dao_name");
-
-    client = await connectDB();
-    const db = client.db();
-    const collection = db.collection("office_hours");
-    const attestCollection = db.collection("attestation");
 
     let query: any = {};
 
@@ -42,6 +38,31 @@ export async function GET(req: NextRequest) {
         ],
       };
     }
+
+
+    // Check if query is empty (no filters)
+    const isEmptyQuery = Object.keys(query).length === 0;
+
+    if (isEmptyQuery) {
+      const cacheKey = `office-hours-all`;
+
+      if (cacheWrapper.isAvailable) {
+        const cacheValue = await cacheWrapper.get(cacheKey);
+        if (cacheValue) {
+          console.log(`Serving from cache: office-hours-all`);
+          return NextResponse.json(
+            { success: true, data: JSON.parse(cacheValue) },
+            { status: 200 }
+          );
+        }
+      }
+    }
+
+
+    client = await connectDB();
+    const db = client.db();
+    const collection = db.collection("office_hours");
+    const attestCollection = db.collection("attestation");
 
     const results = await collection.find(query).toArray();
 
@@ -226,16 +247,24 @@ export async function GET(req: NextRequest) {
 
     await client.close();
 
+    const response = {
+      ongoing: ongoing.sort(sortAscending),
+      upcoming: upcoming.sort(sortAscending),
+      recorded: recorded.sort(sortDescending),
+      hosted: hosted.sort(sortDescending),
+      attended: attended.sort(sortDescending),
+    };
+
+    // Cache the response if it's an empty query
+    if (isEmptyQuery && cacheWrapper.isAvailable) {
+      const cacheKey = `office-hours-all`;
+      await cacheWrapper.set(cacheKey, JSON.stringify(response), 900); // Cache for 15 minutes
+    }
+
     return NextResponse.json(
       {
         success: true,
-        data: {
-          ongoing: ongoing.sort(sortAscending),
-          upcoming: upcoming.sort(sortAscending),
-          recorded: recorded.sort(sortDescending),
-          hosted: hosted.sort(sortDescending),
-          attended: attended.sort(sortDescending),
-        },
+        data: response,
       },
       { status: 200 }
     );
