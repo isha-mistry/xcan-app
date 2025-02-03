@@ -247,6 +247,7 @@ export async function GET(req: NextRequest) {
 
     await client.close();
 
+
     const response = {
       ongoing: ongoing.sort(sortAscending),
       upcoming: upcoming.sort(sortAscending),
@@ -258,7 +259,7 @@ export async function GET(req: NextRequest) {
     // Cache the response if it's an empty query
     if (isEmptyQuery && cacheWrapper.isAvailable) {
       const cacheKey = `office-hours-all`;
-      await cacheWrapper.set(cacheKey, JSON.stringify(response), 900); // Cache for 15 minutes
+      await cacheWrapper.set(cacheKey, JSON.stringify(response), 600); // Cache for 10 minutes
     }
 
     return NextResponse.json(

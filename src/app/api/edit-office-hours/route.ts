@@ -1,12 +1,18 @@
 import { connectDB } from "@/config/connectDB";
 import { Attendee, OfficeHoursProps } from "@/types/OfficeHoursTypes";
 import { NextResponse } from "next/server";
+import { cacheWrapper } from "@/utils/cacheWrapper";
 
 export async function PUT(req: Request) {
   try {
     const updateData: OfficeHoursProps = await req.json();
     const { host_address, dao_name, reference_id, attendees, ...updateFields } =
       updateData;
+
+    if(cacheWrapper.isAvailable){
+      const cacheKey = `office-hours-all`;
+      await cacheWrapper.delete(cacheKey);
+    }
 
     if (!host_address || !dao_name || !reference_id) {
       return NextResponse.json(
