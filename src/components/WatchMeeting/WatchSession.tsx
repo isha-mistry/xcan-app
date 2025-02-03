@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import user from "@/assets/images/daos/user3.png";
+import user from "@/assets/images/user/user2.svg";
 import view from "@/assets/images/daos/view.png";
 import Image from "next/image";
 import oplogo from "@/assets/images/daos/op.png";
@@ -30,6 +30,7 @@ import {
 import { UserProfileInterface } from "@/types/UserProfileTypes";
 import { usePathname } from "next/navigation";
 import { formatTimeAgo } from "@/utils/getRelativeTime";
+import styles from "./WatchSession.module.css"
 
 interface Attendee extends DynamicAttendeeInterface {
   profileInfo: UserProfileInterface;
@@ -152,11 +153,12 @@ function WatchSession({
                     className="w-5 h-5 rounded-full"
                     priority
                   />
-                  <div className="text-[#292929] font-semibold ">
+                  <div className="text-[#292929] font-semibold hover:text-blue-shade-100">
                     {ensHostName}
                   </div>
                 </div>
                 <>
+                {data.uid_host ? (
                   <Tooltip
                     showArrow
                     content={
@@ -197,6 +199,9 @@ function WatchSession({
                       />
                     </Link>
                   </Tooltip>
+                   ): (
+                    <></>
+                   )}
                 </>
                 {data.onchain_host_uid ? (
                   <Tooltip
@@ -331,8 +336,8 @@ function WatchSession({
             </div>
             {showPopup && (
               <div
-                className="absolute bg-white rounded-xl mt-1 py-2 duration-200 ease-in-out"
-                style={{ boxShadow: "0px 4px 9.1px 0px rgba(0,0,0,0.04)" }}
+                className={`absolute bg-white rounded-xl mt-1 py-2 duration-200 ease-in-out ${styles.customScrollbar}`}
+                style={{ boxShadow: "0px 4px 9.1px 0px rgba(0,0,0,0.04)" ,maxHeight: "300px", overflowY: "auto"}}
               >
                 {data.attendees.map((attendee, index) => (
                   <div key={index}>
