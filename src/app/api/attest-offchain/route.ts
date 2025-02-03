@@ -34,10 +34,8 @@ interface AttestOffchainRequestBody {
 
 interface MyError {
   message: string;
-  code?: number; 
+  code?: number;
 }
-
-
 
 export async function POST(req: NextRequest, res: NextResponse) {
   (BigInt.prototype as any).toJSON = function () {
@@ -47,11 +45,9 @@ export async function POST(req: NextRequest, res: NextResponse) {
   const requestData = (await req.json()) as AttestOffchainRequestBody;
   // Your validation logic here
 
-  // console.log("Line 47:",requestData); 
-
+  // console.log("Line 47:",requestData);
 
   try {
-
     const atstUrl =
       requestData.daoName === "optimism"
         ? ATTESTATION_OP_URL
@@ -59,16 +55,15 @@ export async function POST(req: NextRequest, res: NextResponse) {
         ? ATTESTATION_ARB_URL
         : "";
 
+    const provider2 = new ethers.JsonRpcProvider(ATTESTATION_ARB_URL);
+    try {
+      const network = await provider2.getNetwork();
+      console.log("Connected to network:", network);
+    } catch (error) {
+      console.error("Connection failed:", error);
+    }
 
-        const provider2 = new ethers.JsonRpcProvider(ATTESTATION_ARB_URL);
-        try {
-          const network = await provider2.getNetwork();
-          console.log("Connected to network:", network);
-        } catch (error) {
-          console.error("Connection failed:", error);
-        }    
-
-    // console.log("Line 59:",atstUrl);    
+    // console.log("Line 59:",atstUrl);
     // Set up your ethers provider and signer
     const provider = new ethers.JsonRpcProvider(atstUrl, undefined, {
       staticNetwork: true,
@@ -92,12 +87,11 @@ export async function POST(req: NextRequest, res: NextResponse) {
     // Your initialization code remains the same
     const offchain = await eas.getOffchain();
 
-    console.log("Line 83:",offchain);
+    console.log("Line 83:", offchain);
 
     const schemaEncoder = new SchemaEncoder(
       "bytes32 MeetingId,uint8 MeetingType,uint32 StartTime,uint32 EndTime"
     );
-
 
     const encodedData = schemaEncoder.encodeData([
       {
@@ -109,7 +103,6 @@ export async function POST(req: NextRequest, res: NextResponse) {
       { name: "StartTime", value: requestData.startTime, type: "uint32" },
       { name: "EndTime", value: requestData.endTime, type: "uint32" },
     ]);
-
 
     const expirationTime = BigInt(0);
     const currentTime = BigInt(Math.floor(Date.now() / 1000));
@@ -153,7 +146,6 @@ export async function POST(req: NextRequest, res: NextResponse) {
 
     // console.log("Line 151:",data);
 
-
     let uploadstatus = false;
     try {
       const response = await axios.post(`${baseUrl}/offchain/store`, data);
@@ -161,9 +153,7 @@ export async function POST(req: NextRequest, res: NextResponse) {
         uploadstatus = true;
       }
 
-
       // console.log("Line 162:",response.data)
-      
 
       if (requestData.meetingType === 1) {
         const client = await connectDB();
@@ -183,7 +173,9 @@ export async function POST(req: NextRequest, res: NextResponse) {
         await usersCollection.findOneAndUpdate(
           { address: requestData.recipient },
           {
-            $inc: { [`meetingRecords.${requestData.daoName}.sessionHosted.offchainCounts`]: 1 },
+            $inc: {
+              [`meetingRecords.${requestData.daoName}.sessionHosted.offchainCounts`]: 1,
+            },
           }
         );
 
@@ -211,7 +203,9 @@ export async function POST(req: NextRequest, res: NextResponse) {
         await usersCollection.findOneAndUpdate(
           { address: requestData.recipient },
           {
-            $inc: { [`meetingRecords.${requestData.daoName}.sessionAttended.offchainCounts`]: 1 },
+            $inc: {
+              [`meetingRecords.${requestData.daoName}.sessionAttended.offchainCounts`]: 1,
+            },
           }
         );
 
@@ -232,21 +226,32 @@ export async function POST(req: NextRequest, res: NextResponse) {
         // );
 
         await collection.findOneAndUpdate(
-          { 
-            "host_address": requestData.recipient,
+          {
+            host_address: requestData.recipient,
             "dao.name": requestData.daoName,
-            "dao.meetings.meetingId": requestData.meetingId.split("/")[0]
+            "dao.meetings.meetingId": requestData.meetingId.split("/")[0],
           },
           {
             $set: {
-              "dao.$[dao].meetings.$[meeting].uid_host": response.data.offchainAttestationId
-            }
+              "dao.$[dao].meetings.$[meeting].uid_host":
+                response.data.offchainAttestationId,
+            },
           },
           {
             arrayFilters: [
               { "dao.name": requestData.daoName },
-              { "meeting.meetingId": requestData.meetingId.split("/")[0] }
-            ]
+              { "meeting.meetingId": requestData.meetingId.split("/")[0] },
+            ],
+          }
+        );
+
+        const usersCollection = db.collection("delegates");
+        await usersCollection.findOneAndUpdate(
+          { address: requestData.recipient },
+          {
+            $inc: {
+              [`meetingRecords.${requestData.daoName}.officeHoursHosted.offchainCounts`]: 1,
+            },
           }
         );
         client.close();
@@ -268,26 +273,35 @@ export async function POST(req: NextRequest, res: NextResponse) {
         //   }
         // );
 
-
         await collection.findOneAndUpdate(
-          { 
-            "host_address": requestData.recipient,
+          {
+            // "host_address": requestData.recipient,
             "dao.name": requestData.daoName,
             "dao.meetings.meetingId": requestData.meetingId.split("/")[0],
-            "dao.meetings.attendees.attendee_address":  requestData.recipient
+            "dao.meetings.attendees.attendee_address": requestData.recipient,
           },
           {
             $set: {
-              "dao.$[dao].meetings.$[meeting].attendees.$[attendee].attendee_uid": 
-                response.data.offchainAttestationId
-            }
+              "dao.$[dao].meetings.$[meeting].attendees.$[attendee].attendee_uid":
+                response.data.offchainAttestationId,
+            },
           },
           {
             arrayFilters: [
               { "dao.name": requestData.daoName },
-              { "meeting.meetingId":requestData.meetingId.split("/")[0]},
-              { "attendee.attendee_address": requestData.recipient }
-            ]
+              { "meeting.meetingId": requestData.meetingId.split("/")[0] },
+              { "attendee.attendee_address": requestData.recipient },
+            ],
+          }
+        );
+
+        const usersCollection = db.collection("delegates");
+        await usersCollection.findOneAndUpdate(
+          { address: requestData.recipient },
+          {
+            $inc: {
+              [`meetingRecords.${requestData.daoName}.officeHoursAttended.offchainCounts`]: 1,
+            },
           }
         );
 
@@ -295,7 +309,6 @@ export async function POST(req: NextRequest, res: NextResponse) {
       }
     } catch (error) {
       console.error("Error submitting signed attestation: ", error);
-      
 
       return NextResponse.json(
         { success: true, offchainAttestation, url, uploadstatus },
@@ -305,8 +318,6 @@ export async function POST(req: NextRequest, res: NextResponse) {
 
     // Rest of your code remains the same
 
-   
-
     let offchainAttestationLink = "";
     if (requestData.daoName === "optimism") {
       offchainAttestationLink = `https://optimism.easscan.org/offchain/attestation/view/${offchainAttestation.uid}`;
@@ -314,7 +325,7 @@ export async function POST(req: NextRequest, res: NextResponse) {
       offchainAttestationLink = `https://arbitrum.easscan.org/offchain/attestation/view/${offchainAttestation.uid}`;
     }
 
-    // console.log("Line 258:",offchainAttestationLink);  
+    // console.log("Line 258:",offchainAttestationLink);
 
     let notification_user_role = "";
     if (requestData.meetingType === 1) {
@@ -351,12 +362,10 @@ export async function POST(req: NextRequest, res: NextResponse) {
       notificationToSend
     );
 
-
     if (notificationResult.insertedId) {
       const insertedNotification = await notificationCollection.findOne({
         _id: notificationResult.insertedId,
       });
-
     }
 
     const dataToSend = {

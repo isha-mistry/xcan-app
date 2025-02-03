@@ -1,3 +1,5 @@
+import { VideoReport } from "./ReportVideoTypes";
+
 export interface Meeting {
   reference_id?: string;
   title: string;
@@ -12,6 +14,7 @@ export interface Meeting {
   uid_host?: string;
   onchain_host_uid?: string;
   attendees?: Attendee[];
+  video_reports?: VideoReport;
   created_at?: Date;
 }
 
@@ -158,4 +161,5 @@ export interface OfficeHoursProps {
   meeting_endtime:number;
   views?: number;
   nft_image?: string;
+  deployedContractAddress:string;
 }

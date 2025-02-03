@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Image, { StaticImageData } from "next/image";
 import img1 from "@/assets/images/daos/thumbnail1.png";
 import logo from "@/assets/images/daos/CCLogo.png";
@@ -13,7 +13,7 @@ import arb from "@/assets/images/daos/arb.png";
 import { LuDot } from "react-icons/lu";
 import { BiLinkExternal } from "react-icons/bi";
 import buttonStyles from "./Button.module.css";
-import { OfficeHoursProps, TimeSlot } from "@/types/OfficeHoursTypes";
+import { Attendee, OfficeHoursProps, TimeSlot } from "@/types/OfficeHoursTypes";
 import EditOfficeHoursModal from "./EditOfficeHoursModal";
 import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 import { getAccessToken } from "@privy-io/react-auth";
@@ -29,6 +29,7 @@ import { MEETING_BASE_URL } from "@/config/constants";
 import { Oval } from "react-loader-spinner";
 import oplogo from "@/assets/images/daos/op.png";
 import arblogo from "@/assets/images/daos/arbitrum.jpg";
+import OffchainAttestationButton from "./OffchainAttestationButton";
 interface CopyStates {
   [key: number]: boolean;
 }
@@ -77,6 +78,10 @@ const OfficeHourTile = ({
   );
   const router = useRouter();
 
+  useEffect(() => {
+    setLocalData(data);
+  }, [data]);
+
   const truncateAddress = (address: string) => {
     return `${address.slice(0, 6)}...${address.slice(-4)}`;
   };
@@ -122,96 +127,6 @@ const OfficeHourTile = ({
       isOpen: false,
       itemData: null,
     });
-  };
-
-  // const handleUpdate = (updatedSlot: any) => {
-  //   if (editModalData.itemIndex !== null && editModalData.itemData) {
-  //     // Update the local data
-  //     const updatedData = [...localData];
-  //     updatedData[editModalData.itemIndex] = {
-  //       ...updatedData[editModalData.itemIndex],
-  //       title: updatedSlot.bookedTitle,
-  //       description: updatedSlot.bookedDescription,
-  //     };
-
-  //     setLocalData(updatedData);
-
-  //     if (onDataUpdate) {
-  //       onDataUpdate(updatedData);
-  //     }
-
-  //     handleEditModalClose();
-  //   }
-  // };
-
-  const handleClaimOffchain = async (
-    address:string|undefined,
-    MeetingId: string | undefined,
-    dao_name: string,
-    MeetingType: number,
-    StartTime: number,
-    EndTime: number
-  ) => {
-    // console.log(
-    //   "Line 112:",
-    //   address,
-    //   MeetingId,
-    //   MeetingType,
-    //   dao_name,
-    //   StartTime,
-    //   EndTime
-    // );
-    try {
-      const token = await getAccessToken();
-      const myHeaders: HeadersInit = {
-        "Content-Type": "application/json",
-        ...(walletAddress && {
-          "x-wallet-address": walletAddress,
-          Authorization: `Bearer ${token}`,
-        }),
-      };
-
-      let tokenforAttestation = "";
-      if (dao_name === "optimism") {
-        tokenforAttestation = "OP";
-      } else if (dao_name === "arbitrum") {
-        tokenforAttestation = "ARB";
-      }
-
-      const raw = JSON.stringify({
-        recipient: address,
-        meetingId: `${MeetingId}/${tokenforAttestation}`,
-        meetingType: MeetingType,
-        startTime: StartTime,
-        endTime: EndTime,
-        daoName: dao_name,
-      });
-
-      // console.log("Line 131:", raw);
-      setLoadingButton("offchain");
-
-      const requestOptions: any = {
-        method: "POST",
-        headers: myHeaders,
-        body: raw,
-        redirect: "follow",
-      };
-
-      const response = await fetchApi("/attest-offchain", requestOptions);
-      // console.log("Line 154", response);
-      if (response.ok) {
-        setLoadingButton("");
-        console.log("Attestation successful");
-        toast.success("Attestation successful!");
-      } else {
-        console.error("Attestation failed");
-        toast.error("Attestation failed!");
-      }
-    } catch (error: any) {
-      setLoadingButton("");
-      console.error("Error during attestation", error);
-      toast.error("An error occurred during attestation!");
-    }
   };
 
   const handleDeleteModalOpen = (itemData: OfficeHoursProps) => {
@@ -274,6 +189,56 @@ const OfficeHourTile = ({
     return daoLogos[normalizedName] || arblogo;
   };
 
+  const getAttendeeUid = (address: string | null, attendees?: Attendee[]) => {
+    if (!attendees || !address) return null;
+    const attendee = attendees.find(
+      (a) => a.attendee_address.toLowerCase() === address.toLowerCase()
+    );
+    return attendee?.attendee_uid;
+  };
+
+  const getAttestationUrl = (daoName: string, uid?: string | null): string => {
+    if (!uid) return "#";
+    const baseUrl =
+      daoName.toLowerCase() === "optimism"
+        ? "https://optimism.easscan.org/offchain/attestation/view/"
+        : daoName.toLowerCase() === "arbitrum"
+        ? "https://arbitrum.easscan.org/offchain/attestation/view/"
+        : "#";
+
+    return `${baseUrl}${uid}`;
+  };
+
+  const handleAttestationSuccess = (
+    uid: string,
+    meetingId: string | undefined
+  ) => {
+    setLocalData((prevData) =>
+      prevData.map((item) => {
+        if (item.meetingId === meetingId) {
+          if (isAttended) {
+            return {
+              ...item,
+              attendees:
+                item.attendees?.map((attendee) =>
+                  attendee.attendee_address.toLowerCase() ===
+                  walletAddress?.toLowerCase()
+                    ? { ...attendee, attendee_uid: uid }
+                    : attendee
+                ) || [],
+            };
+          } else if (isHosted) {
+            return {
+              ...item,
+              uid_host: uid,
+            };
+          }
+        }
+        return item;
+      })
+    );
+  };
+
   return (
     <div
       className={`grid min-[475px]:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 sm:gap-10 py-8 font-poppins`}
@@ -307,17 +272,13 @@ const OfficeHourTile = ({
                 className="w-7 h-7"
               />
             </div>
-            <div
-              className={`${
-                !isUpcoming ? "hidden" : ""
-              } absolute top-2 left-2 bg-black rounded-full`}
-            >
+            <div className={`absolute top-2 left-2 bg-black rounded-full`}>
               <Image
-                src={op}
+                src={getDaoLogo(data.dao_name)}
                 alt="image"
                 width={100}
                 height={100}
-                className="w-6 h-6"
+                className="size-4 sm:size-6 rounded-full"
               />
             </div>
           </div>
@@ -334,7 +295,7 @@ const OfficeHourTile = ({
               {data.description}
             </p>
 
-            {(isAttended || isHosted) && (
+            {(isAttended || isHosted || isRecorded) && (
               <div className="flex items-center text-sm gap-0.5 sm:gap-1 py-1">
                 <div className=" flex items-center ">
                   <div>
@@ -366,12 +327,20 @@ const OfficeHourTile = ({
                 className="rounded-full size-4 sm:size-5"
               />
               <span className="font-medium text-sm">Host:</span>
-              <span
-                className="text-sm font-medium hover:text-blue-shade-200 cursor-pointer"
-                title={data.host_address}
+              <Link
+                href={`/${data.dao_name}/${data.host_address}?active=info`}
+                passHref
+                onClick={(event: any) => {
+                  event.stopPropagation();
+                }}
               >
-                {truncateAddress(data.host_address)}
-              </span>
+                <span
+                  className="text-sm font-medium hover:text-blue-shade-200 cursor-pointer"
+                  title={data.host_address}
+                >
+                  {truncateAddress(data.host_address)}
+                </span>
+              </Link>
               <Tooltip
                 content={copyStates[index] ? "Copied!" : "Copy"}
                 placement="right"
@@ -380,7 +349,10 @@ const OfficeHourTile = ({
               >
                 <span className="cursor-pointer text-xs sm:text-sm">
                   <IoCopy
-                    onClick={(e) => handleCopy(data.host_address, index, e)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleCopy(data.host_address, index, e);
+                    }}
                     className={`transition-colors duration-300 ${
                       copyStates[index]
                         ? "text-blue-500"
@@ -393,168 +365,20 @@ const OfficeHourTile = ({
 
             {isAttended && data.isEligible && (
               <div className="px-4 pb-2 flex justify-center space-x-2">
-              {/* Check if data.host_uid exists */}
-              {data.uid_host ? (
-                <Link
-                  href={
-                    data.dao_name.toLowerCase() === "optimism"
-                      ? `https://optimism.easscan.org/offchain/attestation/view/${data.attendees?data.attendees[0].attendee_uid:''}`
-                      : data.dao_name.toLowerCase() === "arbitrum"
-                      ? `https://arbitrum.easscan.org/offchain/attestation/view/${data.attendees?data.attendees[0].attendee_uid:''}`
-                      : "#"
-                  }
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                  }}
-                  className={`${buttonStyles.button} w-full gap-1`}
-                >
-                  Offchain
-                  <BiLinkExternal
-                    size={20}
-                    className="text-white hover:text-blue-600 transition-colors duration-200"
-                    title="Open link in new tab"
-                  />
-                </Link>
-              ) : (
-                <Tooltip content="Claim Offchain" placement="top" showArrow>
-                  <div
-                    className={`${
-                      buttonStyles.button
-                    } w-full gap-0.5 text-xs py-2.5 ${
-                      loadingButton === "offchain" ? "disabled" : ""
-                    }`}
-                    onClick={
-                      loadingButton === ""
-                        ? () =>
-                            handleClaimOffchain(
-                              walletAddress?walletAddress:'',
-                              data.meetingId,
-                              data.dao_name,
-                              data.meetingType,
-                              data.meeting_starttime,
-                              data.meeting_endtime
-                            )
-                        : undefined
-                    }
-                  >
-                    {loadingButton === "offchain" ? (
-                      <TailSpin
-                        visible={true}
-                        height="30"
-                        width="40"
-                        color="black"
-                        ariaLabel="oval-loading"
-                      />
-                    ) : (
-                      <>
-                        Offchain
-                        <FaGift
-                          size={14}
-                          className="text-white hover:text-blue-600 transition-colors duration-200"
-                          title="Open link in new tab"
-                        />
-                      </>
-                    )}
-                  </div>
-                </Tooltip>
-              )}
-
-              {/* ClaimButton Component */}
-              <Tooltip content="Claim Onchain" placement="top" showArrow>
-                <ClaimButton
-                  meetingId={data.meetingId as string}
+                {/* Check if data.host_uid exists */}
+                <OffchainAttestationButton
+                  meetingId={data.meetingId}
+                  daoName={data.dao_name}
                   meetingType={data.meetingType}
                   startTime={data.meeting_starttime}
                   endTime={data.meeting_endtime}
-                  dao={data.dao_name}
-                  address={walletAddress || ""}
-                  onChainId={
-                    data.onchain_host_uid?data.onchain_host_uid:""
+                  uid={getAttendeeUid(walletAddress, data.attendees)}
+                  attendeeAddress={walletAddress}
+                  onSuccess={(uid) =>
+                    handleAttestationSuccess(uid, data.meetingId)
                   }
-                  disabled={
-                    claimInProgress && claimingMeetingId !== data.meetingId
-                  }
-                  reference_id={data.reference_id}
-                  meetingCategory="officehours"
-                  attendees={data.attendees?data.attendees[0].attendee_address:""}
-                  onClaimStart={() => handleClaimStart(data.meetingId)}
-                  onClaimEnd={handleClaimEnd}
+                  meetingData={data}
                 />
-              </Tooltip>
-            </div>
-            )}
-
-            {isHosted && data.isEligible && (
-              <div className="px-4 pb-2 flex justify-center space-x-2">
-                {/* Check if data.host_uid exists */}
-                {data.uid_host ? (
-                  <Link
-                    href={
-                      data.dao_name.toLowerCase() === "optimism"
-                        ? `https://optimism.easscan.org/offchain/attestation/view/${data.uid_host}`
-                        : data.dao_name.toLowerCase() === "arbitrum"
-                        ? `https://arbitrum.easscan.org/offchain/attestation/view/${data.uid_host}`
-                        : "#"
-                    }
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                    }}
-                    className={`${buttonStyles.button} w-full gap-1`}
-                  >
-                    Offchain
-                    <BiLinkExternal
-                      size={20}
-                      className="text-white hover:text-blue-600 transition-colors duration-200"
-                      title="Open link in new tab"
-                    />
-                  </Link>
-                ) : (
-                  <Tooltip content="Claim Offchain" placement="top" showArrow>
-                    <div
-                      className={`${
-                        buttonStyles.button
-                      } w-full gap-0.5 text-xs py-2.5 ${
-                        loadingButton === "offchain" ? "disabled" : ""
-                      }`}
-                      onClick={
-                        loadingButton === ""
-                          ? () =>
-                              handleClaimOffchain(
-                                walletAddress?walletAddress:'',
-                                data.meetingId,
-                                data.dao_name,
-                                data.meetingType,
-                                data.meeting_starttime,
-                                data.meeting_endtime
-                              )
-                          : undefined
-                      }
-                    >
-                      {loadingButton === "offchain" ? (
-                        <TailSpin
-                          visible={true}
-                          height="30"
-                          width="40"
-                          color="black"
-                          ariaLabel="oval-loading"
-                        />
-                      ) : (
-                        <>
-                          Offchain
-                          <FaGift
-                            size={14}
-                            className="text-white hover:text-blue-600 transition-colors duration-200"
-                            title="Open link in new tab"
-                          />
-                        </>
-                      )}
-                    </div>
-                  </Tooltip>
-                )}
 
                 {/* ClaimButton Component */}
                 <Tooltip content="Claim Onchain" placement="top" showArrow>
@@ -566,13 +390,16 @@ const OfficeHourTile = ({
                     dao={data.dao_name}
                     address={walletAddress || ""}
                     onChainId={
-                      data.onchain_host_uid?data.onchain_host_uid:""
+                      data.onchain_host_uid ? data.onchain_host_uid : ""
                     }
                     disabled={
                       claimInProgress && claimingMeetingId !== data.meetingId
                     }
-                    meetingCategory="officehours"
                     reference_id={data.reference_id}
+                    meetingCategory="officehours"
+                    attendees={
+                      data.attendees ? data.attendees[0].attendee_address : ""
+                    }
                     onClaimStart={() => handleClaimStart(data.meetingId)}
                     onClaimEnd={handleClaimEnd}
                   />
@@ -581,6 +408,65 @@ const OfficeHourTile = ({
             )}
 
             {isHosted && (
+              <div className="flex justify-end w-full">
+                {data.isEligible && (
+                  <div className="flex justify-center space-x-2 w-full">
+                    {/* Check if data.host_uid exists */}
+                    <OffchainAttestationButton
+                      meetingId={data.meetingId}
+                      daoName={data.dao_name}
+                      meetingType={data.meetingType}
+                      startTime={data.meeting_starttime}
+                      endTime={data.meeting_endtime}
+                      uid={data.uid_host}
+                      isHost={true}
+                      onSuccess={(uid) =>
+                        handleAttestationSuccess(uid, data.meetingId)
+                      }
+                      meetingData={data}
+                    />
+
+                    {/* ClaimButton Component */}
+                    <Tooltip content="Claim Onchain" placement="top" showArrow>
+                      <ClaimButton
+                        meetingId={data.meetingId as string}
+                        meetingType={data.meetingType}
+                        startTime={data.meeting_starttime}
+                        endTime={data.meeting_endtime}
+                        dao={data.dao_name}
+                        address={walletAddress || ""}
+                        onChainId={
+                          data.onchain_host_uid ? data.onchain_host_uid : ""
+                        }
+                        disabled={
+                          claimInProgress &&
+                          claimingMeetingId !== data.meetingId
+                        }
+                        meetingCategory="officehours"
+                        reference_id={data.reference_id}
+                        onClaimStart={() => handleClaimStart(data.meetingId)}
+                        onClaimEnd={handleClaimEnd}
+                      />
+                    </Tooltip>
+                  </div>
+                )}
+                <div className="flex justify-end ms-2">
+                  <Tooltip content="Edit Details" placement="top" showArrow>
+                    <div
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleEditModalOpen(data);
+                      }}
+                      className={`bg-gradient-to-r from-[#8d949e] to-[#555c6629] rounded-full p-1 py-3 cursor-pointer w-10 flex items-center justify-center font-semibold text-sm text-black`}
+                    >
+                      <FaPencil color="black" size={14} />
+                    </div>
+                  </Tooltip>
+                </div>
+              </div>
+            )}
+
+            {/* {isHosted && (
               <div className="flex justify-end w-full">
                 <Tooltip content="Edit Details" placement="top" showArrow>
                   <div
@@ -594,15 +480,27 @@ const OfficeHourTile = ({
                   </div>
                 </Tooltip>
               </div>
-            )}
+            )} */}
 
-            {isUpcoming && (
+            {(isUpcoming || isOngoing) && (
               <>
                 <div className="flex items-center space-x-2 text-sm text-gray-700">
                   <Clock className="w-4 h-4 text-indigo-500" />
                   <span className="font-medium">Starts at:</span>
                   <span className="text-indigo-600 font-semibold">
-                    {new Date(data.startTime).toLocaleString("en-GB")}
+                    {`${new Date(data.startTime)
+                      .toLocaleDateString("en-GB", {
+                        day: "2-digit",
+                        month: "2-digit",
+                        year: "numeric",
+                      })
+                      .replace(/\//g, "/")}, ${new Date(
+                      data.startTime
+                    ).toLocaleString("en-US", {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      hour12: true,
+                    })}`}
                   </span>
                 </div>
 
@@ -646,7 +544,7 @@ const OfficeHourTile = ({
                       ) : (
                         <>
                           <Play className="w-4 h-4" />
-                          <span>Start Session</span>
+                          <span>Start Meeting</span>
                         </>
                       )}
                     </button>
@@ -673,7 +571,7 @@ const OfficeHourTile = ({
                 ) : (
                   <>
                     <Play className="w-4 h-4" />
-                    <span>Join Session</span>
+                    <span>Join Meeting</span>
                   </>
                 )}
               </button>

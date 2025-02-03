@@ -100,10 +100,10 @@ const DeleteOfficeHoursModal: React.FC<DeleteOfficeHoursModalProps> = ({
               className="px-6 py-2.5 rounded-xl text-sm font-medium text-white bg-red-500 hover:bg-red-600 transition-all duration-200 shadow-sm hover:shadow focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 active:bg-red-700"
             >
               {isDeleting ? (
-                <>
+                <div className="flex items-center space-x-2">
                   <Loader2 className="h-4 w-4 animate-spin" />
                   <span>Deleting</span>
-                </>
+                </div>
               ) : (
                 <span>Delete</span>
               )}

@@ -32,7 +32,10 @@ import { useAccount, useSwitchChain } from "wagmi";
 import OPLogo from "@/assets/images/daos/op.png";
 import ArbLogo from "@/assets/images/daos/arb.png";
 
-const UserScheduledHours: React.FC<{ daoName: string }> = ({ daoName }) => {
+const UserScheduledHours: React.FC<{
+  daoName: string;
+  onScheduleSave?: () => void;
+}> = ({ daoName, onScheduleSave }) => {
   const [selectedDates, setSelectedDates] = useState<DateSchedule[]>([]);
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
   const [title, setTitle] = useState("");
@@ -48,24 +51,6 @@ const UserScheduledHours: React.FC<{ daoName: string }> = ({ daoName }) => {
   const [isOpen, setIsOpen] = useState(false);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const hoverDelay = 300;
-  const currentChain = chains.find((chain) => chain.id === chain?.id);
-
-  const desiredChains = [
-    { id: 10, name: "Optimism", icon: OPLogo },
-    { id: 42161, name: "Arbitrum", icon: ArbLogo },
-    { id: 421614, name: "Arbitrum Sepolia", icon: ArbLogo },
-  ];
-
-  const currentChainLogo = currentChain
-    ? desiredChains.find((chain) => chain.id === currentChain.id)?.icon
-    : desiredChains[0].icon;
-
-  const handleMouseEnter = () => {
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
-    setIsOpen(true);
-  };
 
   const handleMouseLeave = () => {
     timeoutRef.current = setTimeout(() => {
@@ -80,40 +65,6 @@ const UserScheduledHours: React.FC<{ daoName: string }> = ({ daoName }) => {
       }
     };
   }, []);
-
-  const isTimeSlotConflicting = useCallback(
-    (
-      date: Date,
-      startTime: string,
-      endTime: string,
-      currentSlotId?: string
-    ) => {
-      const dateString = format(date, "yyyy-MM-dd");
-      const newStartTime = new Date(`${dateString}T${startTime}:00`);
-      const newEndTime = new Date(`${dateString}T${endTime}:00`);
-
-      return (
-        existingSchedules.some((schedule) => {
-          const scheduleStartTime = new Date(schedule.startTime);
-          const scheduleEndTime = new Date(schedule.endTime);
-          return (
-            newStartTime < scheduleEndTime && newEndTime > scheduleStartTime
-          );
-        }) ||
-        selectedDates.some(
-          (schedule) =>
-            schedule.date.toDateString() === date.toDateString() &&
-            schedule.timeSlots.some((slot) => {
-              if (currentSlotId && slot.id === currentSlotId) return false;
-              const slotStartTime = new Date(`${dateString}T${slot.startTime}`);
-              const slotEndTime = new Date(`${dateString}T${slot.endTime}`);
-              return newStartTime < slotEndTime && newEndTime > slotStartTime;
-            })
-        )
-      );
-    },
-    [existingSchedules, selectedDates]
-  );
 
   const generateTimeOptions = useCallback(
     (selectedDate: Date, isStartTime: boolean, startTime?: string) => {
@@ -256,6 +207,18 @@ const UserScheduledHours: React.FC<{ daoName: string }> = ({ daoName }) => {
       description,
     ]
   );
+
+  useEffect(() => {
+    if (selectedDates.length > 0) {
+      setSelectedDates((prevDates) =>
+        prevDates.map((schedule) => ({
+          ...schedule,
+          title: title,
+          description: description,
+        }))
+      );
+    }
+  }, [title, description]);
 
   const toggleRecurring = useCallback(
     (dateIndex: number) => {
@@ -482,7 +445,14 @@ const UserScheduledHours: React.FC<{ daoName: string }> = ({ daoName }) => {
           };
         });
     });
-  }, [selectedDates]);
+  }, [selectedDates, title, description]);
+
+  const resetState = useCallback(() => {
+    setSelectedDates([]);
+    setTitle("");
+    setDescription("");
+    setCurrentDate(new Date());
+  }, []);
 
   const handleSave = useCallback(async () => {
     setIsSaving(true);
@@ -515,27 +485,17 @@ const UserScheduledHours: React.FC<{ daoName: string }> = ({ daoName }) => {
       const result = await response.json();
       console.log("API Response:", result);
 
-      // Update the state to mark saved slots as booked
-      setSelectedDates((prevDates) => {
-        return prevDates.map((date) => ({
-          ...date,
-          timeSlots: date.timeSlots.map((slot) => ({
-            ...slot,
-            bookedTitle: slot.bookedTitle || date.title, // Use existing bookedTitle if present, otherwise use date.title
-            bookedDescription: slot.bookedDescription || date.description,
-            reference_id: slot.reference_id || result.data.reference_id, // Assuming the API returns a reference_id for each saved slot
-          })),
-        }));
-      });
-
       toast.success("Schedule saved successfully!");
+      resetState();
+      getOfficeHours();
+      onScheduleSave?.();
     } catch (error) {
       console.error("Error saving office hours:", error);
       toast.error("Failed to save schedule. Please try again.");
     } finally {
       setIsSaving(false);
     }
-  }, [convertToUTC, walletAddress, daoName, getAccessToken]);
+  }, [convertToUTC, walletAddress, daoName, getAccessToken, resetState]);
 
   const getOfficeHours = useCallback(async () => {
     const token = await getAccessToken();
@@ -566,7 +526,7 @@ const UserScheduledHours: React.FC<{ daoName: string }> = ({ daoName }) => {
 
   useEffect(() => {
     getOfficeHours();
-  }, [getOfficeHours]);
+  }, [getOfficeHours, resetState]);
 
   const memoizedCalendar = useMemo(
     () => (
@@ -631,99 +591,24 @@ const UserScheduledHours: React.FC<{ daoName: string }> = ({ daoName }) => {
       <div className="max-w-7xl mx-auto">
         {/* Header Section */}
         <div className="mb-8">
-        <div className="mr-2 sm:mr-3 md:mr-4 lg:mr-5 flex items-center truncate mb-6">
-                  <Image
-                    src={daoName==="optimism" ? OPLogo : ArbLogo}
-                    alt="Current Chain"
-                    width={48}
-                    height={48}
-                    className="size-12 mr-4"
-                  />
-                  {/* {daoName.charAt(0).toUpperCase() + daoName.slice(1)} */}
-                  <div>
-                    <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
-                      {daoName.charAt(0).toUpperCase() + daoName.slice(1)}
-                    </h1>
-                    <p className="text-sm text-gray-500 mt-1">
-                      Schedule your office hours
-                    </p>
-                  </div>
-                </div>
-          {/* <div
-            className="relative"
-            onMouseEnter={handleMouseEnter}
-            onMouseLeave={handleMouseLeave}
-          >
+          <div className="mr-2 sm:mr-3 md:mr-4 lg:mr-5 flex items-center truncate mb-6">
+            <Image
+              src={daoName === "optimism" ? OPLogo : ArbLogo}
+              alt="Current Chain"
+              width={48}
+              height={48}
+              className="size-12 mr-4"
+            />
+            {/* {daoName.charAt(0).toUpperCase() + daoName.slice(1)} */}
             <div>
-              <div className="w-fit capitalize text-xl sm:text-2xl md:text-3xl lg:text-4xl  bg-white-200 outline-none cursor-pointer flex items-center justify-between transition duration-500 mb-6">
-                <div className="mr-2 sm:mr-3 md:mr-4 lg:mr-5 flex items-center truncate">
-                  <Image
-                    src={currentChainLogo || desiredChains[0].icon}
-                    alt="Current Chain"
-                    width={48}
-                    height={48}
-                    className="size-12 mr-4"
-                  />
-                  <div>
-                    <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
-                      {daoName.charAt(0).toUpperCase() + daoName.slice(1)}
-                    </h1>
-                    <p className="text-sm text-gray-500 mt-1">
-                      Schedule your office hours
-                    </p>
-                  </div>
-                </div>
-                <svg
-                  className={`w-3 h-3 sm:w-3.5 sm:h-3.5 md:w-4 md:h-4 mr-1 sm:mr-1.5 md:mr-2 flex-shrink-0 ${
-                    isOpen
-                      ? "transform rotate-180 transition-transform duration-300"
-                      : "transition-transform duration-300"
-                  }`}
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M19 9l-7 7-7-7"
-                  ></path>
-                </svg>
-              </div>
-              <div
-                className={`absolute top-16 mt-1 p-1.5 w-full min-w-[200px] sm:w-56 md:w-64 lg:w-72 border border-white-shade-100 rounded-xl bg-white shadow-md z-50 ${
-                  isOpen ? "opacity-100" : "opacity-0 pointer-events-none"
-                }`}
-                style={{ transition: "opacity 0.3s" }}
-                onMouseEnter={handleMouseEnter}
-                onMouseLeave={handleMouseLeave}
-              >
-                {desiredChains.map((chain, index) => (
-                  <div key={chain.id}>
-                    <div
-                      className={`option flex items-center cursor-pointer px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg transition duration-300 ease-in-out transform hover:scale-105 capitalize ${
-                        chain.id === currentChain?.id
-                          ? "text-blue-shade-100"
-                          : ""
-                      }`}
-                      onClick={() => switchChain?.({ chainId: chain.id })}
-                    >
-                      <Image
-                        src={chain.icon}
-                        alt={chain.name}
-                        width={20}
-                        height={20}
-                        className="mr-2 w-5 h-5"
-                      />
-                      {chain.name}
-                    </div>
-                    {index !== desiredChains.length - 1 && <hr />}
-                  </div>
-                ))}
-              </div>
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
+                {daoName.charAt(0).toUpperCase() + daoName.slice(1)}
+              </h1>
+              <p className="text-sm text-gray-500 mt-1">
+                Schedule your office hours
+              </p>
             </div>
-          </div> */}
+          </div>
 
           {/* Schedule Details Card */}
           <div className="bg-gradient-to-br from-blue-50 to-transparent rounded-2xl shadow-md p-3 0.2xs:p-4 sm:p-6 mb-8 transition-all hover:shadow-lg">

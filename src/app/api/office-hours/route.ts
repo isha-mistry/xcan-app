@@ -42,6 +42,27 @@ const randomImage = getRandomElementFromArray(imageCIDs);
 //     }
 //   );
 // };
+
+const getRoomId = async () => {
+  const response = await fetch("https://api.huddle01.com/api/v1/create-room", {
+    method: "POST",
+    body: JSON.stringify({
+      title: "Test Room",
+    }),
+    headers: {
+      "Content-Type": "application/json",
+      "x-api-key": process.env.NEXT_PUBLIC_API_KEY ?? "",
+    },
+    cache: "no-store",
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to create room");
+  } else {
+    return response.json();
+  }
+};
+
 const addMeetingsToExistingDAO = async (
   collection: Collection<OfficeHoursDocument>,
   hostAddress: string,
@@ -50,13 +71,13 @@ const addMeetingsToExistingDAO = async (
 ) => {
   const today = new Date();
   today.setHours(0, 0, 0, 0); // Set to start of day
-  
+
   // Process meetings sequentially using for...of to maintain order
   const meetingDocument = [];
   for (const meeting of meetings) {
     const meetingDate = new Date(meeting.startTime);
     meetingDate.setHours(0, 0, 0, 0);
-    
+
     const baseDocument = {
       reference_id: uuidv4(),
       ...meeting,
@@ -68,26 +89,13 @@ const addMeetingsToExistingDAO = async (
     if (meetingDate.getTime() === today.getTime()) {
       try {
         // Direct API call since we're already in the API route
-        const response = await fetch(`${process.env.NEXT_PUBLIC_CREATE_ROOM_ENDPOINT}`, {
-          method: 'GET',
-          headers: {
-            // Add any necessary headers for your room service
-            'Content-Type': 'application/json',
-            // Add any authentication headers if required
-          }
-        });
-        
-        if (!response.ok) {
-          throw new Error('Failed to create room');
-        }
-        
-        const result = await response.json();
+        const result = await getRoomId();
         meetingDocument.push({
           ...baseDocument,
-          meetingId: result.data
+          meetingId: result.data.roomId,
         });
       } catch (error) {
-        console.error('Error generating meeting ID:', error);
+        console.error("Error generating meeting ID:", error);
         meetingDocument.push(baseDocument);
       }
     } else {
@@ -121,7 +129,7 @@ const addNewDAOWithMeetings = async (
   for (const meeting of meetings) {
     const meetingDate = new Date(meeting.startTime);
     meetingDate.setHours(0, 0, 0, 0);
-    
+
     const baseDocument = {
       reference_id: uuidv4(),
       ...meeting,
@@ -131,25 +139,13 @@ const addNewDAOWithMeetings = async (
     };
     if (meetingDate.getTime() === today.getTime()) {
       try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_CREATE_ROOM_ENDPOINT}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            // Add any other required headers
-          }
-        });
-        
-        if (!response.ok) {
-          throw new Error('Failed to create room');
-        }
-        
-        const result = await response.json();
+        const result = await getRoomId();
         meetingDocument.push({
           ...baseDocument,
-          meetingId: result.data
+          meetingId: result.data.roomId,
         });
       } catch (error) {
-        console.error('Error generating meeting ID:', error);
+        console.error("Error generating meeting ID:", error);
         meetingDocument.push(baseDocument);
       }
     } else {
@@ -184,7 +180,7 @@ const createNewHostWithMeetings = async (
   for (const meeting of meetings) {
     const meetingDate = new Date(meeting.startTime);
     meetingDate.setHours(0, 0, 0, 0);
-    
+
     const baseDocument = {
       reference_id: uuidv4(),
       ...meeting,
@@ -195,25 +191,13 @@ const createNewHostWithMeetings = async (
 
     if (meetingDate.getTime() === today.getTime()) {
       try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_CREATE_ROOM_ENDPOINT}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            // Add any other required headers
-          }
-        });
-        
-        if (!response.ok) {
-          throw new Error('Failed to create room');
-        }
-        
-        const result = await response.json();
+        const result = await getRoomId();
         meetingDocument.push({
           ...baseDocument,
-          meetingId: result.data
+          meetingId: result.data.roomId,
         });
       } catch (error) {
-        console.error('Error generating meeting ID:', error);
+        console.error("Error generating meeting ID:", error);
         meetingDocument.push(baseDocument);
       }
     } else {
