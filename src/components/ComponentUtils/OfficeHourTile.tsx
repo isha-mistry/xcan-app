@@ -407,48 +407,66 @@ const OfficeHourTile = ({
               </div>
             )}
 
-            {isHosted && data.isEligible && (
-              <div className="px-4 pb-2 flex justify-center space-x-2">
-                {/* Check if data.host_uid exists */}
-                <OffchainAttestationButton
-                  meetingId={data.meetingId}
-                  daoName={data.dao_name}
-                  meetingType={data.meetingType}
-                  startTime={data.meeting_starttime}
-                  endTime={data.meeting_endtime}
-                  uid={data.uid_host}
-                  isHost={true}
-                  onSuccess={(uid) =>
-                    handleAttestationSuccess(uid, data.meetingId)
-                  }
-                  meetingData={data}
-                />
+            {isHosted && (
+              <div className="flex justify-end w-full">
+                {data.isEligible && (
+                  <div className="flex justify-center space-x-2 w-full">
+                    {/* Check if data.host_uid exists */}
+                    <OffchainAttestationButton
+                      meetingId={data.meetingId}
+                      daoName={data.dao_name}
+                      meetingType={data.meetingType}
+                      startTime={data.meeting_starttime}
+                      endTime={data.meeting_endtime}
+                      uid={data.uid_host}
+                      isHost={true}
+                      onSuccess={(uid) =>
+                        handleAttestationSuccess(uid, data.meetingId)
+                      }
+                      meetingData={data}
+                    />
 
-                {/* ClaimButton Component */}
-                <Tooltip content="Claim Onchain" placement="top" showArrow>
-                  <ClaimButton
-                    meetingId={data.meetingId as string}
-                    meetingType={data.meetingType}
-                    startTime={data.meeting_starttime}
-                    endTime={data.meeting_endtime}
-                    dao={data.dao_name}
-                    address={walletAddress || ""}
-                    onChainId={
-                      data.onchain_host_uid ? data.onchain_host_uid : ""
-                    }
-                    disabled={
-                      claimInProgress && claimingMeetingId !== data.meetingId
-                    }
-                    meetingCategory="officehours"
-                    reference_id={data.reference_id}
-                    onClaimStart={() => handleClaimStart(data.meetingId)}
-                    onClaimEnd={handleClaimEnd}
-                  />
-                </Tooltip>
+                    {/* ClaimButton Component */}
+                    <Tooltip content="Claim Onchain" placement="top" showArrow>
+                      <ClaimButton
+                        meetingId={data.meetingId as string}
+                        meetingType={data.meetingType}
+                        startTime={data.meeting_starttime}
+                        endTime={data.meeting_endtime}
+                        dao={data.dao_name}
+                        address={walletAddress || ""}
+                        onChainId={
+                          data.onchain_host_uid ? data.onchain_host_uid : ""
+                        }
+                        disabled={
+                          claimInProgress &&
+                          claimingMeetingId !== data.meetingId
+                        }
+                        meetingCategory="officehours"
+                        reference_id={data.reference_id}
+                        onClaimStart={() => handleClaimStart(data.meetingId)}
+                        onClaimEnd={handleClaimEnd}
+                      />
+                    </Tooltip>
+                  </div>
+                )}
+                <div className="flex justify-end ms-2">
+                  <Tooltip content="Edit Details" placement="top" showArrow>
+                    <div
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleEditModalOpen(data);
+                      }}
+                      className={`bg-gradient-to-r from-[#8d949e] to-[#555c6629] rounded-full p-1 py-3 cursor-pointer w-10 flex items-center justify-center font-semibold text-sm text-black`}
+                    >
+                      <FaPencil color="black" size={14} />
+                    </div>
+                  </Tooltip>
+                </div>
               </div>
             )}
 
-            {isHosted && (
+            {/* {isHosted && (
               <div className="flex justify-end w-full">
                 <Tooltip content="Edit Details" placement="top" showArrow>
                   <div
@@ -462,7 +480,7 @@ const OfficeHourTile = ({
                   </div>
                 </Tooltip>
               </div>
-            )}
+            )} */}
 
             {(isUpcoming || isOngoing) && (
               <>

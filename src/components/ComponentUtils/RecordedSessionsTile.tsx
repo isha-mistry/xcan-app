@@ -479,7 +479,7 @@ function RecordedSessionsTile({
                       onClick={(e) => {
                         e.stopPropagation();
                       }}
-                      className={`${buttonStyles.button} w-full gap-1`}
+                      className={`${buttonStyles.button} w-full gap-1 text-xs`}
                     >
                       Offchain{" "}
                       <BiLinkExternal

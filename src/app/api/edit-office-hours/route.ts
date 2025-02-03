@@ -8,9 +8,6 @@ export async function PUT(req: Request) {
     const { host_address, dao_name, reference_id, attendees, ...updateFields } =
       updateData;
 
-    //console.log("Line 12:",host_address,dao_name,reference_id,attendees,updateFields);
-
-    // Validate required fields
     if (!host_address || !dao_name || !reference_id) {
       return NextResponse.json(
         {
@@ -27,7 +24,6 @@ export async function PUT(req: Request) {
     const collection = db.collection("office_hours");
     const delegatesCollection = db.collection("delegates");
 
-    // First, get the existing document
     const existingDoc = await collection.findOne({
       host_address,
       "dao.name": dao_name,
@@ -45,7 +41,6 @@ export async function PUT(req: Request) {
       );
     }
 
-    // Find the existing meeting data
     const existingDAO = existingDoc.dao.find(
       (dao: any) => dao.name === dao_name
     );
@@ -64,17 +59,14 @@ export async function PUT(req: Request) {
       );
     }
 
-    // Build update object only with provided values
     const fieldsToUpdate: { [key: string]: any } = {};
 
-    // Helper function to add field if it exists and is different
     const addFieldIfChanged = (
       fieldName: string,
       value: any,
       prefix = "dao.$[daoElem].meetings.$[meetingElem]."
     ) => {
       if (value !== undefined && value !== existingMeeting[fieldName]) {
-        //console.log("Line 77:",value);
         fieldsToUpdate[`${prefix}${fieldName}`] = value;
       }
     };
@@ -91,15 +83,18 @@ export async function PUT(req: Request) {
     addFieldIfChanged("host_uid", updateFields.uid_host);
     addFieldIfChanged("onchain_host_uid", updateFields.onchain_host_uid);
     addFieldIfChanged("nft_image", updateFields.nft_image);
-    addFieldIfChanged("deployedContractAddress",updateFields.deployedContractAddress);
+    addFieldIfChanged(
+      "deployedContractAddress",
+      updateFields.deployedContractAddress
+    );
 
+    // Handle onchain_host_uid update
     if (
       updateFields.onchain_host_uid &&
       updateFields.onchain_host_uid !== existingMeeting.onchain_host_uid
     ) {
       addFieldIfChanged("onchain_host_uid", updateFields.onchain_host_uid);
 
-      // Update host's onchain count in delegates collection
       await delegatesCollection.findOneAndUpdate(
         { address: host_address },
         {
@@ -110,25 +105,34 @@ export async function PUT(req: Request) {
       );
     }
 
+    // Handle meeting status update and counts
     if (
       updateFields.meeting_status &&
       updateFields.meeting_status !== existingMeeting.meeting_status
     ) {
       addFieldIfChanged("meeting_status", updateFields.meeting_status);
 
-      // Check if the new status is "Recorded" or "Finished"
-      if (["Recorded", "Finished"].includes(updateFields.meeting_status)) {
-        // Update host's total hosted count
+      const isCompletedStatus = ["Recorded", "Finished"].includes(
+        updateFields.meeting_status
+      );
+      const wasNotCompletedStatus = !["Recorded", "Finished"].includes(
+        existingMeeting.meeting_status
+      );
+
+      // Only update counts if transitioning from non-completed to completed status
+      if (isCompletedStatus && wasNotCompletedStatus) {
+        // Update host's counts
         await delegatesCollection.findOneAndUpdate(
           { address: host_address },
           {
             $inc: {
               [`meetingRecords.${dao_name}.officeHoursHosted.totalHostedOfficeHours`]: 1,
             },
-          }
+          },
+          { upsert: true }
         );
 
-        // Update total attended count for all attendees
+        // Update attendees' counts
         if (existingMeeting.attendees && existingMeeting.attendees.length > 0) {
           const updatePromises = existingMeeting.attendees.map(
             (attendee: Attendee) =>
@@ -138,7 +142,8 @@ export async function PUT(req: Request) {
                   $inc: {
                     [`meetingRecords.${dao_name}.officeHoursAttended.totalAttendedOfficeHours`]: 1,
                   },
-                }
+                },
+                { upsert: true }
               )
           );
           await Promise.all(updatePromises);
@@ -162,8 +167,6 @@ export async function PUT(req: Request) {
       }
 
       let currentAttendees = existingMeeting.attendees || [];
-
-      // Track new onchain UIDs to update counts
       const newOnchainUids = new Set();
 
       // Process attendees
@@ -177,19 +180,18 @@ export async function PUT(req: Request) {
         if (existingIndex === -1) {
           // Add new attendee
           currentAttendees.push({
-            address: newAttendee.attendee_address,
+            attendee_address: newAttendee.attendee_address,
             ...(newAttendee.attendee_uid && { uid: newAttendee.attendee_uid }),
             ...(newAttendee.attendee_onchain_uid && {
               onchain_uid: newAttendee.attendee_onchain_uid,
             }),
           });
 
-          // Track new onchain UIDs
           if (newAttendee.attendee_onchain_uid) {
             newOnchainUids.add(newAttendee.attendee_address);
           }
 
-          // If meeting is already Recorded or Finished, increment total attended count for new attendee
+          // Update totalAttendedOfficeHours for new attendee if meeting is completed
           if (
             ["Recorded", "Finished"].includes(existingMeeting.meeting_status)
           ) {
@@ -199,7 +201,8 @@ export async function PUT(req: Request) {
                 $inc: {
                   [`meetingRecords.${dao_name}.officeHoursAttended.totalAttendedOfficeHours`]: 1,
                 },
-              }
+              },
+              { upsert: true }
             );
           }
         } else if (
@@ -229,16 +232,15 @@ export async function PUT(req: Request) {
             $inc: {
               [`meetingRecords.${dao_name}.officeHoursAttended.onchainCounts`]: 1,
             },
-          }
+          },
+          { upsert: true }
         );
       }
 
-      // Update attendees field
       fieldsToUpdate["dao.$[daoElem].meetings.$[meetingElem].attendees"] =
         currentAttendees;
     }
 
-    // Only proceed with update if there are fields to update
     if (Object.keys(fieldsToUpdate).length === 0) {
       await client.close();
       return NextResponse.json(
@@ -251,10 +253,8 @@ export async function PUT(req: Request) {
       );
     }
 
-    // Add updated_at timestamp
     fieldsToUpdate["updated_at"] = new Date();
 
-    // Update document
     const result = await collection.updateOne(
       {
         host_address,
@@ -270,7 +270,6 @@ export async function PUT(req: Request) {
       }
     );
 
-    // Fetch updated document
     const updatedDocument = await collection.findOne({
       host_address,
       "dao.name": dao_name,
