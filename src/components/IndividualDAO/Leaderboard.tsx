@@ -43,6 +43,7 @@ function Leaderboard({ props }: { props: string }) {
   const [totalPages, setTotalPages] = useState(1);
   const [copiedAddress, setCopiedAddress] = useState<string | null>(null);
   const ITEMS_PER_PAGE = 10;
+  const [sortedAndFilteredData, setSortedAndFilteredData] = useState<DelegateData[]>([]);
 
   const handleCopy = (addr: string) => {
     copy(addr);
@@ -94,6 +95,8 @@ function Leaderboard({ props }: { props: string }) {
         return `#${rank}`;
     }
   };
+
+
   const colors = [
     "bg-red-500",
     "bg-blue-500",
@@ -172,6 +175,7 @@ function Leaderboard({ props }: { props: string }) {
     };
     fetchEnsData();
   }, []);
+
   useEffect(() => {
     const filteredData = allDelegatesData.filter((delegate) =>
       delegate.address.toLowerCase().includes(searchTerm.toLowerCase())
@@ -184,6 +188,7 @@ function Leaderboard({ props }: { props: string }) {
       return b.Score - a.Score; // Default: Chora Club Score
     });
 
+    setSortedAndFilteredData(sortedData);
     const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
     const endIndex = startIndex + ITEMS_PER_PAGE;
     setDisplayedDelegates(sortedData.slice(startIndex, endIndex));
@@ -332,7 +337,7 @@ function Leaderboard({ props }: { props: string }) {
                             : "text-2xl"
                         }`}
                       >
-                        {getRankSymbol(delegate, allDelegatesData)}
+                        {getRankSymbol(delegate, sortedAndFilteredData)}
                       </div>
                       <div className="h-[86px] xs:h-[105px] border-[0.1px] border-[#D5D4DF]"></div>
                       <Image

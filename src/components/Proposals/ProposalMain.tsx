@@ -1272,7 +1272,7 @@ function ProposalMain({ props }: { props: Props }) {
         
       </div>
       {props.daoDelegates === "optimism" && optimismVoteOptions ? (
-  <div className={`rounded-[1rem] mx-4 my-3 md:mx-6 px-4 lg:mx-16 pb-6 pt-6 transition-shadow duration-300 ease-in-out shadow-xl bg-gray-50 font-poppins relative flex justify-center items-center font-extralight`}>
+  <div className={`rounded-[1rem] mx-4 my-3 md:mx-6 px-4 lg:mx-16 pb-6 pt-6 transition-shadow duration-300 ease-in-out shadow-xl bg-gray-50 font-poppins relative flex justify-center items-center font-extralight tracking-wide`}>
     {loading ? (
       <div className="flex items-center justify-center w-full h-[500px]">
         <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-black-shade-900"></div>
