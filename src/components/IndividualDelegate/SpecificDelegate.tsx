@@ -1423,16 +1423,28 @@ function SpecificDelegate({ props }: { props: Type }) {
                         closeDelay={1}
                         showArrow
                       >
-                        <span className="px-2 cursor-pointer" color="#3E3D3D">
-                          <IoCopy
-                            onClick={() => handleCopy(props.individualDelegate)}
-                            className={`transition-colors duration-300 ${
-                              copiedAddress === props.individualDelegate
-                                ? "text-blue-500"
-                                : ""
-                            }`}
-                          />
-                        </span>
+                        <Button
+                          className="bg-gray-200 hover:bg-gray-300 text-xs sm:text-sm "
+                          onClick={() => {
+                            if (typeof window === "undefined") return;
+                            navigator.clipboard.writeText(
+                              `${BASE_URL}/${props.daoDelegates}/${props.individualDelegate}?active=info`
+                            );
+                            pushToGTM({
+                              event: "share_profile_button_click_specificDelegate",
+                              category: "Delegate Engagement",
+                              action: "Share Profile Button Click",
+                              label: `Share Profile Button Click - Specific Delegate - ${getDaoNameFromUrl()}`,
+                            });
+                            setIsCopied(true);
+                            setTimeout(() => {
+                              setIsCopied(false);
+                            }, 3000);
+                          }}
+                        >
+                          <IoShareSocialSharp />
+                          {isCopied ? "Copied" : "Share profile"}
+                        </Button>
                       </Tooltip>
                       <div className="flex space-x-2">
                         <Tooltip

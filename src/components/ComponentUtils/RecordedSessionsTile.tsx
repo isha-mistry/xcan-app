@@ -31,6 +31,14 @@ interface meeting {
   gridCols?: string;
 }
 
+interface GTMEvent {
+  event: string;
+  category: string;
+  action: string;
+  label: string;
+  value?: number;
+}
+
 type DaoName = "optimism" | "arbitrum";
 const daoLogos: Record<DaoName, StaticImageData> = {
   optimism: oplogo,
@@ -78,6 +86,12 @@ function RecordedSessionsTile({
         //console.log(`RecordedSessionsTile component rendered in ${renderDuration.toFixed(2)} ms`);
       }
     }, [meetingData]);
+
+  const pushToGTM = (eventData: GTMEvent) => {
+    if (typeof window !== "undefined" && window.dataLayer) {
+      window.dataLayer.push(eventData);
+    }
+  };
 
   const handleCopy = (addr: string, buttonId: string) => {
     copy(addr);
@@ -241,6 +255,12 @@ function RecordedSessionsTile({
             onClick={(e) => {
               e.stopPropagation();
               e.preventDefault();
+              pushToGTM({
+                event: "recorded_session_click",
+                category: "Recorded Session Engagement",
+                action: "Recorded Session Click",
+                label: `Recorded Session Click - Meeting ID: ${data.meetingId}`,
+              });
               router.push(`/watch/${data.meetingId}`);
             }}
             onMouseEnter={() => setHoveredVideo(index)}

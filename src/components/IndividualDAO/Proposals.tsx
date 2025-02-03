@@ -11,6 +11,8 @@ import ArbLogo from "@/assets/images/daos/arb.png";
 import { dao_details } from "@/config/daoDetails";
 import ErrorDisplay from "../ComponentUtils/ErrorDisplay";
 import { fetchApi } from "@/utils/api";
+import VotedOnOptions from "@/assets/images/votedOnOption.png";
+import { Tooltip as NextUITooltip } from "@nextui-org/react";
 
 interface Proposal {
   proposalId: string;
@@ -21,6 +23,7 @@ interface Proposal {
   support1Weight?: number;
   support2Weight?: number;
   votersCount?: number;
+  proposalData?: string;
   status?: string;
   proposer: string;
   queueStartTime?: number;
@@ -576,7 +579,6 @@ function Proposals({ props }: { props: string }) {
         setLoading(false);
       } else {
         const allData = await fetchProposals();
-        console.log("allData", allData);
       }
     };
     proposals();
@@ -831,7 +833,7 @@ function Proposals({ props }: { props: string }) {
             className="flex flex-col 1.5md:flex-row px-2 py-4 0.5xs:p-4 text-lg mb-2 gap-2 1.5md:gap-5 bg-gray-100  hover:bg-gray-50 rounded-3xl transition-shadow duration-300 ease-in-out shadow-lg cursor-pointer 1.5md:items-center group"
             onClick={() => handleClick(proposal)}
           >
-            <div className="flex items-center 1.5md:w-[60%]">
+            <div className="flex items-center 1.5md:w-[55%] 2md:w-[60%]">
               <Image
                 src={dao_details[props as keyof typeof dao_details].logo}
                 alt={`${
@@ -866,7 +868,7 @@ function Proposals({ props }: { props: string }) {
               </div>
             </div>
 
-            <div className="flex flex-wrap justify-between items-center 1.5md:w-[40%] mt-2 1.5md:mt-0 gap-1 2md:gap-2 mx-auto 1.5md:mx-0">
+            <div className="flex flex-wrap justify-between items-center 1.5md:w-[45%] 2md:w-[40%] mt-2 1.5md:mt-0 gap-1 2md:gap-2 mx-auto 1.5md:mx-0">
               {/* <Tooltip
                 showArrow
                 content={<div className="font-poppins">OnChain</div>}
@@ -936,19 +938,19 @@ function Proposals({ props }: { props: string }) {
                 <VoteLoader />
               )} */}
               {proposal.votesLoaded ? (
-                <div
-                  className={`py-0.5 rounded-md text-xs xs:text-sm font-medium border flex justify-center items-center w-28 xs:w-32 
-                      ${
-                        getProposalStatusYet(proposal, canceledProposals).style
-                      }`}
-                >
-                  {getProposalStatusYet(proposal, canceledProposals).text}
-                </div>
+              <div
+                className={`py-0.5 rounded-md text-xs xs:text-sm font-medium flex justify-center items-center w-28 xs:w-32 
+                  ${proposal?.proposalData ? '' : getProposalStatusYet(proposal, canceledProposals).style}`}
+              >
+                {proposal?.proposalData 
+                  ? <NextUITooltip content='Multiple Options'><Image src={VotedOnOptions} alt="Multiple Options" className="w-6 h-6" /></NextUITooltip>
+                  : getProposalStatusYet(proposal, canceledProposals).text}
+              </div>
               ) : (
-                <VoteLoader />
+              <VoteLoader />
               )}
               {/* <div className="flex items-center justify-center w-[15%]"> */}
-              <div className="rounded-full bg-[#f4d3f9] border border-[#77367a] flex text-[#77367a] text-[10px] xs:text-xs h-[22px] items-center justify-center w-[19%] xs:h-fit py-[1px] xs:py-0.5 font-medium px-2 ">
+              <div className="rounded-full bg-[#F4D3F9] border border-[#77367A] flex text-[#77367A] text-[10px] xs:text-xs h-[22px] items-center justify-center w-[92px] xs:h-fit py-[1px] xs:py-0.5 font-medium px-2 ">
                 {(() => {
                   if (
                     Array.isArray(canceledProposals) &&

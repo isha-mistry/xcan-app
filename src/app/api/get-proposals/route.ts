@@ -14,12 +14,14 @@ const GET_PROPOSALS = gql`
       proposalId
       blockTimestamp
       description
+      proposalData
       proposer      
     }
     proposalCreated2S(orderDirection: desc, orderBy: blockTimestamp, first: 100) {
       proposalId
       blockTimestamp
       description
+      proposalData
       proposer
     }
     proposalCreated3S(orderDirection: desc, orderBy: blockTimestamp, first: 100) {

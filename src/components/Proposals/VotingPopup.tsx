@@ -13,8 +13,8 @@ import {
 } from "@/config/staticDataUtils";
 
 interface VotingOption {
-  value: string;
-  label: string;
+  index: Number;
+  option: string;
 }
 
 interface VotingPopupProps {
@@ -53,13 +53,12 @@ const VotingPopup: React.FC<VotingPopupProps> = ({
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   
 
-  const defaultOptions: VotingOption[] = [
+  const defaultOptions: any[] = [
     { value: '1', label: 'For' },
     { value: '0', label: 'Against' },
     { value: '2', label: 'Abstain' }
   ];
-
-  const options = customOptions || defaultOptions;
+const options = (!customOptions || customOptions.length < 1) ? defaultOptions : customOptions;
 
   const handleSubmit = async () => {
     if (votes.length === 0) {
@@ -185,45 +184,43 @@ const VotingPopup: React.FC<VotingPopupProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle className="text-xl font-semibold">
-            {proposalTitle}
-          </DialogTitle>
-        </DialogHeader>
-        <div className="mt-4">
-          <div className="flex items-center justify-between mb-4">
-            <span className="text-sm sm:max-w-[350px] text-gray-500">Proposal ID: {proposalId.slice(0,10)}...{proposalId.slice(-4)}</span>
-          </div>
-          <div className="mb-6">
-            <Label className="text-sm font-medium">Voting power</Label>
-            <p className="text-2xl font-bold">
-              {votesCount !== undefined 
-                ? formatNumber(votesCount / 10**18)
-                : '0'
-              }
-            </p>
-            {/* <button className="text-blue-600 text-sm flex items-center mt-1">
-              <Info className="w-4 h-4 mr-1" />
-              How is my voting power calculated?
-            </button> */}
-          </div>
-          {customOptions ? (
+    <DialogContent className="sm:max-w-[425px]">
+      <DialogHeader>
+        <DialogTitle className="text-xl font-semibold">
+          {proposalTitle}
+        </DialogTitle>
+      </DialogHeader>
+      <div className="mt-4">
+        <div className="flex items-center justify-between mb-4">
+          <span className="text-sm sm:max-w-[350px] text-gray-500">Proposal ID: {proposalId.slice(0,10)}...{proposalId.slice(-4)}</span>
+        </div>
+        <div className="mb-6">
+          <Label className="text-sm font-medium">Voting power</Label>
+          <p className="text-2xl font-bold">
+            {votesCount !== undefined 
+              ? formatNumber(votesCount / 10**18)
+              : '0'
+            }
+          </p>
+        </div>
+        {/* Scrollable container for options */}
+        <div className="max-h-[200px] overflow-y-auto pr-2">
+          {customOptions && customOptions.length >=1 ? (
             <div className="space-y-3">
-              {options.map((option) => (
-                <div key={option.value} className="flex items-center space-x-2">
+              {options?.map((option,index) => (
+                <div key={index} className="flex items-center space-x-2">
                   <Checkbox 
-                    id={option.value} 
-                    checked={votes.includes(option.value)}
-                    onCheckedChange={() => handleVoteChange(option.value)}
+                    id={index.toString()} 
+                    checked={votes.includes(index.toString())}
+                    onCheckedChange={() => handleVoteChange(index.toString())}
                   />
-                  <Label htmlFor={option.value}>{option.label}</Label>
+                  <Label htmlFor={index.toString()}>{option.option}</Label>
                 </div>
               ))}
             </div>
           ) : (
             <RadioGroup onValueChange={(value) => handleVoteChange(value)} className="space-y-3">
-              {options.map((option) => (
+              {options?.map((option) => (
                 <div key={option.value} className="flex items-center space-x-2">
                   <RadioGroupItem value={option.value} id={option.value} />
                   <Label htmlFor={option.value}>{option.label}</Label>
@@ -231,28 +228,30 @@ const VotingPopup: React.FC<VotingPopupProps> = ({
               ))}
             </RadioGroup>
           )}
-          {error && (
-            <p className="text-red-500 text-sm mt-2">{error}</p>
-          )}
-          <div className="mt-6 sm:max-w-[350px]">
-            <Label htmlFor="comment" className="text-sm font-medium">Add comment</Label>
-            <Textarea
-              id="comment"
-              placeholder="Why are you voting this way?"
-              value={comment}
-              onChange={(e) => setComment(e.target.value)}
-              className="mt-1"
-            />
-          </div>
         </div>
-        <Button 
-          onClick={handleSubmit} 
-          className="sm:max-w-[350px] mt-4"
-        >
-          Submit
-        </Button>
-      </DialogContent>
-    </Dialog>
+
+        {error && (
+          <p className="text-red-500 text-sm mt-2">{error}</p>
+        )}
+        <div className="mt-6 sm:max-w-[350px]">
+          <Label htmlFor="comment" className="text-sm font-medium">Add comment</Label>
+          <Textarea
+            id="comment"
+            placeholder="Why are you voting this way?"
+            value={comment}
+            onChange={(e) => setComment(e.target.value)}
+            className="mt-1"
+          />
+        </div>
+      </div>
+      <Button 
+        onClick={handleSubmit} 
+        className="sm:max-w-[350px] mt-4"
+      >
+        Submit
+      </Button>
+    </DialogContent>
+  </Dialog>
   );
 };
 
