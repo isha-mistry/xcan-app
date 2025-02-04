@@ -109,6 +109,12 @@ export async function PUT(req: Request) {
           },
         }
       );
+
+      if(cacheWrapper.isAvailable){
+        const cacheKey = `profile:${host_address}`;
+        await cacheWrapper.delete(cacheKey);
+      }
+
     }
 
     // Handle meeting status update and counts
@@ -152,6 +158,14 @@ export async function PUT(req: Request) {
                 { upsert: true }
               )
           );
+
+          if (cacheWrapper.isAvailable) {
+            const cacheKeys = existingMeeting.attendees.map(
+              (attendee:Attendee) => `profile:${attendee.attendee_address}`
+            );
+            
+            await Promise.all(cacheKeys.map((key:string) => cacheWrapper.delete(key)));
+          }          
           await Promise.all(updatePromises);
         }
       }
@@ -325,6 +339,12 @@ export async function DELETE(req: Request) {
         { status: 400 }
       );
     }
+
+    if(cacheWrapper.isAvailable){
+      const cacheKey = `office-hours-all`;
+      await cacheWrapper.delete(cacheKey);
+    }
+
     const client = await connectDB();
     const db = client.db();
     const collection = db.collection("office_hours");

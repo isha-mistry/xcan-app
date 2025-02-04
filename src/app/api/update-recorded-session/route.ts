@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/config/connectDB";
+import { cacheWrapper } from "@/utils/cacheWrapper";
 
 export async function PUT(req: NextRequest, res: NextResponse) {
   const {
@@ -25,6 +26,12 @@ export async function PUT(req: NextRequest, res: NextResponse) {
     const client = await connectDB();
     const db = client.db();
     const collection = db.collection("meetings");
+
+    if(cacheWrapper.isAvailable){
+      await cacheWrapper.delete("meetings");
+    }
+
+    
 
     // Prepare the update object
     const updateObject: { [key: string]: any } = {};
