@@ -145,7 +145,7 @@ function SpecificDelegate({ props }: { props: Type }) {
   const [tempCpiCalling, setTempCpiCalling] = useState(true);
   const [isFromDatabase, setFromDatabase] = useState(false);
   const [errorOccurred, setErrorOccurred] = useState(false);
-  const [avatar,  setAvatar] = useState("");
+  const [avatar, setAvatar] = useState("");
 
   const pushToGTM = (eventData: GTMEvent) => {
     if (typeof window !== "undefined" && window.dataLayer) {
@@ -1412,39 +1412,22 @@ function SpecificDelegate({ props }: { props: Type }) {
                         {props.individualDelegate.slice(0, 6)} ...{" "}
                         {props.individualDelegate.slice(-4)}
                       </div>
-
                       <Tooltip
-                        content={
-                          copiedAddress === props.individualDelegate
-                            ? "Copied!"
-                            : "Copy"
-                        }
-                        placement="right"
+                        content="Copy"
+                        placement="bottom"
                         closeDelay={1}
                         showArrow
                       >
-                        <Button
-                          className="bg-gray-200 hover:bg-gray-300 text-xs sm:text-sm "
-                          onClick={() => {
-                            if (typeof window === "undefined") return;
-                            navigator.clipboard.writeText(
-                              `${BASE_URL}/${props.daoDelegates}/${props.individualDelegate}?active=info`
-                            );
-                            pushToGTM({
-                              event: "share_profile_button_click_specificDelegate",
-                              category: "Delegate Engagement",
-                              action: "Share Profile Button Click",
-                              label: `Share Profile Button Click - Specific Delegate - ${getDaoNameFromUrl()}`,
-                            });
-                            setIsCopied(true);
-                            setTimeout(() => {
-                              setIsCopied(false);
-                            }, 3000);
-                          }}
-                        >
-                          <IoShareSocialSharp />
-                          {isCopied ? "Copied" : "Share profile"}
-                        </Button>
+                        <span className="px-2 cursor-pointer" color="#3E3D3D">
+                          <IoCopy
+                            onClick={() => handleCopy(`${props.individualDelegate}`)}
+                            className={`transition-colors duration-300 ${
+                              copiedAddress === `${props.individualDelegate}`
+                                ? "text-blue-500"
+                                : ""
+                            }`}
+                          />
+                        </span>
                       </Tooltip>
                       <div className="flex space-x-2">
                         <Tooltip
@@ -1460,6 +1443,13 @@ function SpecificDelegate({ props }: { props: Type }) {
                               navigator.clipboard.writeText(
                                 `${BASE_URL}/${props.daoDelegates}/${props.individualDelegate}?active=info`
                               );
+                              pushToGTM({
+                                event:
+                                  "share_profile_button_click_specificDelegate",
+                                category: "Delegate Engagement",
+                                action: "Share Profile Button Click",
+                                label: `Share Profile Button Click - Specific Delegate - ${getDaoNameFromUrl()}`,
+                              });
                               setIsCopied(true);
                               setTimeout(() => {
                                 setIsCopied(false);
