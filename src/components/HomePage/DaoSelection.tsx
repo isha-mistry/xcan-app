@@ -20,6 +20,14 @@ interface DaoSelectionProps {
   featureSchedule?: boolean;
 }
 
+interface GTMEvent {
+  event: string;
+  category: string;
+  action: string;
+  label?: string;
+  value?: number;
+}
+
 function DaoSelection({
   onClose,
   joinAsDelegate,
@@ -37,21 +45,41 @@ function DaoSelection({
   const { authenticated } = usePrivy();
   const [showWalletPopup, setShowWalletPopup] = useState(false);
 
+  const pushToGTM = (eventData: GTMEvent) => {
+    if (typeof window !== 'undefined' && window.dataLayer) {
+      window.dataLayer.push(eventData);
+    }
+  };
+
   const handleNavigation = (url: string) => {
     setIsNavigating(true);
     router.push(url);
   };
 
   const handleOptimism = () => {
+    pushToGTM({
+      event: 'dao_selection',
+      category: 'DAO Selection',
+      action: 'Optimism DAO Selected',
+      label: 'optimism',  // This will be tracked as dao_name
+      value: joinAsDelegate ? 1 : feature ? 2 : 3  // This will be tracked as journey_type
+    });
     checkDelegateStatus("optimism");
     setDao("optimism");
   };
-
+  
   const handleArbitrum = () => {
+    pushToGTM({
+      event: 'dao_selection',
+      category: 'DAO Selection',
+      action: 'Arbitrum DAO Selected',
+      label: 'arbitrum',
+      value: joinAsDelegate ? 1 : feature ? 2 : 3
+    });
     checkDelegateStatus("arbitrum");
     setDao("arbitrum");
   };
-
+  
   const checkDelegateStatus = async (network: "optimism" | "arbitrum") => {
     setShowError(false);
     setIsLoading(true);
@@ -61,26 +89,53 @@ function DaoSelection({
         : network === "arbitrum"
         ? "0x912CE59144191C1204E64559FE8253a0e49E6548"
         : "";
-
+  
     try {
-      const public_client = createPublicClient({
-        chain: network === "optimism" ? optimism : arbitrum,
-        transport: http(),
-      });
-
-      const delegateTx = (await public_client.readContract({
-        address: contractAddress as `0x${string}`,
-        abi: dao_abi.abi,
-        functionName: "delegates",
-        args: [address],
-      })) as string;
-
-      const isSelfDelegate =
-        delegateTx.toLowerCase() === address?.toLowerCase();
-      {
-        console.log(isSelfDelegate, "self delegate 123");
+      // Check contract status
+      let isContractDelegate = false;
+      try {
+        const public_client = createPublicClient({
+          chain: network === "optimism" ? optimism : arbitrum,
+          transport: http(),
+        });
+  
+        const delegateTx = (await public_client.readContract({
+          address: contractAddress as `0x${string}`,
+          abi: dao_abi.abi,
+          functionName: "delegates",
+          args: [address],
+        })) as string;
+  
+        isContractDelegate = delegateTx.toLowerCase() === address?.toLowerCase();
+        console.log("Contract delegate status:", isContractDelegate);
+      } catch (error) {
+        console.error("Error in reading contract:", error);
       }
-      if (isSelfDelegate) {
+  
+      // Check API status
+      let isApiDelegate = false;
+      try {
+        const response = await fetch(
+          `/api/search-delegate?address=${address}&dao=${network}`
+        );
+        const details = await response.json();
+        isApiDelegate = details.length > 0;
+        console.log("API delegate status:", isApiDelegate);
+      } catch (error) {
+        console.error("Error fetching from API:", error);
+      }
+  
+      // If either check passes, consider them a delegate
+      const isDelegate = isContractDelegate || isApiDelegate;
+  
+      if (isDelegate) {
+        pushToGTM({
+          event: 'delegate_verification',
+          category: 'Verification',
+          action: 'Delegate Success',
+          label: network,
+          value: 1
+        });
         if (feature) {
           setShowPopup(true);
         } else if (joinAsDelegate || featureSchedule) {
@@ -94,16 +149,29 @@ function DaoSelection({
           }
         }
       } else {
+        pushToGTM({
+          event: 'delegate_verification',
+          category: 'Verification',
+          action: 'Delegate Failed',
+          label: network,
+          value: 0
+        });
         setShowError(true);
       }
     } catch (error) {
-      console.error("Error in reading contract", error);
+      pushToGTM({
+        event: 'delegate_verification',
+        category: 'Verification',
+        action: 'Delegate Failed',
+        label: error instanceof Error ? error.message : 'Unknown error',
+        value: 0
+      });
+      console.error("Error in delegate status check:", error);
       setShowError(true);
     } finally {
       setIsLoading(false);
     }
   };
-
   useEffect(() => {
     if (isConnected && authenticated && showWalletPopup) {
       // Close the wallet modal and redirect

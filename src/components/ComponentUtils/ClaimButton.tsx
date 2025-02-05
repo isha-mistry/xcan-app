@@ -9,6 +9,7 @@ import toast from "react-hot-toast";
 import confetti from "canvas-confetti";
 import { fetchApi } from "@/utils/api";
 import { usePrivy, useWallets } from "@privy-io/react-auth";
+import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 
 interface ClaimButtonProps {
   meetingId: string;
@@ -19,6 +20,9 @@ interface ClaimButtonProps {
   address: string;
   onChainId: string | undefined;
   disabled: boolean;
+  reference_id?:string
+  meetingCategory?:string
+  attendees?:string,
   onClaimStart: () => void;
   onClaimEnd: () => void;
 }
@@ -32,6 +36,9 @@ const ClaimButton: React.FC<ClaimButtonProps> = ({
   address,
   onChainId,
   disabled,
+  reference_id,
+  meetingCategory,
+  attendees,
   onClaimStart,
   onClaimEnd,
 }) => {
@@ -39,6 +46,7 @@ const ClaimButton: React.FC<ClaimButtonProps> = ({
   const [isClaimed, setIsClaimed] = useState(!!onChainId);
   const { user, ready, getAccessToken } = usePrivy();
   const { wallets } = useWallets();
+  const {walletAddress}=useWalletAddress();
   useEffect(() => {
     setIsClaimed(!!onChainId);
   }, [onChainId]);
@@ -294,11 +302,20 @@ const ClaimButton: React.FC<ClaimButtonProps> = ({
       // Wait for transaction confirmation
       const newAttestationUID = await tx.wait();
 
-      if (newAttestationUID) {
+      if (newAttestationUID && meetingCategory==="session") {
         // Update attestation UID in backend
+        const ClientToken = await getAccessToken();
+        const myHeaders: HeadersInit = {
+          "Content-Type": "application/json",
+          ...(walletAddress && {
+            "x-wallet-address": walletAddress,
+            Authorization: `Bearer ${ClientToken}`,
+          }),
+        };
+
         const updateResponse = await fetchApi(`/update-attestation-uid`, {
           method: "PUT",
-          headers: { "Content-Type": "application/json" },
+          headers: myHeaders,
           body: JSON.stringify({
             meetingId: meetingId,
             meetingType: meetingType,
@@ -324,6 +341,52 @@ const ClaimButton: React.FC<ClaimButtonProps> = ({
         } else {
           throw new Error("Failed to update attestation UID");
         }
+      }
+      else 
+      { 
+        if(newAttestationUID && meetingCategory==="officehours")
+        {
+          // console.log("Line 338:",newAttestationUID);
+          const ClientToken = await getAccessToken();
+          const myHeaders: HeadersInit = {
+            "Content-Type": "application/json",
+            ...(walletAddress && {
+              "x-wallet-address": walletAddress,
+              Authorization: `Bearer ${ClientToken}`,
+            }),
+          };
+          const updateResponse = await fetchApi(`/edit-office-hours`, {
+            method: "PUT",
+            headers: myHeaders,
+            body: JSON.stringify({
+              host_address: address,
+              dao_name: dao,
+              reference_id: reference_id,
+              onchain_host_uid: newAttestationUID,
+              attendees:attendees,
+            }),
+          });
+  
+          const updateData = await updateResponse.json();
+
+          // console.log("Line 353:",updateData);
+          
+          if (updateData.success) {
+            // Successful claim
+            setIsClaimed(true);
+            
+            // Trigger confetti with a slight delay
+            setTimeout(() => {
+              triggerConfetti();
+            }, 100);
+  
+            toast.success("On-chain attestation claimed successfully!");
+            onClaimEnd();
+          } else {
+            throw new Error("Failed to update attestation UID");
+          }
+        }
+       
       }
     } catch (error: any) {
       // Comprehensive error handling
@@ -363,7 +426,7 @@ const ClaimButton: React.FC<ClaimButtonProps> = ({
         <button
           className={`${styles.button} ${
             !!onChainId || isClaimed ? styles.claimed : ""
-          } w-full `}
+          } w-full py-[3px] text-xs`}
           onClick={handleAttestationOnchain}
           disabled={!!onChainId || isClaiming || isClaimed || disabled}
         >

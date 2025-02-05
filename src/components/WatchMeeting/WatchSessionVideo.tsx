@@ -94,7 +94,7 @@ function WatchSessionVideo({
         if (!hasCalledApi && totalWatchTime >= 15) {
           hasCalledApi = true;
           try {
-            CountAsView(data.meetingId);
+            countAsView(data.meetingId);
           } catch (error) {
             console.error("Error calling CountAsView:", error);
           }
@@ -102,7 +102,7 @@ function WatchSessionVideo({
       }
     });
   };
-  async function CountAsView(meetingId: string) {
+  async function countAsView(meetingId: string) {
     try {
       const myHeaders: HeadersInit = {
         "Content-Type": "application/json",
@@ -115,6 +115,7 @@ function WatchSessionVideo({
       const raw = JSON.stringify({
         meetingId: meetingId,
         clientToken: clientToken,
+        collection: collection,
       });
 
       const requestOptions: any = {

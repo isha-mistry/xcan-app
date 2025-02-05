@@ -29,70 +29,55 @@ async function getClaimedNFTs(addresses: string[]): Promise<Record<string, numbe
 
 // Function to calculate CC_SCORE
 function calculateCCScore(data: any[]) {
-  let MinSessionCount = Infinity,
-    MaxSessionCount = -Infinity;
-  // let MinNFT = Infinity,
-  //   MaxNFT = -Infinity;
-  let MinViews = Infinity,
-    MaxViews = -Infinity;
-  let MinRating = Infinity,
-    MaxRating = -Infinity;
 
-  // Single pass for min/max calculation
-  data.forEach((item) => {
-    MinSessionCount = Math.min(MinSessionCount, item.sessionCount);
-    MaxSessionCount = Math.max(MaxSessionCount, item.sessionCount);
-
-    // MinNFT = Math.min(MinNFT, item.ClaimedNFT);
-    // MaxNFT = Math.max(MaxNFT, item.ClaimedNFT);
-
-    MinViews = Math.min(MinViews, item.totalViews);
-    MaxViews = Math.max(MaxViews, item.totalViews);
-
-    MinRating = Math.min(MinRating, item.averageRating);
-    MaxRating = Math.max(MaxRating, item.averageRating);
-  });
-
+    // Logarithmic Scaling with Normalization
+    const logScaleNormalized = (value:number, maxValue:number, base = 10) => {
+      if (value <= 0) return 0;
+      return (Math.log(value + 1) / Math.log(maxValue + 1)) * 100;
+    };
+  
   // Define weights
-  const SESSION_TAKEN_WEIGHT = 0.4;
-  // const NFT_CLAIMED_WEIGHT = 0.3;
-  const VIEWS_SESSION_WEIGHT = 0.3;
-  const RATING_WEIGHT = 0.3;
+  const SESSION_TAKEN_WEIGHT = 0.3;
+  const NFT_CLAIMED_WEIGHT = 0.3;
+  const VIEWS_SESSION_WEIGHT = 0.2;
+  const RATING_WEIGHT = 0.2;
+
+  // Find Max Values for Normalization
+  const maxValues = {
+    sessions: Math.max(...data.map(d => d.sessionCount), 1), 
+    nfts: Math.max(...data.map(d => d.ClaimedNFT), 1),
+    views: Math.max(...data.map(d => d.totalViews), 1),
+    ratings: 5  // Since max rating is 5.0
+  };
 
   // Process records and calculate scores
   return data.map((item) => {
-    // Normalize values with checks to handle identical min and max\\
-    let normalizedSessions =
-      MaxSessionCount === MinSessionCount
-        ? 0
-        : (item.sessionCount - MinSessionCount) /
-          (MaxSessionCount - MinSessionCount);
-    // let normalizedNFT =
-    //   MaxNFT === MinNFT ? 0 : (item.ClaimedNFT - MinNFT) / (MaxNFT - MinNFT);
-    let normalizeViews =
-      MaxViews === MinViews
-        ? 0
-        : (item.totalViews - MinViews) / (MaxViews - MinViews);
-    let normalizedRatings =
-      MaxRating === MinRating
-        ? 0
-        : (item.averageRating - MinRating) / (MaxRating - MinRating);
 
-    // Round to 3 decimal places
-    normalizedSessions = Math.round(normalizedSessions * 1000) / 1000;
-    // normalizedNFT = Math.round(normalizedNFT * 1000) / 1000;
-    normalizeViews = Math.round(normalizeViews * 1000) / 1000;
-    normalizedRatings = Math.round(normalizedRatings * 1000) / 1000;
-
-    // Calculate the final score
-    let SCORE =
-      SESSION_TAKEN_WEIGHT * normalizedSessions +
-      VIEWS_SESSION_WEIGHT * normalizeViews +
-      RATING_WEIGHT * normalizedRatings;
+     // Compute individual scores
+     const sessionsScore = logScaleNormalized(item.sessionCount, maxValues.sessions);
+     const nftsScore = logScaleNormalized(item.ClaimedNFT || 0, maxValues.nfts);
+     const viewsScore = logScaleNormalized(item.totalViews, maxValues.views);
+     const ratingsScore = logScaleNormalized(item.averageRating || 0, maxValues.ratings);
+ 
+     // Compute final weighted score
+     const weightedScore = 
+       (sessionsScore * SESSION_TAKEN_WEIGHT) +
+       (nftsScore * NFT_CLAIMED_WEIGHT) +
+       (viewsScore * VIEWS_SESSION_WEIGHT) +
+       (ratingsScore * RATING_WEIGHT);
+ 
+     // Debug information
+    //  const debugInfo = {
+    //    sessionsScore: Math.round(sessionsScore),
+    //    nftsScore: Math.round(nftsScore),
+    //    viewsScore: Math.round(viewsScore),
+    //    ratingsScore: Math.round(ratingsScore),
+    //    weightedScore: Math.round(weightedScore)
+    //  };
+ 
 
     // Store the SCORE in the object
-    let sc = Math.round(SCORE * 1000) / 1000;
-    return { ...item, CC_SCORE: Math.ceil(sc * 100) };
+    return { ...item, CC_SCORE: Math.round(weightedScore)};
   });
 }
 
@@ -206,6 +191,8 @@ export async function GET(req: NextRequest) {
       ...item,
       ClaimedNFT: claimedNFTs[item.delegate_address.toLowerCase()] || 0
     }));
+
+    console.log("Line 195:",result);
 
     result = calculateCCScore(result);
     // console.log(result);

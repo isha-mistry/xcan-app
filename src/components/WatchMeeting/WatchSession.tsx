@@ -1,5 +1,13 @@
 import React, { useEffect, useRef, useState } from "react";
-import user from "@/assets/images/user/user2.svg";
+import user1 from "@/assets/images/user/user1.svg";
+import user2 from "@/assets/images/user/user2.svg";
+import user3 from "@/assets/images/user/user3.svg";
+import user4 from "@/assets/images/user/user4.svg";
+import user5 from "@/assets/images/user/user5.svg";
+import user6 from "@/assets/images/user/user6.svg";
+import user7 from "@/assets/images/user/user7.svg";
+import user8 from "@/assets/images/user/user8.svg";
+import user9 from "@/assets/images/user/user9.svg";
 import view from "@/assets/images/daos/view.png";
 import Image from "next/image";
 import oplogo from "@/assets/images/daos/op.png";
@@ -40,6 +48,7 @@ interface Meeting extends SessionInterface {
   attendees: Attendee[];
   views: any;
   hostProfileInfo: UserProfileInterface;
+  startTime: string;
 }
 
 function WatchSession({
@@ -60,6 +69,23 @@ function WatchSession({
   const [shareModal, setShareModal] = useState(false);
   const router = useRouter();
   const path = usePathname();
+
+  const userImages = [
+    user1, 
+    user2, 
+    user3, 
+    user4, 
+    user5, 
+    user6, 
+    user7, 
+    user8, 
+    user9
+  ];
+
+  const getRandomUserImage = () => {
+    const randomIndex = Math.floor(Math.random() * userImages.length);
+    return userImages[randomIndex];
+  };
 
   const handleShareClose = () => {
     setShareModal(false);
@@ -145,7 +171,7 @@ function WatchSession({
                     src={
                       data.hostProfileInfo?.image
                         ? `https://gateway.lighthouse.storage/ipfs/${data.hostProfileInfo.image}`
-                        : user
+                        : user2
                     }
                     alt="image"
                     width={200}
@@ -291,7 +317,11 @@ function WatchSession({
                   className="w-5 h-5"
                 />
                 <div className="text-[#1E1E1E]">
-                  {formatTimeAgo(data.slot_time)}
+                  {collection === "meetings"
+                    ? formatTimeAgo(data.slot_time)
+                    : collection === "office_hours"
+                    ? formatTimeAgo(data.startTime)
+                    : ""}
                 </div>
               </div>
               {path.includes("/watch") && (
@@ -336,7 +366,7 @@ function WatchSession({
             </div>
             {showPopup && (
               <div
-                className={`absolute bg-white rounded-xl mt-1 py-2 duration-200 ease-in-out ${styles.customScrollbar}`}
+                className={`absolute bg-white rounded-xl mt-1 py-2 duration-200 ease-in-out z-30 ${styles.customScrollbar}`}
                 style={{ boxShadow: "0px 4px 9.1px 0px rgba(0,0,0,0.04)" ,maxHeight: "300px", overflowY: "auto"}}
               >
                 {data.attendees.map((attendee, index) => (
@@ -348,7 +378,7 @@ function WatchSession({
                             src={
                               attendee.profileInfo?.image
                                 ? `https://gateway.lighthouse.storage/ipfs/${attendee.profileInfo.image}`
-                                : user
+                                : getRandomUserImage()
                             }
                             alt="image"
                             width={100}

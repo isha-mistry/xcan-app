@@ -26,8 +26,8 @@ export async function GET(req: NextRequest) {
 
         if (!proposal) {
             client.close();  
-            return new Response(JSON.stringify({ error: "Proposal not found" }), { 
-                status: 404,
+            return new Response(JSON.stringify({ message: "Voter not exist" }), { 
+                status: 200,
                 headers: { 'Content-Type': 'application/json' }
             });
         }

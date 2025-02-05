@@ -60,6 +60,7 @@ import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 import { fetchApi } from "@/utils/api";
 import { BrowserProvider, Contract } from "ethers";
 import { MeetingRecords } from "@/types/UserProfileTypes";
+import SelectDaoButton from "../ComponentUtils/SelectDaoButton";
 import { createPublicClient, http } from "viem";
 import { optimism, arbitrum } from "viem/chains";
 
@@ -356,6 +357,7 @@ function MainProfile() {
       return;
     }
 
+    
     try {
       // setDelegatingToAddr(true);
 
@@ -411,6 +413,42 @@ function MainProfile() {
       // setConfettiVisible(true);
       // setTimeout(() => setConfettiVisible(false), 5000);
       toast.success("Delegation successful!");
+      const currentNetworkDAO = await provider.getNetwork();
+
+      const apiCallData = {
+        address: walletAddress,
+        delegation: {
+          [currentNetworkDAO.name]: [
+            {
+              delegator: walletAddress,
+              to_delegator: "0x0000000000000000000000000000000000000000",
+              from_delegate: "0x0000000000000000000000000000000000000000",
+              token: "0.00",
+              page: "Mainprofile",
+              timestamp:new Date()
+            },
+          ],
+        },
+      };
+
+      const Clienttoken=await getAccessToken();
+        const myHeaders: HeadersInit = {
+          "Content-Type": "application/json",
+          ...(walletAddress && {
+            "x-wallet-address": walletAddress,
+            Authorization: `Bearer ${Clienttoken}`,
+          }),
+        };
+        const response = await fetchApi("/track-delegation", {
+          method: "POST",
+          headers: myHeaders,
+          body: JSON.stringify(apiCallData),
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to save delegation data!");
+        }
+
       setSpin(false);
     } catch (error) {
       console.error("Delegation failed:", error);
@@ -1057,7 +1095,7 @@ function MainProfile() {
       </div>
       {!isPageLoading ? (
         <div className="font-poppins">
-          <div className="flex flex-col md:flex-row pb-5 lg:py-5 px-4 md:px-6 lg:px-14 justify-between items-start">
+          <div className="relative flex pb-5 lg:py-5 px-4 md:px-6 lg:px-14 items-start">
             <div className="flex flex-col xs:flex-row xs:items-start xs:justify-start items-center lg:items-start justify-center lg:justify-start w-full lg:w-auto">
               <div
                 className={`${
@@ -1106,7 +1144,7 @@ function MainProfile() {
                 </div>
               </div>
 
-              <div className="px-4 mt-4 xs:mt-0 md:mt-2 lg:mt-4 w-full xs:w-auto">
+              <div className="pl-4 md:px-4 mt-4 xs:mt-0 md:mt-2 lg:mt-4 w-full xs:w-auto">
                 <div className=" flex items-center py-1">
                   <div className="font-bold text-[22px] xs:text-xl sm:text-xl lg:text-[22px] pr-4">
                     {karmaEns ? (
@@ -1274,10 +1312,11 @@ function MainProfile() {
                 )}
 
                 {selfDelegate === false ? (
-                  <div className="pt-2 flex flex-col xs:flex-row gap-2 sm:gap-5 w-full">
+                  <div className="pt-2 flex flex-col 2.3sm:flex-row gap-2 w-full items-center">
+                  <div className=" flex flex-col xs:flex-row gap-2 w-full xs:w-auto items-center">
                     {/* pass address of whom you want to delegate the voting power to */}
                     <button
-                      className="bg-blue-shade-200 font-bold text-white rounded-full py-[10px] px-6 xs:py-2 xs:px-4 sm:px-6 xs:text-xs sm:text-sm text-sm lg:px-8 lg:py-[10px] w-full xs:w-auto"
+                      className="bg-blue-shade-200 font-bold text-white rounded-full py-[10px] px-4 xs:py-[9px] md:py-2.5 xs:px-4 sm:px-6 xs:text-xs sm:text-sm md:text-base lg:px-8 lg:py-[10px] w-full xs:w-auto h-fit"
                       onClick={() => handleDelegateVotes(`${walletAddress}`)}
                       disabled={isspin}
                     >
@@ -1292,7 +1331,7 @@ function MainProfile() {
                     </button>
 
                     <button
-                      className="bg-blue-shade-200 font-bold text-white rounded-full px-6 py-[10px] xs:py-2 text-sm xs:text-xs sm:text-sm lg:px-8 lg:py-[10px] w-full xs:w-[135px] lg:w-[150px] flex items-center justify-center"
+                      className="bg-blue-shade-200 font-bold text-white rounded-full px-6 py-[10px] xs:py-2 md:py-2.5 md:text-base xs:text-xs sm:text-sm lg:px-8 lg:py-[10px] w-full xs:w-[160px] lg:w-[185px] flex items-center justify-center h-fit"
                       onClick={() =>
                         followings
                           ? handleUpdateFollowings(daoName, 1, 0)
@@ -1302,15 +1341,18 @@ function MainProfile() {
                       }
                     >
                       {isModalLoading ? (
-                        <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white"></div>
+                        <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white"></div>
                       ) : (
                         `${followings} Following`
                       )}
                     </button>
+                    </div>
+                    <SelectDaoButton daoName={daoName}/>
                   </div>
                 ) : (
-                  <div className="pt-2 flex flex-col xs:flex-row gap-2 sm:gap-5 w-full">
-                    <button className="bg-blue-shade-200 font-bold text-white rounded-full py-[10px] px-6 xs:py-2 text-sm xs:text-xs sm:text-sm lg:px-8 lg:py-[10px]  w-full xs:w-auto">
+                  <div className="pt-2 flex flex-col 2.3sm:flex-row gap-2 w-full items-center">
+                  <div className=" flex flex-col xs:flex-row gap-2 w-full xs:w-auto items-center">
+                    <button className="bg-blue-shade-200 font-bold text-white rounded-full py-[10px] px-4 xs:py-[9px] md:py-2.5 xs:px-8 sm:px-6 xs:text-xs sm:text-sm md:text-base lg:px-8 lg:py-[10px] w-full xs:w-auto h-fit">
                       {followers}{" "}
                       {followers === 0 || followers === 1
                         ? "Follower"
@@ -1318,7 +1360,7 @@ function MainProfile() {
                     </button>
 
                     <button
-                      className="bg-blue-shade-200 font-bold text-white rounded-full px-6 py-2 text-sm xs:text-xs sm:text-sm lg:px-8 lg:py-[10px]  w-full xs:w-auto"
+                      className="bg-blue-shade-200 font-bold text-white rounded-full px-6 py-[10px] xs:py-2 md:py-2.5 md:text-base xs:text-xs sm:text-sm lg:px-8 lg:py-[10px] w-full xs:w-[168px] lg:w-[185px] flex items-center justify-center h-fit"
                       onClick={() =>
                         followings
                           ? handleUpdateFollowings(daoName, 1, 0)
@@ -1329,11 +1371,13 @@ function MainProfile() {
                     >
                       {followings} Followings
                     </button>
+                    </div>
+                    <SelectDaoButton daoName={daoName}/>
                   </div>
                 )}
               </div>
             </div>
-            <div className="hidden lg:flex gap-1 xs:gap-2 items-center">
+            <div className="absolute right-4 md:right-6 lg:right-14 hidden lg:flex gap-1 xs:gap-2 items-center">
               <RewardButton />
               {/* <ConnectWalletWithENS /> */}
             </div>

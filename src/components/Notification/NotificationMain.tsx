@@ -28,6 +28,7 @@ import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 import { fetchApi } from "@/utils/api";
 import { BellOff, ChevronDownIcon, Wallet } from "lucide-react";
 
+
 function NotificationMain() {
   const { isConnected } = useConnection();
   const { data: session } = useSession();

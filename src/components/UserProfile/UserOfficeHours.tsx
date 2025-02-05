@@ -1,19 +1,14 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import UserScheduledHours from "./UserAllOfficeHrs/UserScheduledHours";
-import UserRecordedHours from "./UserAllOfficeHrs/UserRecordedHours";
-import UserUpcomingHours from "./UserAllOfficeHrs/UserUpcomingHours";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useRouter } from "next-nprogress-bar";
-import Tile from "../ComponentUtils/Tile";
-import { useAccount } from "wagmi";
-import text1 from "@/assets/images/daos/texture1.png";
-import { Oval } from "react-loader-spinner";
-import { RxCross2 } from "react-icons/rx";
-import SessionTileSkeletonLoader from "../SkeletonLoader/SessionTileSkeletonLoader";
 import { usePrivy } from "@privy-io/react-auth";
 import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 import { fetchApi } from "@/utils/api";
-import OfficeHoursAlertMessage from "../AlertMessage/OfficeHoursAlertMessage";
+import OfficeHourTile from "../ComponentUtils/OfficeHourTile";
+import RecordedSessionsSkeletonLoader from "../SkeletonLoader/RecordedSessionsSkeletonLoader";
+import { OfficeHoursProps } from "@/types/OfficeHoursTypes";
+import { CiSearch } from "react-icons/ci";
 
 interface UserOfficeHoursProps {
   isDelegate: boolean | undefined;
@@ -21,130 +16,142 @@ interface UserOfficeHoursProps {
   daoName: string;
 }
 
-interface Session {
-  _id: string;
-  host_address: string;
-  office_hours_slot: string;
-  title: string;
-  description: string;
-  meeting_status: "ongoing" | "active" | "inactive"; // Define the possible statuses
-  dao_name: string;
-  attendees: any[];
-}
-
 function UserOfficeHours({
   isDelegate,
   selfDelegate,
   daoName,
 }: UserOfficeHoursProps) {
-  const { address, isConnected } = useAccount();
   const router = useRouter();
   const path = usePathname();
   const searchParams = useSearchParams();
-
-  const [sessionDetails, setSessionDetails] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
   const [dataLoading, setDataLoading] = useState(true);
-  const [showComingSoon, setShowComingSoon] = useState(true);
-  const { user, ready, getAccessToken, authenticated } = usePrivy();
+  const { getAccessToken } = usePrivy();
   const { walletAddress } = useWalletAddress();
+  const scrollContainerRef = useRef<HTMLDivElement | null>(null);
+  const [showLeftShadow, setShowLeftShadow] = useState(false);
+  const [showRightShadow, setShowRightShadow] = useState(false);
+
+  // Original data from API
+  const [originalData, setOriginalData] = useState({
+    ongoing: [] as OfficeHoursProps[],
+    upcoming: [] as OfficeHoursProps[],
+    hosted: [] as OfficeHoursProps[],
+    attended: [] as OfficeHoursProps[],
+  });
+
+  // Filtered data based on search
+  const [filteredData, setFilteredData] = useState({
+    ongoing: [] as OfficeHoursProps[],
+    upcoming: [] as OfficeHoursProps[],
+    hosted: [] as OfficeHoursProps[],
+    attended: [] as OfficeHoursProps[],
+  });
+
+  const handleSearch = (searchTerm: string) => {
+    setSearchQuery(searchTerm);
+
+    if (!searchTerm.trim()) {
+      // If search is empty, restore original data
+      setFilteredData(originalData);
+      return;
+    }
+
+    const term = searchTerm.toLowerCase();
+
+    // Filter all categories
+    const newFilteredData = {
+      ongoing: originalData.ongoing.filter(
+        (item) =>
+          item.title?.toLowerCase().includes(term) ||
+          item.host_address?.toLowerCase().includes(term)
+      ),
+      upcoming: originalData.upcoming.filter(
+        (item) =>
+          item.title?.toLowerCase().includes(term) ||
+          item.host_address?.toLowerCase().includes(term)
+      ),
+      hosted: originalData.hosted.filter(
+        (item) =>
+          item.title?.toLowerCase().includes(term) ||
+          item.host_address?.toLowerCase().includes(term)
+      ),
+      attended: originalData.attended.filter(
+        (item) =>
+          item.title?.toLowerCase().includes(term) ||
+          item.host_address?.toLowerCase().includes(term)
+      ),
+    };
+
+    setFilteredData(newFilteredData);
+  };
+
+  // Get current data based on selected tab
+  const getCurrentData = () => {
+    const currentTab = searchParams.get("hours") as keyof typeof filteredData;
+    return filteredData[currentTab] || [];
+  };
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setDataLoading(true);
-        const token=await getAccessToken();
-        const myHeaders: HeadersInit = {
-          "Content-Type": "application/json",
-          ...(walletAddress && {
-            "x-wallet-address": walletAddress,
-            Authorization: `Bearer ${token}`,
-          }),
-        };
-        const raw = JSON.stringify({
-          address: walletAddress,
-        });
-
-        const requestOptions: RequestInit = {
-          method: "POST",
-          headers: myHeaders,
-          body: raw,
-        };
-
-        const response = await fetchApi(
-          "/get-officehours-address",
-          requestOptions
-        );
-        const result = await response.json();
-
-        //api for individual attendees
-        const rawData = JSON.stringify({
-          attendee_address: walletAddress,
-        });
-
-        const requestOption: RequestInit = {
-          method: "POST",
-          headers: myHeaders,
-          body: rawData,
-        };
-
-        const responseData = await fetchApi(
-          "/get-attendee-individual",
-          requestOption
-        );
-        const resultData = await responseData.json();
-
-        if (
-          searchParams.get("hours") === "ongoing" ||
-          searchParams.get("hours") === "upcoming" ||
-          searchParams.get("hours") === "hosted"
-        ) {
-          const filteredSessions = result.filter((session: Session) => {
-            if (searchParams.get("hours") === "ongoing") {
-              return (
-                session.meeting_status === "ongoing" &&
-                session.dao_name === daoName
-              );
-            } else if (searchParams.get("hours") === "upcoming") {
-              return (
-                session.meeting_status === "active" &&
-                session.dao_name === daoName
-              );
-            } else if (searchParams.get("hours") === "hosted") {
-              return (
-                session.meeting_status === "inactive" &&
-                session.dao_name === daoName
-              );
-            }
-          });
-          setSessionDetails(filteredSessions);
-        } else if (searchParams.get("hours") === "attended") {
-          const filteredSessions = resultData.filter((session: Session) => {
-            return (
-              session.attendees.some(
-                (attendee: any) => attendee.attendee_address === walletAddress
-              ) && session.dao_name === daoName
-            );
-          });
-          setSessionDetails(filteredSessions);
-        }
-
-        setDataLoading(false);
-      } catch (error) {
-        console.error(error);
-        setDataLoading(false);
+    const checkForOverflow = () => {
+      const container = scrollContainerRef.current;
+      if (container) {
+        setShowRightShadow(container.scrollWidth > container.clientWidth);
       }
     };
 
-    if (walletAddress != null) {
-      fetchData();
+    checkForOverflow();
+    window.addEventListener("resize", checkForOverflow);
+    return () => window.removeEventListener("resize", checkForOverflow);
+  }, []);
+
+  const handleScroll = () => {
+    const container = scrollContainerRef.current;
+    if (container) {
+      setShowLeftShadow(container.scrollLeft > 0);
+      setShowRightShadow(
+        container.scrollLeft < container.scrollWidth - container.clientWidth
+      );
     }
-  }, [searchParams.get("hours")]); // Re-fetch data when filter changes
+  };
+
+  const fetchUserOfficeHours = useCallback(async () => {
+    try {
+      const token = await getAccessToken();
+      const response = await fetchApi(
+        `/get-office-hours?host_address=${walletAddress}&dao_name=${daoName}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const result = await response.json();
+
+      const data = {
+        ongoing: result.data.ongoing,
+        upcoming: result.data.upcoming,
+        hosted: result.data.hosted,
+        attended: result.data.attended,
+      };
+
+      setOriginalData(data);
+      setFilteredData(data); // Initially, filtered data is same as original
+    } catch (error) {
+      console.error("Error fetching office hours:", error);
+    } finally {
+      setDataLoading(false);
+    }
+  }, [walletAddress, daoName, getAccessToken]);
 
   useEffect(() => {
-    // Set initial session details
-    setSessionDetails([]);
+    fetchUserOfficeHours();
+  }, [fetchUserOfficeHours]);
+
+  useEffect(() => {
     setDataLoading(true);
-  }, [address, walletAddress]);
+  }, [walletAddress]);
 
   useEffect(() => {
     if (!selfDelegate && searchParams.get("hours") === "schedule") {
@@ -155,10 +162,14 @@ function UserOfficeHours({
   return (
     <div>
       <div className="pt-3">
-        <div className="flex w-fit gap-14 border-1 border-[#7C7C7C] px-6 rounded-xl text-sm">
+        <div
+          className="flex gap-10 sm:gap-16 border-1 border-[#7C7C7C] px-6 rounded-xl text-sm overflow-x-auto whitespace-nowrap relative"
+          ref={scrollContainerRef}
+          onScroll={handleScroll}
+        >
           {selfDelegate === true && (
             <button
-              className={`py-2  ${
+              className={`py-2 ${
                 searchParams.get("hours") === "schedule"
                   ? "text-[#3E3D3D] font-bold"
                   : "text-[#7C7C7C]"
@@ -173,7 +184,22 @@ function UserOfficeHours({
 
           {selfDelegate === true && (
             <button
-              className={`py-2  ${
+              className={`py-2 ${
+                searchParams.get("hours") === "ongoing"
+                  ? "text-[#3E3D3D] font-bold"
+                  : "text-[#7C7C7C]"
+              }`}
+              onClick={() =>
+                router.push(path + "?active=officeHours&hours=ongoing")
+              }
+            >
+              Ongoing
+            </button>
+          )}
+
+          {selfDelegate === true && (
+            <button
+              className={`py-2 ${
                 searchParams.get("hours") === "upcoming"
                   ? "text-[#3E3D3D] font-bold"
                   : "text-[#7C7C7C]"
@@ -213,40 +239,58 @@ function UserOfficeHours({
           </button>
         </div>
 
-        {/* <div className="py-10">
+        {searchParams.get("hours") !== "schedule" && (
+          <div className="flex items-center my-8 rounded-full shadow-lg bg-gray-100 text-black cursor-pointer w-[300px] xs:w-[365px]">
+            <CiSearch className="text-base transition-all duration-700 ease-in-out ml-3" />
+            <input
+              type="text"
+              placeholder="Search by title or host address"
+              className="w-[100%] pl-2 pr-4 py-1.5 font-poppins md:py-2 text-sm bg-transparent outline-none"
+              value={searchQuery}
+              onChange={(e) => handleSearch(e.target.value)}
+            />
+          </div>
+        )}
+
+        <div
+          className={
+            searchParams.get("hours") === "schedule" ? `py-10` : `pb-10`
+          }
+        >
           {selfDelegate === true &&
             searchParams.get("hours") === "schedule" && (
-              <UserScheduledHours daoName={daoName} />
+              <UserScheduledHours
+                daoName={daoName}
+                onScheduleSave={fetchUserOfficeHours}
+              />
             )}
-          {selfDelegate === true &&
-            searchParams.get("hours") === "upcoming" && <UserUpcomingHours />}
 
-          {searchParams.get("hours") === "hosted" &&
-            (dataLoading ? (
-              <SessionTileSkeletonLoader />
-            ) : (
-              <Tile
-                sessionDetails={sessionDetails}
-                dataLoading={dataLoading}
-                isEvent="Recorded"
-                isOfficeHour={true}
-              />
-            ))}
-          {searchParams.get("hours") === "attended" &&
-            (dataLoading ? (
-              <SessionTileSkeletonLoader />
-            ) : (
-              <Tile
-                sessionDetails={sessionDetails}
-                dataLoading={dataLoading}
-                isEvent="Recorded"
-                isOfficeHour={true}
-              />
-            ))}
-        </div> */}
-
-        <div className="py-10">
-          <OfficeHoursAlertMessage />
+          {searchParams.get("hours") !== "schedule" && (
+            <>
+              {dataLoading ? (
+                <RecordedSessionsSkeletonLoader />
+              ) : getCurrentData().length === 0 ? (
+                <div className="flex flex-col justify-center items-center pt-10">
+                  <div className="text-5xl">☹️</div>
+                  <div className="pt-4 font-semibold text-lg">
+                    Oops, no such result available!
+                  </div>
+                </div>
+              ) : (
+                <OfficeHourTile
+                  isOngoing={searchParams.get("hours") === "ongoing"}
+                  isUpcoming={searchParams.get("hours") === "upcoming"}
+                  isHosted={searchParams.get("hours") === "hosted"}
+                  isAttended={searchParams.get("hours") === "attended"}
+                  isUserProfile={searchParams.get("hours") === "upcoming"}
+                  isRecorded={["hosted", "attended"].includes(
+                    searchParams.get("hours") || ""
+                  )}
+                  data={getCurrentData()}
+                />
+              )}
+            </>
+          )}
         </div>
       </div>
     </div>

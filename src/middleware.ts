@@ -3,17 +3,16 @@ import type { NextRequest } from "next/server";
 // import { getToken } from "next-auth/jwt";
 import { PrivyClient } from "@privy-io/server-auth";
 
-
-
 const allowedOrigins = [
   process.env.NEXT_PUBLIC_LOCAL_BASE_URL!,
   process.env.NEXT_PUBLIC_HOSTED_BASE_URL!,
   process.env.NEXT_PUBLIC_MIDDLEWARE_BASE_URL!,
   process.env.NEXT_PUBLIC_LOCAL_MEETING_APP_URL!,
   process.env.NEXT_PUBLIC_HOSTED_MEETING_APP_URL!,
+  process.env.NEXT_PUBLIC_LOCAL_REQUIRED_URL!
 ].filter(Boolean);
 
-console.log("allowedOrigins", allowedOrigins)
+console.log("allowedOrigins", allowedOrigins);
 const privyClient = new PrivyClient(
   process.env.NEXT_PUBLIC_PRIVY_APP_ID!,
   process.env.PRIVY_SECRET!
@@ -177,7 +176,6 @@ export async function middleware(request: NextRequest) {
   return response;
 }
 
-
 export const config = {
   matcher: [
     "/api/proxy/:path*",
@@ -204,5 +202,6 @@ export const config = {
     "/api/update-attestation-uid/:path*",
     "/api/update-office-hours/:path*",
     "/api/update-recorded-session/:path*",
+    "/api/track-delegation/:path*"
   ],
 };

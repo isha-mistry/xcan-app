@@ -66,6 +66,10 @@ function InstantMeet({ isDelegate, selfDelegate, daoName }: instantMeetProps) {
     }));
   };
 
+  const openMeetingInNewTab = (roomId: string) => {
+    window.open(`${MEETING_BASE_URL}/meeting/session/${roomId}/lobby`, '_blank');
+  };
+
   const startInstantMeet = async () => {
     setConfirmSave(true);
 
@@ -126,8 +130,10 @@ function InstantMeet({ isDelegate, selfDelegate, daoName }: instantMeetProps) {
         //     `${MEETING_BASE_URL}/meeting/session/${roomId}/lobby`
         //   );
         // }
+          openMeetingInNewTab(roomId); // Open in new tab
+        
 
-        router.push(`${MEETING_BASE_URL}/meeting/session/${roomId}/lobby`);
+        // router.push(`${MEETING_BASE_URL}/meeting/session/${roomId}/lobby`);
         onClose();
       }
       if (result.error) {
