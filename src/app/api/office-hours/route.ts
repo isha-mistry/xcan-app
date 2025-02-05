@@ -8,6 +8,7 @@ import {
 } from "@/types/OfficeHoursTypes";
 import { v4 as uuidv4 } from "uuid";
 import { imageCIDs } from "@/config/staticDataUtils";
+import { cacheWrapper } from "@/utils/cacheWrapper";
 
 function getRandomElementFromArray(arr: any[]) {
   const randomIndex = Math.floor(Math.random() * arr.length);
@@ -227,6 +228,11 @@ export async function POST(req: NextRequest) {
     const db = client.db();
     const collection: Collection<OfficeHoursDocument> =
       db.collection("office_hours");
+
+    if (cacheWrapper.isAvailable) {
+      const cacheKey = `office-hours-all`;
+      await cacheWrapper.delete(cacheKey);
+    }
 
     const { host_address: hostAddress, dao_name: daoName, meetings } = data;
 

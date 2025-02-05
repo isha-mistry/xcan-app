@@ -179,6 +179,11 @@ export async function POST(req: NextRequest, res: NextResponse) {
           }
         );
 
+        if(cacheWrapper.isAvailable){
+          const cacheKey = `profile:${requestData.recipient}`;
+          await cacheWrapper.delete(cacheKey);
+        }
+    
         client.close();
       } else if (requestData.meetingType === 2) {
         const client = await connectDB();
@@ -199,6 +204,7 @@ export async function POST(req: NextRequest, res: NextResponse) {
           }
         );
 
+        
         const usersCollection = db.collection("delegates");
         await usersCollection.findOneAndUpdate(
           { address: requestData.recipient },
@@ -208,6 +214,11 @@ export async function POST(req: NextRequest, res: NextResponse) {
             },
           }
         );
+
+        if(cacheWrapper.isAvailable){
+          const cacheKey = `profile:${requestData.recipient}`;
+          await cacheWrapper.delete(cacheKey);
+        }
 
         client.close();
       } else if (requestData.meetingType === 3) {
@@ -254,6 +265,10 @@ export async function POST(req: NextRequest, res: NextResponse) {
             },
           }
         );
+        if(cacheWrapper.isAvailable){
+          const cacheKey = `profile:${requestData.recipient}`;
+          await cacheWrapper.delete(cacheKey);
+        }
         client.close();
       } else if (requestData.meetingType === 4) {
         const client = await connectDB();
@@ -304,6 +319,11 @@ export async function POST(req: NextRequest, res: NextResponse) {
             },
           }
         );
+
+        if(cacheWrapper.isAvailable){
+          const cacheKey = `profile:${requestData.recipient}`;
+          await cacheWrapper.delete(cacheKey);
+        }
 
         client.close();
       }
