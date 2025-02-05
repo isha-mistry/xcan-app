@@ -3,7 +3,7 @@ import ConnectYourWallet from "@/components/ComponentUtils/ConnectYourWallet";
 import ExploreDAOs from "@/components/DAOs/ExploreDAOs";
 import { useAccount } from "wagmi";
 
-function page() {
+function Page() {
   const { isConnected } = useAccount();
     return (
       <>
@@ -17,4 +17,4 @@ function page() {
     );
   }
   
-  export default page;
+  export default Page;
