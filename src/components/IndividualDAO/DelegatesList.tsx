@@ -33,7 +33,7 @@ import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 import { BrowserProvider, Contract, JsonRpcSigner } from "ethers";
 import { motion } from "framer-motion";
 import { Select, SelectItem } from "@nextui-org/react";
-import { calculateTempCpi } from "@/actions/calculatetempCpi";
+// import { calculateTempCpi } from "@/actions/calculatetempCpi";
 import { fetchApi } from "@/utils/api";
 import { Address } from "viem";
 
@@ -78,8 +78,8 @@ function DelegatesList({ props }: { props: string }) {
   const { isConnected, address, chain } = useAccount();
   const { ready, authenticated, login, logout, user } = usePrivy();
   const { walletAddress } = useWalletAddress();
-  const [tempCpi, setTempCpi] = useState();
-  const [tempCpiCalling, setTempCpiCalling] = useState(true);
+  // const [tempCpi, setTempCpi] = useState();
+  // const [tempCpiCalling, setTempCpiCalling] = useState(true);
 
   const pushToGTM = (eventData: GTMEvent) => {
     if (typeof window !== "undefined" && window.dataLayer) {
@@ -260,25 +260,25 @@ function DelegatesList({ props }: { props: string }) {
       console.error(err);
     }
 
-    if (props === "optimism") {
-      try {
-        setTempCpiCalling(true);
-        const result = await calculateTempCpi(
-          delegatorAddress,
-          toAddress,
-          walletAddress,
-          token
-        );
-        // console.log("result:::::::::", result);
-        if (result?.data?.results[0].cpi) {
-          const data = result?.data?.results[0].cpi;
-          setTempCpi(data);
-          setTempCpiCalling(false);
-        }
-      } catch (error) {
-        console.log("Error in calculating temp CPI", error);
-      }
-    }
+    // if (props === "optimism") {
+    //   try {
+    //     setTempCpiCalling(true);
+    //     const result = await calculateTempCpi(
+    //       delegatorAddress,
+    //       toAddress,
+    //       walletAddress,
+    //       token
+    //     );
+    //     // console.log("result:::::::::", result);
+    //     if (result?.data?.results[0].cpi) {
+    //       const data = result?.data?.results[0].cpi;
+    //       setTempCpi(data);
+    //       setTempCpiCalling(false);
+    //     }
+    //   } catch (error) {
+    //     console.log("Error in calculating temp CPI", error);
+    //   }
+    // }
   };
   // const handleDelegateVotes = async (to: string) => {
   //   if (!walletAddress) {
@@ -681,8 +681,8 @@ function DelegatesList({ props }: { props: string }) {
 
       {delegateOpen && selectedDelegate && (
         <DelegateTileModal
-          tempCpi={tempCpi}
-          tempCpiCalling={tempCpiCalling}
+          // tempCpi={tempCpi}
+          // tempCpiCalling={tempCpiCalling}
           isOpen={delegateOpen}
           closeModal={() => setDelegateOpen(false)}
           handleDelegateVotes={() =>
