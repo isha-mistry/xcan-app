@@ -9,6 +9,10 @@ import {
 import { v4 as uuidv4 } from "uuid";
 import { imageCIDs } from "@/config/staticDataUtils";
 import { cacheWrapper } from "@/utils/cacheWrapper";
+import { io } from "socket.io-client";
+import { formatSlotDateAndTime } from "@/utils/NotificationUtils";
+
+const SOCKET_BASE_URL = process.env.SOCKET_BASE_URL || "http://localhost:3001";
 
 function getRandomElementFromArray(arr: any[]) {
   const randomIndex = Math.floor(Math.random() * arr.length);
@@ -16,33 +20,120 @@ function getRandomElementFromArray(arr: any[]) {
 }
 const randomImage = getRandomElementFromArray(imageCIDs);
 
-// // Helper function for MongoDB operations
-// const addMeetingsToExistingDAO = async (
-//   collection: Collection<OfficeHoursDocument>,
-//   hostAddress: string,
-//   daoName: string,
-//   meetings: Meeting[]
-// ) => {
-//   const meetingDocument = meetings.map((meeting) => ({
-//     reference_id: uuidv4(),
-//     ...meeting,
-//     meeting_status: "Upcoming",
-//     thumbnail_image: randomImage,
-//     created_at: new Date(),
-//   }));
+async function sendNotifications(
+  db: any,
+  hostAddress: string,
+  daoName: string,
+  meetings: Meeting[]
+) {
+  try {
+    const usersCollection = db.collection("delegates");
+    const notificationCollection = db.collection("notifications");
 
-//   return await collection.updateOne(
-//     { host_address: hostAddress, "dao.name": daoName },
-//     {
-//       $push: {
-//         "dao.$.meetings": {
-//           $each: meetingDocument,
-//         },
-//       },
-//       $set: { updated_at: new Date() },
-//     }
-//   );
-// };
+    // Get all users
+    // const allUsers = await usersCollection.find({}, { address: 1 }).toArray();
+    const allUsers = [
+      { address: "0x92DDc00c2C2BC130d62026cB5e8171cC4337b08e" },
+    ];
+
+    if (!allUsers || allUsers.length === 0) {
+      console.log("No users found to notify");
+      return;
+    }
+
+    const localSlotTime = async (slot_time: string) => {
+      const data = await formatSlotDateAndTime({
+        dateInput: slot_time,
+      });
+
+      return data;
+    };
+
+    // Create notifications array
+    const notifications = meetings.flatMap((meeting) => {
+      // Format time once for each meeting
+      const timePromise = localSlotTime(meeting.startTime);
+
+      return Promise.all(
+        allUsers.map(async (user: any) => {
+          const formattedTime = await timePromise;
+          return {
+            receiver_address: user.address,
+            content: `New office hours session scheduled on ${daoName} with ${hostAddress}. The session is scheduled for ${formattedTime} UTC.`,
+            createdAt: Date.now(),
+            read_status: false,
+            notification_name: "officeHoursScheduled",
+            notification_title: "New Office Hours Scheduled",
+            notification_type: "officeHours",
+            additionalData: {
+              ...meeting,
+              host_address: hostAddress,
+              dao_name: daoName,
+            },
+          };
+        })
+      );
+    });
+
+    // You'll need to use the result like this:
+    const resolvedNotifications = await Promise.all(notifications).then(
+      (arrays) => arrays.flat()
+    );
+
+    console.log("Resolved notifications:", resolvedNotifications);
+
+    if (resolvedNotifications.length > 0) {
+      // Store notifications in database
+      try {
+        const result = await notificationCollection.insertMany(resolvedNotifications);
+        console.log(`${result.insertedCount} notifications stored in database`);
+
+        // Get the inserted notifications with their _id
+        const storedNotifications = await notificationCollection
+          .find({
+            _id: { $in: Object.values(result.insertedIds) },
+          })
+          .toArray();
+
+        // Connect to socket server and send notifications
+        const socket = io(SOCKET_BASE_URL, {
+          withCredentials: true,
+        });
+
+        socket.on("connect", () => {
+          console.log("Connected to WebSocket server from API");
+
+          // Emit office_hours_scheduled event with notifications
+          socket.emit("officehours_scheduled", {
+            notifications: storedNotifications.map((notification: any) => ({
+              ...notification,
+              _id: notification._id.toString(),
+            })),
+          });
+
+          console.log("Office hours notifications sent through socket");
+          socket.disconnect();
+        });
+
+        socket.on("connect_error", (err) => {
+          console.error("WebSocket connection error:", err);
+        });
+
+        socket.on("error", (err) => {
+          console.error("WebSocket error:", err);
+        });
+      } catch (dbError) {
+        console.error("Error storing notifications in database:", dbError);
+        throw dbError;
+      }
+    } else {
+      console.log("No notifications to send");
+    }
+  } catch (error) {
+    console.error("Error in notification process:", error);
+    throw error;
+  }
+}
 
 const getRoomId = async () => {
   const response = await fetch("https://api.huddle01.com/api/v1/create-room", {
@@ -260,6 +351,8 @@ export async function POST(req: NextRequest) {
         meetings
       );
     }
+
+    await sendNotifications(db, hostAddress, daoName, meetings);
 
     const updatedDocument = await collection.findOne({
       host_address: hostAddress,
