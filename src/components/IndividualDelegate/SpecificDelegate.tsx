@@ -68,7 +68,7 @@ import { ChevronDownIcon, CloudCog } from "lucide-react";
 import Heading from "../ComponentUtils/Heading";
 import { MeetingRecords } from "@/types/UserProfileTypes";
 import { useApiData } from "@/contexts/ApiDataContext";
-// import { calculateTempCpi } from "@/actions/calculatetempCpi";
+import { calculateTempCpi } from "@/actions/calculatetempCpi";
 import { createPublicClient, http } from "viem";
 import ErrorComponent from "../Error/ErrorComponent";
 import { Address } from "viem";
@@ -141,8 +141,8 @@ function SpecificDelegate({ props }: { props: Type }) {
   const [selectedTab, setSelectedTab] = useState("Info");
 
   const [copiedAddress, setCopiedAddress] = useState<string | null>(null);
-  // const [tempCpi, setTempCpi] = useState();
-  // const [tempCpiCalling, setTempCpiCalling] = useState(true);
+  const [tempCpi, setTempCpi] = useState();
+  const [tempCpiCalling, setTempCpiCalling] = useState(true);
   const [isFromDatabase, setFromDatabase] = useState(false);
   const [errorOccurred, setErrorOccurred] = useState(false);
   const [avatar, setAvatar] = useState("");
@@ -274,24 +274,24 @@ function SpecificDelegate({ props }: { props: Type }) {
             delegator: walletAddress,
           });
 
-          // try {
-          //   setTempCpiCalling(true);
-          //   const token = await getAccessToken();
-          //   const result = await calculateTempCpi(
-          //     delegatorAddress,
-          //     toAddress,
-          //     walletAddress,
-          //     token
-          //   );
-          //   // console.log("result:::::::::", result);
-          //   if (result?.data?.results[0].cpi) {
-          //     const data = result?.data?.results[0].cpi;
-          //     setTempCpi(data);
-          //     setTempCpiCalling(false);
-          //   }
-          // } catch (error) {
-          //   console.log("Error in calculating temp CPI", error);
-          // }
+          try {
+            setTempCpiCalling(true);
+            const token = await getAccessToken();
+            const result = await calculateTempCpi(
+              delegatorAddress,
+              toAddress,
+              walletAddress,
+              token
+            );
+            // console.log("result:::::::::", result);
+            if (result?.data?.results[0].cpi) {
+              const data = result?.data?.results[0].cpi;
+              setTempCpi(data);
+              setTempCpiCalling(false);
+            }
+          } catch (error) {
+            console.log("Error in calculating temp CPI", error);
+          }
         }
         else {
           data = await arb_client.query(DELEGATE_CHANGED_QUERY, {
@@ -1753,8 +1753,8 @@ function SpecificDelegate({ props }: { props: Type }) {
         }
         {delegateOpen && (
           <DelegateTileModal
-            // tempCpi={tempCpi}
-            // tempCpiCalling={tempCpiCalling}
+            tempCpi={tempCpi}
+            tempCpiCalling={tempCpiCalling}
             isOpen={delegateOpen}
             closeModal={handleCloseDelegateModal}
             handleDelegateVotes={() =>

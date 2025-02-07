@@ -28,8 +28,8 @@ interface delegate {
   addressCheck: boolean;
   delegatingToAddr: boolean;
   confettiVisible: boolean;
-  // tempCpi: any;
-  // tempCpiCalling: boolean;
+  tempCpi: any;
+  tempCpiCalling: boolean;
 }
 
 function DelegateTileModal({
@@ -43,13 +43,13 @@ function DelegateTileModal({
   addressCheck,
   delegatingToAddr,
   confettiVisible,
-  // tempCpi,
-  // tempCpiCalling,
+  tempCpi,
+  tempCpiCalling,
 }: delegate) {
   const { isConnected, address, chain } = useAccount();
-  // const { apiData: cpiData, loading, error: errorApi } = useApiData();
-  // const actualCpi = cpiData?.data?.results[0]?.cpi || "";
-  // console.log("cpiData::::", cpiData);
+  const { apiData: cpiData, loading, error: errorApi } = useApiData();
+  const actualCpi = cpiData?.data?.results[0]?.cpi || "";
+  console.log("cpiData::::", cpiData);
   const [isLoading, setIsLoading] = useState(true);
   const [isHovering, setIsHovering] = useState(false);
   const [tokenImage, setTokenImage] = useState(op);
@@ -203,64 +203,64 @@ function DelegateTileModal({
             </div>
           </div>
           {daoName === "optimism" && (
-            // <div className="flex flex-col items-center w-full max-w-md bg-gradient-to-br from-gray-100 to-gray-200 border-2 border-gray-300 rounded-3xl px-4 0.7xs:px-6 py-4 mt-4 shadow-md">
-            //   <div className="flex items-center justify-between w-full">
-            //     <div className="flex flex-col items-center">
-            //       <span className="text-black font-medium text-xs 0.7xs:text-sm tracking-wide uppercase mb-2">
-            //         Current CPI
-            //       </span>
-            //       <div className="text-lg font-semibold text-black bg-white px-3 py-1 rounded-lg">
-            //         {actualCpi !== null && actualCpi !== undefined ? (
-            //           Number(actualCpi).toFixed(2)
-            //         ) : (
-            //           <ThreeDots
-            //             visible={true}
-            //             height="30"
-            //             width="40"
-            //             color="black"
-            //             ariaLabel="loading"
-            //           />
-            //         )}
-            //       </div>
-            //     </div>
-            //     <div className="flex flex-col items-center">
-            //       <span className="text-black font-medium text-xs 0.7xs:text-sm tracking-wide uppercase mb-2">
-            //         CPI if you delegate
-            //       </span>
-            //       <div
-            //         className={`${
-            //           tempCpi !== null && tempCpi !== undefined && Number(tempCpi?.toFixed(2)) <= Number(actualCpi?.toFixed(2))
-            //             ? "text-[#1c8e1c]"
-            //             : "text-red-600"
-            //         } text-lg font-semibold bg-white px-3 py-1 rounded-lg`}
-            //       >
-            //         {!tempCpiCalling && tempCpi !== null && tempCpi !== undefined ? (
-            //           Number(tempCpi).toFixed(2)
-            //         ) : (
-            //           <span className="text-gray-500 italic">
-            //             <ThreeDots
-            //               visible={true}
-            //               height="30"
-            //               width="40"
-            //               color="black"
-            //               ariaLabel="loading"
-            //             />
-            //           </span>
-            //         )}
-            //       </div>
-            //     </div>
-            //   </div>
-            //   <div className="mt-4 text-sm font-medium text-gray-700">
-            //   Data for calculating CPI updates every 5 minutes.
-            // </div>
-            // </div>
-            <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mt-4 max-w-md text-sm sm:text-base">
-              <p className="font-bold">Alert:</p>
-              <p>
-                API to get the Actual CPI & Temp CPI is under maintenance. It
-                will be live soon.🚀
-              </p>
+            <div className="flex flex-col items-center w-full max-w-md bg-gradient-to-br from-gray-100 to-gray-200 border-2 border-gray-300 rounded-3xl px-4 0.7xs:px-6 py-4 mt-4 shadow-md">
+              <div className="flex items-center justify-between w-full">
+                <div className="flex flex-col items-center">
+                  <span className="text-black font-medium text-xs 0.7xs:text-sm tracking-wide uppercase mb-2">
+                    Current CPI
+                  </span>
+                  <div className="text-lg font-semibold text-black bg-white px-3 py-1 rounded-lg">
+                    {actualCpi !== null && actualCpi !== undefined ? (
+                      Number(actualCpi).toFixed(2)
+                    ) : (
+                      <ThreeDots
+                        visible={true}
+                        height="30"
+                        width="40"
+                        color="black"
+                        ariaLabel="loading"
+                      />
+                    )}
+                  </div>
+                </div>
+                <div className="flex flex-col items-center">
+                  <span className="text-black font-medium text-xs 0.7xs:text-sm tracking-wide uppercase mb-2">
+                    CPI if you delegate
+                  </span>
+                  <div
+                    className={`${
+                      tempCpi !== null && tempCpi !== undefined && Number(tempCpi?.toFixed(2)) <= Number(actualCpi?.toFixed(2))
+                        ? "text-[#1c8e1c]"
+                        : "text-red-600"
+                    } text-lg font-semibold bg-white px-3 py-1 rounded-lg`}
+                  >
+                    {!tempCpiCalling && tempCpi !== null && tempCpi !== undefined ? (
+                      Number(tempCpi).toFixed(2)
+                    ) : (
+                      <span className="text-gray-500 italic">
+                        <ThreeDots
+                          visible={true}
+                          height="30"
+                          width="40"
+                          color="black"
+                          ariaLabel="loading"
+                        />
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+              <div className="mt-4 text-sm font-medium text-gray-700">
+              Data for calculating CPI updates every 5 minutes.
             </div>
+            </div>
+            // <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mt-4 max-w-md text-sm sm:text-base">
+            //   <p className="font-bold">Alert:</p>
+            //   <p>
+            //     API to get the Actual CPI & Temp CPI is under maintenance. It
+            //     will be live soon.🚀
+            //   </p>
+            // </div>
           )}
           <button
             className={`rounded-full py-3 xs:py-5 font-semibold font-poppins w-full text-base mt-4 ${
