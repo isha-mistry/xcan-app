@@ -259,7 +259,7 @@ function UserOfficeHours({
 
         {showAlert && (
           <Alert
-            message="We're currently experiencing issues generating meeting IDs due to a recent change in Huddle's API version. Our team is actively working on a fix to restore meeting functionality as soon as possible. Thanks for your patience! 🚀!"
+            message="We're currently experiencing issues generating meeting IDs due to a recent change in Huddle's API version. Our team is actively working on a fix to restore meeting functionality as soon as possible. Thanks for your patience! 🚀"
             type="error"
             onClose={handleCloseAlert}
           />
