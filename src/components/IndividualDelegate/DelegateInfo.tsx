@@ -16,6 +16,7 @@ import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 import { fetchApi } from "@/utils/api";
 import { BASE_URL } from "@/config/constants";
 import { MeetingRecords } from "@/types/UserProfileTypes";
+import { Link, Cloud } from "lucide-react";
 
 interface Type {
   daoDelegates: string;
@@ -233,29 +234,31 @@ function DelegateInfo({
 
   return (
     <div className="pt-4">
-      <div className="flex w-fit gap-16 border-1 border-[#7C7C7C] px-6 rounded-xl text-sm mb-6 mx-4 xs:mx-0 sm:mx-4 md:mx-16 lg:mx-0">
+      <div className="flex gap-2 0.5xs:gap-4 rounded-xl text-sm flex-wrap">
         <button
-          className={`py-2 ${
+          className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md ${
             activeButton === "onchain"
-              ? "text-[#3E3D3D] font-bold"
-              : "text-[#7C7C7C]"
+              ? "text-[#0500FF] font-semibold bg-[#f5f5f5]"
+              : "text-[#3E3D3D] bg-white"
           } `}
           onClick={() => fetchAttestation("onchain")}
         >
+          <Link size={16} className="drop-shadow-lg" />
           Onchain
         </button>
         <button
-          className={`py-2 ${
+          className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md ${
             activeButton === "offchain"
-              ? "text-[#3E3D3D] font-bold"
-              : "text-[#7C7C7C]"
+              ? "text-[#0500FF] font-semibold bg-[#f5f5f5]"
+              : "text-[#3E3D3D] bg-white"
           }`}
           onClick={() => fetchAttestation("offchain")}
         >
+          <Cloud size={16} className="drop-shadow-lg" />
           Offchain
         </button>
       </div>
-      <div className="grid xs:grid-cols-2 lg:grid-cols-4 gap-2 md:gap-5 mx-4 xs:mx-0 sm:mx-4 md:mx-16 lg:mx-0">
+      <div className="grid xs:grid-cols-2 lg:grid-cols-4 gap-2 md:gap-5 mx-4 xs:mx-0 sm:mx-4 md:mx-16 lg:mx-0 mt-8">
         {details.length > 0 ? (
           details.map((key, index) => (
             <div

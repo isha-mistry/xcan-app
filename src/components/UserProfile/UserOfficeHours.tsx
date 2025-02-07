@@ -9,6 +9,14 @@ import OfficeHourTile from "../ComponentUtils/OfficeHourTile";
 import RecordedSessionsSkeletonLoader from "../SkeletonLoader/RecordedSessionsSkeletonLoader";
 import { OfficeHoursProps } from "@/types/OfficeHoursTypes";
 import { CiSearch } from "react-icons/ci";
+import {
+  Calendar,
+  CalendarCheck,
+  CheckCircle,
+  Clock,
+  Users,
+} from "lucide-react";
+import Alert from "../Alert/Alert";
 
 interface UserOfficeHoursProps {
   isDelegate: boolean | undefined;
@@ -31,6 +39,7 @@ function UserOfficeHours({
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
   const [showLeftShadow, setShowLeftShadow] = useState(false);
   const [showRightShadow, setShowRightShadow] = useState(false);
+  const [showAlert, setShowAlert] = useState(true);
 
   // Original data from API
   const [originalData, setOriginalData] = useState({
@@ -159,85 +168,102 @@ function UserOfficeHours({
     }
   }, [isDelegate, selfDelegate, searchParams.get("hours")]);
 
+  const handleCloseAlert = () => {
+    setShowAlert(false);
+  };
+
   return (
     <div>
       <div className="pt-3">
         <div
-          className="flex gap-10 sm:gap-16 border-1 border-[#7C7C7C] px-6 rounded-xl text-sm overflow-x-auto whitespace-nowrap relative"
+          className="flex gap-2 0.5xs:gap-4 rounded-xl text-sm flex-wrap"
           ref={scrollContainerRef}
           onScroll={handleScroll}
         >
           {selfDelegate === true && (
             <button
-              className={`py-2 ${
+              className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md ${
                 searchParams.get("hours") === "schedule"
-                  ? "text-[#3E3D3D] font-bold"
-                  : "text-[#7C7C7C]"
+                  ? "text-[#0500FF] font-semibold bg-[#f5f5f5]"
+                  : "text-[#3E3D3D] bg-white"
               }`}
               onClick={() =>
                 router.push(path + "?active=officeHours&hours=schedule")
               }
             >
-              Schedule
+              <CalendarCheck size={16} className="drop-shadow-lg" />
+              Calender
             </button>
           )}
 
           {selfDelegate === true && (
             <button
-              className={`py-2 ${
+              className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md ${
                 searchParams.get("hours") === "ongoing"
-                  ? "text-[#3E3D3D] font-bold"
-                  : "text-[#7C7C7C]"
+                  ? "text-[#0500FF] font-semibold bg-[#f5f5f5]"
+                  : "text-[#3E3D3D] bg-white"
               }`}
               onClick={() =>
                 router.push(path + "?active=officeHours&hours=ongoing")
               }
             >
-              Ongoing
+              <Clock size={16} className="drop-shadow-lg" />
+              Live
             </button>
           )}
 
           {selfDelegate === true && (
             <button
-              className={`py-2 ${
+              className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md ${
                 searchParams.get("hours") === "upcoming"
-                  ? "text-[#3E3D3D] font-bold"
-                  : "text-[#7C7C7C]"
+                  ? "text-[#0500FF] font-semibold bg-[#f5f5f5]"
+                  : "text-[#3E3D3D] bg-white"
               }`}
               onClick={() =>
                 router.push(path + "?active=officeHours&hours=upcoming")
               }
             >
-              Upcoming
+              <Calendar size={16} className="drop-shadow-lg" />
+              Scheduled
             </button>
           )}
           {selfDelegate === true && (
             <button
-              className={`py-2 ${
+              className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md ${
                 searchParams.get("hours") === "hosted"
-                  ? "text-[#3E3D3D] font-bold"
-                  : "text-[#7C7C7C]"
+                  ? "text-[#0500FF] font-semibold bg-[#f5f5f5]"
+                  : "text-[#3E3D3D] bg-white"
               }`}
               onClick={() =>
                 router.push(path + "?active=officeHours&hours=hosted")
               }
             >
+              <Users size={16} className="drop-shadow-lg" />
               Hosted
             </button>
           )}
           <button
-            className={`py-2 ${
+            className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md ${
               searchParams.get("hours") === "attended"
-                ? "text-[#3E3D3D] font-bold"
-                : "text-[#7C7C7C]"
+                ? "text-[#0500FF] font-semibold bg-[#f5f5f5]"
+                : "text-[#3E3D3D] bg-white"
             }`}
             onClick={() =>
               router.push(path + "?active=officeHours&hours=attended")
             }
           >
+            <CheckCircle size={16} className="drop-shadow-lg" />
             Attended
           </button>
         </div>
+
+        {showAlert && (
+          <Alert
+            message="We're experiencing issues generating meeting IDs from Huddle, preventing meetings from being conducted. We're working on a fix. Thanks for your patience!"
+            type="error"
+            onClose={handleCloseAlert}
+          />
+        )}
 
         {searchParams.get("hours") !== "schedule" && (
           <div className="flex items-center my-8 rounded-full shadow-lg bg-gray-100 text-black cursor-pointer w-[300px] xs:w-[365px]">

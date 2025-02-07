@@ -291,8 +291,11 @@ function SpecificDelegate({ props }: { props: Type }) {
             }
           } catch (error) {
             console.log("Error in calculating temp CPI", error);
+          }finally{
+            setTempCpiCalling(false);
           }
-        } else {
+        }
+        else {
           data = await arb_client.query(DELEGATE_CHANGED_QUERY, {
             delegator: walletAddress,
           });

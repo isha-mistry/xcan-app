@@ -17,7 +17,6 @@ import dao_abi from "../../artifacts/Dao.sol/GovernanceToken.json";
 import { Address } from "viem";
 import { useRouter } from "next/router";
 
-
 interface delegate {
   isOpen: boolean;
   closeModal: any;
@@ -32,7 +31,6 @@ interface delegate {
   tempCpi: any;
   tempCpiCalling: boolean;
 }
-
 
 function DelegateTileModal({
   isOpen,
@@ -55,6 +53,7 @@ function DelegateTileModal({
   const [isLoading, setIsLoading] = useState(true);
   const [isHovering, setIsHovering] = useState(false);
   const [tokenImage, setTokenImage] = useState(op);
+  const [screenHeight, setScreenHeight] = useState(0);
 
   useEffect(() => {
     const pathname = window.location.pathname;
@@ -63,6 +62,23 @@ function DelegateTileModal({
     } else {
       setTokenImage(op);
     }
+  }, []);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setScreenHeight(window.innerHeight);
+    };
+
+    // Set initial screen height
+    setScreenHeight(window.innerHeight);
+
+    // Add event listener for screen resize
+    window.addEventListener("resize", handleResize);
+
+    // Clean up event listener on component unmount
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
   }, []);
 
   const handleMouseEnter = () => {
@@ -86,6 +102,10 @@ function DelegateTileModal({
     }, 2000); // Change the timeout duration as per your requirements
   }, []);
 
+  const headingStyle = `font-semibold text-[26px] mb-2 text-blue-shade-100 text-center ${
+    screenHeight < 750 ? "mt-36" : ""
+  }`;
+
   if (isLoading) {
     return (
       <div className="fixed inset-0 flex items-center justify-center z-50 overflow-hidden font-poppins">
@@ -100,21 +120,20 @@ function DelegateTileModal({
   }
   return (
     <>
-      <div className="fixed inset-0 flex items-center justify-center z-50  overflow-hidden font-poppins">
+      <div className="fixed inset-0 flex items-center justify-center z-50 overflow-hidden font-poppins">
         <div
           className="absolute inset-0 backdrop-blur-md"
           onClick={closeModal}
         ></div>
-        <div className="bg-white mt-12 p-5 xs:p-9 rounded-[34px] flex flex-col  z-50 border-[2px] items-center justify-center mx-4 sm:mx-0">
+        <div className="bg-white mt-12 p-5 xs:p-9 rounded-[34px] flex flex-col z-50 border-[2px] items-center justify-center mx-4 sm:mx-0 max-h-[85vh] overflow-y-auto">
+          {" "}
+          {/* Modified Div */}
           {confettiVisible && <Confetti />}
-          <h1 className="font-semibold text-[26px] mb-2 text-blue-shade-100 text-center">
-            Set {delegateName} as your delegate
-          </h1>
+          <h1 className={headingStyle}>Set {delegateName} as your delegate</h1>
           <p className="font-normal text-[13px] text-center text-black-shade-1000 max-w-[400px]">
             {delegateName} will be able to vote with any token owned by your
             address
           </p>
-
           <div className="bg-gradient-to-br from-gray-100 to-gray-200 border-2 border-gray-300 flex justify-center items-center py-6 rounded-3xl w-full flex-col mt-4 shadow-md">
             <p className="text-black font-medium text-sm tracking-wide uppercase mb-3">
               Total Delegatable Votes
@@ -181,62 +200,94 @@ function DelegateTileModal({
               </div>
             </div>
           </div>
-
-          {  daoName === "optimism" && (
-      <div className="flex flex-col items-center w-full max-w-md bg-gradient-to-br from-gray-100 to-gray-200 border-2 border-gray-300 rounded-3xl px-4 0.7xs:px-6 py-4 mt-4 shadow-md">
-        <div className="flex items-center justify-between w-full">
-          <div className="flex flex-col items-center">
-            <span className="text-black font-medium text-xs 0.7xs:text-sm tracking-wide uppercase mb-2">
-              Current CPI
-            </span>
-            <div className="text-lg font-semibold text-black bg-white px-3 py-1 rounded-lg">
-              {actualCpi !== null && actualCpi !== undefined ? (
-                Number(actualCpi).toFixed(2)
-              ) : (
-                <ThreeDots
-                  visible={true}
-                  height="30"
-                  width="40"
-                  color="black"
-                  ariaLabel="loading"
-                />
-              )}
-            </div>
-          </div>
-          <div className="flex flex-col items-center">
-            <span className="text-black font-medium text-xs 0.7xs:text-sm tracking-wide uppercase mb-2">
-              CPI if you delegate
-            </span>
-            <div
-              className={`${
-                tempCpi !== null && tempCpi !== undefined && Number(tempCpi?.toFixed(2)) <= Number(actualCpi?.toFixed(2))
-                  ? "text-[#1c8e1c]"
-                  : "text-red-600"
-              } text-lg font-semibold bg-white px-3 py-1 rounded-lg`}
-            >
-              {!tempCpiCalling && tempCpi !== null && tempCpi !== undefined ? (
-                Number(tempCpi).toFixed(2)
-              ) : (
-                <span className="text-gray-500 italic">
-                  <ThreeDots
-                    visible={true}
-                    height="30"
-                    width="40"
-                    color="black"
-                    ariaLabel="loading"
-                  />
-                </span>
-              )}
-            </div>
-          </div>
-        </div>
-        <div className="mt-4 text-sm font-medium text-gray-700">
-        Data for calculating CPI updates every 5 minutes.
-      </div>
-
-      </div>
+          {daoName === "optimism" && (
+            <>
+              <div className="flex flex-col items-center w-full max-w-md bg-gradient-to-br from-gray-100 to-gray-200 border-2 border-gray-300 rounded-3xl px-4 0.7xs:px-6 py-4 mt-4 shadow-md">
+                <div className="flex items-center justify-between w-full">
+                  <div className="flex flex-col items-center">
+                    <span className="text-black font-medium text-xs 0.7xs:text-sm tracking-wide uppercase mb-2">
+                      Current CPI
+                    </span>
+                    <div className="text-lg font-semibold text-black bg-white px-3 py-1 rounded-lg">
+                      {actualCpi !== null && actualCpi !== undefined ? (
+                        Number(actualCpi).toFixed(2)
+                      ) : (
+                        <ThreeDots
+                          visible={true}
+                          height="30"
+                          width="40"
+                          color="black"
+                          ariaLabel="loading"
+                        />
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex flex-col items-center">
+                    <span className="text-black font-medium text-xs 0.7xs:text-sm tracking-wide uppercase mb-2">
+                      CPI if you delegate
+                    </span>
+                    <div
+                      className={`${
+                        tempCpi !== null &&
+                        tempCpi !== undefined &&
+                        Number(tempCpi?.toFixed(2)) <=
+                          Number(actualCpi?.toFixed(2))
+                          ? "text-[#1c8e1c]"
+                          : "text-red-600"
+                      } text-lg font-semibold bg-white px-3 py-1 rounded-lg`}
+                    >
+                      {/* {!tempCpiCalling && tempCpi !== null && tempCpi !== undefined ? (
+                      Number(tempCpi).toFixed(2)
+                    ) : (
+                      <span className="text-gray-500 italic">
+                        <ThreeDots
+                          visible={true}
+                          height="30"
+                          width="40"
+                          color="black"
+                          ariaLabel="loading"
+                        />
+                      </span>
+                    )} */}
+                      {tempCpiCalling ? (
+                        <ThreeDots
+                          visible={true}
+                          height="30"
+                          width="40"
+                          color="black"
+                          ariaLabel="loading"
+                        />
+                      ) : tempCpi !== null && tempCpi !== undefined ? (
+                        Number(tempCpi).toFixed(2)
+                      ) : (
+                        <span>0.00</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+                {(tempCpi !== null && tempCpi !== undefined && tempCpi !== 0) && (actualCpi !== null && actualCpi !== undefined && actualCpi !== 0) ? (  
+                  <div className="mt-4 text-sm font-medium text-gray-700">
+                    Data for calculating CPI updates every 5 minutes.
+                  </div>
+                ) : (
+                  <></>
+                )}
+              </div>
+              {!tempCpiCalling &&
+                (tempCpi === null || tempCpi === undefined || actualCpi === null || actualCpi === undefined) && (
+                  <div className="text-red-500 italic mt-2 text-center text-sm">
+                    We are working on getting the accurate CPI! Stay tuned.
+                  </div>
+                )}
+            </>
+            // <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mt-4 max-w-md text-sm sm:text-base">
+            //   <p className="font-bold">Alert:</p>
+            //   <p>
+            //     API to get the Actual CPI & Temp CPI is under maintenance. It
+            //     will be live soon.🚀
+            //   </p>
+            // </div>
           )}
-
           <button
             className={`rounded-full py-3 xs:py-5 font-semibold font-poppins w-full text-base mt-4 ${
               addressCheck

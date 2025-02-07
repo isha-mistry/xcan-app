@@ -13,6 +13,7 @@ import { useAccount } from "wagmi";
 import { SessionInterface } from "@/types/MeetingTypes";
 import { getAccessToken, usePrivy } from "@privy-io/react-auth";
 import { useWalletAddress } from "@/app/hooks/useWalletAddress";
+import { CalendarCheck, CheckCircle, Users } from "lucide-react";
 
 interface Type {
   daoDelegates: string;
@@ -62,7 +63,7 @@ function DelegateSessions({ props }: { props: Type }) {
   const getMeetingData = async () => {
     setDataLoading(true);
     try {
-      const token=await getAccessToken();
+      const token = await getAccessToken();
       const myHeaders: HeadersInit = {
         "Content-Type": "application/json",
         ...(walletAddress && {
@@ -154,44 +155,47 @@ function DelegateSessions({ props }: { props: Type }) {
     <div>
       <div className=" pt-4 relative">
         <div
-          className={`flex gap-10 sm:gap-16 border-1 border-[#7C7C7C] px-6 rounded-xl text-sm overflow-x-auto whitespace-nowrap relative`}
+          className={`flex gap-2 0.5xs:gap-4 rounded-xl text-sm flex-wrap`}
           ref={scrollContainerRef}
           onScroll={handleScroll}
         >
           <button
-            className={`py-2  ${
+            className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md ${
               searchParams.get("session") === "book"
-                ? "text-[#3E3D3D] font-bold"
-                : "text-[#7C7C7C]"
+                ? "text-[#0500FF] font-semibold bg-[#f5f5f5]"
+                : "text-[#3E3D3D] bg-white"
             }`}
             onClick={() =>
               router.push(path + "?active=delegatesSession&session=book")
             }
           >
+            <CalendarCheck size={16} className="drop-shadow-lg" />
             Book
           </button>
           <button
-            className={`py-2 ${
+            className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md ${
               searchParams.get("session") === "hosted"
-                ? "text-[#3E3D3D] font-bold"
-                : "text-[#7C7C7C]"
+                ? "text-[#0500FF] font-semibold bg-[#f5f5f5]"
+                : "text-[#3E3D3D] bg-white"
             }`}
             onClick={() =>
               router.push(path + "?active=delegatesSession&session=hosted")
             }
           >
+            <Users size={16} className="drop-shadow-lg" />
             Hosted
           </button>
           <button
-            className={`py-2 ${
+            className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md ${
               searchParams.get("session") === "attended"
-                ? "text-[#3E3D3D] font-bold"
-                : "text-[#7C7C7C]"
+                ? "text-[#0500FF] font-semibold bg-[#f5f5f5]"
+                : "text-[#3E3D3D] bg-white"
             }`}
             onClick={() =>
               router.push(path + "?active=delegatesSession&session=attended")
             }
           >
+            <CheckCircle size={16} className="drop-shadow-lg" />
             Attended
           </button>
         </div>
