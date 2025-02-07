@@ -265,7 +265,7 @@ function DelegateTileModal({
                     </div>
                   </div>
                 </div>
-                {tempCpi !== null && tempCpi !== undefined ? (  
+                {(tempCpi !== null && tempCpi !== undefined && tempCpi !== 0) && (actualCpi !== null && actualCpi !== undefined && actualCpi !== 0) ? (  
                   <div className="mt-4 text-sm font-medium text-gray-700">
                     Data for calculating CPI updates every 5 minutes.
                   </div>
@@ -274,7 +274,7 @@ function DelegateTileModal({
                 )}
               </div>
               {!tempCpiCalling &&
-                (tempCpi === null || tempCpi === undefined) && (
+                (tempCpi === null || tempCpi === undefined || actualCpi === null || actualCpi === undefined) && (
                   <div className="text-red-500 italic mt-2 text-center text-sm">
                     We are working on getting the accurate CPI! Stay tuned.
                   </div>
