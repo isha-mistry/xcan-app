@@ -605,7 +605,7 @@ const UserScheduledHours: React.FC<{
                 {daoName.charAt(0).toUpperCase() + daoName.slice(1)}
               </h1>
               <p className="text-sm text-gray-500 mt-1">
-                Schedule your office hours
+                Schedule your Office Hours
               </p>
             </div>
           </div>

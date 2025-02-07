@@ -11,6 +11,7 @@ import { CiSearch } from "react-icons/ci";
 import { usePrivy } from "@privy-io/react-auth";
 import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 import { fetchApi } from "@/utils/api";
+import { BookOpen } from "lucide-react";
 
 function DelegatesSession({ props }: { props: string }) {
   const [searchQuery, setSearchQuery] = useState("");
@@ -217,18 +218,19 @@ function DelegatesSession({ props }: { props: string }) {
       </div>
 
       <div className=" pt-3">
-        <div className="flex w-fit gap-16 border-1 border-[#7C7C7C] px-6 rounded-xl text-sm">
+        <div className="flex gap-2 0.5xs:gap-4 rounded-xl text-sm flex-wrap">
           <button
-            className={`py-2 ${
+            className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md ${
               searchParams.get("session") === "recorded"
-                ? "text-[#3E3D3D] font-bold"
-                : "text-[#7C7C7C]"
+                  ? "text-[#0500FF] font-semibold bg-[#f5f5f5]"
+                : "text-[#3E3D3D] bg-white"
             }`}
             onClick={() =>
               router.push(path + "?active=delegatesSession&session=recorded")
             }
           >
-            Recorded
+            <BookOpen size={16} />
+            Library
           </button>
         </div>
 
