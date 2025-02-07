@@ -9,7 +9,7 @@ import RecordedSessionsTile from "../ComponentUtils/RecordedSessionsTile";
 import RecordedSessionsSkeletonLoader from "../SkeletonLoader/RecordedSessionsSkeletonLoader";
 import ErrorDisplay from "../ComponentUtils/ErrorDisplay";
 import style from "./MainProfile.module.css";
-import { ChevronRight } from "lucide-react";
+import { Calendar, CalendarCheck, CheckCircle, ChevronRight, UserCheck, Users } from "lucide-react";
 import { usePrivy } from "@privy-io/react-auth";
 import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 import { fetchApi } from "@/utils/api";
@@ -75,7 +75,7 @@ function UserSessions({
     setDataLoading(true);
     try {
       // setDataLoading(true);
-      const token=await getAccessToken();
+      const token = await getAccessToken();
       const myHeaders: HeadersInit = {
         "Content-Type": "application/json",
         ...(walletAddress && {
@@ -142,75 +142,80 @@ function UserSessions({
     <div>
       <div className="pt-4 relative">
         <div
-          className={`flex gap-10 sm:gap-16 border-1 border-[#7C7C7C] px-6 rounded-xl text-sm overflow-x-auto whitespace-nowrap relative mx-4 md:mx-6 lg:mx-14`}
+          className={`pt-4 px-4 md:px-6 lg:px-14 flex gap-2 0.5xs:gap-4 rounded-xl text-sm flex-wrap`}
           ref={scrollContainerRef}
           onScroll={handleScroll}
         >
           {selfDelegate === true && (
             <button
-              className={`py-2  ${
+              className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md  ${
                 searchParams.get("session") === "schedule"
-                  ? "text-[#3E3D3D] font-bold"
-                  : "text-[#7C7C7C]"
+                  ? "text-[#0500FF] font-semibold bg-[#f5f5f5]"
+                  : "text-[#3E3D3D] bg-white"
               }`}
               onClick={() =>
                 router.push(path + "?active=sessions&session=schedule")
               }
             >
-              Schedule
+               <Calendar size={16} className="drop-shadow-lg" />
+              Calendar
             </button>
           )}
 
           {selfDelegate === true && (
             <button
-              className={`py-2  ${
+              className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md  ${
                 searchParams.get("session") === "book"
-                  ? "text-[#3E3D3D] font-bold"
-                  : "text-[#7C7C7C]"
+                  ? "text-[#0500FF] font-semibold bg-[#f5f5f5]"
+                  : "text-[#3E3D3D] bg-white"
               }`}
               onClick={() =>
                 router.push(path + "?active=sessions&session=book")
               }
             >
+               <CalendarCheck size={16} className="drop-shadow-lg" />
               Booked
             </button>
           )}
           <button
-            className={`py-2 ${
+            className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md ${
               searchParams.get("session") === "attending"
-                ? "text-[#3E3D3D] font-bold"
-                : "text-[#7C7C7C]"
+                ? "text-[#0500FF] font-semibold bg-[#f5f5f5]"
+                : "text-[#3E3D3D] bg-white"
             }`}
             onClick={() =>
               router.push(path + "?active=sessions&session=attending")
             }
           >
+            <UserCheck size={16} className="drop-shadow-lg" />
             Attending
           </button>
           {selfDelegate === true && (
             <button
-              className={`py-2 ${
+              className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md ${
                 searchParams.get("session") === "hosted"
-                  ? "text-[#3E3D3D] font-bold"
-                  : "text-[#7C7C7C]"
+                  ? "text-[#0500FF] font-semibold bg-[#f5f5f5]"
+                  : "text-[#3E3D3D] bg-white"
               }`}
               onClick={() =>
                 router.push(path + "?active=sessions&session=hosted")
               }
             >
+              <Users size={16} className="drop-shadow-lg" />
               Hosted
             </button>
           )}
           <button
-            className={`py-2 ${
+            className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md ${
               searchParams.get("session") === "attended"
-                ? "text-[#3E3D3D] font-bold"
-                : "text-[#7C7C7C]"
+                ? "text-[#0500FF] font-semibold bg-[#f5f5f5]"
+                : "text-[#3E3D3D] bg-white"
             }`}
             onClick={() =>
               router.push(path + "?active=sessions&session=attended")
             }
           >
+             <CheckCircle size={16} className="drop-shadow-lg" />
             Attended
           </button>
         </div>
