@@ -265,9 +265,13 @@ function DelegateTileModal({
                     </div>
                   </div>
                 </div>
-                <div className="mt-4 text-sm font-medium text-gray-700">
-                  Data for calculating CPI updates every 5 minutes.
-                </div>
+                {tempCpi !== null && tempCpi !== undefined ? (  
+                  <div className="mt-4 text-sm font-medium text-gray-700">
+                    Data for calculating CPI updates every 5 minutes.
+                  </div>
+                ) : (
+                  <></>
+                )}
               </div>
               {!tempCpiCalling &&
                 (tempCpi === null || tempCpi === undefined) && (
