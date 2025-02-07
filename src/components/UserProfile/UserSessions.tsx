@@ -13,6 +13,7 @@ import { Calendar, CalendarCheck, CheckCircle, ChevronRight, UserCheck, Users } 
 import { usePrivy } from "@privy-io/react-auth";
 import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 import { fetchApi } from "@/utils/api";
+import Alert from "../Alert/Alert";
 
 interface UserSessionsProps {
   isDelegate: boolean | undefined;
@@ -41,6 +42,7 @@ function UserSessions({
   const [showRightShadow, setShowRightShadow] = useState(false);
   const { user, ready, getAccessToken, authenticated } = usePrivy();
   const { walletAddress } = useWalletAddress();
+  const [showAlert, setShowAlert] = useState(true);
 
   const handleRetry = () => {
     setError(null);
@@ -138,6 +140,9 @@ function UserSessions({
       </div>
     );
   }
+  const handleCloseAlert = () => {
+    setShowAlert(false);
+  };
   return (
     <div>
       <div className="pt-4 relative">
@@ -218,6 +223,15 @@ function UserSessions({
              <CheckCircle size={16} className="drop-shadow-lg" />
             Attended
           </button>
+        </div>
+        <div className="px-4 md:px-6 lg:px-14">
+        {showAlert && (
+          <Alert
+            message="We're experiencing issues generating meeting IDs from Huddle, preventing meetings from being conducted. We're working on a fix. Thanks for your patience!"
+            type="error"
+            onClose={handleCloseAlert}
+          />
+        )}
         </div>
         {showLeftShadow && (
           <div className="absolute left-0 top-0 bottom-0 w-8 h-16 bg-gradient-to-r from-white to-transparent pointer-events-none" />
