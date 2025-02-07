@@ -291,6 +291,8 @@ function SpecificDelegate({ props }: { props: Type }) {
             }
           } catch (error) {
             console.log("Error in calculating temp CPI", error);
+          }finally{
+            setTempCpiCalling(false);
           }
         }
         else {

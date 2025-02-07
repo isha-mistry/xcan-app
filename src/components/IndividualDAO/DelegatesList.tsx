@@ -277,6 +277,8 @@ function DelegatesList({ props }: { props: string }) {
         }
       } catch (error) {
         console.log("Error in calculating temp CPI", error);
+      }finally{
+        setTempCpiCalling(false);
       }
     }
   };

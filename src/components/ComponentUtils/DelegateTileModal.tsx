@@ -129,9 +129,7 @@ function DelegateTileModal({
           {" "}
           {/* Modified Div */}
           {confettiVisible && <Confetti />}
-          <h1 className={headingStyle}>
-            Set {delegateName} as your delegate
-          </h1>
+          <h1 className={headingStyle}>Set {delegateName} as your delegate</h1>
           <p className="font-normal text-[13px] text-center text-black-shade-1000 max-w-[400px]">
             {delegateName} will be able to vote with any token owned by your
             address
@@ -203,38 +201,42 @@ function DelegateTileModal({
             </div>
           </div>
           {daoName === "optimism" && (
-            <div className="flex flex-col items-center w-full max-w-md bg-gradient-to-br from-gray-100 to-gray-200 border-2 border-gray-300 rounded-3xl px-4 0.7xs:px-6 py-4 mt-4 shadow-md">
-              <div className="flex items-center justify-between w-full">
-                <div className="flex flex-col items-center">
-                  <span className="text-black font-medium text-xs 0.7xs:text-sm tracking-wide uppercase mb-2">
-                    Current CPI
-                  </span>
-                  <div className="text-lg font-semibold text-black bg-white px-3 py-1 rounded-lg">
-                    {actualCpi !== null && actualCpi !== undefined ? (
-                      Number(actualCpi).toFixed(2)
-                    ) : (
-                      <ThreeDots
-                        visible={true}
-                        height="30"
-                        width="40"
-                        color="black"
-                        ariaLabel="loading"
-                      />
-                    )}
+            <>
+              <div className="flex flex-col items-center w-full max-w-md bg-gradient-to-br from-gray-100 to-gray-200 border-2 border-gray-300 rounded-3xl px-4 0.7xs:px-6 py-4 mt-4 shadow-md">
+                <div className="flex items-center justify-between w-full">
+                  <div className="flex flex-col items-center">
+                    <span className="text-black font-medium text-xs 0.7xs:text-sm tracking-wide uppercase mb-2">
+                      Current CPI
+                    </span>
+                    <div className="text-lg font-semibold text-black bg-white px-3 py-1 rounded-lg">
+                      {actualCpi !== null && actualCpi !== undefined ? (
+                        Number(actualCpi).toFixed(2)
+                      ) : (
+                        <ThreeDots
+                          visible={true}
+                          height="30"
+                          width="40"
+                          color="black"
+                          ariaLabel="loading"
+                        />
+                      )}
+                    </div>
                   </div>
-                </div>
-                <div className="flex flex-col items-center">
-                  <span className="text-black font-medium text-xs 0.7xs:text-sm tracking-wide uppercase mb-2">
-                    CPI if you delegate
-                  </span>
-                  <div
-                    className={`${
-                      tempCpi !== null && tempCpi !== undefined && Number(tempCpi?.toFixed(2)) <= Number(actualCpi?.toFixed(2))
-                        ? "text-[#1c8e1c]"
-                        : "text-red-600"
-                    } text-lg font-semibold bg-white px-3 py-1 rounded-lg`}
-                  >
-                    {!tempCpiCalling && tempCpi !== null && tempCpi !== undefined ? (
+                  <div className="flex flex-col items-center">
+                    <span className="text-black font-medium text-xs 0.7xs:text-sm tracking-wide uppercase mb-2">
+                      CPI if you delegate
+                    </span>
+                    <div
+                      className={`${
+                        tempCpi !== null &&
+                        tempCpi !== undefined &&
+                        Number(tempCpi?.toFixed(2)) <=
+                          Number(actualCpi?.toFixed(2))
+                          ? "text-[#1c8e1c]"
+                          : "text-red-600"
+                      } text-lg font-semibold bg-white px-3 py-1 rounded-lg`}
+                    >
+                      {/* {!tempCpiCalling && tempCpi !== null && tempCpi !== undefined ? (
                       Number(tempCpi).toFixed(2)
                     ) : (
                       <span className="text-gray-500 italic">
@@ -246,14 +248,34 @@ function DelegateTileModal({
                           ariaLabel="loading"
                         />
                       </span>
-                    )}
+                    )} */}
+                      {tempCpiCalling ? (
+                        <ThreeDots
+                          visible={true}
+                          height="30"
+                          width="40"
+                          color="black"
+                          ariaLabel="loading"
+                        />
+                      ) : tempCpi !== null && tempCpi !== undefined ? (
+                        Number(tempCpi).toFixed(2)
+                      ) : (
+                        <span>0.00</span>
+                      )}
+                    </div>
                   </div>
                 </div>
+                <div className="mt-4 text-sm font-medium text-gray-700">
+                  Data for calculating CPI updates every 5 minutes.
+                </div>
               </div>
-              <div className="mt-4 text-sm font-medium text-gray-700">
-              Data for calculating CPI updates every 5 minutes.
-            </div>
-            </div>
+              {!tempCpiCalling &&
+                (tempCpi === null || tempCpi === undefined) && (
+                  <div className="text-red-500 italic mt-2 text-center text-sm">
+                    We are working on getting the accurate CPI! Stay tuned.
+                  </div>
+                )}
+            </>
             // <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mt-4 max-w-md text-sm sm:text-base">
             //   <p className="font-bold">Alert:</p>
             //   <p>
