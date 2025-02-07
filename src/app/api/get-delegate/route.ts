@@ -4,12 +4,12 @@ export const revalidate = 0;
 
 const op_client = new Client({
   url: "https://api.studio.thegraph.com/query/68573/op/v0.0.9",
-  exchanges: [cacheExchange, fetchExchange],
+  exchanges: [fetchExchange],
 });
 
 const arb_client = new Client({
   url: "https://api.studio.thegraph.com/query/68573/arb_token/v0.0.3",
-  exchanges: [cacheExchange, fetchExchange],
+  exchanges: [fetchExchange],
 });
 
 // Default sorted query by balance
