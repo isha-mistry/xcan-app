@@ -227,7 +227,7 @@ function UserSessions({
         <div className="px-4 md:px-6 lg:px-14">
         {showAlert && (
           <Alert
-            message="We're experiencing issues generating meeting IDs from Huddle, preventing meetings from being conducted. We're working on a fix. Thanks for your patience!"
+            message="We're currently experiencing issues generating meeting IDs due to a recent change in Huddle's API version. Our team is actively working on a fix to restore meeting functionality as soon as possible. Thanks for your patience! 🚀"
             type="error"
             onClose={handleCloseAlert}
           />
