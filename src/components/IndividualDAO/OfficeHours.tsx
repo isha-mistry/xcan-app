@@ -141,18 +141,6 @@ function OfficeHours({ props }: { props: string }) {
 
   return (
     <div>
-      <div className="flex items-center rounded-full shadow-lg my-4 bg-gray-100 text-black cursor-pointer w-[300px] xs:w-[365px]">
-        <CiSearch className="text-base transition-all duration-700 ease-in-out ml-3" />
-        <input
-          type="text"
-          placeholder="Search by title and host address"
-          className="w-[100%] pl-2 pr-4 py-1.5 font-poppins md:py-2 text-sm bg-transparent outline-none"
-          value={searchInput}
-          onChange={handleSearchChange}
-          onKeyPress={handleKeyPress}
-        />
-      </div>
-
       <div className="pt-3">
         <div className="flex gap-2 0.5xs:gap-4 rounded-xl text-sm flex-wrap">
           <button
@@ -195,6 +183,18 @@ function OfficeHours({ props }: { props: string }) {
             Library
           </button>
         </div>
+
+        <div className="flex items-center rounded-full shadow-lg mt-10 mb-4 bg-gray-100 text-black cursor-pointer w-[300px] xs:w-[365px]">
+        <CiSearch className="text-base transition-all duration-700 ease-in-out ml-3" />
+        <input
+          type="text"
+          placeholder="Search by title and host address"
+          className="w-[100%] pl-2 pr-4 py-1.5 font-poppins md:py-2 text-sm bg-transparent outline-none"
+          value={searchInput}
+          onChange={handleSearchChange}
+          onKeyPress={handleKeyPress}
+        />
+      </div>
 
         <div className="py-10">
           {dataLoading ? (
