@@ -33,11 +33,17 @@ async function sendNotifications(
     const usersCollection = db.collection("delegates");
     const notificationCollection = db.collection("notifications");
 
-    // Get all users
-    // const allUsers = await usersCollection.find({}, { address: 1 }).toArray();
-    const allUsers = [
-      { address: "0x92DDc00c2C2BC130d62026cB5e8171cC4337b08e" },
-    ];
+    const allUsers = await usersCollection
+      .find(
+        {
+          address: {
+            $ne: hostAddress.toLowerCase(),
+          },
+        },
+        { address: 1 }
+      )
+      .toArray();
+    
 
     if (!allUsers || allUsers.length === 0) {
       console.log("No users found to notify");
@@ -142,17 +148,20 @@ async function sendNotifications(
 }
 
 const getRoomId = async () => {
-  const response = await fetch("https://api.huddle01.com/api/v1/create-room", {
-    method: "POST",
-    body: JSON.stringify({
-      title: "Test Room",
-    }),
-    headers: {
-      "Content-Type": "application/json",
-      "x-api-key": process.env.NEXT_PUBLIC_API_KEY ?? "",
-    },
-    cache: "no-store",
-  });
+  const response = await fetch(
+    "https://api.huddle01.com/api/v2/sdk/rooms/create-room",
+    {
+      method: "POST",
+      body: JSON.stringify({
+        title: "Test Room",
+      }),
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": process.env.NEXT_PUBLIC_API_KEY ?? "",
+      },
+      cache: "no-store",
+    }
+  );
 
   if (!response.ok) {
     throw new Error("Failed to create room");
