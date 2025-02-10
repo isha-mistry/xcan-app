@@ -10,7 +10,10 @@ import { v4 as uuidv4 } from "uuid";
 import { imageCIDs } from "@/config/staticDataUtils";
 import { cacheWrapper } from "@/utils/cacheWrapper";
 import { io } from "socket.io-client";
-import { formatSlotDateAndTime } from "@/utils/NotificationUtils";
+import {
+  formatSlotDateAndTime,
+  getDisplayNameOrAddr,
+} from "@/utils/NotificationUtils";
 
 const SOCKET_BASE_URL = process.env.SOCKET_BASE_URL || "http://localhost:3001";
 
@@ -57,13 +60,14 @@ async function sendNotifications(
       return Promise.all(
         allUsers.map(async (user: any) => {
           const formattedTime = await timePromise;
+          const hostENSNameOrAddress = await getDisplayNameOrAddr(hostAddress);
           return {
             receiver_address: user.address,
-            content: `New office hours session scheduled on ${daoName} with ${hostAddress}. The session is scheduled for ${formattedTime} UTC.`,
+            content: `New office hours is scheduled on ${daoName} with ${hostENSNameOrAddress} on ${formattedTime} UTC.`,
             createdAt: Date.now(),
             read_status: false,
             notification_name: "officeHoursScheduled",
-            notification_title: "New Office Hours Scheduled",
+            notification_title: "Office Hours Scheduled",
             notification_type: "officeHours",
             additionalData: {
               ...meeting,
@@ -85,7 +89,9 @@ async function sendNotifications(
     if (resolvedNotifications.length > 0) {
       // Store notifications in database
       try {
-        const result = await notificationCollection.insertMany(resolvedNotifications);
+        const result = await notificationCollection.insertMany(
+          resolvedNotifications
+        );
         console.log(`${result.insertedCount} notifications stored in database`);
 
         // Get the inserted notifications with their _id

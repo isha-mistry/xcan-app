@@ -43,6 +43,8 @@ export const getBackgroundColor = (data: any) => {
   } else if (data?.notification_type === "officeHours") {
     if (data?.notification_name === "officeHoursScheduled") {
       return "#fff0cf";
+    } else if (data?.notification_name === "officeHoursStarted") {
+      return "#b9cef0";
     }
   }
   return "#bed9f8";
@@ -75,6 +77,8 @@ export const getIcon = (data: any) => {
   } else if (data?.notification_type === "officeHours") {
     if (data?.notification_name === "officeHoursScheduled") {
       return <RiCalendarScheduleFill color="#cf9008" size={18} />;
+    } else if (data?.notification_name === "officeHoursStarted") {
+      return <FaPlay color="#1061e6" size={18} />;
     }
   }
   return null;
