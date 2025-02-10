@@ -397,14 +397,14 @@ function ProposalMain({ props }: { props: Props }) {
   });
 
   // Use the appropriate data based on the network
-  const hasUserVoted = props.daoDelegates === "optimism" 
-  ? Boolean(hasVotedOptimism) 
-  : Boolean(hasVotedArbitrum);
+  const hasUserVoted = props.daoDelegates === "optimism"
+    ? Boolean(hasVotedOptimism)
+    : Boolean(hasVotedArbitrum);
 
   useEffect(() => {
     setHasVoted(hasUserVoted);
   }, [hasUserVoted]);
-  
+
   const checkVoteStatus = async () => {
     const queryParams = new URLSearchParams({
       proposalId: props.id,
@@ -486,9 +486,9 @@ function ProposalMain({ props }: { props: Props }) {
   }, [props.id]);
 
   useEffect(() => {
-  checkVoteStatus();
+    checkVoteStatus();
   }, [props, walletAddress]);
- 
+
   const loadMore = () => {
     const newDisplayCount = displayCount + 20;
     setDisplayCount(newDisplayCount);
@@ -1160,24 +1160,23 @@ function ProposalMain({ props }: { props: Props }) {
             </Tooltips>
           </div>
           {isActive && (
-              <button
-                className={`rounded-full px-3 py-1.5 text-white shadow-md ${
-                  hasVoted ? "bg-green-400 cursor-default" : "bg-blue-600 hover:bg-blue-500 hover:shadow-lg"
+            <button
+              className={`rounded-full px-3 py-1.5 text-white shadow-md ${hasVoted ? "bg-green-400 cursor-default" : "bg-blue-600 hover:bg-blue-500 hover:shadow-lg"
                 }`}
-                type="button"
-                onClick={!hasVoted ? voteOnchain : undefined}
-                disabled={hasVoted}
-              >
-                {hasVoted ? "Voted" : "Vote onchain"}
-              </button>
-            )}
+              type="button"
+              onClick={!hasVoted ? voteOnchain : undefined}
+              disabled={hasVoted}
+            >
+              {hasVoted ? "Voted" : "Vote onchain"}
+            </button>
+          )}
           <div className="flex-shrink-0">
             <div
               className={`rounded-full flex items-center justify-center text-xs py-1 px-2 font-medium ${status
-                  ? status === "Closed"
-                    ? "bg-[#f4d3f9] border border-[#77367a] text-[#77367a]"
-                    : "bg-[#f4d3f9] border border-[#77367a] text-[#77367a]"
-                  : "bg-gray-200 animate-pulse rounded-full"
+                ? status === "Closed"
+                  ? "bg-[#f4d3f9] border border-[#77367a] text-[#77367a]"
+                  : "bg-[#f4d3f9] border border-[#77367a] text-[#77367a]"
+                : "bg-gray-200 animate-pulse rounded-full"
                 }`}
             >
               {status ? status : <div className="h-4 w-16"></div>}
@@ -1228,8 +1227,8 @@ function ProposalMain({ props }: { props: Props }) {
           ) : (
             <div
               className={`rounded-full flex items-center justify-center text-xs h-fit py-0.5 border font-medium w-24 ${Proposalstatus
-                  ? getStatusColor(Proposalstatus)
-                  : "bg-gray-200 animate-pulse rounded-full"
+                ? getStatusColor(Proposalstatus)
+                : "bg-gray-200 animate-pulse rounded-full"
                 }`}
             >
               {Proposalstatus ? (
@@ -1269,19 +1268,22 @@ function ProposalMain({ props }: { props: Props }) {
             </>
           )}
         </div>
-        
+
       </div>
       {props.daoDelegates === "optimism" && optimismVoteOptions ? (
-  <div className={`rounded-[1rem] mx-4 my-3 md:mx-6 px-4 lg:mx-16 pb-6 pt-6 transition-shadow duration-300 ease-in-out shadow-xl bg-gray-50 font-poppins relative flex justify-center items-center font-extralight tracking-wide`}>
-    {loading ? (
-      <div className="flex items-center justify-center w-full h-[500px]">
-        <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-black-shade-900"></div>
-      </div>
-    ) : (
-      <VotingTreemap votingData={optimismVoteOptions} winners={winners} />
-    )}
-  </div>
-) : null}
+        <div className="rounded-[1rem] mx-4 my-3 md:mx-6 px-4 lg:mx-16 pb-6 pt-6 transition-shadow duration-300 ease-in-out shadow-xl bg-gray-50 font-poppins relative flex justify-center items-center font-extralight tracking-wide">
+          {loading || !optimismVoteOptions ? (
+            <div className="flex items-center justify-center w-full h-[500px]">
+              <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-black-shade-900"></div>
+            </div>
+          ) : (
+            <VotingTreemap
+              votingData={optimismVoteOptions}
+              winners={winners}
+            />
+          )}
+        </div>
+      ) : null}
 
       <h1 className="my-8 mx-4 md:mx-6 lg:mx-16 text-2xl lg:text-4xl font-semibold text-blue-shade-100 font-poppins">
         Voters
@@ -1296,8 +1298,8 @@ function ProposalMain({ props }: { props: Props }) {
             ) : (
               <div
                 className={`flex flex-col gap-2 py-3 pl-2 pr-1 w-full xl:pl-3 xl:pr-2 my-3 border-gray-200 ${voterList?.length > 5
-                    ? `h-[440px] overflow-y-auto ${style.scrollbar}`
-                    : "h-fit"
+                  ? `h-[440px] overflow-y-auto ${style.scrollbar}`
+                  : "h-fit"
                   }`}
               >
                 {voterList && voterList?.length === 0 ? (
@@ -1349,10 +1351,10 @@ function ProposalMain({ props }: { props: Props }) {
                         <div className="flex items-center space-x-1 0.5xs:space-x-2 1.3lg:space-x-4">
                           <div
                             className={`py-1 xs:py-2 rounded-full 1.5lg:text-sm w-24 0.2xs:w-28 xs:w-36 2md:w-28 lg:w-[100px] 1.3lg:w-28 1.5xl:w-36 flex items-center justify-center xl:font-medium text-xs ${voter.support === 1
-                                ? "bg-green-100 text-green-800"
-                                : voter.support === 0
-                                  ? "bg-red-100 text-red-800"
-                                  : "bg-blue-100 text-blue-800"
+                              ? "bg-green-100 text-green-800"
+                              : voter.support === 0
+                                ? "bg-red-100 text-red-800"
+                                : "bg-blue-100 text-blue-800"
                               }`}
                           >
                             {formatWeight(voter.votingPower / 10 ** 18)}
@@ -1515,7 +1517,7 @@ function ProposalMain({ props }: { props: Props }) {
       </div>
 
 
-</>
+    </>
   );
 }
 
