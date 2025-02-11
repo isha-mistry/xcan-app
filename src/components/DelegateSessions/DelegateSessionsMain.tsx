@@ -11,6 +11,7 @@ import { Tooltip } from "@nextui-org/react";
 import ConnectWalletWithENS from "../ConnectWallet/ConnectWalletWithENS";
 import SidebarMainMobile from "../MainSidebar/SidebarMainMobile";
 import Heading from "../ComponentUtils/Heading";
+import { BookOpen, Users } from "lucide-react";
 
 function DelegateSessionsMain() {
   const router = useRouter();
@@ -24,41 +25,34 @@ function DelegateSessionsMain() {
           <Heading />
         </div>
 
-        <div className="flex md:gap-12 bg-[#D9D9D945] md:pl-6 lg:pl-14 font-poppins">
+        <div className="flex gap-2 0.5xs:gap-4 rounded-xl text-sm flex-wrap xs:pl-4 ml-4 md:ml-6 lg:ml-14 font-poppins">
+          <Tooltip
+            showArrow
+            content={
+              <div className="font-poppins">
+                Explore available delegates by DAO, date, and time to book
+                sessions and unlock Web3 opportunities.
+              </div>
+            }
+            placement="right"
+            className="rounded-md bg-opacity-90 max-w-96"
+            closeDelay={1}
+          >
           <button
-            className={`w-1/2 md:w-auto border-b-2 py-3 md:py-4 px-2 ${
+            className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md ${
               searchParams.get("active") === "availableDelegates"
-                ? "text-blue-shade-200 font-semibold border-blue-shade-200"
-                : "border-transparent"
+                ? "text-[#0500FF] font-semibold bg-[#f5f5f5]"
+                : "text-[#3E3D3D] bg-white"
             }`}
             onClick={() => router.push(path + "?active=availableDelegates")}
           >
-            <Tooltip
-              showArrow
-              content={
-                <div className="font-poppins">
-                  Explore available delegates by DAO, date, and time to book
-                  sessions and unlock Web3 opportunities.
-                </div>
-              }
-              placement="right"
-              className="rounded-md bg-opacity-90 max-w-96"
-              closeDelay={1}
-            >
-              <div className="text-sm md:text-base whitespace-nowrap">
+              {/* <div className=""> */}
                 {" "}
+                 <Users size={16} className="drop-shadow-lg" />
                 Available Delegates
-              </div>
-            </Tooltip>
+              {/* </div> */}
           </button>
-          <button
-            className={`w-1/2 md:w-auto border-b-2 py-3 md:py-4 px-2 ${
-              searchParams.get("active") === "recordedSessions"
-                ? " border-blue-shade-200 text-blue-shade-200 font-semibold"
-                : "border-transparent"
-            }`}
-            onClick={() => router.push(path + "?active=recordedSessions")}
-          >
+            </Tooltip>
             <Tooltip
               showArrow
               content={
@@ -70,11 +64,20 @@ function DelegateSessionsMain() {
               className="rounded-md bg-opacity-90 max-w-96"
               closeDelay={1}
             >
-              <div className="text-sm md:text-base whitespace-nowrap">
-                Recorded
-              </div>
-            </Tooltip>
+          <button
+            className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md ${
+              searchParams.get("active") === "recordedSessions"
+                ? "text-[#0500FF] font-semibold bg-[#f5f5f5]"
+                : "text-[#3E3D3D] bg-white"
+            }`}
+            onClick={() => router.push(path + "?active=recordedSessions")}
+          >
+              {/* <div className=""> */}
+              <BookOpen size={16} className="drop-shadow-lg" />
+                Library
+                {/* </div> */}
           </button>
+            </Tooltip>
         </div>
 
         {searchParams.get("active") === "recordedSessions" ? (
