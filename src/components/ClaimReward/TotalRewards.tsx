@@ -343,7 +343,7 @@ function TotalRewards() {
           <div className="text-center py-8 text-gray-500">
             <HiGift size={48} className="mx-auto mb-4 text-gray-400" />
             <p>No rewards available to claim at the moment.</p>
-          </div>
+          </div> 
         )}
       </div>
     </div>

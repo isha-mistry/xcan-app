@@ -182,6 +182,7 @@ const ExploreDAOs = () => {
                 No DAOs available for the selected category
               </div>
             )}
+            {daoInfo.length >0 ? (
             <motion.div
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
@@ -209,6 +210,7 @@ const ExploreDAOs = () => {
                 </span>
               </Link>
             </motion.div>
+            ): (<></>)}
           </motion.div>
         )}
       </div>

@@ -32,10 +32,15 @@ import { getAccessToken, usePrivy, useWallets } from "@privy-io/react-auth";
 import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 import { BrowserProvider, Contract, JsonRpcSigner } from "ethers";
 import { motion } from "framer-motion";
-import { Select, SelectItem } from "@nextui-org/react";
-// import { calculateTempCpi } from "@/actions/calculatetempCpi";
+// import { Select, SelectItem } from "@nextui-org/react"; // Removed
+import { calculateTempCpi } from "@/actions/calculatetempCpi";
 import { fetchApi } from "@/utils/api";
 import { Address } from "viem";
+import {
+  ArrowsRightLeftIcon ,  // Example icon from Heroicons
+  FireIcon,
+  ChartBarIcon
+} from '@heroicons/react/24/outline';
 
 interface GTMEvent {
   event: string;
@@ -46,6 +51,18 @@ interface GTMEvent {
   delegateFrom?: "delegateList" | "specificDelegate";
   delegationStatus?: "success" | "failure" | "pending";
 }
+
+interface SortOption {
+  value: string;
+  label: string;
+  icon?: React.ComponentType<React.ComponentProps<"svg">>;
+}
+
+const sortOptions: SortOption[] = [
+  { value: "random", label: "Random Delegates", icon: ArrowsRightLeftIcon   },
+  { value: "default", label: "High-Weight Delegates", icon: FireIcon },
+  // { value: "most-delegators", label: "Most Delegators", icon: ChartBarIcon }, // Coming soon
+];
 
 const DELEGATES_PER_PAGE = 20;
 const DEBOUNCE_DELAY = 500;
@@ -71,6 +88,7 @@ function DelegatesList({ props }: { props: string }) {
   const [confettiVisible, setConfettiVisible] = useState(false);
   const [sortOption, setSortOption] = useState("random");
   const { wallets } = useWallets();
+  const [isOpen, setIsOpen] = useState(false); // Dropdown state
 
   const router = useRouter();
   // const { openChainModal } = useChainModal();
@@ -78,8 +96,8 @@ function DelegatesList({ props }: { props: string }) {
   const { isConnected, address, chain } = useAccount();
   const { ready, authenticated, login, logout, user } = usePrivy();
   const { walletAddress } = useWalletAddress();
-  // const [tempCpi, setTempCpi] = useState();
-  // const [tempCpiCalling, setTempCpiCalling] = useState(true);
+  const [tempCpi, setTempCpi] = useState();
+  const [tempCpiCalling, setTempCpiCalling] = useState(true);
 
   const pushToGTM = (eventData: GTMEvent) => {
     if (typeof window !== "undefined" && window.dataLayer) {
@@ -130,6 +148,10 @@ function DelegatesList({ props }: { props: string }) {
     fetchDelegates();
   }, [sortOption]);
   // Add handler for sort change
+
+  const toggleOpen = () => setIsOpen(!isOpen);
+  const selectedOption = sortOptions.find((option) => option.value === sortOption);
+
   const handleSortChange = (value: string) => {
     if (value === "most-delegators") {
       toast("Coming soon 🚀");
@@ -260,25 +282,27 @@ function DelegatesList({ props }: { props: string }) {
       console.error(err);
     }
 
-    // if (props === "optimism") {
-    //   try {
-    //     setTempCpiCalling(true);
-    //     const result = await calculateTempCpi(
-    //       delegatorAddress,
-    //       toAddress,
-    //       walletAddress,
-    //       token
-    //     );
-    //     // console.log("result:::::::::", result);
-    //     if (result?.data?.results[0].cpi) {
-    //       const data = result?.data?.results[0].cpi;
-    //       setTempCpi(data);
-    //       setTempCpiCalling(false);
-    //     }
-    //   } catch (error) {
-    //     console.log("Error in calculating temp CPI", error);
-    //   }
-    // }
+    if (props === "optimism") {
+      try {
+        setTempCpiCalling(true);
+        const result = await calculateTempCpi(
+          delegatorAddress,
+          toAddress,
+          walletAddress,
+          token
+        );
+        // console.log("result:::::::::", result);
+        if (result?.data?.results[0].cpi) {
+          const data = result?.data?.results[0].cpi;
+          setTempCpi(data);
+          setTempCpiCalling(false);
+        }
+      } catch (error) {
+        console.log("Error in calculating temp CPI", error);
+      }finally{
+        setTempCpiCalling(false);
+      }
+    }
   };
   // const handleDelegateVotes = async (to: string) => {
   //   if (!walletAddress) {
@@ -660,29 +684,69 @@ function DelegatesList({ props }: { props: string }) {
 
           <CiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
         </div>
-        <Select
-          className="w-full md:w-48"
-          value={sortOption}
-          onChange={(e) => handleSortChange(e.target.value)}
-          aria-label="Sort delegates"
-          defaultSelectedKeys={["random"]}
-        >
-          <SelectItem key="random" value="random">
-            Random Delegates
-          </SelectItem>
-          <SelectItem key="default" value="default">
-            High-Weight Delegates
-          </SelectItem>
-          {/* <SelectItem key="most-delegators" value="most-delegators">Most Delegators</SelectItem> */}
-        </Select>
+
+        {/* Custom Select Component - Inlined */}
+        <div className="relative w-full md:w-60">
+          <motion.button
+            type="button"
+            className="w-full bg-white border border-gray-300 rounded-2xl shadow-lg py-3 px-6 text-sm font-semibold text-gray-800 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-800 flex items-center justify-between transition-all duration-200 transform hover:scale-102 active:scale-98"
+            id="sort-menu-button"
+            aria-expanded={isOpen}
+            aria-haspopup="true"
+            onClick={toggleOpen}
+            aria-label="Sort delegates"
+            whileHover={{ y: -2 }}
+            whileTap={{ scale: 0.98 }}
+          >
+            <span className="truncate">{selectedOption ? selectedOption.label : "Sort By"}</span>
+            <ChevronDown className={`w-6 h-6 ml-3 transform transition-transform text-gray-600 ${isOpen ? 'rotate-180' : ''}`} />
+          </motion.button>
+
+          <motion.div
+            className={`absolute top-full left-0 z-30 w-full mt-3 rounded-2xl shadow-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 ring-1 ring-black ring-opacity-5 focus:outline-none overflow-hidden`}
+            role="menu"
+            aria-orientation="vertical"
+            aria-labelledby="sort-menu-button"
+            tabIndex={-1}
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: isOpen ? 1 : 0, y: isOpen ? 0 : -10 }}
+            transition={{ duration: 0.2, ease: "easeInOut" }}
+            style={{ pointerEvents: isOpen ? "auto" : "none" }}
+          >
+            <div className="py-2" role="none">
+              {sortOptions.map((option) => {
+                const Icon = option.icon ? option.icon : undefined;
+                return (
+                  <motion.button
+                    key={option.value}
+                    onClick={() => {
+                      handleSortChange(option.value);
+                      setIsOpen(false);
+                    }}
+                    className={`group flex items-center w-full px-6 py-3 text-sm text-gray-800 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-gray-800 focus:outline-none focus:bg-blue-50 dark:focus:bg-gray-800 transition-colors duration-150 ${option.value === sortOption ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300 font-semibold' : ''}`}
+                    role="menuitem"
+                    tabIndex={-1}
+                    whileHover={{ backgroundColor: "#e0f2fe" }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                     {Icon && <Icon className="w-5 h-5 mr-3 text-gray-500 dark:text-gray-400" />}
+                    <span className="truncate">{option.label}</span>
+                  </motion.button>
+                );
+              })}
+            </div>
+          </motion.div>
+        </div>
+        {/* End Custom Select */}
+
       </div>
 
       {renderContent()}
 
       {delegateOpen && selectedDelegate && (
         <DelegateTileModal
-          // tempCpi={tempCpi}
-          // tempCpiCalling={tempCpiCalling}
+          tempCpi={tempCpi}
+          tempCpiCalling={tempCpiCalling}
           isOpen={delegateOpen}
           closeModal={() => setDelegateOpen(false)}
           handleDelegateVotes={() =>

@@ -11,6 +11,7 @@ import { CiSearch } from "react-icons/ci";
 import { usePrivy } from "@privy-io/react-auth";
 import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 import { fetchApi } from "@/utils/api";
+import { BookOpen } from "lucide-react";
 
 function DelegatesSession({ props }: { props: string }) {
   const [searchQuery, setSearchQuery] = useState("");
@@ -201,8 +202,28 @@ function DelegatesSession({ props }: { props: string }) {
           <Image src={search} alt="search" width={20} />
         </span>
       </div> */}
-      <div
-        className={`flex items-center rounded-full shadow-lg bg-gray-100 text-black cursor-pointer my-4 w-[300px] xs:w-[365px]`}
+      
+
+      <div className=" pt-3">
+     
+        <div className="flex gap-2 0.5xs:gap-4 rounded-xl text-sm flex-wrap">
+          <button
+            className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md ${
+              searchParams.get("session") === "recorded"
+                  ? "text-[#0500FF] font-semibold bg-[#f5f5f5]"
+                : "text-[#3E3D3D] bg-white"
+            }`}
+            onClick={() =>
+              router.push(path + "?active=delegatesSession&session=recorded")
+            }
+          >
+            <BookOpen size={16} />
+            Library
+          </button>
+        </div>
+
+        <div
+        className={`flex items-center rounded-full shadow-lg bg-gray-100 text-black cursor-pointer mt-10 mb-4 w-[300px] xs:w-[365px]`}
       >
         <CiSearch
           className={`text-base transition-all duration-700 ease-in-out ml-3`}
@@ -215,22 +236,6 @@ function DelegatesSession({ props }: { props: string }) {
           onChange={(e) => handleSearchChange(e.target.value)}
         />
       </div>
-
-      <div className=" pt-3">
-        <div className="flex w-fit gap-16 border-1 border-[#7C7C7C] px-6 rounded-xl text-sm">
-          <button
-            className={`py-2 ${
-              searchParams.get("session") === "recorded"
-                ? "text-[#3E3D3D] font-bold"
-                : "text-[#7C7C7C]"
-            }`}
-            onClick={() =>
-              router.push(path + "?active=delegatesSession&session=recorded")
-            }
-          >
-            Recorded
-          </button>
-        </div>
 
         <div className="">
           {searchParams.get("session") === "recorded" &&
