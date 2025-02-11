@@ -31,19 +31,19 @@ async function sendMeetingDeletionNotification({
   additionalData: any;
 }) {
   try {
-    // Get collections
     const usersCollection = db.collection("delegates");
     const notificationCollection = db.collection("notifications");
 
+    console.log("host_address: ", host_address);
+
+    const normalizedHostAddress = host_address.toLowerCase();
+
     const allUsers = await usersCollection
-      .find(
-        {
-          address: {
-            $ne: host_address.toLowerCase(),
-          },
+      .find({
+        $expr: {
+          $ne: [{ $toLower: "$address" }, normalizedHostAddress],
         },
-        { address: 1 }
-      )
+      })
       .toArray();
 
     // Format the time
@@ -68,21 +68,15 @@ async function sendMeetingDeletionNotification({
     };
 
     // Create notifications for all users except host
-    const notifications = allUsers
-      .filter(
-        (user: any) => user.address.toLowerCase() !== host_address.toLowerCase()
-      )
-      .map((user: any) => ({
-        ...baseNotification,
-        receiver_address: user.address,
-      }));
+    const notifications = allUsers.map((user: any) => ({
+      ...baseNotification,
+      receiver_address: user.address,
+    }));
 
     // Insert all notifications at once
     const notificationResults = await notificationCollection.insertMany(
       notifications
     );
-
-    console.log("Inserted deletion notifications:", notificationResults);
 
     if (notificationResults.acknowledged === true) {
       // Get all inserted notifications

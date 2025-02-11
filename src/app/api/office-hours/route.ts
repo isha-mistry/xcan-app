@@ -33,17 +33,15 @@ async function sendNotifications(
     const usersCollection = db.collection("delegates");
     const notificationCollection = db.collection("notifications");
 
+    const normalizedHostAddress = hostAddress.toLowerCase();
+
     const allUsers = await usersCollection
-      .find(
-        {
-          address: {
-            $ne: hostAddress.toLowerCase(),
-          },
+      .find({
+        $expr: {
+          $ne: [{ $toLower: "$address" }, normalizedHostAddress],
         },
-        { address: 1 }
-      )
+      })
       .toArray();
-    
 
     if (!allUsers || allUsers.length === 0) {
       console.log("No users found to notify");
@@ -58,18 +56,17 @@ async function sendNotifications(
       return data;
     };
 
-    // Create notifications array
     const notifications = meetings.flatMap((meeting) => {
-      // Format time once for each meeting
       const timePromise = localSlotTime(meeting.startTime);
 
       return Promise.all(
         allUsers.map(async (user: any) => {
           const formattedTime = await timePromise;
           const hostENSNameOrAddress = await getDisplayNameOrAddr(hostAddress);
+          console.log("user address: ", user.address);
           return {
             receiver_address: user.address,
-            content: `New office hours is scheduled on ${daoName} with ${hostENSNameOrAddress} on ${formattedTime} UTC.`,
+            content: `New office hours is scheduled on ${daoName} by ${hostENSNameOrAddress} on ${formattedTime} UTC.`,
             createdAt: Date.now(),
             read_status: false,
             notification_name: "officeHoursScheduled",
@@ -85,29 +82,25 @@ async function sendNotifications(
       );
     });
 
-    // You'll need to use the result like this:
     const resolvedNotifications = await Promise.all(notifications).then(
       (arrays) => arrays.flat()
     );
 
-    console.log("Resolved notifications:", resolvedNotifications);
+    // console.log("Resolved notifications:", resolvedNotifications);
 
     if (resolvedNotifications.length > 0) {
-      // Store notifications in database
       try {
         const result = await notificationCollection.insertMany(
           resolvedNotifications
         );
         console.log(`${result.insertedCount} notifications stored in database`);
 
-        // Get the inserted notifications with their _id
         const storedNotifications = await notificationCollection
           .find({
             _id: { $in: Object.values(result.insertedIds) },
           })
           .toArray();
 
-        // Connect to socket server and send notifications
         const socket = io(SOCKET_BASE_URL, {
           withCredentials: true,
         });
