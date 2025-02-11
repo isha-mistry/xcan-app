@@ -46,6 +46,11 @@ async function sendMeetingDeletionNotification({
       })
       .toArray();
 
+    if (!allUsers || allUsers.length === 0) {
+      console.log("No users found to notify");
+      return;
+    }
+
     // Format the time
     const localSlotTime = await formatSlotDateAndTime({
       dateInput: startTime,
