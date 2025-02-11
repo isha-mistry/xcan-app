@@ -42,7 +42,6 @@ function UserSessions({
   const [showRightShadow, setShowRightShadow] = useState(false);
   const { user, ready, getAccessToken, authenticated } = usePrivy();
   const { walletAddress } = useWalletAddress();
-  const [showAlert, setShowAlert] = useState(true);
 
   const handleRetry = () => {
     setError(null);
@@ -140,9 +139,11 @@ function UserSessions({
       </div>
     );
   }
-  const handleCloseAlert = () => {
-    setShowAlert(false);
-  };
+  
+  // const handleCloseAlert = () => {
+  //   setShowAlert(false);
+  // };
+
   return (
     <div>
       <div className="pt-4 relative">
@@ -225,13 +226,13 @@ function UserSessions({
           </button>
         </div>
         <div className="px-4 md:px-6 lg:px-14">
-        {showAlert && (
+        {/* {showAlert && (
           <Alert
             message="We're currently experiencing issues generating meeting IDs due to a recent change in Huddle's API version. Our team is actively working on a fix to restore meeting functionality as soon as possible. Thanks for your patience! 🚀"
             type="error"
             onClose={handleCloseAlert}
           />
-        )}
+        )} */}
         </div>
         {showLeftShadow && (
           <div className="absolute left-0 top-0 bottom-0 w-8 h-16 bg-gradient-to-r from-white to-transparent pointer-events-none" />
