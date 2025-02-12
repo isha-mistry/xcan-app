@@ -28,7 +28,6 @@ import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 import { fetchApi } from "@/utils/api";
 import { BellOff, ChevronDownIcon, Wallet } from "lucide-react";
 
-
 function NotificationMain() {
   const { isConnected } = useConnection();
   const { data: session } = useSession();
@@ -74,10 +73,9 @@ function NotificationMain() {
     // { name: "Instant Meet", value: "instant-meet" }
   ];
 
-
   const isValidAuthentication = () => {
     // Check if user is authenticated AND has an active wallet
-    const hasActiveWallet = wallets.some(wallet => wallet.address);
+    const hasActiveWallet = wallets.some((wallet) => wallet.address);
     return authenticated && isConnected && hasActiveWallet;
   };
 
@@ -88,8 +86,7 @@ function NotificationMain() {
     return true;
   };
 
-  const Isvalid=canAccessProtectedResources();
-
+  const Isvalid = canAccessProtectedResources();
 
   const handleTabChange = (tabValue: string) => {
     // console.log(tabValue);
@@ -105,6 +102,8 @@ function NotificationMain() {
       } else if (tabValue === "followers") {
         toast("Coming Soon 🚀");
       } else if (tabValue === "attestations") {
+        router.push(path + `?active=${tabValue}`);
+      } else if (tabValue === "officeHours") {
         router.push(path + `?active=${tabValue}`);
       } else {
         router.push(path + `?active=${tabValue}`);
@@ -173,7 +172,7 @@ function NotificationMain() {
     if (!canFetch) return;
     setIsLoading(true);
     try {
-      const token=await getAccessToken();
+      const token = await getAccessToken();
       const myHeaders: HeadersInit = {
         "Content-Type": "application/json",
         ...(walletAddress && {
@@ -221,6 +220,7 @@ function NotificationMain() {
       socket.emit("register_host", { hostAddress: walletAddress, socketId });
 
       socket.on("new_notification", (message: Notification) => {
+        console.log("New notification received:", message);
         const notificationData: Notification = {
           _id: message?._id,
           receiver_address: message.receiver_address,
@@ -254,12 +254,15 @@ function NotificationMain() {
   const filteredNotifications = React.useMemo(() => {
     const type = searchParams.get("active");
     if (type === "all" || !type) return combinedNotifications;
+
+    console.log("combinedNotifications", combinedNotifications);
     const typeMap = {
       sessionBookings: "newBooking",
       recordedSessions: "recordedSession",
       followers: "newFollower",
       attestations: "attestation",
       proposalVote: "proposalVote",
+      officeHours: "officeHours",
     };
     return combinedNotifications.filter(
       (item) => item.notification_type === typeMap[type as keyof typeof typeMap]
@@ -281,7 +284,7 @@ function NotificationMain() {
     setButtonText("Marking...");
     setMarkAllReadCalling(true);
     try {
-      const token=await getAccessToken();
+      const token = await getAccessToken();
       const myHeaders: HeadersInit = {
         "Content-Type": "application/json",
         ...(walletAddress && {
@@ -321,9 +324,6 @@ function NotificationMain() {
     }
   };
 
-  
-
-
   const handleTabClick = (tab: string) => {
     if (
       tab === "recordedSessions" ||
@@ -341,7 +341,7 @@ function NotificationMain() {
       return <NotificationSkeletonLoader />;
     }
 
-    if (Isvalid==false) {
+    if (Isvalid == false) {
       return (
         <div className="flex flex-col justify-center items-center min-h-[16rem] px-4 sm:px-6 md:px-8 py-12 sm:py-16 md:py-20 bg-gradient-to-b from-blue-50/50 to-white">
           <div
@@ -567,23 +567,24 @@ function NotificationMain() {
               Attestations
             </button>
             <button
-
               className={`py-4 px-2 outline-none ${
-
                 searchParams.get("active") === "proposalVote"
-
                   ? "text-blue-shade-200 font-semibold border-b-2 border-blue-shade-200"
-
                   : "border-transparent"
-
               }`}
-
               onClick={() => router.push(path + "?active=proposalVote")}
-
             >
-
               ProposalVote
-
+            </button>
+            <button
+              className={`py-4 px-2 outline-none ${
+                searchParams.get("active") === "officeHours"
+                  ? "text-blue-shade-200 font-semibold border-b-2 border-blue-shade-200"
+                  : "border-transparent"
+              }`}
+              onClick={() => router.push(path + "?active=officeHours")}
+            >
+              Office Hours
             </button>
           </div>
           <div className="hidden 2md:block ml-auto 1.5lg:pe-16 pe-8">

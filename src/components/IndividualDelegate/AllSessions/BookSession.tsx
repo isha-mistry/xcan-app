@@ -363,7 +363,7 @@ function BookSession({ props }: { props: Type }) {
   };
 
   const createRandomRoom = async () => {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_CREATE_ROOM_ENDPOINT}`, {
+    const res = await fetch(`/api/create-room`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
