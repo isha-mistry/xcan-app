@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { FaClock, FaPlay, FaUserCheck } from "react-icons/fa";
+import { FaClock, FaPlay, FaUserCheck, FaBell } from "react-icons/fa";
 import { IoCheckmarkCircle } from "react-icons/io5";
 import {
   BsDatabaseFillCheck,
@@ -47,6 +47,8 @@ export const getBackgroundColor = (data: any) => {
       return "#b9cef0";
     } else if (data?.notification_name === "officeHoursDeleted") {
       return "#fcc5b8";
+    } else if (data?.notification_name === "officeHoursReminder") {
+      return "#fcc7c7";
     }
   }
   return "#bed9f8";
@@ -83,6 +85,8 @@ export const getIcon = (data: any) => {
       return <FaPlay color="#1061e6" size={18} />;
     } else if (data?.notification_name === "officeHoursDeleted") {
       return <BsFillExclamationCircleFill color="#f7552d" size={18} />;
+    } else if (data?.notification_name === "officeHoursReminder") {
+      return <FaBell color="#d13f3f" size={18} />;
     }
   }
   return null;

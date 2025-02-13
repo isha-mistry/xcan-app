@@ -368,7 +368,7 @@ const OfficeHourTile = ({
             </div>
 
             {isAttended && data.isEligible && (
-              <div className="px-4 pb-2 flex justify-center space-x-2">
+              <div className="pb-2 flex justify-center space-x-2">
                 {/* Check if data.host_uid exists */}
                 <OffchainAttestationButton
                   meetingId={data.meetingId}
