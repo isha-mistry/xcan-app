@@ -39,7 +39,6 @@ function UserOfficeHours({
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
   const [showLeftShadow, setShowLeftShadow] = useState(false);
   const [showRightShadow, setShowRightShadow] = useState(false);
-  const [showAlert, setShowAlert] = useState(true);
 
   // Original data from API
   const [originalData, setOriginalData] = useState({
@@ -168,10 +167,6 @@ function UserOfficeHours({
     }
   }, [isDelegate, selfDelegate, searchParams.get("hours")]);
 
-  const handleCloseAlert = () => {
-    setShowAlert(false);
-  };
-
   return (
     <div>
       <div className="pt-3">
@@ -256,14 +251,6 @@ function UserOfficeHours({
             Attended
           </button>
         </div>
-
-        {showAlert && (
-          <Alert
-            message="We're experiencing issues generating meeting IDs from Huddle, preventing meetings from being conducted. We're working on a fix. Thanks for your patience!"
-            type="error"
-            onClose={handleCloseAlert}
-          />
-        )}
 
         {searchParams.get("hours") !== "schedule" && (
           <div className="flex items-center my-8 rounded-full shadow-lg bg-gray-100 text-black cursor-pointer w-[300px] xs:w-[365px]">

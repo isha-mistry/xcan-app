@@ -22,6 +22,7 @@ const config: Config = {
         "1.3lg": "1100px",
         xm: "550px",
         xs: "470px",
+        "1.2xs":"500px",
         "2md": "950px",
         "2sm": "670px",
         "2.3sm":"700px",

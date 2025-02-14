@@ -46,7 +46,7 @@ const DeleteOfficeHoursModal: React.FC<DeleteOfficeHoursModalProps> = ({
         }),
       };
 
-      const result = await fetchApi(`/edit-office-hours`, requestOptions);
+      const result = await fetchApi(`/delete-office-hours`, requestOptions);
 
       if (result.ok) {
         toast.success("Time slot deleted successfully");

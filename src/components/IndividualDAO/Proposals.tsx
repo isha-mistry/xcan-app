@@ -13,6 +13,7 @@ import ErrorDisplay from "../ComponentUtils/ErrorDisplay";
 import { fetchApi } from "@/utils/api";
 import VotedOnOptions from "@/assets/images/votedOnOption.png";
 import { Tooltip as NextUITooltip } from "@nextui-org/react";
+import Alert from "../Alert/Alert";
 
 interface Proposal {
   proposalId: string;
@@ -68,6 +69,11 @@ function Proposals({ props }: { props: string }) {
   const [fetchingProposalIds, setFetchingProposalIds] = useState<Set<string>>(
     new Set()
   );
+  const[showAlert, setShowAlert]=useState(true)
+
+  const handleCloseAlert = () => {
+    setShowAlert(false);
+  };
 
   const pushToGTM = (eventData: GTMEvent) => {
     if (typeof window !== "undefined" && window.dataLayer) {
@@ -807,6 +813,21 @@ function Proposals({ props }: { props: string }) {
 
   return (
     <>
+    {showAlert && !isOptimism && (
+        <Alert
+          message={
+            <>
+               ⚠️ <b>Important Notice:</b> The statuses <b>"Closed"</b> and{" "}
+              <b>"Succeeded"</b> displayed for Proposals 2 & 3 are incorrect. 🛠️
+              Voting has been extended and remains open. ✅ We are actively
+              working to fix this issue. Please check back later to cast your
+              vote! 🗳️
+            </>
+          }
+          type="error"
+          onClose={handleCloseAlert}
+        />
+      )}
       <div className="rounded-[2rem] mt-4">
         {/* {isShowing && props === "arbitrum" && (
           <div

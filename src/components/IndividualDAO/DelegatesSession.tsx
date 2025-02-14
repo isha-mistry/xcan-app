@@ -202,22 +202,10 @@ function DelegatesSession({ props }: { props: string }) {
           <Image src={search} alt="search" width={20} />
         </span>
       </div> */}
-      <div
-        className={`flex items-center rounded-full shadow-lg bg-gray-100 text-black cursor-pointer my-4 w-[300px] xs:w-[365px]`}
-      >
-        <CiSearch
-          className={`text-base transition-all duration-700 ease-in-out ml-3`}
-        />
-        <input
-          type="text"
-          placeholder="Search by title and host address"
-          className="w-[100%] pl-2 pr-4 py-1.5 font-poppins md:py-2 text-sm bg-transparent outline-none"
-          value={searchQuery}
-          onChange={(e) => handleSearchChange(e.target.value)}
-        />
-      </div>
+      
 
       <div className=" pt-3">
+     
         <div className="flex gap-2 0.5xs:gap-4 rounded-xl text-sm flex-wrap">
           <button
             className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md ${
@@ -233,6 +221,21 @@ function DelegatesSession({ props }: { props: string }) {
             Library
           </button>
         </div>
+
+        <div
+        className={`flex items-center rounded-full shadow-lg bg-gray-100 text-black cursor-pointer mt-10 mb-4 w-[300px] xs:w-[365px]`}
+      >
+        <CiSearch
+          className={`text-base transition-all duration-700 ease-in-out ml-3`}
+        />
+        <input
+          type="text"
+          placeholder="Search by title and host address"
+          className="w-[100%] pl-2 pr-4 py-1.5 font-poppins md:py-2 text-sm bg-transparent outline-none"
+          value={searchQuery}
+          onChange={(e) => handleSearchChange(e.target.value)}
+        />
+      </div>
 
         <div className="">
           {searchParams.get("session") === "recorded" &&
