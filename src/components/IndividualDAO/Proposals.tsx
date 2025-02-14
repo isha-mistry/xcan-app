@@ -817,12 +817,12 @@ function Proposals({ props }: { props: string }) {
         <Alert
           message={
             <>
-               ⚠️ <b>Important Notice:</b> The statuses <b>"Closed"</b> and{" "}
-              <b>"Succeeded"</b> displayed for Proposals 2 & 3 are incorrect. 🛠️
-              Voting has been extended and remains open. ✅ We are actively
-              working to fix this issue. Please check back later to cast your
-              vote! 🗳️
-            </>
+            ⚠️ <b>Important Notice:</b> The statuses <b>&quot;Closed&quot;</b> and{" "}
+            <b>&quot;Succeeded&quot;</b> displayed for Proposals 2 & 3 are incorrect. 🛠️
+            Voting has been extended and remains open. ✅ We are actively
+            working to fix this issue. Please check back later to cast your
+            vote! 🗳️
+          </>
           }
           type="error"
           onClose={handleCloseAlert}
