@@ -30,6 +30,7 @@ import {
 import { UserProfileInterface } from "@/types/UserProfileTypes";
 import { usePathname } from "next/navigation";
 import { formatTimeAgo } from "@/utils/getRelativeTime";
+import { daoConfigs } from "@/config/daos";
 
 interface Attendee extends DynamicAttendeeInterface {
   profileInfo: UserProfileInterface;
@@ -170,14 +171,19 @@ function WatchSession({
                     <Link
                       href={
                         data.uid_host
-                          ? data.dao_name === "optimism" ||
-                            data.dao_name === "Optimism"
-                            ? `https://optimism.easscan.org/offchain/attestation/view/${data.uid_host}`
-                            : data.dao_name === "arbitrum" ||
-                              data.dao_name === "Arbitrum"
-                            ? `https://arbitrum.easscan.org/offchain/attestation/view/${data.uid_host}`
-                            : ""
+                          ? `${
+                              daoConfigs[data.dao_name.toLowerCase()]
+                                .attestationUrl
+                            }/${data.uid_host}`
                           : "#"
+                        // ? data.dao_name === "optimism" ||
+                        //   data.dao_name === "Optimism"
+                        //   ? `https://optimism.easscan.org/offchain/attestation/view/${data.uid_host}`
+                        //   : data.dao_name === "arbitrum" ||
+                        //     data.dao_name === "Arbitrum"
+                        //   ? `https://arbitrum.easscan.org/offchain/attestation/view/${data.uid_host}`
+                        //   : ""
+                        // : "#"
                       }
                       onClick={(e) => {
                         if (!data.uid_host) {
@@ -212,14 +218,19 @@ function WatchSession({
                     <Link
                       href={
                         data.onchain_host_uid
-                          ? data.dao_name === "optimism" ||
-                            data.dao_name === "Optimism"
-                            ? `https://optimism.easscan.org/attestation/view/${data.onchain_host_uid}`
-                            : data.dao_name === "arbitrum" ||
-                              data.dao_name === "Arbitrum"
-                            ? `https://arbitrum.easscan.org/attestation/view/${data.onchain_host_uid}`
-                            : ""
+                          ? `${
+                              daoConfigs[data.dao_name.toLowerCase()]
+                                .attestationUrl
+                            }/${data.onchain_host_uid}`
                           : "#"
+                        // ? data.dao_name === "optimism" ||
+                        //   data.dao_name === "Optimism"
+                        //   ? `https://optimism.easscan.org/attestation/view/${data.onchain_host_uid}`
+                        //   : data.dao_name === "arbitrum" ||
+                        //     data.dao_name === "Arbitrum"
+                        //   ? `https://arbitrum.easscan.org/attestation/view/${data.onchain_host_uid}`
+                        //   : ""
+                        // : "#"
                       }
                       onClick={(e) => {
                         if (!data.onchain_host_uid) {
@@ -245,7 +256,7 @@ function WatchSession({
               </div>
 
               <div className="flex items-center gap-1">
-                {data.dao_name === "optimism" ? (
+                {/* {data.dao_name === "optimism" ? (
                   <Image
                     src={oplogo}
                     alt="image"
@@ -263,6 +274,15 @@ function WatchSession({
                   />
                 ) : (
                   ""
+                )} */}
+                {daoConfigs[data.dao_name.toLowerCase()] && (
+                  <Image
+                    src={daoConfigs[data.dao_name.toLowerCase()].logo}
+                    alt={`${data.dao_name} logo`}
+                    width={100}
+                    height={100}
+                    className="rounded-full w-5 h-5"
+                  />
                 )}
                 <div className="text-[#292929] font-semibold capitalize">
                   {data.dao_name}
@@ -377,13 +397,19 @@ function WatchSession({
                         >
                           <Link
                             href={
-                              data.dao_name === "optimism" ||
-                              data.dao_name === "Optimism"
-                                ? `https://optimism.easscan.org/offchain/attestation/view/${attendee.attendee_uid}`
-                                : data.dao_name === "arbitrum" ||
-                                  data.dao_name === "Arbitrum"
-                                ? `https://arbitrum.easscan.org/offchain/attestation/view/${attendee.attendee_uid}`
+                              daoConfigs
+                                ? `${
+                                    daoConfigs[data.dao_name.toLowerCase()]
+                                      .attestationUrl
+                                  }/${attendee.attendee_uid}`
                                 : ""
+                              // data.dao_name === "optimism" ||
+                              // data.dao_name === "Optimism"
+                              //   ? `https://optimism.easscan.org/offchain/attestation/view/${attendee.attendee_uid}`
+                              //   : data.dao_name === "arbitrum" ||
+                              //     data.dao_name === "Arbitrum"
+                              //   ? `https://arbitrum.easscan.org/offchain/attestation/view/${attendee.attendee_uid}`
+                              //   : ""
                             }
                             target="_blank"
                           >
@@ -416,13 +442,19 @@ function WatchSession({
                         >
                           <Link
                             href={
-                              data.dao_name === "optimism" ||
-                              data.dao_name === "Optimism"
-                                ? `https://optimism.easscan.org/attestation/view/${attendee.onchain_attendee_uid}`
-                                : data.dao_name === "arbitrum" ||
-                                  data.dao_name === "Arbitrum"
-                                ? `https://arbitrum.easscan.org/attestation/view/${attendee.onchain_attendee_uid}`
+                              daoConfigs
+                                ? `${
+                                    daoConfigs[data.dao_name.toLowerCase()]
+                                      .attestationUrl
+                                  }/${attendee.onchain_attendee_uid}}`
                                 : ""
+                              // data.dao_name === "optimism" ||
+                              // data.dao_name === "Optimism"
+                              //   ? `https://optimism.easscan.org/attestation/view/${attendee.onchain_attendee_uid}`
+                              //   : data.dao_name === "arbitrum" ||
+                              //     data.dao_name === "Arbitrum"
+                              //   ? `https://arbitrum.easscan.org/attestation/view/${attendee.onchain_attendee_uid}`
+                              //   : ""
                             }
                             target="_blank"
                           >

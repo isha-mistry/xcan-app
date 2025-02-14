@@ -25,6 +25,8 @@ import { MEETING_BASE_URL } from "@/config/constants";
 import { fetchApi } from "@/utils/api";
 import { usePrivy } from "@privy-io/react-auth";
 import { useWalletAddress } from "@/app/hooks/useWalletAddress";
+import { DAOLogo } from "../DAOs/DAOlogos";
+import { daoConfigs } from "@/config/daos";
 
 type Attendee = {
   attendee_address: string;
@@ -156,7 +158,7 @@ function EventTile({ tileIndex, data: initialData, isEvent }: TileProps) {
         attendee_joined_status = "Not Joined";
       }
 
-      const token=await getAccessToken();
+      const token = await getAccessToken();
       const myHeaders: HeadersInit = {
         "Content-Type": "application/json",
         ...(walletAddress && {
@@ -283,12 +285,18 @@ function EventTile({ tileIndex, data: initialData, isEvent }: TileProps) {
 
           <div className="flex items-center text-sm gap-3 py-1">
             <Image
-              src={getDaoLogo(data.dao_name)}
+              src={daoConfigs[data.dao_name.toLowerCase()].logo}
               alt="image"
               width={24}
               height={24}
               className="size-4 sm:size-6 rounded-full"
             />
+            {/* <DAOLogo
+              daoName={data.dao_name}
+              width={24}
+              height={24}
+              className="size-4 sm:size-6 rounded-full"
+            /> */}
             <div className="bg-[#F5F5F5] text-sm sm:text-base py-0.5 sm:py-1 px-3 rounded-md flex items-center w-fit">
               {formatSlotTimeToLocal(data.slot_time)}
             </div>

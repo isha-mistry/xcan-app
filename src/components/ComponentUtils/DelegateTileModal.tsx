@@ -16,6 +16,7 @@ import { useAccount, useReadContract } from "wagmi";
 import dao_abi from "../../artifacts/Dao.sol/GovernanceToken.json";
 import { Address } from "viem";
 import { useRouter } from "next/router";
+import { daoConfigs } from "@/config/daos";
 
 
 interface delegate {
@@ -25,7 +26,7 @@ interface delegate {
   fromDelegate: any;
   delegateName: String;
   displayImage: any;
-  daoName: String;
+  daoName: string;
   addressCheck: boolean;
   delegatingToAddr: boolean;
   confettiVisible: boolean;
@@ -54,15 +55,20 @@ function DelegateTileModal({
   console.log("cpiData::::", cpiData);
   const [isLoading, setIsLoading] = useState(true);
   const [isHovering, setIsHovering] = useState(false);
-  const [tokenImage, setTokenImage] = useState(op);
+  const [tokenImage, setTokenImage] = useState("");
+  
 
   useEffect(() => {
     const pathname = window.location.pathname;
-    if (pathname.includes("arbitrum")) {
-      setTokenImage(arb);
-    } else {
-      setTokenImage(op);
+    const currentDAO=daoConfigs[daoName];
+    if(currentDAO){
+      setTokenImage(currentDAO.logo)
     }
+    // if (pathname.includes("arbitrum")) {
+    //   setTokenImage(arb);
+    // } else {
+    //   setTokenImage(op);
+    // }
   }, []);
 
   const handleMouseEnter = () => {
@@ -130,6 +136,8 @@ function DelegateTileModal({
               <div className=" rounded-full p-2 ">
                 <Image
                   src={tokenImage}
+                  width={24}
+                  height={24}
                   alt="OP Token"
                   className="w-10 h-10 object-contain"
                 />
@@ -182,7 +190,7 @@ function DelegateTileModal({
             </div>
           </div>
 
-          {  daoName === "optimism" && (
+      { daoConfigs[daoName].name.toLowerCase()==="optimism"  && (
       <div className="flex flex-col items-center w-full max-w-md bg-gradient-to-br from-gray-100 to-gray-200 border-2 border-gray-300 rounded-3xl px-4 0.7xs:px-6 py-4 mt-4 shadow-md">
         <div className="flex items-center justify-between w-full">
           <div className="flex flex-col items-center">

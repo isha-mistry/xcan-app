@@ -72,6 +72,7 @@ import { calculateTempCpi } from "@/actions/calculatetempCpi";
 import { createPublicClient, http } from "viem";
 import ErrorComponent from "../Error/ErrorComponent";
 import { Address } from "viem";
+import { daoConfigs } from "@/config/daos";
 
 interface Type {
   daoDelegates: string;
@@ -235,8 +236,9 @@ function SpecificDelegate({ props }: { props: Type }) {
   function getDaoNameFromUrl() {
     if (typeof window !== "undefined") {
       const url = window.location.href;
-      if (url.includes("optimism")) return "optimism";
-      if (url.includes("arbitrum")) return "arbitrum";
+      const currentDAO=daoConfigs[props.daoDelegates];
+      if (url.includes(currentDAO.name)) return currentDAO.name
+      // if (url.includes("arbitrum")) return "arbitrum";
     }
     return "";
   }
@@ -269,10 +271,20 @@ function SpecificDelegate({ props }: { props: Type }) {
       setLoading(true);
       try {
         let data: any;
-        if (props.daoDelegates === "optimism") {
-          data = await op_client.query(DELEGATE_CHANGED_QUERY, {
-            delegator: walletAddress,
-          });
+
+        let currentDAO=daoConfigs[props.daoDelegates];
+
+        const client = createClient({
+          url: currentDAO.delegateChangedsUrl,
+          exchanges: [cacheExchange, fetchExchange],
+        });
+
+        data=await client.query(DELEGATE_CHANGED_QUERY,{delegator:walletAddress});
+
+        // if (props.daoDelegates === "optimism") {
+        //   data = await op_client.query(DELEGATE_CHANGED_QUERY, {
+        //     delegator: walletAddress,
+        //   });
 
           try {
             setTempCpiCalling(true);
@@ -292,11 +304,11 @@ function SpecificDelegate({ props }: { props: Type }) {
           } catch (error) {
             console.log("Error in calculating temp CPI", error);
           }
-        } else {
-          data = await arb_client.query(DELEGATE_CHANGED_QUERY, {
-            delegator: walletAddress,
-          });
-        }
+        // } else {
+        //   data = await arb_client.query(DELEGATE_CHANGED_QUERY, {
+        //     delegator: walletAddress,
+        //   });
+        // }
 
         const delegate = data.data.delegateChangeds[0]?.toDelegate;
 
@@ -527,19 +539,21 @@ function SpecificDelegate({ props }: { props: Type }) {
       // setIsPageLoading(true);
       //   const addr = await walletClient.getAddresses();
       //   const address1 = addr[0];
+      let currentDAO=daoConfigs[props.daoDelegates];
       let delegateTxAddr = "";
-      const contractAddress =
-        props.daoDelegates === "optimism"
-          ? "0x4200000000000000000000000000000000000042"
-          : props.daoDelegates === "arbitrum"
-          ? "0x912CE59144191C1204E64559FE8253a0e49E6548"
-          : "";
+      const contractAddress = currentDAO?currentDAO.chainAddress:"";
+        // props.daoDelegates === "optimism"
+        //   ? "0x4200000000000000000000000000000000000042"
+        //   : props.daoDelegates === "arbitrum"
+        //   ? "0x912CE59144191C1204E64559FE8253a0e49E6548"
+        //   : "";
 
       try {
         let delegateTx;
         //If user is not connected and check delagate session
         const public_client = createPublicClient({
-          chain: props.daoDelegates === "optimism" ? optimism : arbitrum,
+          // chain: props.daoDelegates === "optimism" ? optimism : arbitrum,
+          chain:daoConfigs[props.daoDelegates].viemchain,
           transport: http(),
         });
 
@@ -909,9 +923,11 @@ function SpecificDelegate({ props }: { props: Type }) {
       return;
     }
 
-    const network =
-      props.daoDelegates === "optimism" ? "OP Mainnet" : "Arbitrum One";
-    const chainId = props.daoDelegates === "optimism" ? 10 : 42161;
+    // const network =
+    //   props.daoDelegates === "optimism" ? "OP Mainnet" : "Arbitrum One";
+    const network=daoConfigs[props.daoDelegates].chainName;
+    // const chainId = props.daoDelegates === "optimism" ? 10 : 42161;
+    const chainId=daoConfigs[props.daoDelegates].chainId;
 
     try {
       setDelegatingToAddr(true);
@@ -1196,12 +1212,13 @@ function SpecificDelegate({ props }: { props: Type }) {
     if (!displayImage) {
       return (
         delegateInfo?.profilePicture ||
-        (props.daoDelegates === "optimism"
-          ? OPLogo
-          : props.daoDelegates === "arbitrum"
-          ? ArbLogo
-          : ccLogo)
-      );
+        daoConfigs?daoConfigs[props.daoDelegates].logo:ccLogo)
+      //   (props.daoDelegates === "optimism"
+      //     ? OPLogo
+      //     : props.daoDelegates === "arbitrum"
+      //     ? ArbLogo
+      //     : ccLogo)
+      // );
     }
 
     // If image is from database, prepend the IPFS gateway URL
@@ -1228,16 +1245,11 @@ function SpecificDelegate({ props }: { props: Type }) {
     if (delegateInfo?.profilePicture) {
       return delegateInfo.profilePicture;
     }
-
-    // Case 4: DAO-specific logos
-    if (props.daoDelegates === "optimism") {
-      return OPLogo;
-    } else if (props.daoDelegates === "arbitrum") {
-      return ArbLogo;
+ 
+    if(daoConfigs){
+      return daoConfigs[props.daoDelegates].logo || ccLogo;
     }
 
-    // Case 5: Default fallback
-    return ccLogo;
   };
   const getImageClassName = () => {
     if (displayImage || delegateInfo?.profilePicture) {
@@ -1332,13 +1344,13 @@ function SpecificDelegate({ props }: { props: Type }) {
                         </Link>
                         <Link
                           href={
-                            socials.discourse
-                              ? props.daoDelegates === "optimism"
-                                ? `https://gov.optimism.io/u/${socials.discourse}`
-                                : props.daoDelegates === "arbitrum"
-                                ? `https://forum.arbitrum.foundation/u/${socials.discourse}`
-                                : ""
-                              : karmaSocials.discourse
+                            socials.discourse?`${daoConfigs[props.daoDelegates].discourseUrl}/${socials.discourse}`:karmaSocials.discourse
+                              // ? props.daoDelegates === "optimism"
+                              //   ? `https://gov.optimism.io/u/${socials.discourse}`
+                              //   : props.daoDelegates === "arbitrum"
+                              //   ? `https://forum.arbitrum.foundation/u/${socials.discourse}`
+                              //   : ""
+                              // : karmaSocials.discourse
                           }
                           className={`border-[0.5px] border-[#8E8E8E] rounded-full h-fit p-1  ${
                             socials.discourse == "" &&

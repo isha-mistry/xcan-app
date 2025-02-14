@@ -56,6 +56,7 @@ import { GiConsoleController } from "react-icons/gi";
 import { fetchEnsNameAndAvatar, getENSName } from "@/utils/ENSUtils";
 import ConnectwalletHomePage from "../HomePage/ConnectwalletHomePage";
 import VotingTreemap from "./VotingOptions";
+import { daoConfigs } from "@/config/daos";
 
 // Create a client
 const client = createPublicClient({
@@ -321,11 +322,12 @@ function ProposalMain({ props }: { props: Props }) {
         try {
           const delegateTx = await walletClient.writeContract({
             address: chainAddress,
-            chain: props.daoDelegates === "arbitrum" ? arbitrum : optimism,
-            abi:
-              props.daoDelegates === "arbitrum"
-                ? arb_proposals_abi
-                : op_proposals_abi,
+            // chain: props.daoDelegates === "arbitrum" ? arbitrum : optimism,
+            chain:daoConfigs[props.daoDelegates].viemchain,
+            abi:daoConfigs[props.daoDelegates].proposalAbi,
+              // props.daoDelegates === "arbitrum"
+              //   ? arb_proposals_abi
+              //   : op_proposals_abi,
             functionName: "castVoteWithReason",
             args: [proposalId, vote, comment],
             account: walletAddress,
@@ -353,11 +355,12 @@ function ProposalMain({ props }: { props: Props }) {
         try {
           const delegateTx = await walletClient.writeContract({
             address: chainAddress,
-            chain: props.daoDelegates === "arbitrum" ? arbitrum : optimism,
-            abi:
-              props.daoDelegates === "arbitrum"
-                ? arb_proposals_abi
-                : op_proposals_abi,
+            // chain: props.daoDelegates === "arbitrum" ? arbitrum : optimism,
+            chain:daoConfigs[props.daoDelegates].viemchain,
+            abi:daoConfigs[props.daoDelegates].proposalAbi,
+              // props.daoDelegates === "arbitrum"
+              //   ? arb_proposals_abi
+              //   : op_proposals_abi,
             functionName: "castVote",
             args: [proposalId, vote],
             account: walletAddress,
@@ -935,11 +938,18 @@ function ProposalMain({ props }: { props: Props }) {
   };
 
   const handleAddressClick = (address: any) => {
-    if (props.daoDelegates === "optimism") {
-      router.push(`/optimism/${address}?active=info`);
-    } else {
-      router.push(`/arbitrum/${address}?active=info`);
+
+    const currentDAO=daoConfigs[props.daoDelegates];
+
+    if(currentDAO){
+      router.push(`/${currentDAO.name.toLowerCase()}/${address}?active=info`);
     }
+
+    // if (props.daoDelegates === "optimism") {
+    //   router.push(`/optimism/${address}?active=info`);
+    // } else {
+    //   router.push(`/arbitrum/${address}?active=info`);
+    // }
   };
   const date = data?.blockTimestamp;
   const formatYAxis = (value: number) => {
