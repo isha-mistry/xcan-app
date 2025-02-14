@@ -178,8 +178,12 @@ const OfficeHourTile = ({
 
   const handleStartSession = (meetingId: string) => {
     setLoadingStates((prev: any) => ({ ...prev, [meetingId]: true }));
-    router.push(`${MEETING_BASE_URL}/meeting/officehours/${meetingId}/lobby`);
+    // router.push(`${MEETING_BASE_URL}/meeting/officehours/${meetingId}/lobby`);
+    window.open(`${MEETING_BASE_URL}/meeting/officehours/${meetingId}/lobby`, '_blank');
   };
+//   const handleJoinMeeting = (meetingId: string) => {
+//     window.open(`${MEETING_BASE_URL}/meeting/officehours/${meetingId}/lobby`, '_blank');
+// };
 
   type DaoName = "optimism" | "arbitrum";
   const daoLogos: Record<DaoName, StaticImageData> = {
@@ -568,9 +572,10 @@ const OfficeHourTile = ({
             )}
             {isOngoing && (
               <button
-                onClick={() =>
-                  data.meetingId && handleStartSession(data.meetingId)
-                }
+                onClick={() =>{
+                  data.meetingId && handleStartSession(data.meetingId);
+                  // data.meetingId && handleJoinMeeting(data.meetingId);
+                }}
                 className="flex items-center justify-center gap-2 w-full px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-indigo-500 to-blue-500 rounded-full hover:from-indigo-600 hover:to-blue-600 transition-all duration-300 transform hover:scale-[1.02]"
               >
                 {data.meetingId && loadingStates[data.meetingId] ? (

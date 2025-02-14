@@ -14,7 +14,7 @@ function ConnectYourWallet() {
           Connect Your Wallet
         </h2>
         <p className="text-gray-700 mb-8">
-          To continue, please connect your wallet to invite your friends.
+        Please connect your wallet and sign in to continue.
         </p>
         <div className="flex items-center justify-center">
           <ConnectWalletWithENS />

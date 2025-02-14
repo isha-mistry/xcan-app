@@ -7,6 +7,7 @@ import {
   BsDatabaseFillCheck,
   BsFillExclamationCircleFill,
 } from "react-icons/bs";
+import { RiCalendarScheduleFill } from "react-icons/ri";
 import { PiVideoFill } from "react-icons/pi";
 import { GiChaingun } from "react-icons/gi";
 import { MEETING_BASE_URL } from "@/config/constants";
@@ -39,6 +40,14 @@ export const getBackgroundColor = (data: any) => {
     } else if (data?.notification_name === "onchain") {
       return "#E5CCFF";
     }
+  } else if (data?.notification_type === "officeHours") {
+    if (data?.notification_name === "officeHoursScheduled") {
+      return "#fff0cf";
+    } else if (data?.notification_name === "officeHoursStarted") {
+      return "#b9cef0";
+    } else if (data?.notification_name === "officeHoursDeleted") {
+      return "#fcc5b8";
+    }
   }
   return "#bed9f8";
 };
@@ -66,6 +75,14 @@ export const getIcon = (data: any) => {
       return <BsDatabaseFillCheck color="#9747FF" size={18} />;
     } else if (data?.notification_name === "onchain") {
       return <GiChaingun color="#9747FF" size={18} />;
+    }
+  } else if (data?.notification_type === "officeHours") {
+    if (data?.notification_name === "officeHoursScheduled") {
+      return <RiCalendarScheduleFill color="#cf9008" size={18} />;
+    } else if (data?.notification_name === "officeHoursStarted") {
+      return <FaPlay color="#1061e6" size={18} />;
+    } else if (data?.notification_name === "officeHoursDeleted") {
+      return <BsFillExclamationCircleFill color="#f7552d" size={18} />;
     }
   }
   return null;
@@ -150,6 +167,19 @@ export const handleRedirection = async (
     ) {
       router.push(
         `/profile/${data.receiver_address}?active=sessions&session=attended`
+      );
+    }
+  } else if (data.notification_type === "officeHours") {
+    if (data.notification_name === "officeHoursScheduled") {
+      router.push(
+        `/${data.additionalData.dao_name}/${data.additionalData.host_address}?active=officeHours&hours=upcoming`
+      );
+    } else if (
+      data.notification_name === "officeHoursStarted" &&
+      data.additionalData.meetingId
+    ) {
+      router.push(
+        `${MEETING_BASE_URL}/meeting/officehours/${data.additionalData.meetingId}/lobby`
       );
     }
   }

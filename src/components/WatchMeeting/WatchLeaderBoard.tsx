@@ -6,11 +6,11 @@ import { IoClose } from "react-icons/io5";
 import styles from "./WatchSession.module.css";
 
 // Import SVG assets
-import user1 from "@/assets/images/watchmeeting/user1.svg";
-import user2 from "@/assets/images/watchmeeting/user2.svg";
-import user3 from "@/assets/images/watchmeeting/user3.svg";
-import user4 from "@/assets/images/watchmeeting/user4.svg";
-import user5 from "@/assets/images/watchmeeting/user5.svg";
+import user1 from "@/assets/images/user/user1.svg";
+import user2 from "@/assets/images/user/user2.svg";
+import user3 from "@/assets/images/user/user3.svg";
+import user4 from "@/assets/images/user/user4.svg";
+import user5 from "@/assets/images/user/user5.svg";
 import emoji1 from "@/assets/images/watchmeeting/emoji1.svg";
 import emoji2 from "@/assets/images/watchmeeting/emoji2.svg";
 import emoji3 from "@/assets/images/watchmeeting/emoji3.svg";
@@ -62,6 +62,26 @@ const WatchLeaderBoard = ({
   const [specialEntries, setSpecialEntries] = useState<LeaderBoardEntry[]>([]);
   const [allEntries, setAllEntries] = useState<LeaderBoardEntry[]>([]);
 
+  const addressToAvatar = new Map<string, string>();
+  const defaultAvatars = [user1, user2, user3, user4, user5];
+  let avatarIndex = 0;
+
+  const getAvatarForAddress = (address: string, ensAvatar?: string|null) => {
+    if (addressToAvatar.has(address)) {
+      return addressToAvatar.get(address);
+    }
+    
+    if (ensAvatar) {
+      addressToAvatar.set(address, ensAvatar);
+      return ensAvatar;
+    }
+    
+    const avatar = defaultAvatars[avatarIndex % defaultAvatars.length];
+    addressToAvatar.set(address, avatar);
+    avatarIndex++;
+    return avatar;
+  };
+
   useEffect(() => {
     if (leaderBoardData) {
       const fetchEnsDetails = async () => {
@@ -69,16 +89,18 @@ const WatchLeaderBoard = ({
           leaderBoardData.TopTen?.slice(0, 3).map(
             async (holder: any, index: number) => {
               const ensDetails = await fetchEnsNameAndAvatar(holder.user);
+              const avatar = getAvatarForAddress(holder.user, ensDetails?.avatar);
               return {
                 smallEmoji: [emoji1, emoji2, emoji3][index],
                 text: `Top #${index + 1}`,
-                img: ensDetails?.avatar || [user1, user2, user3][index],
+                img: avatar,
                 name:
                   ensDetails?.ensName ||
                   `${holder.user.slice(0, 6)}...${holder.user.slice(-4)}`,
                 color: ["#4773F0", "#A573E5", "#1FA1FF"][index],
                 bgColor: ["#EAECFF", "#F2E8FF", "#EAF1FF"][index],
                 balance: holder.balance,
+                address: holder.user,
               };
             }
           ) || []
@@ -97,7 +119,7 @@ const WatchLeaderBoard = ({
           leaderBoardData.firstCollector && {
             smallEmoji: emoji4,
             text: "First Collector",
-            img: special[0]?.avatar || user4,
+            img: getAvatarForAddress(leaderBoardData.firstCollector.user, special[0]?.avatar),
             name:
               special[0]?.ensName ||
               `${leaderBoardData.firstCollector.user.slice(
@@ -107,11 +129,12 @@ const WatchLeaderBoard = ({
             color: "#FF8A00",
             bgColor: "#FFF4EA",
             balance: leaderBoardData.firstCollector.balance,
+            address: leaderBoardData.firstCollector.user,
           },
           leaderBoardData.latestCollector && {
             smallEmoji: emoji5,
             text: "Latest Collector",
-            img: special[1]?.avatar || user5,
+            img: getAvatarForAddress(leaderBoardData.latestCollector.user, special[1]?.avatar),
             name:
               special[1]?.ensName ||
               `${leaderBoardData.latestCollector.user.slice(
@@ -121,6 +144,7 @@ const WatchLeaderBoard = ({
             color: "#FF8A00",
             bgColor: "#FFF4EA",
             balance: leaderBoardData.latestCollector.balance,
+            address: leaderBoardData.latestCollector.user,
           },
         ].filter(Boolean);
 
@@ -130,12 +154,11 @@ const WatchLeaderBoard = ({
         const all = await Promise.all(
           leaderBoardData.TopTen?.map(async (holder: any, index: number) => {
             const ensDetails = await fetchEnsNameAndAvatar(holder.user);
+            const avatar = getAvatarForAddress(holder.user, ensDetails?.avatar);
             return {
               smallEmoji: [emoji1, emoji2, emoji3, emoji4, emoji5][index % 5],
               text: index < 3 ? `Top #${index + 1}` : `#${index + 1}`,
-              img:
-                ensDetails?.avatar ||
-                [user1, user2, user3, user4, user5][index % 5],
+              img:avatar,
               name:
                 ensDetails?.ensName ||
                 `${holder.user.slice(0, 6)}...${holder.user.slice(-4)}`,

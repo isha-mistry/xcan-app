@@ -1,5 +1,13 @@
 import React, { useEffect, useRef, useState } from "react";
-import user from "@/assets/images/daos/user3.png";
+import user1 from "@/assets/images/user/user1.svg";
+import user2 from "@/assets/images/user/user2.svg";
+import user3 from "@/assets/images/user/user3.svg";
+import user4 from "@/assets/images/user/user4.svg";
+import user5 from "@/assets/images/user/user5.svg";
+import user6 from "@/assets/images/user/user6.svg";
+import user7 from "@/assets/images/user/user7.svg";
+import user8 from "@/assets/images/user/user8.svg";
+import user9 from "@/assets/images/user/user9.svg";
 import view from "@/assets/images/daos/view.png";
 import Image from "next/image";
 import oplogo from "@/assets/images/daos/op.png";
@@ -31,6 +39,7 @@ import { UserProfileInterface } from "@/types/UserProfileTypes";
 import { usePathname } from "next/navigation";
 import { formatTimeAgo } from "@/utils/getRelativeTime";
 import { daoConfigs } from "@/config/daos";
+import styles from "./WatchSession.module.css"
 
 interface Attendee extends DynamicAttendeeInterface {
   profileInfo: UserProfileInterface;
@@ -61,6 +70,23 @@ function WatchSession({
   const [shareModal, setShareModal] = useState(false);
   const router = useRouter();
   const path = usePathname();
+
+  const userImages = [
+    user1, 
+    user2, 
+    user3, 
+    user4, 
+    user5, 
+    user6, 
+    user7, 
+    user8, 
+    user9
+  ];
+
+  const getRandomUserImage = () => {
+    const randomIndex = Math.floor(Math.random() * userImages.length);
+    return userImages[randomIndex];
+  };
 
   const handleShareClose = () => {
     setShareModal(false);
@@ -146,7 +172,7 @@ function WatchSession({
                     src={
                       data.hostProfileInfo?.image
                         ? `https://gateway.lighthouse.storage/ipfs/${data.hostProfileInfo.image}`
-                        : user
+                        : user2
                     }
                     alt="image"
                     width={200}
@@ -154,11 +180,12 @@ function WatchSession({
                     className="w-5 h-5 rounded-full"
                     priority
                   />
-                  <div className="text-[#292929] font-semibold ">
+                  <div className="text-[#292929] font-semibold hover:text-blue-shade-100">
                     {ensHostName}
                   </div>
                 </div>
                 <>
+                {data.uid_host ? (
                   <Tooltip
                     showArrow
                     content={
@@ -204,6 +231,9 @@ function WatchSession({
                       />
                     </Link>
                   </Tooltip>
+                   ): (
+                    <></>
+                   )}
                 </>
                 {data.onchain_host_uid ? (
                   <Tooltip
@@ -356,8 +386,8 @@ function WatchSession({
             </div>
             {showPopup && (
               <div
-                className="absolute bg-white rounded-xl mt-1 py-2 duration-200 ease-in-out z-30 max-h-64 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100"
-                style={{ boxShadow: "0px 4px 9.1px 0px rgba(0,0,0,0.04)" }}
+                className={`absolute bg-white rounded-xl mt-1 py-2 duration-200 ease-in-out z-30 ${styles.customScrollbar}`}
+                style={{ boxShadow: "0px 4px 9.1px 0px rgba(0,0,0,0.04)" ,maxHeight: "300px", overflowY: "auto"}}
               >
                 {data.attendees.map((attendee, index) => (
                   <div key={index}>
@@ -368,7 +398,7 @@ function WatchSession({
                             src={
                               attendee.profileInfo?.image
                                 ? `https://gateway.lighthouse.storage/ipfs/${attendee.profileInfo.image}`
-                                : user
+                                : getRandomUserImage()
                             }
                             alt="image"
                             width={100}

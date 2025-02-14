@@ -34,7 +34,6 @@ interface delegate {
   tempCpiCalling: boolean;
 }
 
-
 function DelegateTileModal({
   isOpen,
   closeModal,
@@ -57,6 +56,7 @@ function DelegateTileModal({
   const [isHovering, setIsHovering] = useState(false);
   const [tokenImage, setTokenImage] = useState("");
   
+  const [screenHeight, setScreenHeight] = useState(0);
 
   useEffect(() => {
     const pathname = window.location.pathname;
@@ -69,6 +69,40 @@ function DelegateTileModal({
     // } else {
     //   setTokenImage(op);
     // }
+  }, []);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setScreenHeight(window.innerHeight);
+    };
+
+    // Set initial screen height
+    setScreenHeight(window.innerHeight);
+
+    // Add event listener for screen resize
+    window.addEventListener("resize", handleResize);
+
+    // Clean up event listener on component unmount
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setScreenHeight(window.innerHeight);
+    };
+
+    // Set initial screen height
+    setScreenHeight(window.innerHeight);
+
+    // Add event listener for screen resize
+    window.addEventListener("resize", handleResize);
+
+    // Clean up event listener on component unmount
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
   }, []);
 
   const handleMouseEnter = () => {
@@ -92,6 +126,10 @@ function DelegateTileModal({
     }, 2000); // Change the timeout duration as per your requirements
   }, []);
 
+  const headingStyle = `font-semibold text-[26px] mb-2 text-blue-shade-100 text-center ${
+    screenHeight < 750 ? "mt-36" : ""
+  }`;
+
   if (isLoading) {
     return (
       <div className="fixed inset-0 flex items-center justify-center z-50 overflow-hidden font-poppins">
@@ -106,21 +144,20 @@ function DelegateTileModal({
   }
   return (
     <>
-      <div className="fixed inset-0 flex items-center justify-center z-50  overflow-hidden font-poppins">
+      <div className="fixed inset-0 flex items-center justify-center z-50 overflow-hidden font-poppins">
         <div
           className="absolute inset-0 backdrop-blur-md"
           onClick={closeModal}
         ></div>
-        <div className="bg-white mt-12 p-5 xs:p-9 rounded-[34px] flex flex-col  z-50 border-[2px] items-center justify-center mx-4 sm:mx-0">
+        <div className="bg-white mt-12 p-5 xs:p-9 rounded-[34px] flex flex-col z-50 border-[2px] items-center justify-center mx-4 sm:mx-0 max-h-[85vh] overflow-y-auto">
+          {" "}
+          {/* Modified Div */}
           {confettiVisible && <Confetti />}
-          <h1 className="font-semibold text-[26px] mb-2 text-blue-shade-100 text-center">
-            Set {delegateName} as your delegate
-          </h1>
+          <h1 className={headingStyle}>Set {delegateName} as your delegate</h1>
           <p className="font-normal text-[13px] text-center text-black-shade-1000 max-w-[400px]">
             {delegateName} will be able to vote with any token owned by your
             address
           </p>
-
           <div className="bg-gradient-to-br from-gray-100 to-gray-200 border-2 border-gray-300 flex justify-center items-center py-6 rounded-3xl w-full flex-col mt-4 shadow-md">
             <p className="text-black font-medium text-sm tracking-wide uppercase mb-3">
               Total Delegatable Votes

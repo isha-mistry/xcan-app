@@ -30,6 +30,7 @@ import { useRouter } from "next-nprogress-bar";
 import { usePrivy } from "@privy-io/react-auth";
 import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 import { fetchApi } from "@/utils/api";
+import { daoConfigs } from "@/config/daos";
 interface Type {
   daoDelegates: string;
   individualDelegate: string;
@@ -363,7 +364,7 @@ function BookSession({ props }: { props: Type }) {
   };
 
   const createRandomRoom = async () => {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_CREATE_ROOM_ENDPOINT}`, {
+    const res = await fetch(`/api/create-room`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -374,8 +375,10 @@ function BookSession({ props }: { props: Type }) {
     return roomId;
   };
   const apiCall = async () => {
-    const ChainName = chain?.name === "OP Mainnet" ? "optimism" : "arbitrum";
-    const CHAIN_ID = props.daoDelegates == "optimism" ? 10 : 42161;
+    // const ChainName = chain?.name === "OP Mainnet" ? "optimism" : "arbitrum";
+    const ChainName=daoConfigs[props.daoDelegates].chainName;
+    // const CHAIN_ID = props.daoDelegates == "optimism" ? 10 : 42161;
+    const CHAIN_ID=daoConfigs[props.daoDelegates].chainId;
 
     if (props.daoDelegates !== ChainName) {
       await switchChain({ chainId: CHAIN_ID });

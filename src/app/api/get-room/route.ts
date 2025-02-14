@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 export async function GET(req: NextRequest, res: NextResponse) {
   try {
     const response = await fetch(
-      "https://api.huddle01.com/api/v1/create-room",
+      "https://api.huddle01.com/api/v2/sdk/rooms/create-room",
       {
         method: "POST",
         body: JSON.stringify({

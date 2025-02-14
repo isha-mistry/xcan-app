@@ -4,6 +4,7 @@ import React from "react";
 import type { Metadata, ResolvingMetadata } from "next";
 import { DEFAULT_METADATA } from "@/utils/metadataUtils";
 import { ApiDataProvider } from "@/contexts/ApiDataContext";
+import WalletWrapper from "@/components/WalletWrapper";
 
 const metadataConfig: any = {
   optimism: {
@@ -72,6 +73,7 @@ export async function generateMetadata(
 
 function page({ params }: { params: { daoDelegates: string } }) {
   return (
+    <WalletWrapper>
     <div>
       {metadataConfig[params.daoDelegates] ? (
         <IndividualDAO props={params} />
@@ -79,6 +81,7 @@ function page({ params }: { params: { daoDelegates: string } }) {
         <PageNotFound />
       )}
     </div>
+    </WalletWrapper>
   );
 }
 

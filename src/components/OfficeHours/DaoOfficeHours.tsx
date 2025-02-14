@@ -27,6 +27,7 @@ import OfficeHoursAlertMessage from "../AlertMessage/OfficeHoursAlertMessage";
 import { OfficeHoursProps } from "@/types/OfficeHoursTypes";
 import OfficeHourTile from "../ComponentUtils/OfficeHourTile";
 import RecordedSessionsSkeletonLoader from "../SkeletonLoader/RecordedSessionsSkeletonLoader";
+import { BookOpen, Calendar, Clock } from "lucide-react";
 interface Type {
   img: StaticImageData;
   title: string;
@@ -143,38 +144,41 @@ function DaoOfficeHours() {
       <div className="hidden md:block pt-2 xs:pt-4 sm:pt-6 px-4 md:px-6 lg:px-14">
         <Heading />
 
-        <div className="pr-32 pt-4 font-poppins">
+        <div className="pt-4 font-poppins">
           {/* Tab buttons */}
-          <div className="flex gap-16 border-1 border-[#7C7C7C] pl-6 rounded-xl">
+          <div className="flex gap-2 0.5xs:gap-4 rounded-xl text-sm flex-wrap">
             <button
-              className={`py-2 ${
+              className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md ${
                 searchParams.get("hours") === "ongoing"
-                  ? "text-[#3E3D3D] font-bold"
-                  : "text-[#7C7C7C]"
+                  ? "text-[#0500FF] font-semibold bg-[#f5f5f5]"
+                : "text-[#3E3D3D] bg-white"
               }`}
               onClick={() => router.push(path + "?hours=ongoing")}
             >
-              Ongoing
+               <Clock size={16} className="drop-shadow-lg" />
+              Live
             </button>
             <button
-              className={`py-2 ${
+              className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md ${
                 searchParams.get("hours") === "upcoming"
-                  ? "text-[#3E3D3D] font-bold"
-                  : "text-[#7C7C7C]"
+                 ? "text-[#0500FF] font-semibold bg-[#f5f5f5]"
+                : "text-[#3E3D3D] bg-white"
               }`}
               onClick={() => router.push(path + "?hours=upcoming")}
             >
-              Upcoming
+               <Calendar size={16} className="drop-shadow-lg" />
+              Scheduled
             </button>
             <button
-              className={`py-2 ${
+              className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md ${
                 searchParams.get("hours") === "recorded"
-                  ? "text-[#3E3D3D] font-bold"
-                  : "text-[#7C7C7C]"
+                 ? "text-[#0500FF] font-semibold bg-[#f5f5f5]"
+                : "text-[#3E3D3D] bg-white"
               }`}
               onClick={() => router.push(path + "?hours=recorded")}
             >
-              Recorded
+               <BookOpen size={16} className="drop-shadow-lg" />
+              Library
             </button>
           </div>
 
