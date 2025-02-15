@@ -813,7 +813,7 @@ function Proposals({ props }: { props: string }) {
 
   return (
     <>
-    {showAlert && !isOptimism && (
+    {/* {showAlert && !isOptimism && (
         <Alert
           message={
             <>
@@ -827,7 +827,7 @@ function Proposals({ props }: { props: string }) {
           type="error"
           onClose={handleCloseAlert}
         />
-      )}
+      )} */}
       <div className="rounded-[2rem] mt-4">
         {/* {isShowing && props === "arbitrum" && (
           <div
