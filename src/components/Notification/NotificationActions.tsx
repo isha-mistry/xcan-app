@@ -179,7 +179,8 @@ export const handleRedirection = async (
         `/${data.additionalData.dao_name}/${data.additionalData.host_address}?active=officeHours&hours=upcoming`
       );
     } else if (
-      data.notification_name === "officeHoursStarted" &&
+      (data.notification_name === "officeHoursStarted" ||
+        data.notification_name === "officeHoursReminder") &&
       data.additionalData.meetingId
     ) {
       router.push(

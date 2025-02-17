@@ -9,10 +9,11 @@ import {
   getDisplayNameOrAddr,
 } from "@/utils/NotificationUtils";
 
-interface DeleteMeetingRequestBody {
+interface UpdateMeetingRequestBody {
   host_address: string;
   dao_name: string;
   reference_id: string;
+  delete_reason: string;
 }
 
 async function sendMeetingDeletionNotification({
@@ -22,6 +23,7 @@ async function sendMeetingDeletionNotification({
   startTime,
   host_address,
   additionalData,
+  deleteReason,
 }: {
   db: any;
   title: string;
@@ -29,13 +31,11 @@ async function sendMeetingDeletionNotification({
   startTime: string;
   host_address: string;
   additionalData: any;
+  deleteReason: string;
 }) {
   try {
     const usersCollection = db.collection("delegates");
     const notificationCollection = db.collection("notifications");
-
-    console.log("host_address: ", host_address);
-
     const normalizedHostAddress = host_address.toLowerCase();
 
     const allUsers = await usersCollection
@@ -46,6 +46,7 @@ async function sendMeetingDeletionNotification({
       })
       .toArray();
 
+    // const allUsers = [{address: "0x92DDc071cC4337b08e"}]
     if (!allUsers || allUsers.length === 0) {
       console.log("No users found to notify");
       return;
@@ -57,9 +58,11 @@ async function sendMeetingDeletionNotification({
     });
     const hostENSNameOrAddress = await getDisplayNameOrAddr(host_address);
 
-    // Create base notification object
+    // Updated notification content to include deletion reason
     const baseNotification = {
-      content: `Office hours "${title}" for ${dao_name}, previously scheduled for ${localSlotTime} UTC and hosted by ${hostENSNameOrAddress}, has been cancelled. We apologize for any inconvenience.`,
+      content: `Office hours "${title}" for ${dao_name}, previously scheduled for ${localSlotTime} UTC and hosted by ${hostENSNameOrAddress}, has been cancelled. We apologize for any inconvenience. ${
+        deleteReason && `Reason: ${deleteReason}.`
+      }`,
       createdAt: Date.now(),
       read_status: false,
       notification_name: "officeHoursDeleted",
@@ -69,6 +72,7 @@ async function sendMeetingDeletionNotification({
         additionalData,
         host_address,
         dao_name,
+        delete_reason: deleteReason,
       },
     };
 
@@ -128,17 +132,21 @@ async function sendMeetingDeletionNotification({
   }
 }
 
-export async function DELETE(req: Request) {
+// Rename the function to PATCH since we're updating, not deleting
+export async function PUT(req: Request) {
   try {
-    const deleteData: DeleteMeetingRequestBody = await req.json();
-    const { host_address, dao_name, reference_id } = deleteData;
+    const updateData: UpdateMeetingRequestBody = await req.json();
+    const { host_address, dao_name, reference_id, delete_reason } = updateData;
+
+    console.log("updateData: ", updateData);
+
     // Validate required fields
     if (!host_address || !dao_name || !reference_id) {
       return NextResponse.json(
         {
           success: false,
           error:
-            "Missing required fields: host_address, dao_name, or reference_id",
+            "Missing required fields: host_address, dao_name, reference_id, or delete_reason",
         },
         { status: 400 }
       );
@@ -152,12 +160,14 @@ export async function DELETE(req: Request) {
     const client = await connectDB();
     const db = client.db();
     const collection = db.collection("office_hours");
+
     // First, check if the document exists
     const existingDoc = await collection.findOne({
       host_address,
       "dao.name": dao_name,
       "dao.meetings.reference_id": reference_id,
     });
+
     if (!existingDoc) {
       await client.close();
       return NextResponse.json(
@@ -182,58 +192,42 @@ export async function DELETE(req: Request) {
         startTime: existingMeeting.startTime,
         host_address,
         additionalData: existingMeeting,
+        deleteReason: delete_reason,
       });
     } catch (error) {
       console.error("Error sending deletion notifications:", error);
     }
 
-    // Remove the meeting from the meetings array
+    // Update the meeting status to 'deleted' instead of removing it
     const result = await collection.updateOne(
       {
         host_address,
         "dao.name": dao_name,
+        "dao.meetings.reference_id": reference_id,
       },
       {
-        /*@ts-ignore*/
-        $pull: {
-          "dao.$[daoElem].meetings": {
-            reference_id: reference_id,
-          },
-        },
         $set: {
+          "dao.$[daoElem].meetings.$[meetingElem].status": "deleted",
+          "dao.$[daoElem].meetings.$[meetingElem].delete_reason": delete_reason,
           updated_at: new Date(),
         },
       },
       {
-        arrayFilters: [{ "daoElem.name": dao_name }],
+        arrayFilters: [
+          { "daoElem.name": dao_name },
+          { "meetingElem.reference_id": reference_id },
+        ],
       }
     );
+
     if (result.modifiedCount === 0) {
       await client.close();
       return NextResponse.json(
         {
           success: false,
-          message: "Failed to delete meeting",
+          message: "Failed to update meeting status",
         },
         { status: 500 }
-      );
-    }
-    // Check if the DAO now has no meetings
-    const updatedDoc = await collection.findOne({
-      host_address,
-      "dao.name": dao_name,
-    });
-    const dao = updatedDoc?.dao.find((d: any) => d.name === dao_name);
-    // If DAO has no meetings, remove the entire DAO
-    if (dao && dao.meetings.length === 0) {
-      await collection.updateOne(
-        { host_address },
-        {
-          /*@ts-ignore*/
-          $pull: {
-            dao: { name: dao_name },
-          },
-        }
       );
     }
 
@@ -241,12 +235,12 @@ export async function DELETE(req: Request) {
     return NextResponse.json(
       {
         success: true,
-        message: "Meeting deleted successfully",
+        message: "Meeting marked as deleted successfully",
       },
       { status: 200 }
     );
   } catch (error) {
-    console.error("Error deleting meeting:", error);
+    console.error("Error updating meeting status:", error);
     return NextResponse.json(
       {
         success: false,

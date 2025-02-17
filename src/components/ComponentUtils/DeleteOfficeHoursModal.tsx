@@ -1,5 +1,5 @@
 import React from "react";
-import { X, Loader2 } from "lucide-react";
+import { X, Loader2, ChevronDown } from "lucide-react";
 import { fetchApi } from "@/utils/api";
 import toast from "react-hot-toast";
 import { getAccessToken } from "@privy-io/react-auth";
@@ -14,6 +14,15 @@ interface DeleteOfficeHoursModalProps {
   slotId?: string;
 }
 
+const DELETE_REASONS = [
+  "Schedule conflict",
+  "No longer available",
+  "Time slot rescheduled",
+  "Other",
+] as const;
+
+type DeleteReason = (typeof DELETE_REASONS)[number];
+
 const DeleteOfficeHoursModal: React.FC<DeleteOfficeHoursModalProps> = ({
   isOpen,
   onClose,
@@ -23,9 +32,16 @@ const DeleteOfficeHoursModal: React.FC<DeleteOfficeHoursModalProps> = ({
   slotId,
 }) => {
   const [isDeleting, setIsDeleting] = React.useState(false);
+  const [selectedReason, setSelectedReason] = React.useState<DeleteReason | "">(
+    ""
+  );
+  const [otherReason, setOtherReason] = React.useState("");
   const { walletAddress } = useWalletAddress();
 
   const handleDelete = async () => {
+    const finalReason =
+      selectedReason === "Other" ? otherReason : selectedReason;
+
     setIsDeleting(true);
     try {
       const token = await getAccessToken();
@@ -37,12 +53,13 @@ const DeleteOfficeHoursModal: React.FC<DeleteOfficeHoursModalProps> = ({
         }),
       };
       const requestOptions = {
-        method: "DELETE",
+        method: "PUT",
         headers: myHeaders,
         body: JSON.stringify({
           host_address: hostAddress,
           dao_name: daoName,
           reference_id: slotId,
+          delete_reason: finalReason.trim(),
         }),
       };
 
@@ -87,6 +104,52 @@ const DeleteOfficeHoursModal: React.FC<DeleteOfficeHoursModalProps> = ({
             </p>
           </div>
 
+          <div className="space-y-2">
+            <label
+              htmlFor="deleteReason"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Reason for deletion
+            </label>
+            <div className="relative">
+              <select
+                id="deleteReason"
+                value={selectedReason}
+                onChange={(e) =>
+                  setSelectedReason(e.target.value as DeleteReason)
+                }
+                className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 appearance-none bg-white"
+              >
+                <option value="">Select a reason</option>
+                {DELETE_REASONS.map((reason) => (
+                  <option key={reason} value={reason}>
+                    {reason}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+            </div>
+          </div>
+
+          {selectedReason === "Other" && (
+            <div className="space-y-2">
+              <label
+                htmlFor="otherReason"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Please specify
+              </label>
+              <textarea
+                id="otherReason"
+                value={otherReason}
+                onChange={(e) => setOtherReason(e.target.value)}
+                placeholder="Please provide details for deletion"
+                className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 placeholder:text-gray-400"
+                rows={3}
+              />
+            </div>
+          )}
+
           <div className="flex justify-center xs:justify-end space-x-3 pt-4 border-t border-gray-100">
             <button
               onClick={onClose}
@@ -97,7 +160,7 @@ const DeleteOfficeHoursModal: React.FC<DeleteOfficeHoursModalProps> = ({
             <button
               onClick={handleDelete}
               disabled={isDeleting}
-              className="px-6 py-2.5 rounded-xl text-sm font-medium text-white bg-red-500 hover:bg-red-600 transition-all duration-200 shadow-sm hover:shadow focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 active:bg-red-700"
+              className="px-6 py-2.5 rounded-xl text-sm font-medium text-white bg-red-500 hover:bg-red-600 transition-all duration-200 shadow-sm hover:shadow focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 active:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isDeleting ? (
                 <div className="flex items-center space-x-2">
