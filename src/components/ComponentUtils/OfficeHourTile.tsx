@@ -176,8 +176,14 @@ const OfficeHourTile = ({
 
   const handleStartSession = (meetingId: string) => {
     setLoadingStates((prev: any) => ({ ...prev, [meetingId]: true }));
-    // router.push(`${MEETING_BASE_URL}/meeting/officehours/${meetingId}/lobby`);
+
+    // Open the meeting in a new tab
     window.open(`${MEETING_BASE_URL}/meeting/officehours/${meetingId}/lobby`, '_blank');
+
+    // Reset loading state after a short delay.  Adjust the delay as necessary
+    setTimeout(() => {
+      setLoadingStates((prev: any) => ({ ...prev, [meetingId]: false }));
+    }, 500); // Adjust the time (milliseconds) as needed.
   };
 //   const handleJoinMeeting = (meetingId: string) => {
 //     window.open(`${MEETING_BASE_URL}/meeting/officehours/${meetingId}/lobby`, '_blank');
