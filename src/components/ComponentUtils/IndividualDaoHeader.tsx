@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import ConnectWalletWithENS from "../ConnectWallet/ConnectWalletWithENS";
 import { usePathname, useRouter } from "next/navigation";
 import { dao_details } from "@/config/daoDetails";
@@ -27,12 +27,20 @@ function IndividualDaoHeader() {
     image: selectedLogo,
   });
 
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null); 
+
   const handleMouseEnter = () => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);  //clear any existing timeout
+      timeoutRef.current = null;
+    }
     setIsOpen(true);
   };
 
   const handleMouseLeave = () => {
-    setIsOpen(false);
+    timeoutRef.current = setTimeout(() => {
+      setIsOpen(false);
+    }, 150);
   };
 
   const selectOption = (option: any) => {
