@@ -410,7 +410,6 @@ function FollowingModal({
     handleUpdateFollowings("all",0, 0);
   }, []); // Only run on mount
 
-  console.log(userFollowings);
 
   // Get available DAOs from daoConfigs
   const availableDaos = [

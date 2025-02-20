@@ -720,7 +720,7 @@ function ProposalMain({ props }: { props: Props }) {
         setError(null);
         try {
           const proposalEndpoint=daoConfigs[props.daoDelegates].proposalAPIendpoint?.ProposalEndpoint;
-          const proposalQueueEndpoint=daoConfigs[props.daoDelegates].proposalAPIendpoint?.ProposalQueuEndpoint;
+          const proposalQueueEndpoint=daoConfigs[props.daoDelegates].proposalAPIendpoint?.ProposalQueueEndpoint;
 
           const response = await fetch(
             `${proposalEndpoint}?proposalId=${props.id}`

@@ -120,6 +120,8 @@ function MainProfile() {
     github: "",
   });
 
+  // console.log("Line 123",daoConfigs[daoName?.toLowerCase()]?.logo);
+
   const [userData, setUserData] = useState({
     displayImage: "",
     displayName: "",
@@ -637,7 +639,6 @@ function MainProfile() {
       );
       const dbResponse = await res.json();
 
-
       if (isfollowingchange === 1) {
         updateFollowerState(dbResponse);
       } else {
@@ -826,17 +827,16 @@ function MainProfile() {
     }));
   };
 
-  
   // const updateFollowerState = async (dbResponse: any,selectedDao:string) => {
   //   const userData = dbResponse?.data?.[0];
 
   //   console.log*
-  
+
   //   // Get current connected network's dao name
   //   const daoKey = Object.keys(daoConfigs).find(
   //     (key) => daoConfigs[key].chainName === chain?.name
   //   );
-  
+
   //   // If modal is first opened, show all networks' data
   //   if (selectedDao === "all") {
   //     // Calculate total followings across all networks
@@ -846,7 +846,7 @@ function MainProfile() {
   //       ).length || 0;
   //       return acc + activeFollowingsCount;
   //     }, 0);
-  
+
   //     // Combine followings from all networks with dao information
   //     const allFollowings = userData?.followings?.reduce((acc: any[], daoItem: any) => {
   //       const daoFollowings = daoItem.following
@@ -857,11 +857,11 @@ function MainProfile() {
   //         })) || [];
   //       return [...acc, ...daoFollowings];
   //     }, []);
-  
+
   //     setFollowings(totalFollowings || 0);
   //     console.log("Line 863",allFollowings);
   //     setUserFollowings(allFollowings || []);
-  
+
   //     // Calculate total followers across all networks
   //     const totalFollowers = userData?.followers?.reduce((acc: number, dao: any) => {
   //       const activeFollowersCount = dao.follower?.filter(
@@ -869,18 +869,18 @@ function MainProfile() {
   //       ).length || 0;
   //       return acc + activeFollowersCount;
   //     }, 0);
-  
+
   //     setFollowers(totalFollowers || 0);
   //   } else {
   //     // Show data for specific network
   //     const currentDaoName = selectedDao || daoKey;
-  
+
   //     // Process following details for specific network
   //     const matchDao = userData?.followings?.find(
-  //       (daoItem: any) => 
+  //       (daoItem: any) =>
   //         daoItem.dao.toLowerCase() === currentDaoName?.toLowerCase()
   //     );
-  
+
   //     if (matchDao) {
   //       const activeFollowings = matchDao.following
   //         ?.filter((f: any) => f.isFollowing)
@@ -895,20 +895,19 @@ function MainProfile() {
   //       setFollowings(0);
   //       setUserFollowings([]);
   //     }
-  
+
   //     // Process followers for specific network
   //     const daoFollowers = userData?.followers?.find(
   //       (dao: any) => dao.dao_name.toLowerCase() === currentDaoName?.toLowerCase()
   //     );
-  
+
   //     const followerCount = daoFollowers?.follower?.filter(
   //       (f: any) => f.isFollowing
   //     ).length || 0;
-  
+
   //     setFollowers(followerCount);
   //   }
   // };
-
 
   const updateFollowerState = async (dbResponse: any) => {
     const userData = dbResponse?.data?.[0];
@@ -1071,7 +1070,6 @@ function MainProfile() {
             github: dbResponse.data[0].socialHandles?.github,
             displayImage: dbResponse.data[0]?.image,
           });
-
           setAttestationStatistics(dbResponse.data[0]?.meetingRecords ?? null);
 
           setModalData({
@@ -1351,10 +1349,10 @@ function MainProfile() {
                   {/* <div className="flex justify-center items-center w-40 h-40"> */}
                   <Image
                     src={
-                      (userData.displayImage
+                      userData.displayImage
                         ? `https://gateway.lighthouse.storage/ipfs/${userData.displayImage}`
-                        : karmaImage) || daoName
-                        ? daoConfigs[daoName].logo
+                        : daoName && daoConfigs[daoName.toLowerCase()]
+                        ? daoConfigs[daoName.toLowerCase()].logo
                         : ccLogo
                     }
                     alt="user"
@@ -1366,6 +1364,7 @@ function MainProfile() {
                         : "w-14 h-14 sm:w-20 sm:h-20 lg:w-20 lg:h-20 rounded-3xl"
                     }
                   />
+
                   {/* </div> */}
 
                   <Image

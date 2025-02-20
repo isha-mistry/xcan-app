@@ -3,12 +3,14 @@
 import { useState } from "react"
 import { Search, RefreshCw } from "lucide-react"
 import { motion } from "framer-motion"
+import { reset } from "canvas-confetti"
 
 export default function NoResultsFound() {
   const [isSpinning, setIsSpinning] = useState(false)
 
   const handleRefresh = () => {
     setIsSpinning(true)
+    reset();
     setTimeout(() => setIsSpinning(false), 1000)
     // Here you would typically trigger a new search or refresh the data
   }

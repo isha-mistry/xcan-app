@@ -548,7 +548,7 @@ function RecordedSessionsTile({
 
                         let href = "#";
                         if (attendeeUid) {
-                          href=`${daoConfigs[data.dao.toLowerCase()].attestationUrl}/${attendeeUid}`;
+                          href=`${daoConfigs[data.dao_name.toLowerCase()].attestationUrl}/${attendeeUid}`;
                           // if (data.dao_name.toLowerCase() === "optimism") {
                           //   href = `https://optimism.easscan.org/offchain/attestation/view/${attendeeUid}`;
                           // } else if (
