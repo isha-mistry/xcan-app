@@ -19,7 +19,7 @@ export interface BaseDAOConfig {
     subgraphUrl?: string;
     discourseUrl:string;
     proposalUrl:string;
-    proposalAPIendpoint?:{ProposalEndpoint:string,ProposalQueuEndpoint:string}
+    proposalAPIendpoint?:{ProposalEndpoint:string,ProposalQueueEndpoint:string}
     proposalAbi:Abi;
     descriptionQuery:DocumentNode;
     attestationUrl:string;

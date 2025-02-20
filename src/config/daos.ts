@@ -71,7 +71,7 @@ export const daoConfigs: { [key: string]: DAOConfig } = {
     proposalUrl:
       process.env.NEXT_PUBLIC_ARBITRUM_PROPOSALS_GRAPH_URL ||
       "https://api.studio.thegraph.com/query/68573/arb_proposal/v0.0.9",
-    proposalAPIendpoint:{ProposalEndpoint:"/api/get-arbitrumproposals",ProposalQueuEndpoint:"/api/get-arbitrum-queue-info"},
+    proposalAPIendpoint:{ProposalEndpoint:"/api/get-arbitrumproposals",ProposalQueueEndpoint:"/api/get-arbitrum-queue-info"},
     proposalAbi: arb_proposals_abi as Abi,
     attestationUrl: "https://arbitrum.easscan.org/offchain/attestation/view",
     eascontracAddress: "0xbD75f629A22Dc1ceD33dDA0b68c546A1c035c458",

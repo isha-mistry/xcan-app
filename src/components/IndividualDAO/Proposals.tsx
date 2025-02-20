@@ -14,6 +14,7 @@ import { fetchApi } from "@/utils/api";
 import VotedOnOptions from "@/assets/images/votedOnOption.png";
 import { Tooltip as NextUITooltip } from "@nextui-org/react";
 import Alert from "../Alert/Alert";
+import { daoConfigs } from "@/config/daos";
 
 interface Proposal {
   proposalId: string;
@@ -69,7 +70,7 @@ function Proposals({ props }: { props: string }) {
   const [fetchingProposalIds, setFetchingProposalIds] = useState<Set<string>>(
     new Set()
   );
-  const[showAlert, setShowAlert]=useState(true)
+  const [showAlert, setShowAlert] = useState(true);
 
   const handleCloseAlert = () => {
     setShowAlert(false);
@@ -151,9 +152,17 @@ function Proposals({ props }: { props: string }) {
         return;
       }
 
+      const proposalEndpoint = isOptimism
+        ? "/api/get-proposals"
+        : daoConfigs[props]?.proposalAPIendpoint?.ProposalEndpoint;
+
+      if (!proposalEndpoint) {
+        throw new Error("Proposal endpoint is missing.");
+      }
+
       // Fetch proposals and vote summary
       const [proposalsResponse, voteSummaryResponse] = await Promise.all([
-        fetch(isOptimism ? "/api/get-proposals" : "/api/get-arbitrumproposals"),
+        fetch(proposalEndpoint),
         fetch(`/api/get-vote-summary?dao=${props}`),
       ]);
 
@@ -214,8 +223,9 @@ function Proposals({ props }: { props: string }) {
             };
           });
 
-        // Fetch queue info for Arbitrum
-        const queueResponse = await fetch("/api/get-arbitrum-queue-info");
+        // Fetch queue info for DAO
+        const queueEndpoint=daoConfigs[props].proposalAPIendpoint?.ProposalQueueEndpoint;
+        const queueResponse = await fetch(`${queueEndpoint}`);
         if (!queueResponse.ok) {
           throw new Error("Failed to fetch queue information");
         }
@@ -813,7 +823,7 @@ function Proposals({ props }: { props: string }) {
 
   return (
     <>
-    {showAlert && !isOptimism && (
+      {/* {showAlert && !isOptimism && (
         <Alert
           message={
             <>
@@ -827,7 +837,7 @@ function Proposals({ props }: { props: string }) {
           type="error"
           onClose={handleCloseAlert}
         />
-      )}
+      )} */}
       <div className="rounded-[2rem] mt-4">
         {/* {isShowing && props === "arbitrum" && (
           <div
@@ -959,16 +969,28 @@ function Proposals({ props }: { props: string }) {
                 <VoteLoader />
               )} */}
               {proposal.votesLoaded ? (
-              <div
-                className={`py-0.5 rounded-md text-xs xs:text-sm font-medium flex justify-center items-center w-28 xs:w-32 
-                  ${proposal?.proposalData ? '' : getProposalStatusYet(proposal, canceledProposals).style}`}
-              >
-                {proposal?.proposalData 
-                  ? <NextUITooltip content='Multiple Options'><Image src={VotedOnOptions} alt="Multiple Options" className="w-6 h-6" /></NextUITooltip>
-                  : getProposalStatusYet(proposal, canceledProposals).text}
-              </div>
+                <div
+                  className={`py-0.5 rounded-md text-xs xs:text-sm font-medium flex justify-center items-center w-28 xs:w-32 
+                  ${
+                    proposal?.proposalData
+                      ? ""
+                      : getProposalStatusYet(proposal, canceledProposals).style
+                  }`}
+                >
+                  {proposal?.proposalData ? (
+                    <NextUITooltip content="Multiple Options">
+                      <Image
+                        src={VotedOnOptions}
+                        alt="Multiple Options"
+                        className="w-6 h-6"
+                      />
+                    </NextUITooltip>
+                  ) : (
+                    getProposalStatusYet(proposal, canceledProposals).text
+                  )}
+                </div>
               ) : (
-              <VoteLoader />
+                <VoteLoader />
               )}
               {/* <div className="flex items-center justify-center w-[15%]"> */}
               <div className="rounded-full bg-[#F4D3F9] border border-[#77367A] flex text-[#77367A] text-[10px] xs:text-xs h-[22px] items-center justify-center w-[92px] xs:h-fit py-[1px] xs:py-0.5 font-medium px-2 ">
