@@ -11,7 +11,7 @@ import { CustomDropdown } from "./CustomDropdown";
 import toast from "react-hot-toast";
 import { usePrivy } from "@privy-io/react-auth";
 import { useWalletAddress } from "@/app/hooks/useWalletAddress";
-import { Loader2 } from "lucide-react";
+import { Calendar, Clock, Loader2 } from "lucide-react";
 
 const MINTED_NFTS = gql`
   query MyQuery($address: String!) {
@@ -39,19 +39,18 @@ const MINTED_NFTS = gql`
 `;
 
 function MintedNFTs() {
-  const { address,isConnected } = useAccount();
+  const { address, isConnected } = useAccount();
   const [mintedNFTs, setMintedNFTs] = useState<any[]>([]);
   const [dataLoading, setDataLoading] = useState<boolean>(false);
   const { ready, authenticated, login, logout, user } = usePrivy();
-  const {walletAddress}=useWalletAddress();
-
-
+  const { walletAddress } = useWalletAddress();
+  const [active, setActive] = useState("OfficeHours");
 
   useEffect(() => {
-    if (walletAddress!=null) {
+    if (walletAddress != null) {
       fetchNFTs();
     }
-  }, [address,walletAddress]);
+  }, [address, walletAddress]);
 
   const fetchNFTs = async () => {
     try {
@@ -103,19 +102,78 @@ function MintedNFTs() {
       toast("Coming soon!");
     }
   };
+  const handleOption=(option: string)=>{
+    setActive(option);
+  }
 
   return (
     <>
       <h2 className="xm:hidden text-xl font-semibold ">Minted NFTs</h2>
+      {/* <h2 className=" text-xl font-semibold ">Minted NFTs</h2> */}
+      {/* <div className="flex gap-2 0.5xs:gap-4 rounded-xl text-sm flex-wrap">
+          <button
+            className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md ${
+              active === "OfficeHours"
+                ? "text-[#0500FF] font-semibold bg-[#f5f5f5]"
+                : "text-[#3E3D3D] bg-white"
+            }`}
+            onClick={()=>handleOption("OfficeHours")}
+          >
+            <Clock size={16} className="drop-shadow-lg" />
+            Office Hours
+          </button>
+          <button
+            className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md ${
+              active === "Sessions"
+                ? "text-[#0500FF] font-semibold bg-[#f5f5f5]"
+                : "text-[#3E3D3D] bg-white"
+            }`}
+            onClick={()=>handleOption("Sessions")}
+          >
+            <Calendar size={16} className="drop-shadow-lg" />
+            Sessions
+          </button>
+        </div> */}
       <div className="bg-gray-50 hover:bg-gray-100 transition duration-300 rounded-lg shadow-md p-4 xm:p-6">
-        <div className="flex justify-end xm:justify-between items-center">
+        <div className="flex flex-col xm:flex-row justify-end xm:justify-between items-end xm:items-center gap-2">
           <h2 className="hidden xm:block text-xl font-semibold ">
             Minted NFTs
           </h2>
-          <CustomDropdown
-            options={["Optimism", "Arbitrum", "Arbitrum Sepolia"]}
-            onChange={handleSelectChange}
-          />
+          <div className="flex flex-col xs:flex-row gap-2">
+            <CustomDropdown
+              options={["Optimism", "Arbitrum", "Arbitrum Sepolia"]}
+              onChange={handleSelectChange}
+            />
+            {/* <CustomDropdown
+              options={["OfficeHours", "Session"]}
+              onChange={handleTypeChange}
+               defaultValue="OfficeHours"
+            /> */}
+          </div>
+        </div>
+        <div className="flex gap-2 0.5xs:gap-4 rounded-xl text-sm flex-wrap mt-6">
+          <button
+            className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md ${
+              active === "OfficeHours"
+                ? "text-[#0500FF] font-semibold bg-[#f5f5f5]"
+                : "text-[#3E3D3D] bg-white"
+            }`}
+            onClick={()=>handleOption("OfficeHours")}
+          >
+            <Clock size={16} className="drop-shadow-lg" />
+            Office Hours
+          </button>
+          <button
+            className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md ${
+              active === "Sessions"
+                ? "text-[#0500FF] font-semibold bg-[#f5f5f5]"
+                : "text-[#3E3D3D] bg-white"
+            }`}
+            onClick={()=>handleOption("Sessions")}
+          >
+            <Calendar size={16} className="drop-shadow-lg" />
+            Sessions
+          </button>
         </div>
 
         {dataLoading ? (

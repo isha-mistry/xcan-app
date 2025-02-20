@@ -21,7 +21,8 @@ export async function GET(req: NextRequest, res: NextResponse) {
     const limit = parseInt(url.searchParams.get("limit") || "20");
     const offset = (page - 1) * limit;
 
-    const cacheKey = "meetings"; // Single cache key for all meeting data
+    // const cacheKey = "meetings"; // Single cache key for all meeting data
+    const cacheKey = `meetings_${page}_${limit}`;
 
     // Try to get from cache first
     if (cacheWrapper.isAvailable) {
@@ -44,8 +45,8 @@ export async function GET(req: NextRequest, res: NextResponse) {
     const meetings = await meetingsCollection
       .find({ meeting_status: "Recorded" })
       .sort({ slot_time: -1 })
-      // .skip(offset)
-      // .limit(limit)
+      .skip(offset)
+      .limit(limit)
       .toArray();
 
     const uniqueAddresses = new Set<string>();
