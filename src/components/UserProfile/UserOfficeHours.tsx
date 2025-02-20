@@ -17,6 +17,7 @@ import {
   Users,
 } from "lucide-react";
 import Alert from "../Alert/Alert";
+import NoResultsFound from "@/utils/Noresult";
 
 interface UserOfficeHoursProps {
   isDelegate: boolean | undefined;
@@ -284,10 +285,11 @@ function UserOfficeHours({
                 <RecordedSessionsSkeletonLoader />
               ) : getCurrentData().length === 0 ? (
                 <div className="flex flex-col justify-center items-center pt-10">
-                  <div className="text-5xl">☹️</div>
+                  {/* <div className="text-5xl">☹️</div>
                   <div className="pt-4 font-semibold text-lg">
                     Oops, no such result available!
-                  </div>
+                  </div> */}
+                  <NoResultsFound/>
                 </div>
               ) : (
                 <OfficeHourTile

@@ -203,10 +203,13 @@ const WatchFreeCollect = ({
         chainId: TARGET_CHAIN_ID,
         publicClient,
       });
+
+
       const mintReferralAddress =
         mintReferral.startsWith("0x") && mintReferral.length === 42
           ? (mintReferral as `0x${string}`)
           : undefined;
+
 
       const { parameters } = await collectorClient.mint({
         tokenContract: deployedContractAddress as `0x${string}`,
@@ -283,6 +286,7 @@ const WatchFreeCollect = ({
         imageCid: data?.nft_image,
       };
 
+
       const tokenMetadata = {
         name: data.title,
         description: data.description,
@@ -330,6 +334,8 @@ const WatchFreeCollect = ({
         }
       );
       const jsonUploadResponse = await lighthouse.upload([jsonFile], API_KEY);
+
+
       const jsonCid = jsonUploadResponse.data.Hash;
 
       setJsonUri(jsonCid);
@@ -337,7 +343,7 @@ const WatchFreeCollect = ({
       contractMetadataURI = `ipfs://${jsonCid}`;
 
       const tokenMetadataJsonBlob = new Blob([JSON.stringify(tokenMetadata)], {
-        type: "application/json",
+        type: "application/json; charset=utf-8",
       });
       const tokenMetadataJsonFile = new File(
         [tokenMetadataJsonBlob],
@@ -346,6 +352,8 @@ const WatchFreeCollect = ({
           type: "application/json",
         }
       );
+
+      
       const tokenMetadataJsonUploadResponse = await lighthouse.upload(
         [tokenMetadataJsonFile],
         API_KEY

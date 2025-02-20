@@ -6,6 +6,7 @@ import { RiExternalLinkLine } from "react-icons/ri";
 import Link from "next/link";
 import oplogo from "@/assets/images/daos/op.png";
 import arblogo from "@/assets/images/daos/arbitrum.jpg";
+import { daoConfigs } from "@/config/daos";
 
 interface NFTProps {
   nft: {
@@ -23,7 +24,17 @@ function NFTTile({ nft }: NFTProps) {
   const [imageLoadError, setImageLoadError] = useState(false);
   const cid = nft.thumbnail?.split("ipfs://")[1];
 
+
   const getDaoLogo = (network: string) => {
+
+    // if(network==="arbitrum-sepolia"){
+    //   const trimNetwork=network.split("-")[0];
+    //   return daoConfigs[trimNetwork.toLowerCase()].logo;
+    // }
+    // else{
+    //   return oplogo;
+    // }
+
     if (network === "optimism") {
       return oplogo;
     } else {

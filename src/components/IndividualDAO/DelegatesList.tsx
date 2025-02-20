@@ -358,7 +358,7 @@ function DelegatesList({ props }: { props: string }) {
     if (typeof window !== "undefined") {
       const url = window.location.href;
       const currentDAO=daoConfigs[props];
-      if (url.includes(currentDAO.name)) return currentDAO.name.toLowerCase();
+      if (url.includes(currentDAO.name.toLowerCase())) return currentDAO.name.toLowerCase();
       // if (url.includes("arbitrum")) return "arbitrum";
     }
     return "";
@@ -382,7 +382,8 @@ function DelegatesList({ props }: { props: string }) {
       return;
     }
 
-    const chainAddress = getChainAddress(chain?.name);
+    // const chainAddress = getChainAddress(chain?.name);
+    const chainAddress=daoConfigs[props.toLowerCase()].chainAddress;
     if (!chainAddress) {
       toast.error("Invalid chain address,try again!");
       pushToGTM({

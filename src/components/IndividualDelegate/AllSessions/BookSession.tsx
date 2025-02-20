@@ -357,7 +357,7 @@ function BookSession({ props }: { props: Type }) {
             apiCall();
           }
         }
-      } catch (error) {}
+      } catch (error) {console.log("Line 360:",error)};
     } else {
       toast.error("Please enter title and description!");
     }
@@ -372,12 +372,15 @@ function BookSession({ props }: { props: Type }) {
     });
     const result = await res.json();
     const roomId = await result.data;
+    console.log("Line 375:",roomId);
     return roomId;
   };
   const apiCall = async () => {
     // const ChainName = chain?.name === "OP Mainnet" ? "optimism" : "arbitrum";
     const ChainName=daoConfigs[props.daoDelegates].chainName;
     // const CHAIN_ID = props.daoDelegates == "optimism" ? 10 : 42161;
+
+
     const CHAIN_ID=daoConfigs[props.daoDelegates].chainId;
 
     if (props.daoDelegates !== ChainName) {
@@ -386,7 +389,7 @@ function BookSession({ props }: { props: Type }) {
       setConfirmSave(false);
       setIsScheduling(false);
       setContinueAPICalling(false);
-      return;
+      // return;
     }
 
     let roomId = await createRandomRoom();

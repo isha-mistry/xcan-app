@@ -39,6 +39,7 @@ import user4 from "@/assets/images/user/user9.svg";
 import user5 from "@/assets/images/user/user4.svg";
 import toast from "react-hot-toast";
 import { daoConfigs } from "../../config/daos";
+import NoResultsFound from "@/utils/Noresult";
 
 interface Type {
   ensName: string;
@@ -938,12 +939,7 @@ function AvailableSessions() {
           </div>
         ) : (
           <div className="flex flex-col justify-center items-center pt-10">
-            <div className="text-5xl">☹️</div>{" "}
-            <div className="pt-4 font-semibold text-lg">
-              {searchQuery
-                ? `No results found for "${searchQuery}"`
-                : "Oops, no such result available!"}
-            </div>
+           <NoResultsFound/>
           </div>
         )}
       </div>

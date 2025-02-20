@@ -14,6 +14,7 @@ import { SessionInterface } from "@/types/MeetingTypes";
 import { getAccessToken, usePrivy } from "@privy-io/react-auth";
 import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 import { CalendarCheck, CheckCircle, Users } from "lucide-react";
+import NoResultsFound from "@/utils/Noresult";
 
 interface Type {
   daoDelegates: string;
@@ -209,10 +210,11 @@ function DelegateSessions({ props }: { props: Type }) {
               <RecordedSessionsSkeletonLoader />
             ) : sessionDetails.length === 0 ? (
               <div className="flex flex-col justify-center items-center pt-10">
-                <div className="text-5xl">☹️</div>{" "}
+                {/* <div className="text-5xl">☹️</div>{" "}
                 <div className="pt-4 font-semibold text-lg">
                   Oops, no such result available!
-                </div>
+                </div> */}
+                <NoResultsFound/>
               </div>
             ) : (
               <RecordedSessionsTile meetingData={sessionDetails} />
@@ -222,10 +224,11 @@ function DelegateSessions({ props }: { props: Type }) {
               <RecordedSessionsSkeletonLoader />
             ) : sessionDetails.length === 0 ? (
               <div className="flex flex-col justify-center items-center pt-10">
-                <div className="text-5xl">☹️</div>{" "}
+                {/* <div className="text-5xl">☹️</div>{" "}
                 <div className="pt-4 font-semibold text-lg">
                   Oops, no such result available!
-                </div>
+                </div> */}
+                <NoResultsFound/>
               </div>
             ) : (
               <RecordedSessionsTile meetingData={sessionDetails} />

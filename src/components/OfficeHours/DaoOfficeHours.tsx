@@ -28,6 +28,7 @@ import { OfficeHoursProps } from "@/types/OfficeHoursTypes";
 import OfficeHourTile from "../ComponentUtils/OfficeHourTile";
 import RecordedSessionsSkeletonLoader from "../SkeletonLoader/RecordedSessionsSkeletonLoader";
 import { BookOpen, Calendar, Clock } from "lucide-react";
+import NoResultsFound from "@/utils/Noresult";
 interface Type {
   img: StaticImageData;
   title: string;
@@ -200,10 +201,11 @@ function DaoOfficeHours() {
               <RecordedSessionsSkeletonLoader />
             ) : getCurrentData().length === 0 ? (
               <div className="flex flex-col justify-center items-center pt-10">
-                <div className="text-5xl">☹️</div>
+                {/* <div className="text-5xl">☹️</div>
                 <div className="pt-4 font-semibold text-lg">
                   Oops, no such result available!
-                </div>
+                </div> */}
+                <NoResultsFound/>
               </div>
             ) : (
               <OfficeHourTile

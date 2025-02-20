@@ -21,13 +21,6 @@ const metadataConfig: any = {
     image:
       "https://gateway.lighthouse.storage/ipfs/QmPE5oSYhm2e5hDCG6Bdgb6ACp2iYwLhTq2Xdd4divRyJJ",
   },
-  mantle: {
-    title: "Mantle DAO",
-    description:
-      "Explore Mantle DAO on Chora Club. Connect with leading Web3 delegates in the Mantle Network, participate in governance, and contribute to the future of decentralized infrastructure.",
-    image:
-      "https://gateway.lighthouse.storage/ipfs/QmWZ7FNan47pxQ8p7hZb1yCQu7UXP5qgVjZ7PfEdkYXt6m",
-  },
 };
 
 export async function generateMetadata(

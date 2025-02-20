@@ -269,12 +269,19 @@ function ProposalMain({ props }: { props: Props }) {
       return;
     }
     let chain;
-    if (walletClient?.chain.name === "OP Mainnet") {
-      chain = "optimism";
-    } else if (walletClient?.chain.name === "Arbitrum One") {
-      chain = "arbitrum";
-    } else {
-      chain = "";
+    // if (walletClient?.chain.name === "OP Mainnet") {
+    //   chain = "optimism";
+    // } else if (walletClient?.chain.name === "Arbitrum One") {
+    //   chain = "arbitrum";
+    // } else {
+    //   chain = "";
+    // }
+
+    if(walletClient?.chain.name===daoConfigs[props.daoDelegates.toLowerCase()].chainName){
+      chain=daoConfigs[props.daoDelegates.toLowerCase()].name;
+    }
+    else{
+      chain="";
     }
 
     if (chain !== props.daoDelegates) {
@@ -304,15 +311,30 @@ function ProposalMain({ props }: { props: Props }) {
     }
     let chainAddress;
     let currentChain;
-    if (chain?.name === "OP Mainnet") {
-      chainAddress = "0xcDF27F107725988f2261Ce2256bDfCdE8B382B10";
-      currentChain = "optimism";
-    } else if (chain?.name === "Arbitrum One") {
-      chainAddress = data.contractSource.contractAddress;
-      currentChain = "arbitrum";
-    } else {
-      currentChain = "";
-      return;
+    // if (chain?.name === "OP Mainnet") {
+    //   chainAddress = "0xcDF27F107725988f2261Ce2256bDfCdE8B382B10";
+    //   currentChain = "optimism";
+    // } else if (chain?.name === "Arbitrum One") {
+    //   chainAddress = data.contractSource.contractAddress;
+    //   currentChain = "arbitrum";
+    // } else {
+    //   currentChain = "";
+    //   return;
+    // }
+
+    if(chain?.name){
+      if(daoConfigs[props.daoDelegates.toLowerCase()].useContractSourceAddress?.Address){
+        chainAddress=daoConfigs[props.daoDelegates.toLowerCase()].useContractSourceAddress?.Address;
+        currentChain=daoConfigs[props.daoDelegates.toLowerCase()].name.toLowerCase();
+      }
+      else if(!daoConfigs[props.daoDelegates.toLowerCase()].useContractSourceAddress?.Address){
+        currentChain=daoConfigs[props.daoDelegates.toLowerCase()].name.toLowerCase()
+        chainAddress=data.contractSource.contractAddress;  
+      }
+      else{
+        currentChain="";
+        return;
+      }
     }
 
     if (currentChain === "") {
@@ -385,24 +407,34 @@ function ProposalMain({ props }: { props: Props }) {
       }
     }
   };
-  const { data: hasVotedOptimism } = useReadContract({
-    abi: op_proposals_abi,
-    address: '0xcDF27F107725988f2261Ce2256bDfCdE8B382B10',
-    functionName: "hasVoted",
-    args: [props.id, walletAddress],
-  });
+  // const { data: hasVotedOptimism } = useReadContract({
+  //   abi: op_proposals_abi,
+  //   address: '0xcDF27F107725988f2261Ce2256bDfCdE8B382B10',
+  //   functionName: "hasVoted",
+  //   args: [props.id, walletAddress],
+  // });
 
-  const { data: hasVotedArbitrum } = useReadContract({
-    abi: arb_proposals_abi,
-    address: data?.contractSource?.contractAddress,
+  // const { data: hasVotedArbitrum } = useReadContract({
+  //   abi: arb_proposals_abi,
+  //   address: data?.contractSource?.contractAddress,
+  //   functionName: "hasVoted",
+  //   args: [props.id, walletAddress],
+  // });
+
+  const { data: has_Voted } = useReadContract({
+    abi: daoConfigs[props.daoDelegates.toLowerCase()].proposalAbi,
+    address: daoConfigs[props.daoDelegates.toLowerCase()].useContractSourceAddress?.Address?daoConfigs[props.daoDelegates.toLowerCase()].useContractSourceAddress?.Address:data?.contractSource?.contractAddress,
     functionName: "hasVoted",
     args: [props.id, walletAddress],
   });
 
   // Use the appropriate data based on the network
-  const hasUserVoted = props.daoDelegates === "optimism" 
-  ? Boolean(hasVotedOptimism) 
-  : Boolean(hasVotedArbitrum);
+  // const hasUserVoted = props.daoDelegates === "optimism" 
+  // ? Boolean(hasVotedOptimism) 
+  // : Boolean(hasVotedArbitrum);
+
+
+  const hasUserVoted=Boolean(has_Voted);
 
   useEffect(() => {
     setHasVoted(hasUserVoted);
@@ -686,15 +718,17 @@ function ProposalMain({ props }: { props: Props }) {
         }
       } else {
         setError(null);
-
         try {
+          const proposalEndpoint=daoConfigs[props.daoDelegates].proposalAPIendpoint?.ProposalEndpoint;
+          const proposalQueueEndpoint=daoConfigs[props.daoDelegates].proposalAPIendpoint?.ProposalQueuEndpoint;
+
           const response = await fetch(
-            `/api/get-arbitrumproposals?proposalId=${props.id}`
+            `${proposalEndpoint}?proposalId=${props.id}`
           );
           const result = await response.json();
           setData(result.data.proposalCreateds[0]);
 
-          const queueResponse = await fetch("/api/get-arbitrum-queue-info");
+          const queueResponse = await fetch(`${proposalQueueEndpoint}`);
           const queueData = await queueResponse.json();
 
           const queueInfo = queueData.data.proposalQueueds.find(
@@ -1281,7 +1315,7 @@ function ProposalMain({ props }: { props: Props }) {
         </div>
         
       </div>
-      {props.daoDelegates === "optimism" && optimismVoteOptions ? (
+  {daoConfigs[props.daoDelegates.toLowerCase()].name==="optimism" && optimismVoteOptions ? (
   <div className={`rounded-[1rem] mx-4 my-3 md:mx-6 px-4 lg:mx-16 pb-6 pt-6 transition-shadow duration-300 ease-in-out shadow-xl bg-gray-50 font-poppins relative flex justify-center items-center font-extralight tracking-wide`}>
     {loading ? (
       <div className="flex items-center justify-center w-full h-[500px]">

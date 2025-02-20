@@ -88,22 +88,22 @@ function DelegateTileModal({
     };
   }, []);
 
-  useEffect(() => {
-    const handleResize = () => {
-      setScreenHeight(window.innerHeight);
-    };
+  // useEffect(() => {
+  //   const handleResize = () => {
+  //     setScreenHeight(window.innerHeight);
+  //   };
 
-    // Set initial screen height
-    setScreenHeight(window.innerHeight);
+  //   // Set initial screen height
+  //   setScreenHeight(window.innerHeight);
 
-    // Add event listener for screen resize
-    window.addEventListener("resize", handleResize);
+  //   // Add event listener for screen resize
+  //   window.addEventListener("resize", handleResize);
 
-    // Clean up event listener on component unmount
-    return () => {
-      window.removeEventListener("resize", handleResize);
-    };
-  }, []);
+  //   // Clean up event listener on component unmount
+  //   return () => {
+  //     window.removeEventListener("resize", handleResize);
+  //   };
+  // }, []);
 
   const handleMouseEnter = () => {
     setIsHovering(true);

@@ -40,7 +40,7 @@ import { WagmiProvider, createConfig } from "@privy-io/wagmi";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { SessionProvider, signIn } from "next-auth/react";
 import { http } from "viem";
-import {optimism, arbitrum, arbitrumSepolia,mantle } from "viem/chains";
+import {optimism, arbitrum, arbitrumSepolia} from "viem/chains";
 // import { SiweMessage } from 'siwe';
 import { getCsrfToken } from "next-auth/react";
 import { useWalletClient,cookieStorage,createStorage } from "wagmi";
@@ -110,12 +110,11 @@ interface Web3ProviderProps {
 
 // Wagmi configuration
 const wagmiConfig = createConfig({
-  chains: [optimism, arbitrum, arbitrumSepolia,mantle],
+  chains: [optimism, arbitrum, arbitrumSepolia],
   transports: {
     [optimism.id]: http(),
     [arbitrum.id]: http(),
     [arbitrumSepolia.id]: http(),
-    [mantle.id]:http()
   },
   // storage: createStorage({
   //   storage: cookieStorage,
