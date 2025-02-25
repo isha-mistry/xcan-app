@@ -182,6 +182,7 @@ const addMeetingsToExistingDAO = async (
       reference_id: uuidv4(),
       ...meeting,
       meeting_status: "Upcoming",
+      status: "active",
       thumbnail_image: randomImage,
       created_at: new Date(),
     };
@@ -233,6 +234,7 @@ const addNewDAOWithMeetings = async (
     const baseDocument = {
       reference_id: uuidv4(),
       ...meeting,
+      status: "active" as const,
       meeting_status: "Upcoming",
       thumbnail_image: randomImage,
       created_at: new Date(),
@@ -285,6 +287,7 @@ const createNewHostWithMeetings = async (
       reference_id: uuidv4(),
       ...meeting,
       meeting_status: "Upcoming",
+      status: "active" as const,
       thumbnail_image: randomImage,
       created_at: new Date(),
     };

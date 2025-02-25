@@ -367,6 +367,11 @@ const WatchFreeCollect = ({
       return;
     }
 
+    if (data.host_address.toLowerCase() !== walletAddress?.toLowerCase()) {
+      toast("Only the host can deploy the contract");
+      return;
+    }
+
     if (!(await handleNetworkSwitch())) return;
 
     setIsLoading(true);
