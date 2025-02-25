@@ -1,43 +1,28 @@
 "use client";
 import React, { useEffect, useRef, useState } from "react";
 import Image from "next/image";
-import { useAccount, useSwitchChain } from "wagmi";
-import OPLogo from "@/assets/images/daos/op.png";
-import ArbLogo from "@/assets/images/daos/arb.png";
-import { createPublicClient, http } from "viem";
-import { optimism, arbitrum } from "viem/chains";
-import dao_abi from "../../artifacts/Dao.sol/GovernanceToken.json";
+import { useAccount, useSwitchChain } from "wagmi";;
 import { useRouter } from "next-nprogress-bar";
 import { daoConfigs } from "@/config/daos";
-import { DAOLogo } from "../DAOs/DAOlogos";
 
-const LoadingSpinner = () => (
-  <div className="animate-spin rounded-full h-4 w-4 border-2 border-gray-900 border-t-transparent" />
-);
 
 const SelectDaoButton: React.FC<{ daoName: string }> = ({ daoName }) => {
-  const router = useRouter();
   const { switchChain, chains } = useSwitchChain();
   const { address, isConnected } = useAccount();
   const [isOpen, setIsOpen] = useState(false);
-  const [selfDelegate, setSelfDelegate] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [isDelegateLoading, setIsDelegateLoading] = useState(false);
+
+
+  const router = useRouter();
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const hoverDelay = 300;
   const currentChain = chains.find((chain) => chain.id === chain?.id);
-
   const excludedDaos = ["arbitrumSepolia"];
+  const currentDaoConfig = daoConfigs[daoName];
 
-  const desiredChains = [
-    { id: 10, name: "Optimism", icon: OPLogo },
-    { id: 42161, name: "Arbitrum", icon: ArbLogo },
-    // { id: 421614, name: "Arbitrum Sepolia", icon: ArbLogo },
-  ];
-
-  //   const currentChainLogo = currentChain
-  //     ? desiredChains.find((chain) => chain.id === currentChain.id)?.icon
-  //     : desiredChains[0].icon;
+  const LoadingSpinner = () => (
+    <div className="animate-spin rounded-full h-4 w-4 border-2 border-gray-900 border-t-transparent" />
+  );
 
   const handleMouseEnter = () => {
     if (timeoutRef.current) {
@@ -52,60 +37,11 @@ const SelectDaoButton: React.FC<{ daoName: string }> = ({ daoName }) => {
     }, hoverDelay);
   };
 
-  const currentDaoConfig = daoConfigs[daoName];
-
-
-  useEffect(() => {
-    return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-    };
-  }, []);
-
-  const checkDelegateStatus = async (network: "optimism" | "arbitrum") => {
-    // setShowError(false);
-    // setIsLoading(true);
-    setIsDelegateLoading(true);
-    const contractAddress =
-      network === "optimism"
-        ? "0x4200000000000000000000000000000000000042"
-        : network === "arbitrum"
-        ? "0x912CE59144191C1204E64559FE8253a0e49E6548"
-        : "";
-
-    try {
-      const public_client = createPublicClient({
-        chain: network === "optimism" ? optimism : arbitrum,
-        transport: http(),
-      });
-
-      const delegateTx = (await public_client.readContract({
-        address: contractAddress as `0x${string}`,
-        abi: dao_abi.abi,
-        functionName: "delegates",
-        args: [address],
-      })) as string;
-
-      const isSelfDelegate =
-        delegateTx.toLowerCase() === address?.toLowerCase();
-
-      setSelfDelegate(isSelfDelegate);
-    } catch (error) {
-      console.error("Error in reading contract", error);
-      // setShowError(true);
-    } finally {
-      setIsDelegateLoading(false);
-    }
-  };
-
   const handleChainSwitch = async (chainId: number) => {
     setIsLoading(true);
     try {
       await switchChain?.({ chainId });
-
-      if (!selfDelegate && address) {
-        // Redirect to profile page if not self-delegated
+      if (address) {
         router.push(`/profile/${address}?active=info`);
       }
     } catch (error) {
@@ -115,6 +51,14 @@ const SelectDaoButton: React.FC<{ daoName: string }> = ({ daoName }) => {
     }
   };
 
+
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
   return (
     <>
       {isConnected && (
@@ -127,11 +71,12 @@ const SelectDaoButton: React.FC<{ daoName: string }> = ({ daoName }) => {
             <div className="w-fit capitalize text-lg bg-white-200 outline-none cursor-pointer flex items-center justify-center transition duration-500 ">
               <div className="mr-2 flex items-center truncate gap-1">
                 <Image
-                  src={currentDaoConfig.logo || OPLogo}
+                  src={daoConfigs[daoName.toLowerCase()].logo}
                   alt="Current Chain"
                   width={48}
                   height={48}
                   className="size-6 rounded-full"
+                  priority={true}
                 />
                 <div>
                   <h1 className="text-sm md:text-lg font-medium text-gray-900">
@@ -140,7 +85,7 @@ const SelectDaoButton: React.FC<{ daoName: string }> = ({ daoName }) => {
                   </h1>
                 </div>
               </div>
-              {isLoading || isDelegateLoading ? (
+              {isLoading ? (
                 <LoadingSpinner />
               ) : (
                 <svg
@@ -181,11 +126,12 @@ const SelectDaoButton: React.FC<{ daoName: string }> = ({ daoName }) => {
                     >
                       <div className="flex items-center">
                         <Image
-                          src={dao.logo || "/images/default.png"} // Fallback for missing logos
+                          src={dao.logo || "/images/op.png"} // Fallback for missing logos
                           alt={dao.name}
                           width={20}
                           height={20}
                           className="mr-2 w-5 h-5 rounded-full"
+                          priority={true}
                         />
                         {dao.name}
                       </div>
@@ -194,8 +140,6 @@ const SelectDaoButton: React.FC<{ daoName: string }> = ({ daoName }) => {
                         <LoadingSpinner />
                       )}
                     </div>
-
-                    {/* Conditionally render <hr /> only if it's not the last visible item */}
                     {index < filteredArray.length - 1 && <hr />}
                   </div>
                 ))}

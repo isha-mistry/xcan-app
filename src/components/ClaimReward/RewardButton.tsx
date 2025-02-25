@@ -1,36 +1,21 @@
 "use client";
 import React, { useCallback, useState, useRef, useEffect } from "react";
 import { useRouter } from "next-nprogress-bar";
-import Link from "next/link";
-import {
-  useAccount,
-  useChainId,
-  useReadContract,
-  useWriteContract,
-} from "wagmi";
-import { Address, formatEther, parseEther } from "viem";
-import {
-  protocolRewardsABI,
-  protocolRewardsAddress,
-} from "chora-protocol-deployments";
-import { usePrivy } from "@privy-io/react-auth";
+import {useChainId,useReadContract,useWriteContract} from "wagmi";
+import { Address, formatEther } from "viem";
+import {protocolRewardsABI,protocolRewardsAddress} from "chora-protocol-deployments";
 import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 
 function RewardButton() {
-  const router = useRouter();
-  const { address,isConnected } = useAccount();
-  const chainId = useChainId();
+ 
+  const {walletAddress}=useWalletAddress();
   const [showTooltip, setShowTooltip] = useState(false);
+  const [ethToUsdConversionRate, setEthToUsdConversionRate] = useState(0);
+
+  const router = useRouter();
+  const chainId = useChainId();
   const hoverRef = useRef<HTMLDivElement>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const [ethToUsdConversionRate, setEthToUsdConversionRate] = useState(0);
-  const { ready, authenticated, login, logout, user } = usePrivy();
-  const {walletAddress}=useWalletAddress();
-
-
-
-  const { data: hash, writeContract, isPending, isError } = useWriteContract();
-
   const { data: accountBalance, isLoading } = useReadContract({
     abi: protocolRewardsABI,
     address:
@@ -38,7 +23,6 @@ function RewardButton() {
     functionName: "balanceOf",
     args: [walletAddress as Address],
   });
-
   // withdraw amount is half of the balance
   const rewardBalanceInETH: any = Number(
     formatEther(accountBalance || BigInt(0))
@@ -46,6 +30,18 @@ function RewardButton() {
   const rewardBalanceInUSD: any = (
     rewardBalanceInETH * ethToUsdConversionRate
   ).toFixed(2);
+
+  const handleMouseEnter = useCallback(() => {
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    setShowTooltip(true);
+  }, []);
+
+  const handleMouseLeave = useCallback(() => {
+    timeoutRef.current = setTimeout(() => {
+      setShowTooltip(false);
+    }, 300);
+  }, []);
+
 
   useEffect(() => {
     const fetchEthToUsdRate = async () => {
@@ -63,8 +59,6 @@ function RewardButton() {
     fetchEthToUsdRate();
   }, []);
 
-  
-
   const handleClick = useCallback(() => {
     router.push("/claim-rewards");
   }, [router]);
@@ -75,17 +69,7 @@ function RewardButton() {
     };
   }, []);
 
-  const handleMouseEnter = useCallback(() => {
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    setShowTooltip(true);
-  }, []);
-
-  const handleMouseLeave = useCallback(() => {
-    timeoutRef.current = setTimeout(() => {
-      setShowTooltip(false);
-    }, 300);
-  }, []);
-
+ 
   return (
     <>
       <div className="relative hidden md:inline-block ">

@@ -170,13 +170,13 @@ function DelegateTileModal({
                       2
                     )}
               </span>
-              <div className=" rounded-full p-2 ">
+              <div className="rounded-full p-2 ">
                 <Image
                   src={tokenImage}
                   width={24}
                   height={24}
                   alt="OP Token"
-                  className="w-10 h-10 object-contain"
+                  className="w-10 h-10 object-contain rounded-full"
                 />
               </div>
             </div>
