@@ -331,10 +331,10 @@ export async function POST(req: NextRequest) {
     const collection: Collection<OfficeHoursDocument> =
       db.collection("office_hours");
 
-    if (cacheWrapper.isAvailable) {
-      const cacheKey = `office-hours-all`;
-      await cacheWrapper.delete(cacheKey);
-    }
+    // if (cacheWrapper.isAvailable) {
+    //   const cacheKey = `office-hours-all`;
+    //   await cacheWrapper.delete(cacheKey);
+    // }
 
     const { host_address: hostAddress, dao_name: daoName, meetings } = data;
 
