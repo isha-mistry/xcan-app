@@ -11,13 +11,16 @@ export async function GET(req: NextRequest) {
     const host_address = url.searchParams.get("host_address");
     const dao_name = url.searchParams.get("dao_name");
 
-    let query: any = {};
+    let query: any = {
+      "dao.meetings.status": "active", // Base condition for active meetings
+    };
 
     // Modified query to fetch both hosted meetings and meetings where user is an attendee
     if (host_address && dao_name) {
       query = {
         $and: [
           { "dao.name": dao_name },
+          { "dao.meetings.status": "active" },
           {
             $or: [
               { host_address: host_address },
@@ -28,20 +31,25 @@ export async function GET(req: NextRequest) {
       };
     } else if (dao_name) {
       query = {
-        "dao.name": dao_name,
+        $and: [{ "dao.name": dao_name }, { "dao.meetings.status": "active" }],
       };
     } else if (host_address) {
       query = {
-        $or: [
-          { host_address: host_address },
-          { "dao.meetings.attendees.attendee_address": host_address },
+        $and: [
+          { "dao.meetings.status": "active" },
+          {
+            $or: [
+              { host_address: host_address },
+              { "dao.meetings.attendees.attendee_address": host_address },
+            ],
+          },
         ],
       };
     }
 
-
-    // Check if query is empty (no filters)
-    const isEmptyQuery = Object.keys(query).length === 0;
+    // Check if query is empty (only has status filter)
+    const isEmptyQuery =
+      Object.keys(query).length === 1 && query["dao.meetings.status"];
 
     if (isEmptyQuery) {
       const cacheKey = `office-hours-all`;
@@ -57,7 +65,6 @@ export async function GET(req: NextRequest) {
         }
       }
     }
-
 
     client = await connectDB();
     const db = client.db();
@@ -107,128 +114,131 @@ export async function GET(req: NextRequest) {
           : result.dao;
 
         return relevantDaos.flatMap((dao: any) => {
-          return (dao.meetings || []).map(async (meeting: Meeting) => {
-            const meetingDocument = {
-              ...meeting,
-              host_address: result.host_address,
-              dao_name: dao.name,
-              meetingType: 0,
-              meeting_starttime: null,
-              meeting_endtime: null,
-              isEligible: false,
-            };
+          // Filter for active meetings only
+          return (dao.meetings || [])
+            .filter((meeting: Meeting) => meeting.status === "active")
+            .map(async (meeting: Meeting) => {
+              const meetingDocument = {
+                ...meeting,
+                host_address: result.host_address,
+                dao_name: dao.name,
+                meetingType: 0,
+                meeting_starttime: null,
+                meeting_endtime: null,
+                isEligible: false,
+              };
 
-            const attendanceVerification = await attestCollection.findOne(
-              {
-                roomId: meetingDocument.meetingId,
-                $or: [
-                  {
-                    "hosts.metadata.walletAddress": {
-                      $regex: `^${host_address}$`,
-                      $options: "i",
+              const attendanceVerification = await attestCollection.findOne(
+                {
+                  roomId: meetingDocument.meetingId,
+                  $or: [
+                    {
+                      "hosts.metadata.walletAddress": {
+                        $regex: `^${host_address}$`,
+                        $options: "i",
+                      },
                     },
-                  },
-                  {
-                    "participants.metadata.walletAddress": {
-                      $regex: `^${host_address}$`,
-                      $options: "i",
+                    {
+                      "participants.metadata.walletAddress": {
+                        $regex: `^${host_address}$`,
+                        $options: "i",
+                      },
                     },
-                  },
-                ],
-              },
-              {
-                projection: {
-                  "hosts.metadata.walletAddress": 1,
-                  "participants.metadata.walletAddress": 1,
-                  startTime: 1,
-                  endTime: 1,
-                  meetingType: 1,
+                  ],
                 },
-              }
-            );
-
-            const meetingStartTime = new Date(meeting.startTime || 0).getTime();
-            const oneDayAgo = currentTime - 6 * 60 * 60 * 1000;
-
-            // Categorize meetings
-            switch (meeting.meeting_status) {
-              case "Ongoing":
-                if (meetingStartTime > oneDayAgo) {
-                  ongoing.push(meetingDocument);
+                {
+                  projection: {
+                    "hosts.metadata.walletAddress": 1,
+                    "participants.metadata.walletAddress": 1,
+                    startTime: 1,
+                    endTime: 1,
+                    meetingType: 1,
+                  },
                 }
-                break;
-              case "Upcoming":
-                if (meetingStartTime > bufferTime) {
-                  upcoming.push(meetingDocument);
-                }
-                break;
-              case "Recorded":
-                recorded.push(meetingDocument);
+              );
 
-                // Check if this is a hosted meeting
-                if (result.host_address === host_address) {
-                  // console.log(
-                  //   `Line 141 ${result.host_address} and ${host_address}`
-                  // );
-                  meetingDocument.meeting_starttime =
-                    attendanceVerification?.startTime;
-                  meetingDocument.meeting_endtime =
-                    attendanceVerification?.endTime;
-                  meetingDocument.meetingType = 3;
-                  const isHost = attendanceVerification?.hosts?.some(
-                    (host: { metadata: { walletAddress: string } }) =>
-                      host.metadata?.walletAddress?.toLowerCase() ===
-                      host_address?.toLowerCase()
-                  );
-                  meetingDocument.isEligible = isHost;
-                  hosted.push(meetingDocument);
-                }
+              const meetingStartTime = new Date(
+                meeting.startTime || 0
+              ).getTime();
+              const oneDayAgo = currentTime - 6 * 60 * 60 * 1000;
 
-                if (
-                  meeting.attendees?.some(
-                    (attendee) => attendee.attendee_address === host_address
-                  )
-                ) {
-                  meetingDocument.meeting_starttime =
-                    attendanceVerification?.startTime;
-                  meetingDocument.meeting_endtime =
-                    attendanceVerification?.endTime;
-                  meetingDocument.meetingType = 4;
-                  const isParticipant =
-                    attendanceVerification?.participants?.some(
-                      (participant: { metadata: { walletAddress: string } }) =>
-                        participant.metadata?.walletAddress?.toLowerCase() ===
+              // Categorize meetings
+              switch (meeting.meeting_status) {
+                case "Ongoing":
+                  if (meetingStartTime > oneDayAgo) {
+                    ongoing.push(meetingDocument);
+                  }
+                  break;
+                case "Upcoming":
+                  if (meetingStartTime > bufferTime) {
+                    upcoming.push(meetingDocument);
+                  }
+                  break;
+                case "Recorded":
+                  recorded.push(meetingDocument);
+
+                  if (result.host_address === host_address) {
+                    meetingDocument.meeting_starttime =
+                      attendanceVerification?.startTime;
+                    meetingDocument.meeting_endtime =
+                      attendanceVerification?.endTime;
+                    meetingDocument.meetingType = 3;
+                    const isHost = attendanceVerification?.hosts?.some(
+                      (host: { metadata: { walletAddress: string } }) =>
+                        host.metadata?.walletAddress?.toLowerCase() ===
                         host_address?.toLowerCase()
                     );
-                  meetingDocument.isEligible = isParticipant;
-                  attended.push(meetingDocument);
-                }
+                    meetingDocument.isEligible = isHost;
+                    hosted.push(meetingDocument);
+                  }
 
-              // Check if this is an attended meeting (where user is not the host)
-              // if (
-              //   host_address &&
-              //   result.host_address !== host_address &&
-              //   meeting.attendees?.some(
-              //     (attendee) => attendee.attendee_address === host_address
-              //   )
-              // ) {
-              //   meetingDocument.meeting_starttime =
-              //     attendanceVerification?.startTime;
-              //   meetingDocument.meeting_endtime =
-              //     attendanceVerification?.endTime;
-              //   meetingDocument.meetingType = 4;
-              //   const isParticipant =
-              //     attendanceVerification?.participants?.some(
-              //       (participant: { metadata: { walletAddress: string } }) =>
-              //         participant.metadata?.walletAddress?.toLowerCase() ===
-              //         host_address?.toLowerCase()
-              //     );
-              //   meetingDocument.isEligible = isParticipant;
-              //   attended.push(meetingDocument);
-              // }
-              // break;
-            }
-          });
+                  if (
+                    meeting.attendees?.some(
+                      (attendee) => attendee.attendee_address === host_address
+                    )
+                  ) {
+                    meetingDocument.meeting_starttime =
+                      attendanceVerification?.startTime;
+                    meetingDocument.meeting_endtime =
+                      attendanceVerification?.endTime;
+                    meetingDocument.meetingType = 4;
+                    const isParticipant =
+                      attendanceVerification?.participants?.some(
+                        (participant: {
+                          metadata: { walletAddress: string };
+                        }) =>
+                          participant.metadata?.walletAddress?.toLowerCase() ===
+                          host_address?.toLowerCase()
+                      );
+                    meetingDocument.isEligible = isParticipant;
+                    attended.push(meetingDocument);
+                  }
+
+                // Check if this is an attended meeting (where user is not the host)
+                // if (
+                //   host_address &&
+                //   result.host_address !== host_address &&
+                //   meeting.attendees?.some(
+                //     (attendee) => attendee.attendee_address === host_address
+                //   )
+                // ) {
+                //   meetingDocument.meeting_starttime =
+                //     attendanceVerification?.startTime;
+                //   meetingDocument.meeting_endtime =
+                //     attendanceVerification?.endTime;
+                //   meetingDocument.meetingType = 4;
+                //   const isParticipant =
+                //     attendanceVerification?.participants?.some(
+                //       (participant: { metadata: { walletAddress: string } }) =>
+                //         participant.metadata?.walletAddress?.toLowerCase() ===
+                //         host_address?.toLowerCase()
+                //     );
+                //   meetingDocument.isEligible = isParticipant;
+                //   attended.push(meetingDocument);
+                // }
+                // break;
+              }
+            });
         });
       })
     );
@@ -246,7 +256,6 @@ export async function GET(req: NextRequest) {
     };
 
     await client.close();
-
 
     const response = {
       ongoing: ongoing.sort(sortAscending),
