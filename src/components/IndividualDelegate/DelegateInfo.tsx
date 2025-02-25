@@ -17,6 +17,7 @@ import { fetchApi } from "@/utils/api";
 import { BASE_URL } from "@/config/constants";
 import { MeetingRecords } from "@/types/UserProfileTypes";
 import { Link, Cloud } from "lucide-react";
+import StatsGrid from "../ComponentUtils/StatesGrid";
 
 interface Type {
   daoDelegates: string;
@@ -232,6 +233,12 @@ function DelegateInfo({
     fetchData();
   }, [props.individualDelegate, props.daoDelegates]);
 
+  const isLoading =
+    isSessionHostedLoading ||
+    isSessionAttendedLoading ||
+    isOfficeHoursHostedLoading ||
+    isOfficeHoursAttendedLoading;
+
   return (
     <div className="pt-4">
       <div className="flex gap-2 0.5xs:gap-4 rounded-xl text-sm flex-wrap">
@@ -258,38 +265,12 @@ function DelegateInfo({
           Offchain
         </button>
       </div>
-      <div className="grid xs:grid-cols-2 lg:grid-cols-4 gap-2 md:gap-5 mx-4 xs:mx-0 sm:mx-4 md:mx-16 lg:mx-0 mt-8">
-        {details.length > 0 ? (
-          details.map((key, index) => (
-            <div
-              key={index}
-              className="bg-[#3E3D3D] text-white rounded-2xl px-3 py-7 cursor-pointer"
-              onClick={() => router.push(`${key.ref}`)}
-            >
-              <div className="font-semibold text-3xl text-center pb-2">
-                {isSessionHostedLoading &&
-                isSessionAttendedLoading &&
-                isOfficeHoursHostedLoading &&
-                isOfficeHoursAttendedLoading ? (
-                  <div className="flex items-center justify-center">
-                    <RotatingLines
-                      visible={true}
-                      width="36"
-                      strokeColor="grey"
-                      ariaLabel="oval-loading"
-                    />
-                  </div>
-                ) : (
-                  key.number
-                )}
-              </div>
-              <div className="text-center text-sm">{key.desc}</div>
-            </div>
-          ))
-        ) : (
-          <div>No data available</div>
-        )}
-      </div>
+
+      <StatsGrid
+        blocks={details}
+        isLoading={isLoading}
+        onBlockClick={(ref: string) => router.push(ref)}
+      />
 
       <div
         style={{ boxShadow: "0px 4px 30.9px 0px rgba(0, 0, 0, 0.12)" }}

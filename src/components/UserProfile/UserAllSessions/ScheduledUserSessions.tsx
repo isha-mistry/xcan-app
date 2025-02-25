@@ -156,7 +156,7 @@ function ScheduledUserSessions({ daoName }: { daoName: string }) {
 
   const checkUser = async () => {
     try {
-      const token=await getAccessToken();
+      const token = await getAccessToken();
       const myHeaders: HeadersInit = {
         "Content-Type": "application/json",
         ...(walletAddress && {
@@ -280,7 +280,7 @@ function ScheduledUserSessions({ daoName }: { daoName: string }) {
       dao_name: daoName,
     };
     setFinalData(dataToStore);
-    const token=await getAccessToken();
+    const token = await getAccessToken();
     const myHeaders: HeadersInit = {
       "Content-Type": "application/json",
       ...(walletAddress && {
@@ -308,7 +308,7 @@ function ScheduledUserSessions({ daoName }: { daoName: string }) {
 
         //calling api endpoint for sending mail to user who follow this delegate
         try {
-          const token=await getAccessToken();
+          const token = await getAccessToken();
           const myHeaders: HeadersInit = {
             "Content-Type": "application/json",
             ...(walletAddress && {
@@ -445,7 +445,21 @@ function ScheduledUserSessions({ daoName }: { daoName: string }) {
     };
 
     const formattedStartTime = formatTime(startTime);
-    const formattedEndTime = formatTime(endTime);
+    let formattedEndTime = formatTime(endTime); // Make this mutable
+
+    // **NEW: Adjust end date to next day if end time is 12:00 AM**
+    if (
+      endTime.hour === "12" &&
+      endTime.minute === "00" &&
+      endTime.ampm === "AM"
+    ) {
+      const nextDay = new Date(selectedDate);
+      nextDay.setDate(nextDay.getDate() + 1);
+      setSelectedDate(nextDay.toISOString().split("T")[0]); //update selectedDate
+
+      // Reformat the end time to 11:59 PM to keep it on the previous day when it's 12:00 AM
+      formattedEndTime = "23:59";
+    }
 
     const newAllData = {
       date: selectedDate,
@@ -544,7 +558,7 @@ function ScheduledUserSessions({ daoName }: { daoName: string }) {
         if (isValidEmail) {
           try {
             setAddingEmail(true);
-            const token=await getAccessToken();
+            const token = await getAccessToken();
             const myHeaders: HeadersInit = {
               "Content-Type": "application/json",
               ...(walletAddress && {
@@ -600,6 +614,7 @@ function ScheduledUserSessions({ daoName }: { daoName: string }) {
     setContinueAPICalling(true);
     setShowGetMailModal(false);
   };
+
 
   return (
     <>
