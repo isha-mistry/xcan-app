@@ -138,8 +138,6 @@ export async function PUT(req: Request) {
     const updateData: UpdateMeetingRequestBody = await req.json();
     const { host_address, dao_name, reference_id, delete_reason } = updateData;
 
-    console.log("updateData: ", updateData);
-
     // Validate required fields
     if (!host_address || !dao_name || !reference_id) {
       return NextResponse.json(
@@ -152,10 +150,10 @@ export async function PUT(req: Request) {
       );
     }
 
-    // if (cacheWrapper.isAvailable) {
-    //   const cacheKey = `office-hours-all`;
-    //   await cacheWrapper.delete(cacheKey);
-    // }
+    if (cacheWrapper.isAvailable) {
+      const cacheKey = `office-hours-all`;
+      await cacheWrapper.delete(cacheKey);
+    }
 
     const client = await connectDB();
     const db = client.db();
@@ -185,6 +183,10 @@ export async function PUT(req: Request) {
     );
 
     try {
+      if (cacheWrapper.isAvailable) {
+        const cacheKey = `office-hours-all`;
+        await cacheWrapper.delete(cacheKey);
+      }
       await sendMeetingDeletionNotification({
         db,
         title: existingMeeting.title,

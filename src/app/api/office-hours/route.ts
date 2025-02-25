@@ -63,7 +63,6 @@ async function sendNotifications(
         allUsers.map(async (user: any) => {
           const formattedTime = await timePromise;
           const hostENSNameOrAddress = await getDisplayNameOrAddr(hostAddress);
-          console.log("user address: ", user.address);
           return {
             receiver_address: user.address,
             content: `New office hours is scheduled on ${daoName} by ${hostENSNameOrAddress} on ${formattedTime} UTC.`,
@@ -331,10 +330,10 @@ export async function POST(req: NextRequest) {
     const collection: Collection<OfficeHoursDocument> =
       db.collection("office_hours");
 
-    // if (cacheWrapper.isAvailable) {
-    //   const cacheKey = `office-hours-all`;
-    //   await cacheWrapper.delete(cacheKey);
-    // }
+    if (cacheWrapper.isAvailable) {
+      const cacheKey = `office-hours-all`;
+      await cacheWrapper.delete(cacheKey);
+    }
 
     const { host_address: hostAddress, dao_name: daoName, meetings } = data;
 
@@ -344,6 +343,10 @@ export async function POST(req: NextRequest) {
 
     if (existingHost) {
       const existingDAO = existingHost.dao?.find((dao) => dao.name === daoName);
+      if (cacheWrapper.isAvailable) {
+        const cacheKey = `office-hours-all`;
+        await cacheWrapper.delete(cacheKey);
+      }
       if (existingDAO) {
         await addMeetingsToExistingDAO(
           collection,
