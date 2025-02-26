@@ -28,6 +28,8 @@ import { OfficeHoursProps } from "@/types/OfficeHoursTypes";
 import OfficeHourTile from "../ComponentUtils/OfficeHourTile";
 import RecordedSessionsSkeletonLoader from "../SkeletonLoader/RecordedSessionsSkeletonLoader";
 import { BookOpen, Calendar, Clock } from "lucide-react";
+import oplogo from "@/assets/images/daos/op.png";
+import arbcir from "@/assets/images/daos/arb.png";
 interface Type {
   img: StaticImageData;
   title: string;
@@ -47,6 +49,7 @@ function DaoOfficeHours() {
   const { getAccessToken } = usePrivy();
   const { walletAddress } = useWalletAddress();
   const [dataLoading, setDataLoading] = useState(true);
+  const [activeButton, setActiveButton] = useState("all");
 
   // Original data from API
   const [originalData, setOriginalData] = useState({
@@ -129,6 +132,39 @@ function DaoOfficeHours() {
     setFilteredData(newFilteredData);
   };
 
+  const applyFilters = (searchTerm: string, daoFilter: string) => {
+    const term = searchTerm.toLowerCase();
+
+    const filterBySearchAndDao = (items: OfficeHoursProps[]) => {
+      return items.filter((item) => {
+        const matchesSearch =
+          !term ||
+          item.title.toLowerCase().includes(term) ||
+          item.host_address.toLowerCase().includes(term);
+
+        const matchesDao =
+          daoFilter === "all" ||
+          item.dao_name.toLowerCase().includes(daoFilter.toLowerCase());
+
+        return matchesSearch && matchesDao;
+      });
+    };
+
+    const newFilteredData = {
+      ongoing: filterBySearchAndDao(originalData.ongoing),
+      upcoming: filterBySearchAndDao(originalData.upcoming),
+      recorded: filterBySearchAndDao(originalData.recorded),
+    };
+
+    setFilteredData(newFilteredData);
+  };
+
+  const handleFilters = (daoName: string) => {
+    const newActiveButton = daoName || "all";
+    setActiveButton(newActiveButton);
+    applyFilters(searchQuery, newActiveButton);
+  };
+
   // Get current data based on selected tab
   const getCurrentData = () => {
     const currentTab = searchParams.get("hours") as keyof typeof filteredData;
@@ -151,47 +187,86 @@ function DaoOfficeHours() {
               className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md ${
                 searchParams.get("hours") === "ongoing"
                   ? "text-[#0500FF] font-semibold bg-[#f5f5f5]"
-                : "text-[#3E3D3D] bg-white"
+                  : "text-[#3E3D3D] bg-white"
               }`}
               onClick={() => router.push(path + "?hours=ongoing")}
             >
-               <Clock size={16} className="drop-shadow-lg" />
+              <Clock size={16} className="drop-shadow-lg" />
               Live
             </button>
             <button
               className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md ${
                 searchParams.get("hours") === "upcoming"
-                 ? "text-[#0500FF] font-semibold bg-[#f5f5f5]"
-                : "text-[#3E3D3D] bg-white"
+                  ? "text-[#0500FF] font-semibold bg-[#f5f5f5]"
+                  : "text-[#3E3D3D] bg-white"
               }`}
               onClick={() => router.push(path + "?hours=upcoming")}
             >
-               <Calendar size={16} className="drop-shadow-lg" />
+              <Calendar size={16} className="drop-shadow-lg" />
               Scheduled
             </button>
             <button
               className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md ${
                 searchParams.get("hours") === "recorded"
-                 ? "text-[#0500FF] font-semibold bg-[#f5f5f5]"
-                : "text-[#3E3D3D] bg-white"
+                  ? "text-[#0500FF] font-semibold bg-[#f5f5f5]"
+                  : "text-[#3E3D3D] bg-white"
               }`}
               onClick={() => router.push(path + "?hours=recorded")}
             >
-               <BookOpen size={16} className="drop-shadow-lg" />
+              <BookOpen size={16} className="drop-shadow-lg" />
               Library
             </button>
           </div>
-
-          {/* Search input */}
-          <div className="flex items-center my-8 rounded-full shadow-lg bg-gray-100 text-black cursor-pointer w-[300px] xs:w-[365px]">
-            <CiSearch className="text-base transition-all duration-700 ease-in-out ml-3" />
-            <input
-              type="text"
-              placeholder="Search by title or host address"
-              className="w-[100%] pl-2 pr-4 py-1.5 font-poppins md:py-2 text-sm bg-transparent outline-none"
-              value={searchQuery}
-              onChange={(e) => handleSearch(e.target.value)}
-            />
+          <div className="flex gap-2 sm:gap-3 md:gap-4">
+            {/* Search input */}
+            <div className="flex items-center my-8 rounded-full shadow-lg bg-gray-100 text-black cursor-pointer w-[300px] xs:w-[365px]">
+              <CiSearch className="text-base transition-all duration-700 ease-in-out ml-3" />
+              <input
+                type="text"
+                placeholder="Search by title or host address"
+                className="w-[100%] pl-2 pr-4 py-1.5 font-poppins md:py-2 text-sm bg-transparent outline-none"
+                value={searchQuery}
+                onChange={(e) => handleSearch(e.target.value)}
+              />
+            </div>
+            <div className="flex items-center gap-2 sm:gap-3 md:gap-4">
+              <button
+                className={` px-3 md:px-5 py-1 sm:py-1.5 rounded-lg text-sm lg:text-base ${
+                  activeButton === "all"
+                    ? "bg-[#8E8E8E] text-white"
+                    : "bg-[#F5F5F5] text-[#3E3D3D]"
+                }`}
+                onClick={() => handleFilters("")}
+              >
+                All
+              </button>
+              <button
+                className={`flex items-center justify-center size-[26px] sm:size-[29px] md:size-[29px]`}
+                onClick={() => handleFilters("optimism")}
+              >
+                <Image
+                  src={oplogo}
+                  alt="optimism"
+                  className={`size-full ${
+                    activeButton === "optimism" ? "opacity-100" : "opacity-50"
+                  }`}
+                />
+                {/* <span className="hidden md:inline ml-1.5">Optimism</span> */}
+              </button>
+              <button
+                className={`flex items-center justify-center size-[26px] sm:size-[29px] md:size-[29px]`}
+                onClick={() => handleFilters("arbitrum")}
+              >
+                <Image
+                  src={arbcir}
+                  alt="arbitrum"
+                  className={`size-full ${
+                    activeButton === "arbitrum" ? "opacity-100" : "opacity-50"
+                  }`}
+                />
+                {/* <span className="hidden md:inline ml-1.5">Arbitrum</span> */}
+              </button>
+            </div>
           </div>
 
           {/* Content area */}

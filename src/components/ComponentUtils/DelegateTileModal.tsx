@@ -54,9 +54,9 @@ function DelegateTileModal({
   const [isHovering, setIsHovering] = useState(false);
   const [tokenImage, setTokenImage] = useState(op);
   const [screenHeight, setScreenHeight] = useState(0);
+  const pathname = window.location.pathname;
 
   useEffect(() => {
-    const pathname = window.location.pathname;
     if (pathname.includes("arbitrum")) {
       setTokenImage(arb);
     } else {
@@ -86,7 +86,7 @@ function DelegateTileModal({
   };
   const { data: accountBalance }: any = useReadContract({
     abi: dao_abi.abi,
-    address: "0x4200000000000000000000000000000000000042",
+    address: pathname.includes("optimism") ? "0x4200000000000000000000000000000000000042":"0x912ce59144191c1204e64559fe8253a0e49e6548",
     functionName: "balanceOf",
     // args:['0x6eda5acaff7f5964e1ecc3fd61c62570c186ca0c' as Address]
     args: [address as Address],

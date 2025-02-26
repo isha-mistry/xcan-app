@@ -22,11 +22,12 @@ export async function GET(req: NextRequest) {
     const db = client.db();
     const collection = db.collection("office_hours");
 
-    // Query with required parameters
+    // Updated query to include status filter
     const query = {
       host_address: host_address,
       "dao.name": dao_name,
       "dao.meetings.startTime": { $gt: currentDate.toISOString() },
+      "dao.meetings.status": "active" // Add status filter
     };
 
     const projection = {
@@ -57,12 +58,13 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    // Filter for upcoming meetings
+    // Filter for upcoming and active meetings
     const upcomingMeetings =
       result.dao[0].meetings?.filter(
         (meeting: Meeting) =>
           new Date(meeting.startTime) > currentDate &&
-          meeting.meeting_status === "Upcoming"
+          meeting.meeting_status === "Upcoming" &&
+          meeting.status === "active" // Add status filter here as well
       ) || [];
 
     return NextResponse.json(
