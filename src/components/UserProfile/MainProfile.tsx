@@ -1,46 +1,47 @@
 "use client";
 
+import React, { useEffect, useRef, useState } from "react";
 import Image from "next/image";
-import React, { lazy, useEffect, useRef, useState } from "react";
 import copy from "copy-to-clipboard";
-import { Tooltip } from "@nextui-org/react";
-import { FaXTwitter, FaDiscord, FaGithub } from "react-icons/fa6";
-import { BiSolidMessageRoundedDetail } from "react-icons/bi";
-import { IoCopy, IoShareSocialSharp } from "react-icons/io5";
+import Link from "next/link";
+import ccLogo from "@/assets/images/daos/CCLogo2.png";
+import dao_abi from "../../artifacts/Dao.sol/GovernanceToken.json";;
+import lighthouse from "@lighthouse-web3/sdk";
+import InstantMeet from "./InstantMeet";
 import UserInfo from "./UserInfo";
 import UserVotes from "./UserVotes";
 import UserSessions from "./UserSessions";
 import UserOfficeHours from "./UserOfficeHours";
-import { FaPencil } from "react-icons/fa6";
-import { usePathname, useSearchParams } from "next/navigation";
-import { useRouter } from "next-nprogress-bar";
-import toast, { Toaster } from "react-hot-toast";
-import Link from "next/link";
-import ccLogo from "@/assets/images/daos/CCLogo2.png";
-import { Button, useDisclosure } from "@nextui-org/react";
-import { useAccount, useDisconnect } from "wagmi";
-import dao_abi from "../../artifacts/Dao.sol/GovernanceToken.json";
-import { Oval } from "react-loader-spinner";
-import lighthouse from "@lighthouse-web3/sdk";
-import InstantMeet from "./InstantMeet";
-import { useSession } from "next-auth/react";
-import MainProfileSkeletonLoader from "../SkeletonLoader/MainProfileSkeletonLoader";
-import { BASE_URL, LIGHTHOUSE_BASE_API_KEY } from "@/config/constants";
+import FollowingModal from "../ComponentUtils/FollowingModal";
 import style from "./MainProfile.module.css";
 import UpdateProfileModal from "../ComponentUtils/UpdateProfileModal";
-import { getDaoName } from "@/utils/chainUtils";
+import MainProfileSkeletonLoader from "../SkeletonLoader/MainProfileSkeletonLoader";
+import SelectDaoButton from "../ComponentUtils/SelectDaoButton";
 import RewardButton from "../ClaimReward/RewardButton";
 import Heading from "../ComponentUtils/Heading";
+import toast, { Toaster } from "react-hot-toast";
 import { ChevronDownIcon } from "lucide-react";
 import { usePrivy, useWallets } from "@privy-io/react-auth";
 import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 import { fetchApi } from "@/utils/api";
 import { BrowserProvider, Contract } from "ethers";
 import { MeetingRecords } from "@/types/UserProfileTypes";
-import SelectDaoButton from "../ComponentUtils/SelectDaoButton";
+import { Tooltip } from "@nextui-org/react";
+import { FaXTwitter, FaDiscord, FaGithub } from "react-icons/fa6";
+import { BiSolidMessageRoundedDetail } from "react-icons/bi";
+import { IoCopy, IoShareSocialSharp } from "react-icons/io5";
 import { createPublicClient, http } from "viem";
 import { optimism, arbitrum, mantle } from "viem/chains";
 import { daoConfigs } from "@/config/daos";
+import { FaPencil } from "react-icons/fa6";
+import { usePathname, useSearchParams } from "next/navigation";
+import { useRouter } from "next-nprogress-bar";
+import { Button, useDisclosure } from "@nextui-org/react";
+import { useAccount, useDisconnect } from "wagmi";
+import { Oval } from "react-loader-spinner"
+import { useSession } from "next-auth/react";
+import { BASE_URL, LIGHTHOUSE_BASE_API_KEY } from "@/config/constants";
+import { getDaoName } from "@/utils/chainUtils";
 
 interface Following {
   follower_address: string;
@@ -108,7 +109,6 @@ function MainProfile() {
   const router = useRouter();
   const path = usePathname();
   const searchParams = useSearchParams();
-  const FollowingModal = lazy(() => import("../ComponentUtils/FollowingModal"));
 
   //Functions
   const handleTabChange = (tabValue: string) => {
@@ -880,6 +880,7 @@ function MainProfile() {
         }
 
         if (dbResponse.data.length > 0) {
+          setIsPageLoading(false);
           setUserData({
             displayName: dbResponse.data[0]?.displayName,
             discord: dbResponse.data[0]?.socialHandles?.discord,
@@ -918,7 +919,6 @@ function MainProfile() {
           } else {
             await handleUpdateFollowings("all", 0, 1);
           }
-          setIsPageLoading(false);
         } else {
           setUserData({
             displayName: karmaDetails.data.delegate.ensName,

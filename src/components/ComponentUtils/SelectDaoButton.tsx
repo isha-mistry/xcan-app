@@ -51,7 +51,6 @@ const SelectDaoButton: React.FC<{ daoName: string }> = ({ daoName }) => {
     }
   };
 
-
   useEffect(() => {
     return () => {
       if (timeoutRef.current) {

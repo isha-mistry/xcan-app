@@ -1,7 +1,6 @@
 import React from "react";
-import { usePathname } from "next/navigation";
 import RewardButton from "../ClaimReward/RewardButton";
-import ConnectWalletWithENS from "../ConnectWallet/ConnectWalletWithENS";
+import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 
 interface TitlesMap {

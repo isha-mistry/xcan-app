@@ -1,16 +1,15 @@
 "use client";
 
-import { useRouter } from "next-nprogress-bar";
 import React, { useState, useEffect } from "react";
-import { useAccount } from "wagmi";
+import StatsGrid from "../ComponentUtils/StatesGrid";
 import dynamic from "next/dynamic";
 import styled from "styled-components";
 import rehypeSanitize from "rehype-sanitize";
-import { getDaoName } from "@/utils/chainUtils";
+import { useRouter } from "next-nprogress-bar";
+import { useAccount } from "wagmi";
 import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 import { MeetingRecords } from "@/types/UserProfileTypes";
 import { Cloud, Link } from "lucide-react";
-import StatsGrid from "../ComponentUtils/StatesGrid";
 import { daoConfigs } from "@/config/daos";
 
 interface userInfoProps {

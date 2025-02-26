@@ -1,18 +1,18 @@
 import React, { useState, useEffect, useRef } from "react";
 import ScheduledUserSessions from "./UserAllSessions/ScheduledUserSessions";
+import RecordedSessionsTile from "../ComponentUtils/RecordedSessionsTile";
 import BookedUserSessions from "./UserAllSessions/BookedUserSessions";
+import ErrorDisplay from "../ComponentUtils/ErrorDisplay";
 import AttendingUserSessions from "./UserAllSessions/AttendingUserSessions";
+import NoResultsFound from "@/utils/Noresult";
+import RecordedSessionsSkeletonLoader from "../SkeletonLoader/RecordedSessionsSkeletonLoader";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useRouter } from "next-nprogress-bar";
 import { useAccount } from "wagmi";
-import RecordedSessionsTile from "../ComponentUtils/RecordedSessionsTile";
-import RecordedSessionsSkeletonLoader from "../SkeletonLoader/RecordedSessionsSkeletonLoader";
-import ErrorDisplay from "../ComponentUtils/ErrorDisplay";
-import { Calendar, CalendarCheck, CheckCircle, ChevronRight, UserCheck, Users } from "lucide-react";
+import { Calendar, CalendarCheck, CheckCircle,UserCheck, Users } from "lucide-react";
 import { usePrivy } from "@privy-io/react-auth";
 import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 import { fetchApi } from "@/utils/api";
-import NoResultsFound from "@/utils/Noresult";
 
 interface UserSessionsProps {
   isDelegate: boolean | undefined;

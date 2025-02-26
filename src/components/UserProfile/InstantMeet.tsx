@@ -1,8 +1,5 @@
-import {Button,Modal,ModalBody,ModalContent,ModalFooter,ModalHeader,useDisclosure,} from "@nextui-org/react";
 import React, { useState } from "react";
-import { Oval } from "react-loader-spinner";
 import Image from "next/image";
-import { Tooltip } from "@nextui-org/react";
 import connectImg from "@/assets/images/instant-meet/connect.png";
 import connectImghover from "@/assets/images/instant-meet/connectHover.svg";
 import accessImg from "@/assets/images/instant-meet/quick-access.png";
@@ -16,6 +13,9 @@ import screenImghover from "@/assets/images/instant-meet/screenImghover.svg";
 import chatImg from "@/assets/images/instant-meet/chat.png";
 import chatImghover from "@/assets/images/instant-meet/chatImghover.svg";
 import heroImg from "@/assets/images/instant-meet/instant-meet-hero.svg";
+import {Button,Modal,ModalBody,ModalContent,ModalFooter,ModalHeader,useDisclosure,} from "@nextui-org/react";
+import { Oval } from "react-loader-spinner";
+import { Tooltip } from "@nextui-org/react";
 import { usePrivy } from "@privy-io/react-auth";
 import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 import { MEETING_BASE_URL } from "@/config/constants";

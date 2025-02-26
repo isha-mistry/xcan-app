@@ -1,14 +1,5 @@
-import {
-  Button,
-  Modal,
-  ModalBody,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-  Tooltip,
-} from "@nextui-org/react";
-import Image from "next/image";
 import React, { useEffect, useState } from "react";
+import Image from "next/image";
 import { BsDiscord } from "react-icons/bs";
 import { CgAttachment } from "react-icons/cg";
 import { FaUserEdit } from "react-icons/fa";
@@ -16,6 +7,7 @@ import { FaXTwitter } from "react-icons/fa6";
 import { IoClose } from "react-icons/io5";
 import { SiDiscourse } from "react-icons/si";
 import { TbBrandGithubFilled, TbMailFilled } from "react-icons/tb";
+import {Button,Modal,ModalBody,ModalContent,ModalFooter,ModalHeader,Tooltip,} from "@nextui-org/react";
 
 interface ProfileModalProps {
   isOpen: boolean;

@@ -1,15 +1,14 @@
+import Image from "next/image"
+import style from "./FollowingModal.module.css";
+import copy from "copy-to-clipboard";
+import defaultAvatar from "@/assets/images/daos/CCLogo2.png";
 import { IoClose } from "react-icons/io5";
 import { FaCalendarDays } from "react-icons/fa6";
 import { IoCopy } from "react-icons/io5";
 import { BiSolidBellOff, BiSolidBellRing, BiSearch } from "react-icons/bi";
 import { Tooltip, Pagination } from "@nextui-org/react";
-import Image from "next/image";
-import { useEffect, useState } from "react";
-import { useRouter } from "next-nprogress-bar";
 import { fetchEnsNameAndAvatar } from "@/utils/ENSUtils";
-import style from "./FollowingModal.module.css";
-import copy from "copy-to-clipboard";
-import defaultAvatar from "@/assets/images/daos/CCLogo2.png";
+import { useEffect, useState } from "react";
 import { daoConfigs } from "@/config/daos";
 
 interface FollowingModalProps {
