@@ -1,10 +1,10 @@
 "use client";
 import React, { useEffect, useRef, useState } from "react";
 import Image from "next/image";
-import { useAccount, useSwitchChain } from "wagmi";;
+import OPLogo from "@/assets/images/daos/op.png";
+import { useAccount, useSwitchChain } from "wagmi";
 import { useRouter } from "next-nprogress-bar";
 import { daoConfigs } from "@/config/daos";
-
 
 const SelectDaoButton: React.FC<{ daoName: string }> = ({ daoName }) => {
   const { switchChain, chains } = useSwitchChain();
@@ -70,7 +70,7 @@ const SelectDaoButton: React.FC<{ daoName: string }> = ({ daoName }) => {
             <div className="w-fit capitalize text-lg bg-white-200 outline-none cursor-pointer flex items-center justify-center transition duration-500 ">
               <div className="mr-2 flex items-center truncate gap-1">
                 <Image
-                  src={daoConfigs[daoName.toLowerCase()].logo}
+                  src={daoConfigs[daoName?.toLowerCase()]?.logo || OPLogo}
                   alt="Current Chain"
                   width={48}
                   height={48}
