@@ -1,18 +1,15 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, use } from "react";
 import Image from "next/image";
 import { useRouter } from "next-nprogress-bar";
 import { Tooltip } from "@nextui-org/react";
 import { LuDot } from "react-icons/lu";
-import opLogo from "@/assets/images/daos/op.png";
-import user from "@/assets/images/daos/user1.png";
-import chain from "@/assets/images/daos/chain.png";
 import ProposalsSkeletonLoader from "../SkeletonLoader/ProposalsSkeletonLoader";
-import ArbLogo from "@/assets/images/daos/arb.png";
 import { dao_details } from "@/config/daoDetails";
 import ErrorDisplay from "../ComponentUtils/ErrorDisplay";
 import { fetchApi } from "@/utils/api";
 import VotedOnOptions from "@/assets/images/votedOnOption.png";
 import { Tooltip as NextUITooltip } from "@nextui-org/react";
+import ProposalStatus from "./ProposalStatus";
 
 interface Proposal {
   proposalId: string;
@@ -28,6 +25,13 @@ interface Proposal {
   proposer: string;
   queueStartTime?: number;
   queueEndTime?: number;
+  endBlock: string;
+  transactionHash: string;
+  extension?: {
+    extendedDeadline: string;
+  }
+  startTime?: string;
+  endTime?: string;
 }
 interface Vote {
   voter: string;
@@ -68,38 +72,14 @@ function Proposals({ props }: { props: string }) {
   const [fetchingProposalIds, setFetchingProposalIds] = useState<Set<string>>(
     new Set()
   );
+  const [proposalTiming, setProposalTiming] = useState<any>(null);
+  const [page, setPage] = useState(1); // Track the number of times "View More" is clicked
 
   const pushToGTM = (eventData: GTMEvent) => {
     if (typeof window !== "undefined" && window.dataLayer) {
       window.dataLayer.push(eventData);
     }
   };
-
-  // useEffect(() => {
-  //   const fetchCanacelledProposals = async () => {
-  //     const response = await fetchApi(`/get-canceledproposal?dao=${props}`);
-  //     const result = await response.json();
-  //     setCanceledProposals(result);
-  //   };
-  //   fetchCanacelledProposals();
-  // }, []);
-  // const fetchCanceledProposals = async () => {
-  //   try {
-  //     const response = await fetch(`/api/get-canceledproposal?dao=${props}`);
-  //     if (!response.ok) {
-  //       throw new Error(`Failed to fetch canceled proposals: ${response.status}`);
-  //     }
-  //     const result = await response.json();
-  //     setCanceledProposals(result);
-  //   } catch (error: any) {
-  //     console.error("Error fetching canceled proposals:", error);
-  //     setError("Failed to fetch canceled proposals. Please try again later.");
-  //   }
-  // };
-
-  // useEffect(() => {
-  //   fetchCanceledProposals();
-  // }, [props]);
 
   const weiToEther = (wei: string): number => {
     return Number(wei) / 1e18;
@@ -178,6 +158,7 @@ function Proposals({ props }: { props: string }) {
             const voteSummary = voteSummaryData.proposalVoteSummaries.find(
               (vote: any) => vote.proposalId === p.proposalId
             );
+
             return {
               ...p,
               votesLoaded: true,
@@ -186,9 +167,17 @@ function Proposals({ props }: { props: string }) {
               support2Weight: weiToEther(voteSummary?.weightAbstain) || 0,
             };
           });
+        // Extract timing information from proposals
+        const proposalTimestamp = newProposals.map(proposal => ({
+          startTime: proposal.startTime,
+          endTime: proposal.endTime,
+          createdTransactionHash: proposal.transactionHash,
+        }));
+        // Set the timing state
+        setProposalTiming(proposalTimestamp);
       } else {
         // Arbitrum handling
-        newProposals = responseData.data.proposalCreateds
+        newProposals = responseData.data
           .filter(
             (p: any) =>
               !canceledProposals.some(
@@ -229,10 +218,11 @@ function Proposals({ props }: { props: string }) {
 
       // Sort proposals by timestamp
       newProposals.sort((a, b) => b.blockTimestamp - a.blockTimestamp);
-
+    
       // Update cache and state
       cache[props] = newProposals;
       setAllProposals(newProposals);
+
       setDisplayedProposals(newProposals.slice(0, proposalsPerPage));
     } catch (error: any) {
       console.error("Error fetching data:", error);
@@ -255,101 +245,40 @@ function Proposals({ props }: { props: string }) {
       setLoading(false);
     }
   };
-  // useEffect(() => {
-  //   const fetchVotesForDisplayedProposals = async () => {
-  //     setLoading(true);
-  //     try {
-  //       const updatedProposals = await Promise.allSettled(
-  //         displayedProposals.map(async (proposal) => {
-  //           if (!proposal.votesLoaded) {
-  //             return await fetchVotes(proposal);
-  //           }
-  //           return proposal;
-  //         })
-  //       );
+  const fetchProposalTiming = async (reset = false) => {
+    try {
+      const response = await fetch(`/api/get-proposal-time?dao=${props}&page=${page}`);
+      if (!response.ok) throw new Error("Failed to fetch proposal timing");
+      const data = await response.json();
+      setPage(data.currentPage + 1); // Increment page
 
-  //       // Process successful and failed fetches
-  //       const processedProposals = updatedProposals.map(result =>
-  //         result.status === 'fulfilled' ? result.value : result.reason
-  //       );
+      setProposalTiming((prevProposals: any) => {
+        if (reset) {
+          return [...data.proposals]; // Reset state with new data
+        }
 
-  //       // Update only successful proposals
-  //       const successfulProposals = processedProposals.filter(
-  //         proposal => proposal.votesLoaded
-  //       );
+        // Use a Map to ensure unique proposals based on transaction hash
+        const proposalMap = new Map(prevProposals.map((p: any) => [p.createdTransactionHash, p]));
 
-  //       setDisplayedProposals(prevProposals =>
-  //         prevProposals.map(proposal =>
-  //           successfulProposals.find(p => p.proposalId === proposal.proposalId) || proposal
-  //         )
-  //       );
-  //     } catch (error: any) {
-  //       console.error("Error in batch fetching:", error);
-  //       setError(error.message);
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   };
+        data.proposals.forEach((proposal: any) => {
+          proposalMap.set(proposal.createdTransactionHash, proposal);
+        });
 
-  //   if (displayedProposals.some((proposal) => !proposal.votesLoaded)) {
-  //     fetchVotesForDisplayedProposals();
-  //   }
-  // }, [displayedProposals, fetchVotes]);
-  // useEffect(() => {
-  //   const fetchVotesForDisplayedProposals = async () => {
-  //     setLoading(true);
-  //     setError(null);
+        return Array.from(proposalMap.values());
+      });
+    } catch (error) {
+      console.error("Error fetching proposal timing:", error);
+    }
+  };
 
-  //     try {
-  //       // Create chunks of 3 proposals to prevent too many concurrent requests
-  //       const CHUNK_SIZE = 3;
-  //       const proposalsToFetch = displayedProposals.filter(p => !p.votesLoaded);
 
-  //       for (let i = 0; i < proposalsToFetch.length; i += CHUNK_SIZE) {
-  //         const chunk = proposalsToFetch.slice(i, i + CHUNK_SIZE);
 
-  //         const results = await Promise.allSettled(
-  //           chunk.map(proposal => fetchVotes(proposal))
-  //         );
-
-  //         // Process results and update state
-  //         setDisplayedProposals(prevProposals => {
-  //           const updatedProposals = [...prevProposals];
-
-  //           results.forEach((result, index) => {
-  //             if (result.status === 'fulfilled') {
-  //               const proposalIndex = updatedProposals.findIndex(
-  //                 p => p.proposalId === chunk[index].proposalId
-  //               );
-  //               if (proposalIndex !== -1) {
-  //                 updatedProposals[proposalIndex] = result.value;
-  //               }
-  //             } else {
-  //               console.error(`Failed to fetch votes for proposal ${chunk[index].proposalId}:`, result.reason);
-  //             }
-  //           });
-
-  //           return updatedProposals;
-  //         });
-
-  //         // Add a small delay between chunks to prevent rate limiting
-  //         if (i + CHUNK_SIZE < proposalsToFetch.length) {
-  //           await new Promise(resolve => setTimeout(resolve, 1000));
-  //         }
-  //       }
-  //     } catch (error: any) {
-  //       console.error("Error in batch fetching:", error);
-  //       setError(error.message);
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   };
-
-  //   if (displayedProposals.some(proposal => !proposal.votesLoaded)) {
-  //     fetchVotesForDisplayedProposals();
-  //   }
-  // }, [displayedProposals, fetchVotes]);
-
+  // Initial fetch when component mounts
+  useEffect(() => {
+    if (props === "arbitrum") {
+      fetchProposalTiming(true); // Reset data on first load
+    }
+  }, []);
   const sleep = (ms: number) =>
     new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -584,51 +513,51 @@ function Proposals({ props }: { props: string }) {
     proposals();
   }, [props]);
 
-  const getProposalStatus = (proposal: Proposal): string => {
-    const currentTime = Date.now() / 1000; // Convert to seconds
+  const getProposalStatus = (proposal: any, currentProposalTiming: any[]) => {
+    // First check if proposal has its own startTime and endTime
+    // console.log("proposal", proposal, "currentProposalTiming", currentProposalTiming);
+    if (proposal.startTime && proposal.endTime) {
+      const currentTime = Math.floor(Date.now() / 1000);
+      const startTime = proposal.startTime;
+      const endTime = proposal.endTime;
 
-    if (props === "arbitrum") {
-      if (proposal.queueStartTime && proposal.queueEndTime) {
-        if (currentTime < proposal.queueStartTime) {
-          return "PENDING";
-        } else if (
-          currentTime >= proposal.queueStartTime &&
-          currentTime < proposal.queueEndTime
-        ) {
-          return "QUEUED";
-        } else {
-          return proposal.support1Weight! > proposal.support0Weight!
-            ? "SUCCEEDED"
-            : "DEFEATED";
-        }
+      if (currentTime < startTime) {
+        return "Upcoming";
+      } else if (currentTime >= startTime && currentTime <= endTime) {
+        return "Active";
       } else {
-        const proposalAge = currentTime - proposal.blockTimestamp;
-        if (proposalAge <= 17 * 24 * 60 * 60) {
-          return "PENDING";
-        } else {
-          return proposal.support1Weight! > proposal.support0Weight!
-            ? "SUCCEEDED"
-            : "DEFEATED";
-        }
-      }
-    } else {
-      if (
-        Array.isArray(canceledProposals) &&
-        canceledProposals.some(
-          (item) => item.proposalId === proposal.proposalId
-        )
-      ) {
-        return "CANCELLED";
-      }
-      const proposalAge = currentTime - proposal.blockTimestamp;
-      if (proposalAge <= 7 * 24 * 60 * 60) {
-        return "PENDING";
-      } else {
-        return proposal.support1Weight! > proposal.support0Weight!
-          ? "SUCCEEDED"
-          : "DEFEATED";
+        return "Closed";
       }
     }
+    // Then check in the proposalTiming array
+    const matchedProposal = currentProposalTiming?.find(
+      (p: any) => p.createdTransactionHash === proposal.transactionHash
+
+    );
+    if (matchedProposal) {
+      const currentTime = new Date();
+      const startTime = new Date(matchedProposal.startTime);
+      const endTime = new Date(matchedProposal.endTime);
+
+      if (currentTime < startTime) {
+        return "Upcoming";
+      } else if (currentTime >= startTime && currentTime <= endTime) {
+        return "Active";
+      } else {
+        return "Closed";
+      }
+    }
+
+    // Check if proposal is canceled
+    if (
+      Array.isArray(canceledProposals) &&
+      canceledProposals.some((item) => item.proposalId === proposal.proposalId)
+    ) {
+      return "Closed";
+    }
+
+    // Default status if nothing else matches
+    return "Unknown";
   };
   const isProposalCanceled = (proposalId: string, canceledProposals: any[]) => {
     return (
@@ -683,7 +612,8 @@ function Proposals({ props }: { props: string }) {
     };
   };
 
-  const loadMoreProposals = useCallback(() => {
+  const loadMoreProposals = useCallback(async () => {
+
     if (props === "optimism") {
       let nextPage;
       if (currentCache) {
@@ -708,6 +638,8 @@ function Proposals({ props }: { props: string }) {
       setCurrentPage(nextPage);
     } else {
       // For Arbitrum
+      // setPage((prevPage) => prevPage + 1); // Increment page
+      await fetchProposalTiming(); // Fetch more proposals
       const currentLength = displayedProposals.length;
       const moreProposals = cache[props].slice(
         currentLength,
@@ -808,25 +740,6 @@ function Proposals({ props }: { props: string }) {
   return (
     <>
       <div className="rounded-[2rem] mt-4">
-        {/* {isShowing && props === "arbitrum" && (
-          <div
-            className="bg-yellow-200 border border-gray-300 rounded-md shadow-md text-gray-700 flex items-center p-3 w-100 mb-4"
-            style={{ width: "100%" }}
-          >
-            <span>
-              We&apos;re facing a temporary rate limit issue, which may affect
-              data accuracy. We&apos;re working to resolve it quickly. Thank you
-              for your patience!
-            </span>{" "}
-            &nbsp;
-            <button
-              className="flex ml-auto items-center justify-center p-1 text-gray-500 hover:text-red-500 bg-white border border-gray-300 rounded-md"
-              onClick={handleClose}
-            >
-              Close
-            </button>
-          </div>
-        )} */}
         {displayedProposals.map((proposal: Proposal, index: number) => (
           <div
             key={index}
@@ -836,20 +749,19 @@ function Proposals({ props }: { props: string }) {
             <div className="flex items-center 1.5md:w-[55%] 2md:w-[60%]">
               <Image
                 src={dao_details[props as keyof typeof dao_details].logo}
-                alt={`${
-                  dao_details[props as keyof typeof dao_details].title
-                } logo`}
+                alt={`${dao_details[props as keyof typeof dao_details].title
+                  } logo`}
                 className="size-10 ml-0 mr-[2px] 0.2xs:mr-2 xs:mx-5 rounded-full flex-shrink-0"
               />
 
               <div>
                 <p className="text-base font-medium group-hover:text-blue-500 transition-colors duration-300">
                   {proposal.proposalId ===
-                  "109425185690543736048728494223916696230797128756558452562790432121529327921478"
+                    "109425185690543736048728494223916696230797128756558452562790432121529327921478"
                     ? `[Cancelled] ${truncateText(
-                        proposal.description || "",
-                        65
-                      )}`
+                      proposal.description || "",
+                      65
+                    )}`
                     : truncateText(proposal.description || "", 65)}
                 </p>
                 <div className="flex gap-1">
@@ -869,126 +781,36 @@ function Proposals({ props }: { props: string }) {
             </div>
 
             <div className="flex flex-wrap justify-between items-center 1.5md:w-[45%] 2md:w-[40%] mt-2 1.5md:mt-0 gap-1 2md:gap-2 mx-auto 1.5md:mx-0">
-              {/* <Tooltip
-                showArrow
-                content={<div className="font-poppins">OnChain</div>}
-                placement="bottom"
-                className="rounded-md bg-opacity-90"
-                closeDelay={1}
-              >
-                <div>
-                  <Image src={chain} alt="" className="size-8" />
-                </div>
-              </Tooltip> */}
               {proposal.votesLoaded ? (
-                <div
-                  className={`rounded-full flex items-center justify-center text-[10px] xs:text-xs h-[22px] xs:h-fit py-[1px] xs:py-0.5 border font-medium w-[84px] xs:w-24 ${
-                    getProposalStatus(proposal) === "SUCCEEDED"
-                      ? "bg-green-200 border-green-600 text-green-600"
-                      : getProposalStatus(proposal) === "DEFEATED" ||
-                        getProposalStatus(proposal) === "CANCELLED"
-                      ? "bg-red-200 border-red-500 text-red-500"
-                      : getProposalStatus(proposal) === "QUEUED"
-                      ? "bg-yellow-200 border-yellow-600 text-yellow-600"
-                      : "bg-yellow-200 border-yellow-600 text-yellow-600"
-                  }`}
-                >
-                  {getProposalStatus(proposal)}
-                </div>
+                <ProposalStatus
+                  proposal={proposal}
+                  canceledProposals={canceledProposals}
+                  networkType={props} // or whatever network you're using
+                  proposalTiming={proposalTiming?.find((timing: any) => timing.createdTransactionHash === proposal.transactionHash)}
+                />
               ) : (
                 <StatusLoader />
               )}
-              {/* 
+
               {proposal.votesLoaded ? (
                 <div
-                  className={`py-0.5 rounded-md text-xs xs:text-sm font-medium border flex justify-center items-center w-28 xs:w-32 
-                ${
-                  Array.isArray(canceledProposals) &&
-                  canceledProposals.some(
-                    (item) => item.proposalId === proposal.proposalId
-                  )
-                    ? proposal.support1Weight! > proposal.support0Weight!
-                      ? "text-[#639b55] border-[#639b55] bg-[#dbf8d4]" // Styles for proposals with more 'FOR' votes
-                      : "bg-[#fa989a] text-[#e13b15] border-[#e13b15]"
-                    : proposal.support1Weight! === 0 &&
-                      proposal.support0Weight! === 0 &&
-                      proposal.support2Weight! === 0
-                    ? "bg-[#FFEDD5] border-[#F97316] text-[#F97316]" // Styles for proposals that haven't started
-                    : proposal.support1Weight! > proposal.support0Weight!
-                    ? "text-[#639b55] border-[#639b55] bg-[#dbf8d4]" // Styles for proposals with more 'FOR' votes
-                    : "bg-[#fa989a] text-[#e13b15] border-[#e13b15]" // Styles for proposals with more 'AGAINST' votes
-                }`}
+                  className={`py-0.5 rounded-md text-xs xs:text-sm font-medium flex justify-center items-center w-28 xs:w-32 
+                  ${proposal?.proposalData ? '' : getProposalStatusYet(proposal, canceledProposals).style}`}
                 >
-                  {Array.isArray(canceledProposals) &&
-                  canceledProposals.some(
-                    (item) => item.proposalId === proposal.proposalId
-                  )
-                    ? proposal.support1Weight! > proposal.support0Weight!
-                      ? `${formatWeight(proposal.support1Weight!)} FOR`
-                      : `${formatWeight(proposal.support0Weight!)} AGAINST`
-                    : proposal.support1Weight! === 0 &&
-                      proposal.support0Weight! === 0 &&
-                      proposal.support2Weight! === 0
-                    ? "Yet to start"
-                    : proposal.support1Weight! > proposal.support0Weight!
-                    ? `${formatWeight(proposal.support1Weight!)} FOR`
-                    : `${formatWeight(proposal.support0Weight!)} AGAINST`}
+                  {proposal?.proposalData
+                    ? <NextUITooltip content='Multiple Options'><Image src={VotedOnOptions} alt="Multiple Options" className="w-6 h-6" /></NextUITooltip>
+                    : getProposalStatusYet(proposal, canceledProposals).text}
                 </div>
               ) : (
                 <VoteLoader />
-              )} */}
-              {proposal.votesLoaded ? (
-              <div
-                className={`py-0.5 rounded-md text-xs xs:text-sm font-medium flex justify-center items-center w-28 xs:w-32 
-                  ${proposal?.proposalData ? '' : getProposalStatusYet(proposal, canceledProposals).style}`}
-              >
-                {proposal?.proposalData 
-                  ? <NextUITooltip content='Multiple Options'><Image src={VotedOnOptions} alt="Multiple Options" className="w-6 h-6" /></NextUITooltip>
-                  : getProposalStatusYet(proposal, canceledProposals).text}
-              </div>
-              ) : (
-              <VoteLoader />
               )}
-              {/* <div className="flex items-center justify-center w-[15%]"> */}
+              {/* {!(proposalTiming.length == displayedProposals.length) ? (
+                <div>Loading...</div> // You can replace this with a spinner or skeleton
+              ) : ( */}
               <div className="rounded-full bg-[#F4D3F9] border border-[#77367A] flex text-[#77367A] text-[10px] xs:text-xs h-[22px] items-center justify-center w-[92px] xs:h-fit py-[1px] xs:py-0.5 font-medium px-2 ">
-                {(() => {
-                  if (
-                    Array.isArray(canceledProposals) &&
-                    canceledProposals.some(
-                      (item) => item.proposalId === proposal.proposalId
-                    )
-                  ) {
-                    return "Closed";
-                  }
-
-                  const currentTime: any = new Date();
-                  const proposalTime: any = new Date(
-                    proposal.blockTimestamp * 1000
-                  );
-                  const timeDifference = currentTime - proposalTime;
-                  const daysDifference = timeDifference / (24 * 60 * 60 * 1000);
-
-                  if (props === "arbitrum") {
-                    if (daysDifference <= 3) {
-                      const daysLeft = Math.ceil(3 - daysDifference);
-                      return `${daysLeft} day${
-                        daysLeft !== 1 ? "s" : ""
-                      } to go`;
-                    } else if (daysDifference <= 17) {
-                      return "Active";
-                    } else {
-                      return "Closed";
-                    }
-                  } else {
-                    if (daysDifference <= 7) {
-                      return "Active";
-                    } else {
-                      return "Closed";
-                    }
-                  }
-                })()}
-                {/* </div> */}
+                {getProposalStatus(proposal, proposalTiming)}
               </div>
+              {/* )} */}
             </div>
           </div>
         ))}

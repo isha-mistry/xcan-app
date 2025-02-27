@@ -4,8 +4,9 @@ import { NextResponse } from 'next/server';
 export const revalidate = 0;
 
 const client = new Client({
-    url: process.env.NEXT_PUBLIC_OPTIMISM_PROPOSALS_GRAPH_URL||'',
-    exchanges: [fetchExchange],
+  // url: process.env.NEXT_PUBLIC_OPTIMISM_PROPOSALS_GRAPH_URL||'',
+  url: 'https://api.studio.thegraph.com/query/68573/proposal/version/latest',
+  exchanges: [fetchExchange],
 });
 
 const GET_PROPOSALS = gql`
@@ -15,7 +16,12 @@ const GET_PROPOSALS = gql`
       blockTimestamp
       description
       proposalData
-      proposer      
+      proposer 
+      startBlock
+      endBlock
+      transactionHash
+      startTime
+      endTime
     }
     proposalCreated2S(orderDirection: desc, orderBy: blockTimestamp, first: 100) {
       proposalId
@@ -23,18 +29,33 @@ const GET_PROPOSALS = gql`
       description
       proposalData
       proposer
+      startBlock
+      endBlock
+      transactionHash
+      startTime
+      endTime
     }
     proposalCreated3S(orderDirection: desc, orderBy: blockTimestamp, first: 100) {
       proposalId
       blockTimestamp
       description
       proposer
+      startBlock
+      endBlock
+      transactionHash
+      startTime
+      endTime
     }
     proposalCreateds(orderDirection: desc, orderBy: blockTimestamp, first: 100) {
       proposalId
       blockTimestamp
       description
       proposer
+      startBlock
+      endBlock
+      transactionHash
+      startTime
+      endTime 
     }
   }
 `;
@@ -44,45 +65,61 @@ const GET_PROPOSAL_DESCRIPTIONS = gql`
     proposalCreated1S(where: { proposalId: $proposalId }) {
       description
       blockTimestamp
+      startBlock
+      endBlock
+      startTime
+      endTime 
     }
     proposalCreated2S(where: { proposalId: $proposalId }) {
       description
       blockTimestamp
+      startBlock
+      endBlock
+      startTime
+      endTime 
     }
     proposalCreated3S(where: { proposalId: $proposalId }) {
       description
       blockTimestamp
+      startBlock
+      endBlock
+      startTime
+      endTime 
     }
     proposalCreateds(where: { proposalId: $proposalId }) {
       description
       blockTimestamp
+      startBlock
+      endBlock
+      startTime
+      endTime 
     }
   }
 `;
 
 export async function GET(req: NextRequest) {
-    try {
-        const { searchParams } = new URL(req.url);
-        const proposalId = searchParams.get('proposalId');
+  try {
+    const { searchParams } = new URL(req.url);
+    const proposalId = searchParams.get('proposalId');
 
-        let result;
+    let result;
 
-        if (proposalId) {
-            // Fetch specific proposal
-            result = await client.query(GET_PROPOSAL_DESCRIPTIONS, { proposalId }).toPromise();
-        } else {
-            // Fetch all proposals
-            result = await client.query(GET_PROPOSALS, {}).toPromise();
-        }
-
-        if (result.error) {
-            console.error('GraphQL query error:', result.error);
-            return NextResponse.json({ error: 'An error occurred while fetching data' }, { status: 500 });
-        }
-
-        return NextResponse.json(result);
-    } catch (error) {
-        console.error('Unexpected error:', error);
-        return NextResponse.json({ error: 'An unexpected error occurred' }, { status: 500 });
+    if (proposalId) {
+      // Fetch specific proposal
+      result = await client.query(GET_PROPOSAL_DESCRIPTIONS, { proposalId }).toPromise();
+    } else {
+      // Fetch all proposals
+      result = await client.query(GET_PROPOSALS, {}).toPromise();
     }
+
+    if (result.error) {
+      console.error('GraphQL query error:', result.error);
+      return NextResponse.json({ error: 'An error occurred while fetching data' }, { status: 500 });
+    }
+
+    return NextResponse.json(result);
+  } catch (error) {
+    console.error('Unexpected error:', error);
+    return NextResponse.json({ error: 'An unexpected error occurred' }, { status: 500 });
+  }
 }

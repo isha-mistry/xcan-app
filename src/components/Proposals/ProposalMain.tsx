@@ -5,7 +5,7 @@ import React, {
   useRef,
   useCallback,
   RefObject,
-  PureComponent
+
 } from "react";
 import ConnectWalletWithENS from "../ConnectWallet/ConnectWalletWithENS";
 import Image from "next/image";
@@ -48,7 +48,7 @@ import ProposalMainVotersSkeletonLoader from "../SkeletonLoader/ProposalMainVote
 import ProposalMainDescriptionSkeletonLoader from "../SkeletonLoader/ProposalMainDescriptionSkeletonLoader";
 import DOMPurify from "dompurify";
 import MobileResponsiveMessage from "../MobileResponsiveMessage/MobileResponsiveMessage";
-import { Transaction } from "ethers";
+import { Transaction, ethers } from "ethers";
 import { usePrivy } from "@privy-io/react-auth";
 import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 import { fetchApi } from "@/utils/api";
@@ -56,6 +56,8 @@ import { GiConsoleController } from "react-icons/gi";
 import { fetchEnsNameAndAvatar, getENSName } from "@/utils/ENSUtils";
 import ConnectwalletHomePage from "../HomePage/ConnectwalletHomePage";
 import VotingTreemap from "./VotingOptions";
+import { set } from "video.js/dist/types/tech/middleware";
+import calculateEthBlockMiningTime from "@/utils/calculateBlockMiningTime";
 
 // Create a client
 const client = createPublicClient({
@@ -149,7 +151,8 @@ function ProposalMain({ props }: { props: Props }) {
   const { walletAddress } = useWalletAddress();
   const [optimismVoteOptions, setOptimismVoteOptions] = useState<any[]>([]);
   const [winners, setWinners] = useState<string[]>([]);
-
+  const [votingEndTime, setVotingEndTime] = useState<any>();
+  const [proposalState, setProposalState] = useState<string | null>(null);
   const pushToGTM = (eventData: GTMEvent) => {
     if (typeof window !== "undefined" && window.dataLayer) {
       window.dataLayer.push(eventData);
@@ -215,26 +218,6 @@ function ProposalMain({ props }: { props: Props }) {
 
     fetchEnsDataForDisplayed();
   }, [voterList, displayCount]); // Dependencies include display parameters
-
-  // const getContractAddress = async (txHash: `0x${string}`) => {
-  //   try {
-  //     const transaction = await client.getTransaction({ hash: txHash });
-  //     const transactionReceipt = await client.getTransactionReceipt({
-  //       hash: txHash,
-  //     });
-  //     const treasuryAddress = "0x789fC99093B09aD01C34DC7251D0C89ce743e5a4"
-  //     const coreGovAddress = "0xf07DeD9dC292157749B6Fd268E37DF6EA38395B9";
-  //     return coreGovAddress;
-  //     // if (transaction.to) {
-  //     //   return transaction.to;
-  //     // } else {
-  //     //   return "Not a contract interaction or creation";
-  //     // }
-  //   } catch (error) {
-  //     console.error("Error:", error);
-  //     return "Error retrieving transaction information";
-  //   }
-  // };
 
   const StoreData = async (voteData: VoteData) => {
     // Make the API call to submit the vote
@@ -411,7 +394,6 @@ function ProposalMain({ props }: { props: Props }) {
       network: props.daoDelegates,
       voterAddress: walletAddress,
     } as any);
-    console.log("this is the wallet address", walletAddress, address)
     try {
       const response = await fetchApi(
         `/get-vote-detail?${queryParams.toString()}`,
@@ -657,25 +639,29 @@ function ProposalMain({ props }: { props: Props }) {
             `/get-proposals?proposalId=${props.id}`
           );
           const result = await response.json();
-
           const {
             proposalCreated1S,
             proposalCreated2S,
             proposalCreated3S,
             proposalCreateds,
           } = result.data;
-
+          const currentTime = Date.now() / 1000;
           if (proposalCreated1S.length > 0) {
             setData(proposalCreated1S[0]);
+            setProposalState(currentTime < proposalCreated1S[0].endTime ? "Active" : "Closed");
           } else if (proposalCreated2S.length > 0) {
             setData(proposalCreated2S[0]);
+            setProposalState(currentTime < proposalCreated2S[0].endTime ? "Active" : "Closed");
           } else if (proposalCreated3S.length > 0) {
             setData(proposalCreated3S[0]);
+            setProposalState(currentTime < proposalCreated3S[0].endTime ? "Active" : "Closed");
           } else if (proposalCreateds.length > 0) {
             setData(proposalCreateds[0]);
+            setProposalState(currentTime < proposalCreateds[0].endTime ? "Active" : "Closed");
           } else {
             setData("Nothing found");
           }
+
         } catch (err: any) {
           setError(err.message);
         } finally {
@@ -689,7 +675,11 @@ function ProposalMain({ props }: { props: Props }) {
             `/api/get-arbitrumproposals?proposalId=${props.id}`
           );
           const result = await response.json();
-          setData(result.data.proposalCreateds[0]);
+          const deadlineBlock = result.data[0].extension?.extendedDeadline || result.data[0].endBlock;
+          const proposalEndtimestamp = await calculateEthBlockMiningTime(Number(deadlineBlock), props.daoDelegates);
+          setProposalState(proposalEndtimestamp.isExpired ? "Closed" : "Active");
+          setVotingEndTime(proposalEndtimestamp.endDate);
+          setData(result.data[0]);
 
           const queueResponse = await fetch("/api/get-arbitrum-queue-info");
           const queueData = await queueResponse.json();
@@ -708,6 +698,7 @@ function ProposalMain({ props }: { props: Props }) {
     };
     fetchDescription();
   }, [props]);
+
 
   const fetchVotePage = async (blockTimestamp: string, first: number) => {
     const response = await fetch(
@@ -954,58 +945,8 @@ function ProposalMain({ props }: { props: Props }) {
       : cleanedText?.slice(0, charLimit) + "...";
   };
 
-  const getProposalStatus = (data: any, props: any, canceledProposals: any) => {
-    if (!data || !data.blockTimestamp)
-      return { status: null, votingPeriodEnd: null };
+  const isActive = proposalState === "Active" && !(props.daoDelegates === "optimism");
 
-    const proposalTime: any = new Date(data.blockTimestamp * 1000);
-    const currentTime: any = new Date();
-    const timeDifference = currentTime - proposalTime;
-    const daysDifference = timeDifference / (24 * 60 * 60 * 1000);
-    const votingPeriod = props.daoDelegates === "arbitrum" ? 17 : 7;
-    const votingPeriodEnd = new Date(
-      proposalTime.getTime() + votingPeriod * 24 * 60 * 60 * 1000
-    );
-    if (canceledProposals.some((item: any) => item.proposalId === props.id)) {
-      return { status: "Closed", votingPeriodEnd };
-    }
-
-    if (props.daoDelegates === "arbitrum") {
-      if (daysDifference <= 3) {
-        const daysLeft = Math.ceil(3 - daysDifference);
-        return {
-          status: `${daysLeft} day${daysLeft !== 1 ? "s" : ""} to go`,
-          votingPeriodEnd,
-        };
-      } else if (daysDifference <= 17) {
-        return { status: "Active", votingPeriodEnd };
-      }
-    } else {
-      if (daysDifference <= 7) {
-        return { status: "Active", votingPeriodEnd };
-      }
-    }
-
-    return { status: "Closed", votingPeriodEnd };
-  };
-
-  const { status, votingPeriodEnd } = getProposalStatus(
-    data,
-    props,
-    canceledProposals
-  );
-  const isActive = status === "Active" && !(props.daoDelegates === "optimism");
-  const getVotingPeriodEnd = () => {
-    if (!data || !data.blockTimestamp) return null;
-
-    const baseTimestamp = new Date(data.blockTimestamp * 1000);
-    const votingPeriod = props.daoDelegates === "arbitrum" ? 17 : 7;
-    return new Date(
-      baseTimestamp.getTime() + votingPeriod * 24 * 60 * 60 * 1000
-    );
-  };
-
-  const votingPeriodEndData = getVotingPeriodEnd();
   const currentDate = new Date();
 
   const getProposalStatusData = () => {
@@ -1023,7 +964,7 @@ function ProposalMain({ props }: { props: Props }) {
       if (queueStartTime && queueEndTime) {
         const currentTime = currentDate.getTime() / 1000; // Convert to seconds
         if (currentTime < queueStartTime) {
-          return currentDate <= votingPeriodEndData! ? "PENDING" : "QUEUED";
+          return currentDate <= votingEndTime! ? "PENDING" : "QUEUED";
         } else if (
           currentTime >= queueStartTime &&
           currentTime < queueEndTime
@@ -1033,9 +974,9 @@ function ProposalMain({ props }: { props: Props }) {
           return support1Weight! > support0Weight! ? "SUCCEEDED" : "DEFEATED";
         }
       } else {
-        return !votingPeriodEndData
+        return !votingEndTime
           ? "PENDING"
-          : currentDate > votingPeriodEndData
+          : currentDate > votingEndTime
             ? support1Weight > support0Weight
               ? "SUCCEEDED"
               : "DEFEATED"
@@ -1043,7 +984,8 @@ function ProposalMain({ props }: { props: Props }) {
       }
     } else {
 
-      return currentDate > votingPeriodEndData!
+      const currentTimeEpoch = Date.now() / 1000;
+      return currentTimeEpoch > data.endTime!
         ? support1Weight! > support0Weight!
           ? "SUCCEEDED"
           : "DEFEATED"
@@ -1172,14 +1114,14 @@ function ProposalMain({ props }: { props: Props }) {
           )}
           <div className="flex-shrink-0">
             <div
-              className={`rounded-full flex items-center justify-center text-xs py-1 px-2 font-medium ${status
-                ? status === "Closed"
+              className={`rounded-full flex items-center justify-center text-xs py-1 px-2 font-medium ${proposalState
+                ? proposalState === "Closed"
                   ? "bg-[#f4d3f9] border border-[#77367a] text-[#77367a]"
                   : "bg-[#f4d3f9] border border-[#77367a] text-[#77367a]"
                 : "bg-gray-200 animate-pulse rounded-full"
                 }`}
             >
-              {status ? status : <div className="h-4 w-16"></div>}
+              {proposalState ? proposalState : <div className="h-4 w-16"></div>}
             </div>
           </div>
         </div>
