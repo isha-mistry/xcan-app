@@ -4,6 +4,7 @@ export interface Meeting {
   reference_id?: string;
   title: string;
   description: string;
+  status: "active" | "deleted";
   startTime: string;
   endTime: string;
   meeting_status?: string;
@@ -14,6 +15,7 @@ export interface Meeting {
   uid_host?: string;
   onchain_host_uid?: string;
   attendees?: Attendee[];
+  delete_reason?: string;
   video_reports?: VideoReport;
   created_at?: Date;
 }
@@ -140,26 +142,28 @@ export interface ExistingSchedule {
 
 export interface OfficeHoursProps {
   attendees?: Attendee[];
-  created_at?: string; 
+  created_at?: string;
   dao_name: string;
   description: string;
   host_address: string;
-  onchain_host_uid?: string; 
-  uid_host?: string; 
+  onchain_host_uid?: string;
+  uid_host?: string;
   isMeetingRecorded?: boolean;
   meetingId?: string;
   meeting_status: "Ongoing" | "Upcoming" | "Recorded" | "Hosted" | "Attended";
+  status: "active" | "deleted";
+  delete_reason?: string;
   thumbnail_image: string;
   title: string;
   video_uri?: string;
   startTime: string;
   endTime: string;
   reference_id: string;
-  meetingType:number;
+  meetingType: number;
   isEligible: boolean;
-  meeting_starttime:number;
-  meeting_endtime:number;
+  meeting_starttime: number;
+  meeting_endtime: number;
   views?: number;
   nft_image?: string;
-  deployedContractAddress:string;
+  deployedContractAddress: string;
 }
