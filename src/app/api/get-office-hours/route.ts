@@ -51,20 +51,20 @@ export async function GET(req: NextRequest) {
     const isEmptyQuery =
       Object.keys(query).length === 1 && query["dao.meetings.status"];
 
-    if (isEmptyQuery) {
-      const cacheKey = `office-hours-all`;
+    // if (isEmptyQuery) {
+    //   const cacheKey = `office-hours-all`;
 
-      if (cacheWrapper.isAvailable) {
-        const cacheValue = await cacheWrapper.get(cacheKey);
-        if (cacheValue) {
-          console.log(`Serving from cache: office-hours-all`);
-          return NextResponse.json(
-            { success: true, data: JSON.parse(cacheValue) },
-            { status: 200 }
-          );
-        }
-      }
-    }
+    //   if (cacheWrapper.isAvailable) {
+    //     const cacheValue = await cacheWrapper.get(cacheKey);
+    //     if (cacheValue) {
+    //       console.log(`Serving from cache: office-hours-all`);
+    //       return NextResponse.json(
+    //         { success: true, data: JSON.parse(cacheValue) },
+    //         { status: 200 }
+    //       );
+    //     }
+    //   }
+    // }
 
     client = await connectDB();
     const db = client.db();
@@ -266,10 +266,10 @@ export async function GET(req: NextRequest) {
     };
 
     // Cache the response if it's an empty query
-    if (isEmptyQuery && cacheWrapper.isAvailable) {
-      const cacheKey = `office-hours-all`;
-      await cacheWrapper.set(cacheKey, JSON.stringify(response), 600); // Cache for 10 minutes
-    }
+    // if (isEmptyQuery && cacheWrapper.isAvailable) {
+    //   const cacheKey = `office-hours-all`;
+    //   await cacheWrapper.set(cacheKey, JSON.stringify(response), 600); // Cache for 10 minutes
+    // }
 
     return NextResponse.json(
       {
