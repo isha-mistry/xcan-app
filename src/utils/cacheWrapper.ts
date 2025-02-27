@@ -14,17 +14,7 @@ class RedisCacheWrapper implements CacheWrapper {
   constructor() {
     try {
       this.redis = new Redis();
-      // Test connection
-      this.redis
-        .ping()
-        .then(() => {
-          this.isAvailable = true;
-          console.log("Redis connection established successfully");
-        })
-        .catch((err) => {
-          this.handleConnectionError(err);
-        });
-
+      this.initialize();
       // Handle runtime errors
       this.redis.on("error", (err) => {
         this.handleConnectionError(err);
@@ -32,6 +22,20 @@ class RedisCacheWrapper implements CacheWrapper {
     } catch (err) {
       this.handleConnectionError(err);
     }
+  }
+
+  private async initialize() {
+    try {
+      await this.redis?.ping(); // Ensure Redis is connected before setting available
+      this.isAvailable = true;
+      console.log("Redis connection established successfully");
+    } catch (err) {
+      this.handleConnectionError(err);
+    }
+
+    this.redis?.on("error", (err) => {
+      this.handleConnectionError(err);
+    });
   }
 
   private handleConnectionError(err: any): void {

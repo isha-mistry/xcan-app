@@ -10,6 +10,7 @@ import { fetchApi } from "@/utils/api";
 import VotedOnOptions from "@/assets/images/votedOnOption.png";
 import { Tooltip as NextUITooltip } from "@nextui-org/react";
 import ProposalStatus from "./ProposalStatus";
+import Alert from "../Alert/Alert";
 
 interface Proposal {
   proposalId: string;
@@ -74,6 +75,11 @@ function Proposals({ props }: { props: string }) {
   );
   const [proposalTiming, setProposalTiming] = useState<any>(null);
   const [page, setPage] = useState(1); // Track the number of times "View More" is clicked
+  const[showAlert, setShowAlert]=useState(true)
+
+  const handleCloseAlert = () => {
+    setShowAlert(false);
+  };
 
   const pushToGTM = (eventData: GTMEvent) => {
     if (typeof window !== "undefined" && window.dataLayer) {
@@ -739,6 +745,21 @@ function Proposals({ props }: { props: string }) {
 
   return (
     <>
+    {/* {showAlert && !isOptimism && (
+        <Alert
+          message={
+            <>
+            ⚠️ <b>Important Notice:</b> The statuses <b>&quot;Closed&quot;</b> and{" "}
+            <b>&quot;Succeeded&quot;</b> displayed for Proposals 2 & 3 are incorrect. 🛠️
+            Voting has been extended and remains open. ✅ We are actively
+            working to fix this issue. Please check back later to cast your
+            vote! 🗳️
+          </>
+          }
+          type="error"
+          onClose={handleCloseAlert}
+        />
+      )} */}
       <div className="rounded-[2rem] mt-4">
         {displayedProposals.map((proposal: Proposal, index: number) => (
           <div

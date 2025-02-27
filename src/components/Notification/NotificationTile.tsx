@@ -98,8 +98,19 @@ function NotificationTile({ data, index, length }: NotificationTileProps) {
               {data.notification_title}
               {renderTitleContent()}
             </h1>
-            <p className={`font-normal text-sm text-[#414141] `}>
-              {data.content}
+            <p className="font-normal text-sm text-[#414141]">
+              {data.content.includes("Reason:")
+                ? data.content.split("Reason:").map((part, index) =>
+                    index === 0 ? (
+                      <span key={index}>{part.trim()}</span>
+                    ) : (
+                      <span key={index}>
+                        <br />
+                        <strong>Reason:</strong> {part.trim()}
+                      </span>
+                    )
+                  )
+                : data.content}
             </p>
           </div>
         </div>

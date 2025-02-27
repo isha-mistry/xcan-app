@@ -3,7 +3,7 @@ import React from 'react';
 import { XCircle } from 'lucide-react';
 
 interface AlertProps {
-  message: string;
+  message: React.ReactNode;
   type?: 'info' | 'warning' | 'error' | 'success'; // Optional: Alert type for styling
   onClose?: () => void; // Optional: Callback when the close button is clicked
 }

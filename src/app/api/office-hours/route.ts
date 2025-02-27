@@ -63,7 +63,6 @@ async function sendNotifications(
         allUsers.map(async (user: any) => {
           const formattedTime = await timePromise;
           const hostENSNameOrAddress = await getDisplayNameOrAddr(hostAddress);
-          console.log("user address: ", user.address);
           return {
             receiver_address: user.address,
             content: `New office hours is scheduled on ${daoName} by ${hostENSNameOrAddress} on ${formattedTime} UTC.`,
@@ -182,6 +181,7 @@ const addMeetingsToExistingDAO = async (
       reference_id: uuidv4(),
       ...meeting,
       meeting_status: "Upcoming",
+      status: "active",
       thumbnail_image: randomImage,
       created_at: new Date(),
     };
@@ -233,6 +233,7 @@ const addNewDAOWithMeetings = async (
     const baseDocument = {
       reference_id: uuidv4(),
       ...meeting,
+      status: "active" as const,
       meeting_status: "Upcoming",
       thumbnail_image: randomImage,
       created_at: new Date(),
@@ -285,6 +286,7 @@ const createNewHostWithMeetings = async (
       reference_id: uuidv4(),
       ...meeting,
       meeting_status: "Upcoming",
+      status: "active" as const,
       thumbnail_image: randomImage,
       created_at: new Date(),
     };
@@ -341,6 +343,10 @@ export async function POST(req: NextRequest) {
 
     if (existingHost) {
       const existingDAO = existingHost.dao?.find((dao) => dao.name === daoName);
+      if (cacheWrapper.isAvailable) {
+        const cacheKey = `office-hours-all`;
+        await cacheWrapper.delete(cacheKey);
+      }
       if (existingDAO) {
         await addMeetingsToExistingDAO(
           collection,

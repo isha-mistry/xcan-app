@@ -16,6 +16,7 @@ import { fetchApi } from "@/utils/api";
 import { BASE_URL } from "@/config/constants";
 import { MeetingRecords } from "@/types/UserProfileTypes";
 import { Cloud, Link } from "lucide-react";
+import StatsGrid from "../ComponentUtils/StatesGrid";
 
 const StyledMDEditorWrapper = styled.div`
   .w-md-editor {
@@ -330,6 +331,12 @@ function UserInfo({
     setTempDesc(description || karmaDesc);
   }, [description, karmaDesc]);
 
+  const isLoading =
+    isSessionHostedLoading ||
+    isSessionAttendedLoading ||
+    isOfficeHoursHostedLoading ||
+    isOfficeHoursAttendedLoading;
+
   return (
     <div className="pt-4">
       <div className="flex gap-2 0.5xs:gap-4 rounded-xl text-sm flex-wrap">
@@ -356,38 +363,11 @@ function UserInfo({
           Offchain
         </button>
       </div>
-      <div className="grid xs:grid-cols-2 lg:grid-cols-4 gap-2 md:gap-5 mx-4 xs:mx-0 sm:mx-4 md:mx-16 lg:mx-0 mt-8">
-        {blocks.length > 0 ? (
-          blocks.map((key, index) => (
-            <div
-              key={index}
-              className={`bg-[#3E3D3D] text-white rounded-2xl px-3 py-7 cursor-pointer`}
-              onClick={() => router.push(`${key.ref}`)}
-            >
-              <div className="font-semibold text-3xl text-center pb-2">
-                {isSessionHostedLoading &&
-                isSessionAttendedLoading &&
-                isOfficeHoursHostedLoading &&
-                isOfficeHoursAttendedLoading ? (
-                  <div className="flex items-center justify-center">
-                    <RotatingLines
-                      visible={true}
-                      width="36"
-                      strokeColor="grey"
-                      ariaLabel="oval-loading"
-                    />
-                  </div>
-                ) : (
-                  key.number
-                )}
-              </div>
-              <div className="text-center text-sm">{key.desc}</div>
-            </div>
-          ))
-        ) : (
-          <div>No data available</div>
-        )}
-      </div>
+      <StatsGrid
+        blocks={blocks}
+        isLoading={isLoading}
+        onBlockClick={(ref: string) => router.push(ref)}
+      />
 
       {isSelfDelegate ? (
         <div

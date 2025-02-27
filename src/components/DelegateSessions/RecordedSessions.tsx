@@ -18,6 +18,9 @@ function RecordedSessions() {
   // const parseISO = dateFns;
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
   const [meetingData, setMeetingData] = useState<any>([]);
   const [karmaImage, setKarmaImage] = useState<any>();
   const [displayIFrame, setDisplayIFrame] = useState<number | null>(null);
@@ -70,11 +73,20 @@ function RecordedSessions() {
     getRecordedMeetings();
   };
 
-  const getRecordedMeetings = async () => {
+  const getRecordedMeetings = async (isLoadMore = false) => {
     try {
       setIsLoading(true);
+      if (!isLoadMore) {
+        setIsLoading(true);
+      } else {
+        setIsLoadingMore(true);
+        setIsLoading(false);
+      }
       setError(null);
-      const response = await fetch(`/api/get-recorded-meetings`, {
+      const response = await fetch(
+      // `/api/get-recorded-meetings`, 
+      `/api/get-recorded-meetings?page=${isLoadMore ? page + 1 : 1}&limit=10`,
+        {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -88,8 +100,18 @@ function RecordedSessions() {
       const resultData = await response.json();
 
       if (resultData.success) {
-        setMeetingData(resultData.data);
-        setSearchMeetingData(resultData.data);
+        // setMeetingData(resultData.data);
+        // setSearchMeetingData(resultData.data);
+        if (isLoadMore) {
+          setMeetingData([...meetingData, ...resultData.data]);
+          setSearchMeetingData([...searchMeetingData, ...resultData.data]);
+          setPage(page + 1);
+        } else {
+          setMeetingData(resultData.data);
+          setSearchMeetingData(resultData.data);
+          setPage(1);
+        }
+        setHasMore(resultData.data.length === 10);
       } else {
         throw new Error(resultData.message || "Failed to fetch meeting data");
       }
@@ -111,8 +133,17 @@ function RecordedSessions() {
         );
       }
     } finally {
-      setIsLoading(false);
+      // setIsLoading(false);
+      if (isLoadMore) {
+        setIsLoadingMore(false);
+      } else {
+        setIsLoading(false);
+      }
     }
+  };
+
+  const handleLoadMore = () => {
+    getRecordedMeetings(true);
   };
 
   const handleSearchChange = (query: string) => {
@@ -262,7 +293,20 @@ function RecordedSessions() {
         {isLoading ? (
           <RecordedSessionsSkeletonLoader />
         ) : meetingData && meetingData.length > 0 ? (
+          <>
           <RecordedSessionsTile meetingData={meetingData} />
+          {hasMore && (
+              <div className="flex justify-center mt-6 mb-8">
+                <button
+                  className="bg-blue-shade-100 text-white py-2 px-4 w-fit rounded-lg font-medium"
+                  onClick={handleLoadMore}
+                  disabled={isLoadingMore}
+                >
+                  {isLoadingMore ? "Loading..." : "View More"}
+                </button>
+              </div>
+            )}
+          </>
         ) : (
           <div className="flex flex-col justify-center items-center pt-10">
             <div className="text-5xl">☹️</div>{" "}
