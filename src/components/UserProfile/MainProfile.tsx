@@ -965,9 +965,9 @@ function MainProfile() {
                     src={
                       userData.displayImage
                         ? `https://gateway.lighthouse.storage/ipfs/${userData.displayImage}`
-                        : daoName && daoConfigs[daoName.toLowerCase()].logo
-                        ? daoConfigs[daoName.toLowerCase()].logo
-                        : ccLogo
+                        : daoName && typeof daoConfigs === 'object' && daoConfigs[daoName.toLowerCase()] 
+                          ? daoConfigs[daoName.toLowerCase()].logo || ccLogo
+                          : ccLogo
                     }
                     alt="user"
                     width={256}
