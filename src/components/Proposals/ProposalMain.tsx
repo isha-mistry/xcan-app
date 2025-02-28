@@ -58,6 +58,7 @@ import ConnectwalletHomePage from "../HomePage/ConnectwalletHomePage";
 import VotingTreemap from "./VotingOptions";
 import { set } from "video.js/dist/types/tech/middleware";
 import calculateEthBlockMiningTime from "@/utils/calculateBlockMiningTime";
+import { daoConfigs } from "@/config/daos";
 
 // Create a client
 const client = createPublicClient({
@@ -251,12 +252,19 @@ function ProposalMain({ props }: { props: Props }) {
       return;
     }
     let chain;
-    if (walletClient?.chain.name === "OP Mainnet") {
-      chain = "optimism";
-    } else if (walletClient?.chain.name === "Arbitrum One") {
-      chain = "arbitrum";
-    } else {
-      chain = "";
+    // if (walletClient?.chain.name === "OP Mainnet") {
+    //   chain = "optimism";
+    // } else if (walletClient?.chain.name === "Arbitrum One") {
+    //   chain = "arbitrum";
+    // } else {
+    //   chain = "";
+    // }
+
+    if(walletClient?.chain.name===daoConfigs[props.daoDelegates.toLowerCase()].chainName){
+      chain=daoConfigs[props.daoDelegates.toLowerCase()].name;
+    }
+    else{
+      chain="";
     }
 
     if (chain !== props.daoDelegates) {
@@ -286,15 +294,30 @@ function ProposalMain({ props }: { props: Props }) {
     }
     let chainAddress;
     let currentChain;
-    if (chain?.name === "OP Mainnet") {
-      chainAddress = "0xcDF27F107725988f2261Ce2256bDfCdE8B382B10";
-      currentChain = "optimism";
-    } else if (chain?.name === "Arbitrum One") {
-      chainAddress = data.contractSource.contractAddress;
-      currentChain = "arbitrum";
-    } else {
-      currentChain = "";
-      return;
+    // if (chain?.name === "OP Mainnet") {
+    //   chainAddress = "0xcDF27F107725988f2261Ce2256bDfCdE8B382B10";
+    //   currentChain = "optimism";
+    // } else if (chain?.name === "Arbitrum One") {
+    //   chainAddress = data.contractSource.contractAddress;
+    //   currentChain = "arbitrum";
+    // } else {
+    //   currentChain = "";
+    //   return;
+    // }
+
+    if(chain?.name){
+      if(daoConfigs[props.daoDelegates.toLowerCase()].useContractSourceAddress?.Address){
+        chainAddress=daoConfigs[props.daoDelegates.toLowerCase()].useContractSourceAddress?.Address;
+        currentChain=daoConfigs[props.daoDelegates.toLowerCase()].name.toLowerCase();
+      }
+      else if(!daoConfigs[props.daoDelegates.toLowerCase()].useContractSourceAddress?.Address){
+        currentChain=daoConfigs[props.daoDelegates.toLowerCase()].name.toLowerCase()
+        chainAddress=data.contractSource.contractAddress;  
+      }
+      else{
+        currentChain="";
+        return;
+      }
     }
 
     if (currentChain === "") {
@@ -304,11 +327,12 @@ function ProposalMain({ props }: { props: Props }) {
         try {
           const delegateTx = await walletClient.writeContract({
             address: chainAddress,
-            chain: props.daoDelegates === "arbitrum" ? arbitrum : optimism,
-            abi:
-              props.daoDelegates === "arbitrum"
-                ? arb_proposals_abi
-                : op_proposals_abi,
+            // chain: props.daoDelegates === "arbitrum" ? arbitrum : optimism,
+            chain:daoConfigs[props.daoDelegates].viemchain,
+            abi:daoConfigs[props.daoDelegates].proposalAbi,
+              // props.daoDelegates === "arbitrum"
+              //   ? arb_proposals_abi
+              //   : op_proposals_abi,
             functionName: "castVoteWithReason",
             args: [proposalId, vote, comment],
             account: walletAddress,
@@ -336,11 +360,12 @@ function ProposalMain({ props }: { props: Props }) {
         try {
           const delegateTx = await walletClient.writeContract({
             address: chainAddress,
-            chain: props.daoDelegates === "arbitrum" ? arbitrum : optimism,
-            abi:
-              props.daoDelegates === "arbitrum"
-                ? arb_proposals_abi
-                : op_proposals_abi,
+            // chain: props.daoDelegates === "arbitrum" ? arbitrum : optimism,
+            chain:daoConfigs[props.daoDelegates].viemchain,
+            abi:daoConfigs[props.daoDelegates].proposalAbi,
+              // props.daoDelegates === "arbitrum"
+              //   ? arb_proposals_abi
+              //   : op_proposals_abi,
             functionName: "castVote",
             args: [proposalId, vote],
             account: walletAddress,
@@ -365,24 +390,34 @@ function ProposalMain({ props }: { props: Props }) {
       }
     }
   };
-  const { data: hasVotedOptimism } = useReadContract({
-    abi: op_proposals_abi,
-    address: '0xcDF27F107725988f2261Ce2256bDfCdE8B382B10',
-    functionName: "hasVoted",
-    args: [props.id, walletAddress],
-  });
+  // const { data: hasVotedOptimism } = useReadContract({
+  //   abi: op_proposals_abi,
+  //   address: '0xcDF27F107725988f2261Ce2256bDfCdE8B382B10',
+  //   functionName: "hasVoted",
+  //   args: [props.id, walletAddress],
+  // });
 
-  const { data: hasVotedArbitrum } = useReadContract({
-    abi: arb_proposals_abi,
-    address: data?.contractSource?.contractAddress,
+  // const { data: hasVotedArbitrum } = useReadContract({
+  //   abi: arb_proposals_abi,
+  //   address: data?.contractSource?.contractAddress,
+  //   functionName: "hasVoted",
+  //   args: [props.id, walletAddress],
+  // });
+
+  const { data: has_Voted } = useReadContract({
+    abi: daoConfigs[props.daoDelegates.toLowerCase()].proposalAbi,
+    address: daoConfigs[props.daoDelegates.toLowerCase()].useContractSourceAddress?.Address?daoConfigs[props.daoDelegates.toLowerCase()].useContractSourceAddress?.Address:data?.contractSource?.contractAddress,
     functionName: "hasVoted",
     args: [props.id, walletAddress],
   });
 
   // Use the appropriate data based on the network
-  const hasUserVoted = props.daoDelegates === "optimism"
-    ? Boolean(hasVotedOptimism)
-    : Boolean(hasVotedArbitrum);
+  // const hasUserVoted = props.daoDelegates === "optimism" 
+  // ? Boolean(hasVotedOptimism) 
+  // : Boolean(hasVotedArbitrum);
+
+
+  const hasUserVoted=Boolean(has_Voted);
 
   useEffect(() => {
     setHasVoted(hasUserVoted);
@@ -669,10 +704,12 @@ function ProposalMain({ props }: { props: Props }) {
         }
       } else {
         setError(null);
-
         try {
+          const proposalEndpoint=daoConfigs[props.daoDelegates].proposalAPIendpoint?.ProposalEndpoint;
+          const proposalQueueEndpoint=daoConfigs[props.daoDelegates].proposalAPIendpoint?.ProposalQueueEndpoint;
+
           const response = await fetch(
-            `/api/get-arbitrumproposals?proposalId=${props.id}`
+            `${proposalEndpoint}?proposalId=${props.id}`
           );
           const result = await response.json();
           const deadlineBlock = result.data[0].extension?.extendedDeadline || result.data[0].endBlock;
@@ -681,7 +718,7 @@ function ProposalMain({ props }: { props: Props }) {
           setVotingEndTime(proposalEndtimestamp.endDate);
           setData(result.data[0]);
 
-          const queueResponse = await fetch("/api/get-arbitrum-queue-info");
+          const queueResponse = await fetch(`${proposalQueueEndpoint}`);
           const queueData = await queueResponse.json();
 
           const queueInfo = queueData.data.proposalQueueds.find(
@@ -926,11 +963,18 @@ function ProposalMain({ props }: { props: Props }) {
   };
 
   const handleAddressClick = (address: any) => {
-    if (props.daoDelegates === "optimism") {
-      router.push(`/optimism/${address}?active=info`);
-    } else {
-      router.push(`/arbitrum/${address}?active=info`);
+
+    const currentDAO=daoConfigs[props.daoDelegates];
+
+    if(currentDAO){
+      router.push(`/${currentDAO.name.toLowerCase()}/${address}?active=info`);
     }
+
+    // if (props.daoDelegates === "optimism") {
+    //   router.push(`/optimism/${address}?active=info`);
+    // } else {
+    //   router.push(`/arbitrum/${address}?active=info`);
+    // }
   };
   const date = data?.blockTimestamp;
   const formatYAxis = (value: number) => {
@@ -1212,20 +1256,17 @@ function ProposalMain({ props }: { props: Props }) {
         </div>
 
       </div>
-      {props.daoDelegates === "optimism" && optimismVoteOptions ? (
-        <div className="rounded-[1rem] mx-4 my-3 md:mx-6 px-4 lg:mx-16 pb-6 pt-6 transition-shadow duration-300 ease-in-out shadow-xl bg-gray-50 font-poppins relative flex justify-center items-center font-extralight tracking-wide">
-          {loading || !optimismVoteOptions ? (
-            <div className="flex items-center justify-center w-full h-[500px]">
-              <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-black-shade-900"></div>
-            </div>
-          ) : (
-            <VotingTreemap
-              votingData={optimismVoteOptions}
-              winners={winners}
-            />
-          )}
-        </div>
-      ) : null}
+  {daoConfigs[props.daoDelegates.toLowerCase()].name==="optimism" && optimismVoteOptions ? (
+  <div className={`rounded-[1rem] mx-4 my-3 md:mx-6 px-4 lg:mx-16 pb-6 pt-6 transition-shadow duration-300 ease-in-out shadow-xl bg-gray-50 font-poppins relative flex justify-center items-center font-extralight tracking-wide`}>
+    {loading ? (
+      <div className="flex items-center justify-center w-full h-[500px]">
+        <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-black-shade-900"></div>
+      </div>
+    ) : (
+      <VotingTreemap votingData={optimismVoteOptions} winners={winners} />
+    )}
+  </div>
+) : null}
 
       <h1 className="my-8 mx-4 md:mx-6 lg:mx-16 text-2xl lg:text-4xl font-semibold text-blue-shade-100 font-poppins">
         Voters

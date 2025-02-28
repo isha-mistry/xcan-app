@@ -13,6 +13,7 @@ import ProposalVotedRightSkeletonLoader from "../SkeletonLoader/ProposalVotedRig
 import { useRouter } from "next-nprogress-bar";
 import { RiExternalLinkLine } from "react-icons/ri";
 import Link from "next/link";
+import { daoConfigs } from "@/config/daos";
 
 Chart.register(ArcElement, Tooltip, Legend);
 
@@ -121,16 +122,26 @@ export const fetchProposalDescriptions = async (
   daoName: any,
   address: any
 ) => {
+
+  const currentDAO = daoConfigs[daoName];
+
+  const client = createClient({
+    url: currentDAO.proposalUrl,
+    exchanges: [cacheExchange, fetchExchange],
+  });
+
   let proposalIdsResult: any;
-  if (daoName === "optimism") {
-    proposalIdsResult = await op_client.query(VoterQuery(first, skip), {
-      address: address,
-    });
-  } else if (daoName === "arbitrum") {
-    proposalIdsResult = await arb_client.query(VoterQuery(first, skip), {
-      address: address,
-    });
-  }
+  // if (daoName === "optimism") {
+  //   proposalIdsResult = await op_client.query(VoterQuery(first, skip), {
+  //     address: address,
+  //   });
+  // } else if (daoName === "arbitrum") {
+  //   proposalIdsResult = await arb_client.query(VoterQuery(first, skip), {
+  //     address: address,
+  //   });
+  // }
+
+  proposalIdsResult=await client.query(VoterQuery(first,skip),{address:address});
 
   const voteCasts = proposalIdsResult.data.voteCasts || [];
   const voteCastWithParamsCollection =
@@ -146,21 +157,26 @@ export const fetchProposalDescriptions = async (
 
   let descriptionsPromises;
   let descriptionsResults: any;
-  if (daoName === "optimism") {
-    descriptionsPromises = proposalIds.map((proposalId: any) => {
-      return op_client
-        .query(opDescription, { proposalId: proposalId.proposalId.toString() })
-        .toPromise();
-    });
+
+  descriptionsPromises=proposalIds.map((proposalId:any)=>{
+    return client.query(currentDAO.descriptionQuery,{proposalId:proposalId.proposalId.toString()}).toPromise();
+  })
+
+  // if (daoName === "optimism") {
+  //   descriptionsPromises = proposalIds.map((proposalId: any) => {
+  //     return op_client
+  //       .query(opDescription, { proposalId: proposalId.proposalId.toString() })
+  //       .toPromise();
+  //   });
+  //   descriptionsResults = (await Promise.all(descriptionsPromises)) || [];
+  // } else if (daoName === "arbitrum") {
+  //   descriptionsPromises = proposalIds.map((proposalId: any) => {
+  //     return arb_client
+  //       .query(arbDescription, { proposalId: proposalId.proposalId.toString() })
+  //       .toPromise();
+  //   });
     descriptionsResults = (await Promise.all(descriptionsPromises)) || [];
-  } else if (daoName === "arbitrum") {
-    descriptionsPromises = proposalIds.map((proposalId: any) => {
-      return arb_client
-        .query(arbDescription, { proposalId: proposalId.proposalId.toString() })
-        .toPromise();
-    });
-    descriptionsResults = (await Promise.all(descriptionsPromises)) || [];
-  }
+
 
   const FinalResult = descriptionsResults
     .flatMap((result: any, index: any) =>
@@ -209,6 +225,8 @@ export const fetchGraphData = async (daoName: any, pageData: any) => {
     return { 0: 0, 1: 0, 2: 0 };
   }
 };
+
+
 export function formatNumber(num: any) {
   if (num >= 1e9) {
     return (num / 1e9).toFixed(2) + "B"; // Billion

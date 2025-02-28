@@ -1,9 +1,10 @@
 import { NextRequest } from "next/server";
 import { ImageResponse } from "next/og";
 import { IMAGE_URL } from "@/config/staticDataUtils";
+import { daoConfigs } from "@/config/daos";
 export const revalidate = 0;
 
-export const runtime = "edge";
+// export const runtime = "edge";
 
 const size = {
   width: 1200,
@@ -17,15 +18,19 @@ export async function GET(req: NextRequest) {
   const avatar = searchParams.get("avatar") || "";
   const dao_name = searchParams.get("dao_name") || "";
 
+  const currentDAO=daoConfigs[dao_name];
+
   let icon = "";
 
-  if (dao_name === "optimism") {
-    icon =
-      "https://gateway.lighthouse.storage/ipfs/QmXaKNwUxvd4Ksc9R6hd36eBo97e7e7YPDCVuvHwqG4zgQ";
-  } else if (dao_name === "arbitrum") {
-    icon =
-      "https://gateway.lighthouse.storage/ipfs/QmdP6ZkLq4FF8dcvxBs48chqFiXu7Gr8SgPCqMtfr7VA4L";
-  }
+  icon=currentDAO.lighthoueseIcon;
+
+  // if (dao_name === "optimism") {
+  //   icon =
+  //     "https://gateway.lighthouse.storage/ipfs/QmXaKNwUxvd4Ksc9R6hd36eBo97e7e7YPDCVuvHwqG4zgQ";
+  // } else if (dao_name === "arbitrum") {
+  //   icon =
+  //     "https://gateway.lighthouse.storage/ipfs/QmdP6ZkLq4FF8dcvxBs48chqFiXu7Gr8SgPCqMtfr7VA4L";
+  // }
 
   const main = await fetch(new URL("../assets/main.jpg", import.meta.url)).then(
     (res) => res.arrayBuffer()

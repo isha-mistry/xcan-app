@@ -10,6 +10,7 @@ import { OfficeHoursProps } from "@/types/OfficeHoursTypes";
 import RecordedSessionsSkeletonLoader from "../SkeletonLoader/RecordedSessionsSkeletonLoader";
 import OfficeHourTile from "../ComponentUtils/OfficeHourTile";
 import { Clock, Play, Calendar, BookOpen } from "lucide-react"; 
+import NoResultsFound from "@/utils/Noresult";
 
 function OfficeHours({ props }: { props: string }) {
   const [searchInput, setSearchInput] = useState("");
@@ -201,10 +202,11 @@ function OfficeHours({ props }: { props: string }) {
             <RecordedSessionsSkeletonLoader />
           ) : getCurrentViewData().length === 0 ? (
             <div className="flex flex-col justify-center items-center pt-10">
-              <div className="text-5xl">☹️</div>
+              {/* <div className="text-5xl">☹️</div>
               <div className="pt-4 font-semibold text-lg">
                 Oops, no such result available!
-              </div>
+              </div> */}
+              <NoResultsFound/>
             </div>
           ) : (
             <OfficeHourTile

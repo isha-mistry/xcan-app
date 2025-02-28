@@ -21,6 +21,7 @@ import { usePathname } from "next/navigation";
 import { useRouter } from "next-nprogress-bar";
 import { usePrivy } from "@privy-io/react-auth";
 import { useWalletAddress } from "@/app/hooks/useWalletAddress";
+import NoResultsFound from "@/utils/Noresult";
 
 interface Type {
   img: StaticImageData;
@@ -211,10 +212,11 @@ function Tile({
         )
       ) : (
         <div className="flex flex-col justify-center items-center">
-          <div className="text-5xl">☹️</div>{" "}
+          {/* <div className="text-5xl">☹️</div>{" "}
           <div className="pt-4 font-semibold text-lg">
             Oops, no such result available!
-          </div>
+          </div> */}
+          <NoResultsFound/>
         </div>
       )}
 

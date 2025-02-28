@@ -13,6 +13,9 @@ import RecordedSessionsSkeletonLoader from "../SkeletonLoader/RecordedSessionsSk
 import ErrorDisplay from "../ComponentUtils/ErrorDisplay";
 import { TimeoutError } from "viem";
 import { CiSearch } from "react-icons/ci";
+import { daoConfigs } from "@/config/daos";
+import { toLowerCase } from "video.js/dist/types/utils/str";
+import { DAOLogo } from "../DAOs/DAOlogos";
 
 function RecordedSessions() {
   // const parseISO = dateFns;
@@ -33,6 +36,8 @@ function RecordedSessions() {
   const [error, setError] = useState<string | null>(null);
   const [openSearch, setOpenSearch] = useState(false);
   const renderStartTime = useRef<number | null>(null);
+
+  const excludedDaos = ["arbitrumSepolia"];
 
   useEffect(() => {
     // Capture the start time
@@ -261,32 +266,28 @@ function RecordedSessions() {
             >
               All
             </button>
-            <button
-              className={`flex items-center justify-center size-[26px] sm:size-[29px] md:size-[29px]`}
-              onClick={() => handleFilters("optimism")}
-            >
-              <Image
-                src={oplogo}
-                alt="optimism"
-                className={`size-full ${
-                  activeButton === "optimism" ? "opacity-100" : "opacity-50"
-                }`}
-              />
-              {/* <span className="hidden md:inline ml-1.5">Optimism</span> */}
-            </button>
-            <button
-              className={`flex items-center justify-center size-[26px] sm:size-[29px] md:size-[29px]`}
-              onClick={() => handleFilters("arbitrum")}
-            >
-              <Image
-                src={arbcir}
-                alt="arbitrum"
-                className={`size-full ${
-                  activeButton === "arbitrum" ? "opacity-100" : "opacity-50"
-                }`}
-              />
-              {/* <span className="hidden md:inline ml-1.5">Arbitrum</span> */}
-            </button>
+
+            {Object.entries(daoConfigs)
+              .filter(([key]) => !excludedDaos.includes(key)) // Exclude unwanted DAOs
+              .map(([key, dao]) => (
+                <button
+                  key={key}
+                  className="flex items-center justify-center size-[26px] sm:size-[29px] md:size-[29px]"
+                  onClick={() => handleFilters(dao.name.toLocaleLowerCase())}
+                >
+                  <Image
+                    src={dao.logo}
+                    width={100}
+                    height={100}
+                    alt={`${dao.name} logo`}
+                    className={`size-full rounded-full ${
+                      activeButton === dao.name.toLocaleLowerCase()
+                        ? "opacity-100"
+                        : "opacity-50"
+                    }`}
+                  />
+                </button>
+              ))}
           </div>
         </div>
 

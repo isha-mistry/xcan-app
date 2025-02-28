@@ -40,7 +40,7 @@ import { WagmiProvider, createConfig } from "@privy-io/wagmi";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { SessionProvider, signIn } from "next-auth/react";
 import { http } from "viem";
-import { mainnet, optimism, arbitrum, arbitrumSepolia } from "viem/chains";
+import {optimism, arbitrum, arbitrumSepolia} from "viem/chains";
 // import { SiweMessage } from 'siwe';
 import { getCsrfToken } from "next-auth/react";
 import { useWalletClient,cookieStorage,createStorage } from "wagmi";
@@ -128,10 +128,18 @@ const privyConfig: PrivyClientConfig = {
     requireUserPasswordOnCreate: true,
     noPromptOnSignature: false,
   },
-  loginMethods: ["wallet", "google", "farcaster"],
+  loginMethods: ["wallet", "google", "farcaster",],
   appearance: {
     showWalletLoginFirst: true,
     logo: logo.src,
+    walletList: [
+      "metamask",
+      "rainbow",
+      "wallet_connect",
+      "coinbase_wallet",
+      "uniswap",
+      "rabby_wallet",
+    ],
   },
   defaultChain: optimism,
 };

@@ -11,6 +11,7 @@ import VotedOnOptions from "@/assets/images/votedOnOption.png";
 import { Tooltip as NextUITooltip } from "@nextui-org/react";
 import ProposalStatus from "./ProposalStatus";
 import Alert from "../Alert/Alert";
+import { daoConfigs } from "@/config/daos";
 
 interface Proposal {
   proposalId: string;
@@ -131,9 +132,17 @@ function Proposals({ props }: { props: string }) {
         return;
       }
 
+      const proposalEndpoint = isOptimism
+        ? "/api/get-proposals"
+        : daoConfigs[props]?.proposalAPIendpoint?.ProposalEndpoint;
+
+      if (!proposalEndpoint) {
+        throw new Error("Proposal endpoint is missing.");
+      }
+
       // Fetch proposals and vote summary
       const [proposalsResponse, voteSummaryResponse] = await Promise.all([
-        fetch(isOptimism ? "/api/get-proposals" : "/api/get-arbitrumproposals"),
+        fetch(proposalEndpoint),
         fetch(`/api/get-vote-summary?dao=${props}`),
       ]);
 
@@ -203,8 +212,9 @@ function Proposals({ props }: { props: string }) {
             };
           });
 
-        // Fetch queue info for Arbitrum
-        const queueResponse = await fetch("/api/get-arbitrum-queue-info");
+        // Fetch queue info for DAO
+        const queueEndpoint=daoConfigs[props].proposalAPIendpoint?.ProposalQueueEndpoint;
+        const queueResponse = await fetch(`${queueEndpoint}`);
         if (!queueResponse.ok) {
           throw new Error("Failed to fetch queue information");
         }
@@ -257,7 +267,7 @@ function Proposals({ props }: { props: string }) {
       if (!response.ok) throw new Error("Failed to fetch proposal timing");
       const data = await response.json();
       setPage(data.currentPage + 1); // Increment page
-
+      console.log("arbitrum data",data) 
       setProposalTiming((prevProposals: any) => {
         if (reset) {
           return [...data.proposals]; // Reset state with new data
@@ -745,7 +755,7 @@ function Proposals({ props }: { props: string }) {
 
   return (
     <>
-    {/* {showAlert && !isOptimism && (
+      {/* {showAlert && !isOptimism && (
         <Alert
           message={
             <>

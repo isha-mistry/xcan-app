@@ -10,6 +10,7 @@ import RecordedSessionsSkeletonLoader from "../SkeletonLoader/RecordedSessionsSk
 import OfficeHourTile from "../ComponentUtils/OfficeHourTile";
 import { CiSearch } from "react-icons/ci";
 import { Calendar, CheckCircle, Clock, Users } from "lucide-react";
+import NoResultsFound from "@/utils/Noresult";
 
 interface Type {
   daoDelegates: string;
@@ -241,10 +242,11 @@ function DelegateOfficeHrs({ props }: { props: Type }) {
             <RecordedSessionsSkeletonLoader />
           ) : getCurrentData().length === 0 ? (
             <div className="flex flex-col justify-center items-center pt-10">
-              <div className="text-5xl">☹️</div>
+              {/* <div className="text-5xl">☹️</div>
               <div className="pt-4 font-semibold text-lg">
                 Oops, no such result available!
-              </div>
+              </div> */}
+              <NoResultsFound/>
             </div>
           ) : (
             <OfficeHourTile

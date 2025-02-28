@@ -36,6 +36,8 @@ import { motion } from "framer-motion";
 import { calculateTempCpi } from "@/actions/calculatetempCpi";
 import { fetchApi } from "@/utils/api";
 import { Address } from "viem";
+import { daoConfigs } from "@/config/daos";
+import { cacheExchange, createClient, fetchExchange } from "urql";
 import {
   ArrowsRightLeftIcon ,  // Example icon from Heroicons
   FireIcon,
@@ -126,7 +128,8 @@ function DelegatesList({ props }: { props: string }) {
           return {
             ...delegate,
             adjustedBalance: delegate.latestBalance / 10 ** 18,
-            profilePicture: props === "optimism" ? OPLogo : ARBLogo,
+            // profilePicture: props === "optimism" ? OPLogo : ARBLogo,
+            profilePicture:daoConfigs[props].logo,
             ensName: truncateAddress(delegate.delegate),
           };
         })
@@ -184,7 +187,8 @@ function DelegatesList({ props }: { props: string }) {
             const formattedDelegate = {
               delegate: filtered[0].id,
               adjustedBalance: filtered[0].latestBalance / 10 ** 18,
-              profilePicture: props === "optimism" ? OPLogo : ARBLogo,
+              // profilePicture: props === "optimism" ? OPLogo : ARBLogo,
+              profilePicture:daoConfigs[props].logo,
               ensName: truncateAddress(filtered[0].id),
             };
             setDelegateData([formattedDelegate]);
@@ -266,8 +270,15 @@ function DelegatesList({ props }: { props: string }) {
     const toAddress = delegateObject.delegate;
     const token = await getAccessToken();
     setDelegateOpen(true);
+
+    const client = createClient({
+      url: daoConfigs[props].delegateChangedsUrl,
+      exchanges: [cacheExchange, fetchExchange],
+    });
+    
+
     try {
-      const data = await (props === "optimism" ? op_client : arb_client).query(
+      const data = await client.query(
         DELEGATE_CHANGED_QUERY,
         {
           delegator: walletAddress,
@@ -282,7 +293,7 @@ function DelegatesList({ props }: { props: string }) {
       console.error(err);
     }
 
-    if (props === "optimism") {
+    if (daoConfigs[props].name.toLowerCase()==="optimism") {
       try {
         setTempCpiCalling(true);
         const result = await calculateTempCpi(
@@ -346,8 +357,9 @@ function DelegatesList({ props }: { props: string }) {
   function getDaoNameFromUrl() {
     if (typeof window !== "undefined") {
       const url = window.location.href;
-      if (url.includes("optimism")) return "optimism";
-      if (url.includes("arbitrum")) return "arbitrum";
+      const currentDAO=daoConfigs[props];
+      if (url.includes(currentDAO.name.toLowerCase())) return currentDAO.name.toLowerCase();
+      // if (url.includes("arbitrum")) return "arbitrum";
     }
     return "";
   }
@@ -370,7 +382,8 @@ function DelegatesList({ props }: { props: string }) {
       return;
     }
 
-    const chainAddress = getChainAddress(chain?.name);
+    // const chainAddress = getChainAddress(chain?.name);
+    const chainAddress=daoConfigs[props.toLowerCase()].chainAddress;
     if (!chainAddress) {
       toast.error("Invalid chain address,try again!");
       pushToGTM({
@@ -384,8 +397,10 @@ function DelegatesList({ props }: { props: string }) {
       return;
     }
 
-    const network = props === "optimism" ? "OP Mainnet" : "Arbitrum One";
-    const chainId = props === "optimism" ? 10 : 42161;
+    // const network = props === "optimism" ? "OP Mainnet" : "Arbitrum One";
+    const network=daoConfigs[props].chainName;
+    // const chainId = props === "optimism" ? 10 : 42161;
+    const chainId=daoConfigs[props].chainId;
 
     try {
       setDelegatingToAddr(true);
@@ -766,7 +781,7 @@ function DelegatesList({ props }: { props: string }) {
           }
           displayImage={
             selectedDelegate.profilePicture ||
-            (props === "optimism" ? OPLogo : ARBLogo)
+            (daoConfigs[props].logo)
           }
           daoName={props}
           addressCheck={same}

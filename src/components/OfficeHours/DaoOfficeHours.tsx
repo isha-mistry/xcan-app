@@ -28,8 +28,10 @@ import { OfficeHoursProps } from "@/types/OfficeHoursTypes";
 import OfficeHourTile from "../ComponentUtils/OfficeHourTile";
 import RecordedSessionsSkeletonLoader from "../SkeletonLoader/RecordedSessionsSkeletonLoader";
 import { BookOpen, Calendar, Clock } from "lucide-react";
+import NoResultsFound from "@/utils/Noresult";
 import oplogo from "@/assets/images/daos/op.png";
 import arbcir from "@/assets/images/daos/arb.png";
+import { daoConfigs } from "@/config/daos";
 interface Type {
   img: StaticImageData;
   title: string;
@@ -50,6 +52,7 @@ function DaoOfficeHours() {
   const { walletAddress } = useWalletAddress();
   const [dataLoading, setDataLoading] = useState(true);
   const [activeButton, setActiveButton] = useState("all");
+  const excludedDaos = ["arbitrumSepolia"]
 
   // Original data from API
   const [originalData, setOriginalData] = useState({
@@ -240,32 +243,28 @@ function DaoOfficeHours() {
               >
                 All
               </button>
-              <button
-                className={`flex items-center justify-center size-[26px] sm:size-[29px] md:size-[29px]`}
-                onClick={() => handleFilters("optimism")}
-              >
-                <Image
-                  src={oplogo}
-                  alt="optimism"
-                  className={`size-full ${
-                    activeButton === "optimism" ? "opacity-100" : "opacity-50"
-                  }`}
-                />
-                {/* <span className="hidden md:inline ml-1.5">Optimism</span> */}
-              </button>
-              <button
-                className={`flex items-center justify-center size-[26px] sm:size-[29px] md:size-[29px]`}
-                onClick={() => handleFilters("arbitrum")}
-              >
-                <Image
-                  src={arbcir}
-                  alt="arbitrum"
-                  className={`size-full ${
-                    activeButton === "arbitrum" ? "opacity-100" : "opacity-50"
-                  }`}
-                />
-                {/* <span className="hidden md:inline ml-1.5">Arbitrum</span> */}
-              </button>
+
+              {Object.entries(daoConfigs)
+                .filter(([key]) => !excludedDaos.includes(key)) // Exclude unwanted DAOs
+                .map(([key, dao]) => (
+                  <button
+                    key={key}
+                    className="flex items-center justify-center size-[26px] sm:size-[29px] md:size-[29px]"
+                    onClick={() => handleFilters(dao.name.toLocaleLowerCase())}
+                  >
+                    <Image
+                      src={dao.logo}
+                      width={100}
+                      height={100}
+                      alt={`${dao.name} logo`}
+                      className={`size-full rounded-full ${
+                        activeButton === dao.name.toLocaleLowerCase()
+                          ? "opacity-100"
+                          : "opacity-50"
+                      }`}
+                    />
+                  </button>
+                ))}
             </div>
           </div>
 
@@ -275,10 +274,11 @@ function DaoOfficeHours() {
               <RecordedSessionsSkeletonLoader />
             ) : getCurrentData().length === 0 ? (
               <div className="flex flex-col justify-center items-center pt-10">
-                <div className="text-5xl">☹️</div>
+                {/* <div className="text-5xl">☹️</div>
                 <div className="pt-4 font-semibold text-lg">
                   Oops, no such result available!
-                </div>
+                </div> */}
+                <NoResultsFound />
               </div>
             ) : (
               <OfficeHourTile

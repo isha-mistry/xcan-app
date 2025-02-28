@@ -130,6 +130,18 @@ async function updateFollowing(
     .find({ address: { $regex: `^${follower_address}$`, $options: "i" } })
     .toArray();
 
+    console.log("Line 133:",documents[0]);
+
+   //removing cache key for maintain consistency of user data
+   const cacheKey = `Follower:${follower_address}`;
+
+   if(cacheWrapper.isAvailable){
+     await cacheWrapper.delete(cacheKey);
+   }
+ 
+
+  console.log("Line 141:",dao);
+
   if (documents.length > 0) {
     const document = documents[0];
     const dao_name = dao;

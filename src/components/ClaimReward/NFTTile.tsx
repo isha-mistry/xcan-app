@@ -26,6 +26,15 @@ function NFTTile({ nft }: NFTProps) {
   const [isLoading, setIsLoading] = useState(true);
 
   const getDaoLogo = (network: string) => {
+
+    // if(network==="arbitrum-sepolia"){
+    //   const trimNetwork=network.split("-")[0];
+    //   return daoConfigs[trimNetwork.toLowerCase()].logo;
+    // }
+    // else{
+    //   return oplogo;
+    // }
+
     if (network === "optimism") {
       return oplogo;
     } else {

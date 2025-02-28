@@ -14,6 +14,7 @@ import { usePrivy } from "@privy-io/react-auth";
 import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 import { fetchApi } from "@/utils/api";
 import Alert from "../Alert/Alert";
+import NoResultsFound from "@/utils/Noresult";
 
 interface UserSessionsProps {
   isDelegate: boolean | undefined;
@@ -269,10 +270,11 @@ function UserSessions({
               <RecordedSessionsSkeletonLoader />
             ) : hostedDetails.length === 0 ? (
               <div className="flex flex-col justify-center items-center pt-10">
-                <div className="text-5xl">☹️</div>{" "}
+                {/* <div className="text-5xl">☹️</div>{" "}
                 <div className="pt-4 font-semibold text-lg">
                   Oops, no such result available!
-                </div>
+                </div> */}
+                <NoResultsFound/>
               </div>
             ) : (
               <RecordedSessionsTile
@@ -287,10 +289,11 @@ function UserSessions({
               <RecordedSessionsSkeletonLoader />
             ) : attendedDetails.length === 0 ? (
               <div className="flex flex-col justify-center items-center pt-10">
-                <div className="text-5xl">☹️</div>{" "}
+                {/* <div className="text-5xl">☹️</div>{" "}
                 <div className="pt-4 font-semibold text-lg">
                   Oops, no such result available!
-                </div>
+                </div> */}
+                <NoResultsFound/>
               </div>
             ) : (
               <RecordedSessionsTile
