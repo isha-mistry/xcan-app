@@ -31,6 +31,8 @@ const ProposalMainStatus = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const menuTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 });
 
   const blockNumber = "12345678"; // Example block number
   const blockExplorerUrl = "https://arbiscan.io/block/" + blockNumber;
@@ -176,6 +178,23 @@ const ProposalMainStatus = () => {
     tooltipTimeoutRef.current = setTimeout(() => {
       setActiveItem(null);
       setTooltipVisible(false);
+    }, 500);
+  };
+
+  const handleMenuMouseEnter = () => {
+    // Clear any existing menu timeout
+    if (menuTimeoutRef.current) {
+      clearTimeout(menuTimeoutRef.current);
+    }
+  };
+
+  const handleMenuMouseLeave = () => {
+    // Set timeout to close the menu after 0.5 seconds
+    if (menuTimeoutRef.current) {
+      clearTimeout(menuTimeoutRef.current);
+    }
+
+    menuTimeoutRef.current = setTimeout(() => {
       setMenuOpen(false);
     }, 500);
   };
@@ -188,18 +207,66 @@ const ProposalMainStatus = () => {
 
   const toggleMenu = (e: React.MouseEvent) => {
     e.stopPropagation();
+    e.preventDefault();
+    if (menuTimeoutRef.current) {
+      clearTimeout(menuTimeoutRef.current);
+    }
     setMenuOpen(!menuOpen);
 
-    // Clear any existing timeout to prevent tooltip from closing
-    if (tooltipTimeoutRef.current) {
-      clearTimeout(tooltipTimeoutRef.current);
+    if (!menuOpen && tooltipRef.current) {
+      const tooltipRect = tooltipRef.current.getBoundingClientRect();
+      const viewportWidth = window.innerWidth;
+      const viewportHeight = window.innerHeight;
+
+      // Calculate menu position relative to tooltip
+      // Position to the right of the tooltip
+      let top = tooltipRect.top;
+      let left = tooltipRect.right + 10; // 10px gap
+
+      // Menu dimensions (approximate)
+      const menuWidth = 224; // w-56 = 224px
+      const menuHeight = 100; // Approximate menu height
+
+      // Check if menu would extend beyond right edge of viewport
+      if (left + menuWidth > viewportWidth - 20) {
+        // Position to the left of the tooltip instead
+        left = tooltipRect.left - menuWidth - 10;
+
+        // If still out of bounds (not enough space on either side)
+        if (left < 20) {
+          // Position below the tooltip
+          left = tooltipRect.left;
+          top = tooltipRect.bottom + 10;
+
+          // If bottom placement would go beyond viewport
+          if (top + menuHeight > viewportHeight - 20) {
+            // Position above the tooltip
+            top = tooltipRect.top - menuHeight - 10;
+          }
+        }
+      }
+
+      // Final check to ensure menu stays within viewport bounds
+      if (top < 20) top = 20;
+      if (top + menuHeight > viewportHeight - 20)
+        top = viewportHeight - menuHeight - 20;
+      if (left < 20) left = 20;
+      if (left + menuWidth > viewportWidth - 20)
+        left = viewportWidth - menuWidth - 20;
+
+      setMenuPosition({ top, left });
     }
   };
 
   // Close menu when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+      if (
+        menuRef.current &&
+        !menuRef.current.contains(event.target as Node) &&
+        tooltipRef.current &&
+        !tooltipRef.current.contains(event.target as Node)
+      ) {
         setMenuOpen(false);
       }
     }
@@ -239,122 +306,61 @@ const ProposalMainStatus = () => {
 
     const tooltipElement = tooltipRef.current;
     const pointElement = pointRefs.current[activeItem];
-    const containerElement = containerRef.current;
 
-    if (!tooltipElement || !pointElement || !containerElement) {
+    if (!tooltipElement || !pointElement) {
       return;
     }
 
     const tooltipRect = tooltipElement.getBoundingClientRect();
     const pointRect = pointElement.getBoundingClientRect();
-    const containerRect = containerElement.getBoundingClientRect();
-    const viewportWidth = window.innerWidth;
-    const viewportHeight = window.innerHeight;
-
-    // Point center coordinates relative to container
-    const pointX = pointRect.left + pointRect.width / 2 - containerRect.left;
-    const pointY = pointRect.top + pointRect.height / 2 - containerRect.top;
 
     // Point center coordinates relative to viewport
     const pointViewportX = pointRect.left + pointRect.width / 2;
     const pointViewportY = pointRect.top + pointRect.height / 2;
 
-    // Tooltip dimensions
-    const tooltipWidth = tooltipRect.width;
-    const tooltipHeight = tooltipRect.height;
+    // Viewport dimensions
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
 
-    // Default position (below point)
-    let posLeft = pointX;
-    let posTop = pointY + 70;
-    let placement = "bottom";
+    // Calculate tooltip position
+    // Start with position below the point
+    let posLeft = pointViewportX - tooltipRect.width / 2;
+    let posTop = pointViewportY + 40; // Gap between point and tooltip
 
-    // Check if tooltip would extend beyond right edge of viewport
-    if (pointViewportX + tooltipWidth / 2 > viewportWidth - 20) {
-      // Position tooltip so right edge is 20px from viewport edge
-      const rightOverflow =
-        pointViewportX + tooltipWidth / 2 - (viewportWidth - 20);
-      posLeft = pointX - rightOverflow;
-      placement = "bottom-left";
+    // Check if tooltip would extend beyond right edge
+    if (posLeft + tooltipRect.width > viewportWidth - 20) {
+      posLeft = viewportWidth - tooltipRect.width - 20;
     }
 
-    // Check if tooltip would extend beyond left edge of viewport
-    if (pointViewportX - tooltipWidth / 2 < 20) {
-      // Position tooltip so left edge is 20px from viewport edge
-      const leftOverflow = 20 - (pointViewportX - tooltipWidth / 2);
-      posLeft = pointX + leftOverflow;
-      placement = "bottom-right";
+    // Check if tooltip would extend beyond left edge
+    if (posLeft < 20) {
+      posLeft = 20;
     }
 
-    // Check if tooltip would extend beyond bottom of viewport
-    if (pointViewportY + tooltipHeight + 70 > viewportHeight - 20) {
-      // Position tooltip above point
-      posTop = pointY - tooltipHeight - 20;
-
-      if (placement === "bottom") {
-        placement = "top";
-      } else if (placement === "bottom-left") {
-        placement = "top-left";
-      } else if (placement === "bottom-right") {
-        placement = "top-right";
-      }
+    // Check if tooltip would extend beyond bottom edge
+    if (posTop + tooltipRect.height > viewportHeight - 20) {
+      // Position tooltip above point instead
+      posTop = pointViewportY - tooltipRect.height - 20;
     }
 
-    // Update position
-    setTooltipPosition({ left: posLeft, top: posTop });
-    setTooltipPlacement(placement);
+    // Check if tooltip would extend beyond top edge
+    if (posTop < 20) {
+      posTop = 20;
+    }
+
+    // Update tooltip position
+    tooltipElement.style.left = `${posLeft}px`;
+    tooltipElement.style.top = `${posTop}px`;
   }, [tooltipVisible, activeItem]);
 
   // Fixed width tooltip positioned absolutely within the container
   const getTooltipClasses = () => {
-    // Base classes for tooltip
-    let classes =
-      "fixed w-52 p-4 bg-white rounded-lg shadow-xl border border-gray-100 backdrop-blur-sm bg-opacity-90 z-50 transition-all duration-300";
-
-    // Add arrow position classes based on placement
-    switch (tooltipPlacement) {
-      case "top":
-        classes += " arrow-bottom";
-        break;
-      case "bottom":
-        classes += " arrow-top";
-        break;
-      case "bottom-left":
-        classes += " arrow-top-left";
-        break;
-      case "bottom-right":
-        classes += " arrow-top-right";
-        break;
-      case "top-left":
-        classes += " arrow-bottom-left";
-        break;
-      case "top-right":
-        classes += " arrow-bottom-right";
-        break;
-    }
-
-    return classes;
-  };
-
-  // Get transform style based on placement
-  const getTooltipTransform = () => {
-    switch (tooltipPlacement) {
-      case "top":
-      case "bottom":
-        return "translate(-50%, 0)";
-      case "bottom-left":
-      case "top-left":
-        return "translate(-10%, 0)";
-      case "bottom-right":
-      case "top-right":
-        return "translate(-90%, 0)";
-      default:
-        return "translate(-50%, 0)";
-    }
+    return "fixed w-52 p-4 bg-white rounded-lg shadow-xl border border-gray-100 backdrop-blur-sm bg-opacity-90 z-50 transition-all duration-300";
   };
 
   return (
     <div
-      className="flex flex-col items-center justify-center w-full h-full relative p-8 bg-gradient-to-br from-gray-50 to-slate-50 rounded-[1rem]"
+      className="flex flex-col items-center justify-center w-full h-full relative p-8 rounded-[1rem]"
       ref={containerRef}
     >
       <h2 className="text-2xl font-bold mb-8 text-transparent bg-clip-text bg-gradient-to-r from-gray-700 to-slate-600">
@@ -374,7 +380,7 @@ const ProposalMainStatus = () => {
           const isPassed = isDatePassed(item.date);
           const isLastCompleted = index === lastCompletedIndex;
           const angle = index * (360 / timelineData.length) * (Math.PI / 180);
-          const radius = 120;
+          const radius = 124;
           const x = radius * Math.cos(angle - Math.PI / 2) + 128;
           const y = radius * Math.sin(angle - Math.PI / 2) + 128;
 
@@ -510,16 +516,13 @@ const ProposalMainStatus = () => {
           className={getTooltipClasses()}
           style={{
             position: "fixed",
-            top: pointRefs.current[activeItem]
-              ? pointRefs.current[activeItem]!.getBoundingClientRect().top +
-                (tooltipPlacement.startsWith("top") ? -80 : 70)
-              : 0,
-            left: pointRefs.current[activeItem]
-              ? pointRefs.current[activeItem]!.getBoundingClientRect().left +
-                pointRefs.current[activeItem]!.offsetWidth / 2
-              : 0,
-            transform: getTooltipTransform(),
+            top: 0,
+            left: 0,
+            transform: "none",
             opacity: tooltipVisible ? 1 : 0,
+            maxWidth: "calc(100vw - 40px)",
+            maxHeight: "calc(100vh - 40px)",
+            overflow: "auto",
           }}
           onMouseEnter={() => {
             // Keep tooltip open when mouse enters it
@@ -551,50 +554,6 @@ const ProposalMainStatus = () => {
               >
                 <FaEllipsisV className="text-gray-500 text-xs" />
               </div>
-
-              {menuOpen && (
-                <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-xl z-50 border border-gray-100">
-                  <div className="py-1">
-                    {/* View on Block Explorer */}
-                    <a
-                      href={blockExplorerUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center px-3 py-2 hover:bg-gray-100 cursor-pointer"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <FaExternalLinkAlt className="text-gray-500 mr-2 text-xs" />
-                      <span className="text-xs text-gray-700">
-                        View on Block Explorer
-                      </span>
-                    </a>
-
-                    {/* Block Number */}
-                    <div
-                      className="flex items-center justify-between px-3 py-2 hover:bg-gray-100 cursor-pointer"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        copyBlockNumber();
-                      }}
-                    >
-                      <div className="flex items-center">
-                        <FaCopy className="text-gray-500 mr-2 text-xs" />
-                        <div>
-                          <span className="text-xs text-gray-700 block">
-                            Arbitrum Block:
-                          </span>
-                          <span className="text-xs text-gray-500">
-                            {blockNumber}
-                          </span>
-                        </div>
-                      </div>
-                      <div className="text-xs text-green-500">
-                        {copySuccess ? "Copied!" : ""}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
             </div>
           </div>
           <div className="text-xs text-gray-500 mt-1">
@@ -620,6 +579,58 @@ const ProposalMainStatus = () => {
                   : "Completed"
                 : "Pending"}
             </span>
+          </div>
+        </div>
+      )}
+      {menuOpen && (
+        <div
+          ref={menuRef}
+          className="fixed w-56 bg-white rounded-lg shadow-xl z-50 border border-gray-100 overflow-hidden"
+          style={{
+            top: menuPosition.top,
+            left: menuPosition.left,
+            maxHeight: "calc(100vh - 40px)",
+            overflowY: "auto",
+          }}
+          onMouseEnter={handleMenuMouseEnter}
+          onMouseLeave={handleMenuMouseLeave}
+        >
+          <div className="py-1">
+            {/* View on Block Explorer */}
+            <a
+              href={blockExplorerUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center px-3 py-2 hover:bg-gray-100 cursor-pointer"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <FaExternalLinkAlt className="text-gray-500 mr-2 text-xs" />
+              <span className="text-xs text-gray-700">
+                View on Block Explorer
+              </span>
+            </a>
+
+            {/* Block Number */}
+            <div
+              className="flex items-center justify-between px-3 py-2 hover:bg-gray-100 cursor-pointer"
+              onClick={(e) => {
+                e.stopPropagation();
+                copyBlockNumber();
+              }}
+            >
+              <div className="flex items-center">
+                <FaCopy className="text-gray-500 mr-2 text-xs" />
+                <div>
+                  <span className="text-xs text-gray-700 block">
+                    Arbitrum Block:
+                  </span>
+                  <span className="text-xs text-gray-500">{blockNumber}</span>
+                </div>
+              </div>
+              <div className="text-xs text-green-500">
+                {copySuccess ? "Copied!" : ""}
+              </div>
+            </div>
           </div>
         </div>
       )}

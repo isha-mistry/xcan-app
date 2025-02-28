@@ -114,7 +114,7 @@ function RewardButton() {
           <div
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
-            className="absolute z-10 w-72 p-4 mt-2 right-0 bg-white rounded-lg shadow-xl border border-gray-200 transition-all duration-300 ease-in-out transform opacity-100 scale-100"
+            className="absolute z-20 w-72 p-4 mt-2 right-0 bg-white rounded-lg shadow-xl border border-gray-200 transition-all duration-300 ease-in-out transform opacity-100 scale-100"
           >
             <div className="text-sm">
               <h3 className="font-semibold text-lg mb-2 text-gray-800">

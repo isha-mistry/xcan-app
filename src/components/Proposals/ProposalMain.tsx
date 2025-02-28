@@ -59,6 +59,8 @@ import VotingTreemap from "./VotingOptions";
 import ProposalMainStatus from "./ProposalMainStatus";
 import ProposalVote from "../Notification/ProposalVote";
 import Proposalvotes from "./Proposalvotes";
+import ProposalvotesSkeletonLoader from "../SkeletonLoader/ProposalVotesSkeletonLoader";
+import ProposalMainStatusSkeletonLoader from "../SkeletonLoader/ProposalStatusSkeletonLoader";
 
 // Create a client
 const client = createPublicClient({
@@ -1163,7 +1165,7 @@ function ProposalMain({ props }: { props: Props }) {
 
       <div className="flex flex-col 1.3lg:flex-row gap-2 mx-4 md:mx-6 1.7lg:mx-16">
         <div
-          className={`w-full 1.3lg:w-[70%] rounded-[1rem] px-4 pb-6 pt-[68px] transition-shadow duration-300 ease-in-out shadow-xl bg-gray-50 font-poppins relative h-auto`}
+          className={`w-full 1.3lg:w-[70%] rounded-[1rem] px-4 pb-6 pt-[68px] transition-shadow duration-300 ease-in-out shadow-xl bg-gradient-to-br from-gray-50 to-slate-50 font-poppins relative h-auto`}
         >
           <div className="w-full flex items-center justify-end gap-2 absolute top-6 right-6 sm:right-12">
             <div className="">
@@ -1301,12 +1303,16 @@ function ProposalMain({ props }: { props: Props }) {
           </div>
         </div>
         <div className="flex flex-col md:flex-row 1.3lg:flex-col 1.3lg:w-[30%] gap-2">
-          <div className="w-full  rounded-[1rem] shadow-xl transition-shadow duration-300 ease-in-out font-poppins min-h-[416px] 1.3lg:h-fit h-full">
+          <div className="w-full z-10 rounded-[1rem] shadow-xl transition-shadow duration-300 ease-in-out bg-gradient-to-br from-gray-50 to-slate-50 font-poppins min-h-[416px] 1.3lg:h-fit h-full">
             <Proposalvotes />
+            {/* Add skeleton loader when data is loading */}
+            {/* <ProposalvotesSkeletonLoader/>   */}
           </div>
 
-          <div className="w-full  rounded-[1rem] shadow-xl transition-shadow duration-300 ease-in-out font-poppins h-fit min-h-[390px]">
+          <div className="w-full z-10  rounded-[1rem] shadow-xl transition-shadow duration-300 ease-in-out bg-gradient-to-br from-gray-50 to-slate-50 font-poppins h-fit min-h-[390px]">
             <ProposalMainStatus />
+            {/* Add skeleton loader when data is loading */}
+            {/* <ProposalMainStatusSkeletonLoader/> */}
           </div>
         </div>
       </div>
@@ -1329,7 +1335,7 @@ function ProposalMain({ props }: { props: Props }) {
       </h1>
       <div className="flex mb-20 mx-4 md:mx-6 1.7lg:mx-16">
         <div className="flex flex-col 2md:flex-row gap-8 items-center w-full">
-          <div className="h-[500px] w-full 2md:w-[40%] font-poppins px-2 0.2xs:px-4 flex items-center justify-center rounded-2xl bg-gray-50 transition-shadow duration-300 ease-in-out shadow-xl">
+          <div className="h-[500px] w-full 2md:w-[40%] font-poppins px-2 0.2xs:px-4 flex items-center justify-center rounded-2xl bg-gradient-to-br from-gray-50 to-slate-50 transition-shadow duration-300 ease-in-out shadow-xl">
             {isLoading ? (
               <div className="">
                 <ProposalMainVotersSkeletonLoader />
