@@ -54,7 +54,7 @@ const ProposalStatus: React.FC<ProposalStatusProps> = ({
             status = proposal.support1Weight! > proposal.support0Weight! ? "SUCCEEDED" : "DEFEATED";
           } else {
             // Default case for arbitrum if timing conditions aren't met
-            status = proposal.support1Weight! > proposal.support0Weight! ? "SUCCEEDED" : "DEFEATED";
+            status = "PENDING";
           }
         } else {
           // Other DAO networks logic
@@ -64,12 +64,13 @@ const ProposalStatus: React.FC<ProposalStatusProps> = ({
             canceledProposals.some((item) => item.proposalId === proposal.proposalId)
           ) {
             status = "CANCELLED";
-          } else if (proposal && currentTime.getTime() / 1000 < proposal.endTime) {
-            // If current time is less than endTime, status is PENDING
-            status = "PENDING";
-          } else {
+          } else if (proposal && currentTime.getTime() / 1000 > proposal.endTime) {
             // Otherwise check support for SUCCEEDED or DEFEATED
             status = proposal.support1Weight! > proposal.support0Weight! ? "SUCCEEDED" : "DEFEATED";
+            
+          } else {
+            // If current time is less than endTime, status is PENDING
+            status = "PENDING";
           }
         }
 

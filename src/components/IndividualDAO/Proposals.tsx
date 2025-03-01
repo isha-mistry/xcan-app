@@ -12,6 +12,7 @@ import { Tooltip as NextUITooltip } from "@nextui-org/react";
 import ProposalStatus from "./ProposalStatus";
 import Alert from "../Alert/Alert";
 import { daoConfigs } from "@/config/daos";
+import { ProposalStatusBadge } from "./ProposalStatusBadge";
 
 interface Proposal {
   proposalId: string;
@@ -77,7 +78,7 @@ function Proposals({ props }: { props: string }) {
   const [proposalTiming, setProposalTiming] = useState<any>(null);
   const [page, setPage] = useState(1); // Track the number of times "View More" is clicked
   const[showAlert, setShowAlert]=useState(true)
-
+  const [proposalStatuses, setProposalStatuses] = useState<{ [key: string]: string }>({});
   const handleCloseAlert = () => {
     setShowAlert(false);
   };
@@ -529,52 +530,6 @@ function Proposals({ props }: { props: string }) {
     proposals();
   }, [props]);
 
-  const getProposalStatus = (proposal: any, currentProposalTiming: any[]) => {
-    // First check if proposal has its own startTime and endTime
-    // console.log("proposal", proposal, "currentProposalTiming", currentProposalTiming);
-    if (proposal.startTime && proposal.endTime) {
-      const currentTime = Math.floor(Date.now() / 1000);
-      const startTime = proposal.startTime;
-      const endTime = proposal.endTime;
-
-      if (currentTime < startTime) {
-        return "Upcoming";
-      } else if (currentTime >= startTime && currentTime <= endTime) {
-        return "Active";
-      } else {
-        return "Closed";
-      }
-    }
-    // Then check in the proposalTiming array
-    const matchedProposal = currentProposalTiming?.find(
-      (p: any) => p.createdTransactionHash === proposal.transactionHash
-
-    );
-    if (matchedProposal) {
-      const currentTime = new Date();
-      const startTime = new Date(matchedProposal.startTime);
-      const endTime = new Date(matchedProposal.endTime);
-
-      if (currentTime < startTime) {
-        return "Upcoming";
-      } else if (currentTime >= startTime && currentTime <= endTime) {
-        return "Active";
-      } else {
-        return "Closed";
-      }
-    }
-
-    // Check if proposal is canceled
-    if (
-      Array.isArray(canceledProposals) &&
-      canceledProposals.some((item) => item.proposalId === proposal.proposalId)
-    ) {
-      return "Closed";
-    }
-
-    // Default status if nothing else matches
-    return "Unknown";
-  };
   const isProposalCanceled = (proposalId: string, canceledProposals: any[]) => {
     return (
       Array.isArray(canceledProposals) &&
@@ -835,13 +790,11 @@ function Proposals({ props }: { props: string }) {
               ) : (
                 <VoteLoader />
               )}
-              {/* {!(proposalTiming.length == displayedProposals.length) ? (
-                <div>Loading...</div> // You can replace this with a spinner or skeleton
-              ) : ( */}
               <div className="rounded-full bg-[#F4D3F9] border border-[#77367A] flex text-[#77367A] text-[10px] xs:text-xs h-[22px] items-center justify-center w-[92px] xs:h-fit py-[1px] xs:py-0.5 font-medium px-2 ">
-                {getProposalStatus(proposal, proposalTiming)}
-              </div>
-              {/* )} */}
+                <ProposalStatusBadge
+                  proposal={proposal} matchedProposal={proposalTiming?.find((timing: any) => timing.createdTransactionHash === proposal.transactionHash)} canceledProposals={canceledProposals}
+                />              
+                </div>
             </div>
           </div>
         ))}
