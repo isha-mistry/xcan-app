@@ -1,23 +1,17 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
+import OfficeHourTile from "../ComponentUtils/OfficeHourTile";
 import UserScheduledHours from "./UserAllOfficeHrs/UserScheduledHours";
+import RecordedSessionsSkeletonLoader from "../SkeletonLoader/RecordedSessionsSkeletonLoader";
+import NoResultsFound from "@/utils/Noresult";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useRouter } from "next-nprogress-bar";
 import { usePrivy } from "@privy-io/react-auth";
 import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 import { fetchApi } from "@/utils/api";
-import OfficeHourTile from "../ComponentUtils/OfficeHourTile";
-import RecordedSessionsSkeletonLoader from "../SkeletonLoader/RecordedSessionsSkeletonLoader";
 import { OfficeHoursProps } from "@/types/OfficeHoursTypes";
 import { CiSearch } from "react-icons/ci";
-import {
-  Calendar,
-  CalendarCheck,
-  CheckCircle,
-  Clock,
-  Users,
-} from "lucide-react";
-import Alert from "../Alert/Alert";
-import NoResultsFound from "@/utils/Noresult";
+import {Calendar,CalendarCheck,CheckCircle,Clock,Users,} from "lucide-react";
+
 
 interface UserOfficeHoursProps {
   isDelegate: boolean | undefined;
@@ -30,16 +24,19 @@ function UserOfficeHours({
   selfDelegate,
   daoName,
 }: UserOfficeHoursProps) {
+  
+
+  const { getAccessToken } = usePrivy();
+  const { walletAddress } = useWalletAddress();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [dataLoading, setDataLoading] = useState(true);
+  const [showLeftShadow, setShowLeftShadow] = useState(false);
+  const [showRightShadow, setShowRightShadow] = useState(false);
+
   const router = useRouter();
   const path = usePathname();
   const searchParams = useSearchParams();
-  const [searchQuery, setSearchQuery] = useState("");
-  const [dataLoading, setDataLoading] = useState(true);
-  const { getAccessToken } = usePrivy();
-  const { walletAddress } = useWalletAddress();
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
-  const [showLeftShadow, setShowLeftShadow] = useState(false);
-  const [showRightShadow, setShowRightShadow] = useState(false);
 
   // Original data from API
   const [originalData, setOriginalData] = useState({
@@ -95,25 +92,6 @@ function UserOfficeHours({
     setFilteredData(newFilteredData);
   };
 
-  // Get current data based on selected tab
-  const getCurrentData = () => {
-    const currentTab = searchParams.get("hours") as keyof typeof filteredData;
-    return filteredData[currentTab] || [];
-  };
-
-  useEffect(() => {
-    const checkForOverflow = () => {
-      const container = scrollContainerRef.current;
-      if (container) {
-        setShowRightShadow(container.scrollWidth > container.clientWidth);
-      }
-    };
-
-    checkForOverflow();
-    window.addEventListener("resize", checkForOverflow);
-    return () => window.removeEventListener("resize", checkForOverflow);
-  }, []);
-
   const handleScroll = () => {
     const container = scrollContainerRef.current;
     if (container) {
@@ -153,6 +131,25 @@ function UserOfficeHours({
       setDataLoading(false);
     }
   }, [walletAddress, daoName, getAccessToken]);
+
+
+  const getCurrentData = () => {
+    const currentTab = searchParams.get("hours") as keyof typeof filteredData;
+    return filteredData[currentTab] || [];
+  };
+
+  useEffect(() => {
+    const checkForOverflow = () => {
+      const container = scrollContainerRef.current;
+      if (container) {
+        setShowRightShadow(container.scrollWidth > container.clientWidth);
+      }
+    };
+
+    checkForOverflow();
+    window.addEventListener("resize", checkForOverflow);
+    return () => window.removeEventListener("resize", checkForOverflow);
+  }, []);
 
   useEffect(() => {
     fetchUserOfficeHours();
@@ -285,10 +282,6 @@ function UserOfficeHours({
                 <RecordedSessionsSkeletonLoader />
               ) : getCurrentData().length === 0 ? (
                 <div className="flex flex-col justify-center items-center pt-10">
-                  {/* <div className="text-5xl">☹️</div>
-                  <div className="pt-4 font-semibold text-lg">
-                    Oops, no such result available!
-                  </div> */}
                   <NoResultsFound/>
                 </div>
               ) : (

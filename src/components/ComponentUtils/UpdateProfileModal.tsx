@@ -1,14 +1,5 @@
-import {
-  Button,
-  Modal,
-  ModalBody,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-  Tooltip,
-} from "@nextui-org/react";
-import Image from "next/image";
 import React, { useEffect, useState } from "react";
+import Image from "next/image";
 import { BsDiscord } from "react-icons/bs";
 import { CgAttachment } from "react-icons/cg";
 import { FaUserEdit } from "react-icons/fa";
@@ -16,6 +7,7 @@ import { FaXTwitter } from "react-icons/fa6";
 import { IoClose } from "react-icons/io5";
 import { SiDiscourse } from "react-icons/si";
 import { TbBrandGithubFilled, TbMailFilled } from "react-icons/tb";
+import {Button,Modal,ModalBody,ModalContent,ModalFooter,ModalHeader,Tooltip,} from "@nextui-org/react";
 
 interface ProfileModalProps {
   isOpen: boolean;
@@ -54,36 +46,34 @@ function UpdateProfileModal({
 
   useEffect(() => {
     const checkIsMobile = () => {
-      const mediaQuery = window.matchMedia('(max-width: 640px)');
+      const mediaQuery = window.matchMedia("(max-width: 640px)");
       setIsMobile(mediaQuery.matches);
     };
 
     checkIsMobile(); // Check initially
-    window.addEventListener('resize', checkIsMobile);
+    window.addEventListener("resize", checkIsMobile);
 
-    return () => window.removeEventListener('resize', checkIsMobile);
+    return () => window.removeEventListener("resize", checkIsMobile);
   }, []);
   return (
-    <div onClick={
-      onClose
-      }>
+    <div onClick={onClose}>
       <Modal
-      onClick={(event) => {
-        event.stopPropagation();
-      }}
+        onClick={(event) => {
+          event.stopPropagation();
+        }}
         isOpen={isOpen}
-        // onOpenChange={onOpenChange}
         className="font-poppins rounded-3xl max-h-[90vh] overflow-hidden"
-        size={isMobile ? "full" : "2xl"} 
-        // style={{ '--modal-size': '672px' }}
-        hideCloseButton>
+        size={isMobile ? "full" : "2xl"}
+        hideCloseButton
+      >
         <ModalContent className="flex flex-col h-full">
           <>
             <ModalHeader className="flex justify-between text-2xl font-semibold items-center bg-blue-shade-100 text-white px-8 py-6 ">
               Update your Profile
               <button
                 onClick={onClose}
-                className="text-blue-shade-100 bg-white w-5 h-5  rounded-full flex items-center justify-center font-semibold text-xl">
+                className="text-blue-shade-100 bg-white w-5 h-5  rounded-full flex items-center justify-center font-semibold text-xl"
+              >
                 <IoClose className="font-bold size-4" />
               </button>
             </ModalHeader>
@@ -101,6 +91,7 @@ function UpdateProfileModal({
                         className="w-full h-full object-cover rounded-md"
                         width={100}
                         height={100}
+                        priority={true}
                       />
                     ) : (
                       <div className="text-gray-400">
@@ -108,7 +99,8 @@ function UpdateProfileModal({
                           xmlns="http://www.w3.org/2000/svg"
                           className="h-12 w-12"
                           viewBox="0 0 20 20"
-                          fill="currentColor">
+                          fill="currentColor"
+                        >
                           <path
                             fillRule="evenodd"
                             d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z"
@@ -168,7 +160,8 @@ function UpdateProfileModal({
                           : "Your email is private and only visible to you."
                       }
                       placement="right"
-                      showArrow>
+                      showArrow
+                    >
                       <label className="cursor-pointer">
                         <input
                           type="checkbox"
@@ -181,7 +174,8 @@ function UpdateProfileModal({
                         <div
                           className={`relative w-9 h-5 ${
                             isToggled ? "bg-green-500" : "bg-red-500"
-                          } peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600`}></div>
+                          } peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600`}
+                        ></div>
                       </label>
                     </Tooltip>
                   </div>
@@ -264,12 +258,10 @@ function UpdateProfileModal({
               </div>
             </ModalBody>
             <ModalFooter className="flex justify-center items-center">
-              {/* <Button color="default" onPress={onClose}>
-                                Close
-                              </Button> */}
               <Button
                 className="bg-blue-shade-100 rounded-full text-sm font-semibold text-white px-10 mt-3 mb-7 "
-                onClick={() => handleSave()}>
+                onPress={() => handleSave()}
+              >
                 {isLoading ? "Saving" : "Save"}
               </Button>
             </ModalFooter>

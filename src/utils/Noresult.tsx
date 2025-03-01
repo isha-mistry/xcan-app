@@ -14,6 +14,7 @@ export default function NoResultsFound() {
       window.location.reload();
     }, 500); // Half second delay to show the spin animation
   };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}

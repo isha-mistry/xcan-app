@@ -150,10 +150,10 @@ export async function PUT(req: Request) {
       );
     }
 
-    if (cacheWrapper.isAvailable) {
-      const cacheKey = `office-hours-all`;
-      await cacheWrapper.delete(cacheKey);
-    }
+    // if (cacheWrapper.isAvailable) {
+    //   const cacheKey = `office-hours-all`;
+    //   await cacheWrapper.delete(cacheKey);
+    // }
 
     const client = await connectDB();
     const db = client.db();
@@ -183,10 +183,10 @@ export async function PUT(req: Request) {
     );
 
     try {
-      if (cacheWrapper.isAvailable) {
-        const cacheKey = `office-hours-all`;
-        await cacheWrapper.delete(cacheKey);
-      }
+      // if (cacheWrapper.isAvailable) {
+      //   const cacheKey = `office-hours-all`;
+      //   await cacheWrapper.delete(cacheKey);
+      // }
       await sendMeetingDeletionNotification({
         db,
         title: existingMeeting.title,
