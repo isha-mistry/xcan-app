@@ -126,3 +126,44 @@ export async function getENSName(address: string): Promise<string | null> {
     return null;
   }
 }
+
+
+export async function getMetadataEnsData(address: string) {
+  try {
+    if (!address || !address.startsWith('0x')) {
+      return { 
+        name: null, 
+        avatar: null,
+        formattedAddress: address ? `${address.slice(0, 6)}...${address.slice(-4)}` : 'Unknown'
+      };
+    }
+
+    // For ethers v6
+    const provider = new ethers.JsonRpcProvider(
+      process.env.NEXT_PUBLIC_ETHEREUM_RPC_URL || 'https://eth.llamarpc.com'
+    );
+
+    // Get ENS name
+    const ensName = await provider.lookupAddress(address);
+    
+    // Format address for display if no ENS name
+    const formattedAddress = ensName || `${address.slice(0, 6)}...${address.slice(-4)}`;
+    
+    let avatar = null;
+    // We'll just use the name for now since avatar resolution is more complex in v6
+    
+    return {
+      name: ensName,
+      avatar: null,
+      formattedAddress
+    };
+  } catch (error) {
+    console.error("Error fetching ENS data for metadata:", error);
+    return { 
+      name: null, 
+      avatar: null,
+      formattedAddress: `${address.slice(0, 6)}...${address.slice(-4)}`
+    };
+  }
+}
+

@@ -5,6 +5,7 @@ import {
   resolveENSProfileImage,
   getMetaAddressOrEnsName,
   fetchEnsNameAndAvatar,
+  getMetadataEnsData,
 } from "@/utils/ENSUtils";
 import { Metadata } from "next";
 import React, { useEffect } from "react";
@@ -33,6 +34,7 @@ export async function generateMetadata({
     params.individualDelegate
   );
 
+  const ensData = await getMetadataEnsData(params.individualDelegate);
   const defaultAvatar = IMAGE_URL; // Provide a default value for avatar
   const [avatar] = await Promise.all([
     fetchEnsNameAndAvatar(params.individualDelegate),
@@ -47,10 +49,9 @@ export async function generateMetadata({
     dao_name ? `dao_name=${encodeURIComponent(dao_name)}` : null,
   ].filter((param): param is string => param !== null);
 
-
   const preview = `${BASE_URL}/api/images/og/ccTest?${imgParams.join(
     "&"
-  )}&address=${ensOrTruncatedAddress}`;
+  )}&address=${ensData.formattedAddress}`;
 
   const frameMetadata = getFrameMetadata({
     buttons: [
