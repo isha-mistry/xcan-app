@@ -5,7 +5,7 @@ import React, {
   useRef,
   useCallback,
   RefObject,
-
+  PureComponent,
 } from "react";
 import ConnectWalletWithENS from "../ConnectWallet/ConnectWalletWithENS";
 import Image from "next/image";
@@ -59,6 +59,11 @@ import VotingTreemap from "./VotingOptions";
 import { set } from "video.js/dist/types/tech/middleware";
 import calculateEthBlockMiningTime from "@/utils/calculateBlockMiningTime";
 import { daoConfigs } from "@/config/daos";
+import ProposalMainStatus from "./ProposalMainStatus";
+import ProposalVote from "../Notification/ProposalVote";
+import Proposalvotes from "./Proposalvotes";
+import ProposalvotesSkeletonLoader from "../SkeletonLoader/ProposalVotesSkeletonLoader";
+import ProposalMainStatusSkeletonLoader from "../SkeletonLoader/ProposalStatusSkeletonLoader";
 
 // Create a client
 const client = createPublicClient({
@@ -344,7 +349,6 @@ function ProposalMain({ props }: { props: Props }) {
             action: "Vote Submitted",
             label: `Vote Submitted - Chain: ${currentChain}`,
           });
-
         } catch (e) {
           toast.error("Transaction failed");
           pushToGTM({
@@ -377,7 +381,6 @@ function ProposalMain({ props }: { props: Props }) {
             action: "Vote Submitted",
             label: `Vote Submitted - Chain: ${currentChain}`,
           });
-
         } catch (e) {
           toast.error("Transaction failed");
           pushToGTM({
@@ -444,31 +447,32 @@ function ProposalMain({ props }: { props: Props }) {
         // console.log("Network response was not ok");
       }
       const result = await response.json();
-
     } catch (error) {
       console.error("Error fetching vote status:", error);
     }
   };
-  const selectWinners = (options: any[], criteria: string, criteriaValue: number): string[] => {
-    if (criteria === 'TOP_CHOICES') {
+  const selectWinners = (
+    options: any[],
+    criteria: string,
+    criteriaValue: number
+  ): string[] => {
+    if (criteria === "TOP_CHOICES") {
       // Sort options by votes in descending order
-      const sortedOptions = [...options].sort((a, b) =>
-        Number(b.votes) - Number(a.votes)
+      const sortedOptions = [...options].sort(
+        (a, b) => Number(b.votes) - Number(a.votes)
       );
 
       // Select top winners based on criteriaValue
       return sortedOptions
         .slice(0, criteriaValue)
-        .map(option => option.option);
+        .map((option) => option.option);
     }
 
-    if (criteria === 'THRESHOLD') {
+    if (criteria === "THRESHOLD") {
       // Select options that meet or exceed the threshold
       return options
-        .filter(option =>
-          Number(option.votes) >= criteriaValue
-        )
-        .map(option => option.option);
+        .filter((option) => Number(option.votes) >= criteriaValue)
+        .map((option) => option.option);
     }
 
     // If no valid criteria, return empty array
@@ -477,12 +481,14 @@ function ProposalMain({ props }: { props: Props }) {
   // Updated useEffect hook
   useEffect(() => {
     const fetchOptimismOption = async () => {
-      const response = await fetch(`/api/get-optimism-vote-options?id=${props.id}`);
+      const response = await fetch(
+        `/api/get-optimism-vote-options?id=${props.id}`
+      );
       const result = await response.json();
 
       const criteriaType = {
         criteria: result.criteria,
-        criteriaValue: result.criteriaValue
+        criteriaValue: result.criteriaValue,
       };
 
       // Set vote options
@@ -530,12 +536,25 @@ function ProposalMain({ props }: { props: Props }) {
     setIsArbitrum(props?.daoDelegates === "arbitrum");
   }, []);
 
+  // useEffect(() => {
+  //   if (contentRef.current) {
+  //     if (isExpanded) {
+  //       contentRef.current.style.maxHeight = `${contentRef.current.scrollHeight}px`;
+  //     } else {
+  //       contentRef.current.style.maxHeight = "180px"; // 6 lines * 24px line-height
+  //     }
+  //   }
+  // }, [isExpanded, data?.description]);
   useEffect(() => {
     if (contentRef.current) {
+      const isLargeScreen = window.innerWidth > 1100; // Check screen size
+
       if (isExpanded) {
         contentRef.current.style.maxHeight = `${contentRef.current.scrollHeight}px`;
+      } else if (!isExpanded && isLargeScreen) {
+        contentRef.current.style.maxHeight = "650px"; // 6 lines * 24px line-height
       } else {
-        contentRef.current.style.maxHeight = "141px"; // 6 lines * 24px line-height
+        contentRef.current.style.maxHeight = "180px";
       }
     }
   }, [isExpanded, data?.description]);
@@ -588,8 +607,9 @@ function ProposalMain({ props }: { props: Props }) {
         text = `<em>${matchem[1]}</em>`;
       }
 
-      return `<a href="${href}" title="${title || ""
-        }" target="_blank" rel="noopener noreferrer" class="text-blue-shade-100">${text}</a>`;
+      return `<a href="${href}" title="${
+        title || ""
+      }" target="_blank" rel="noopener noreferrer" class="text-blue-shade-100">${text}</a>`;
     };
 
     marked.setOptions({
@@ -945,9 +965,9 @@ function ProposalMain({ props }: { props: Props }) {
     isArbitrum
       ? window.open(`https://arbiscan.io/tx/${transactionHash}`, "_blank")
       : window.open(
-        `https://optimistic.etherscan.io/tx/${transactionHash}`,
-        "_blank"
-      );
+          `https://optimistic.etherscan.io/tx/${transactionHash}`,
+          "_blank"
+        );
   };
 
   const shareOnTwitter = () => {
@@ -1129,130 +1149,157 @@ function ProposalMain({ props }: { props: Props }) {
         </div>
       </div>
 
-      <div
-        className={`rounded-[1rem] mx-4 md:mx-6 px-4 lg:mx-16 pb-6 pt-[68px] transition-shadow duration-300 ease-in-out shadow-xl bg-gray-50 font-poppins relative ${isExpanded ? "h-fit" : "h-fit"
-          }`}
-      >
-        <div className="w-full flex items-center justify-end gap-2 absolute top-6 right-6 sm:right-12">
-          <div className="">
-            <Tooltips
-              showArrow
-              content={<div className="font-poppins">OnChain</div>}
-              placement="right"
-              className="rounded-md bg-opacity-90"
-              closeDelay={1}
-            >
-              <Image src={chainImg} alt="" className="w-6 h-6 cursor-pointer" />
-            </Tooltips>
-          </div>
-          {isActive && (
-            <button
-              className={`rounded-full px-3 py-1.5 text-white shadow-md ${hasVoted ? "bg-green-400 cursor-default" : "bg-blue-600 hover:bg-blue-500 hover:shadow-lg"
-                }`}
-              type="button"
-              onClick={!hasVoted ? voteOnchain : undefined}
-              disabled={hasVoted}
-            >
-              {hasVoted ? "Voted" : "Vote onchain"}
-            </button>
-          )}
-          <div className="flex-shrink-0">
-            <div
-              className={`rounded-full flex items-center justify-center text-xs py-1 px-2 font-medium ${proposalState
-                ? proposalState === "Closed"
-                  ? "bg-[#f4d3f9] border border-[#77367a] text-[#77367a]"
-                  : "bg-[#f4d3f9] border border-[#77367a] text-[#77367a]"
-                : "bg-gray-200 animate-pulse rounded-full"
-                }`}
-            >
-              {proposalState ? proposalState : <div className="h-4 w-16"></div>}
-            </div>
-          </div>
-        </div>
-        <div className="w-full mb-4 md:mb-0">
-          <div className="flex gap-2 items-center">
-            {loading ? (
-              <div className="h-5 bg-gray-200 animate-pulse w-[50vw] rounded-full"></div>
-            ) : (
-              <p className="text-xl md:text-2xl font-semibold">
-                {formattedTitle}
-              </p>
-            )}
-          </div>
-        </div>
-        {showConnectWallet && (
-          <ConnectwalletHomePage
-            onClose={() => setShowConnectWallet(false)}
-          />
-        )}
-        <VotingPopup
-          isOpen={isVotingOpen}
-          onClose={() => setIsVotingOpen(false)}
-          onSubmit={handleVoteSubmit}
-          proposalId={props.id}
-          proposalTitle={truncateText(data?.description, 50)}
-          address={walletAddress || ""}
-          dao={props.daoDelegates}
-          customOptions={optimismVoteOptions}
-        />
-
-        <div className="flex gap-1 my-1 items-center">
-          <div className="flex text-xs font-normal items-center">
-            {date ? (
-              formatDate(date)
-            ) : (
-              <div className="animate-pulse bg-gray-200  h-4 w-32 rounded-full"></div>
-            )}
-          </div>
-          {isLoading ? (
-            <div
-              className={`rounded-full flex items-center justify-center text-xs h-fit py-0.5 border font-medium w-24 bg-gray-200 animate-pulse`}
-            >
-              <div className="h-5 w-20"></div>
-            </div>
-          ) : (
-            <div
-              className={`rounded-full flex items-center justify-center text-xs h-fit py-0.5 border font-medium w-24 ${Proposalstatus
-                ? getStatusColor(Proposalstatus)
-                : "bg-gray-200 animate-pulse rounded-full"
-                }`}
-            >
-              {Proposalstatus ? (
-                Proposalstatus
-              ) : (
-                <div className="h-5 w-20"></div>
-              )}
-            </div>
-          )}
-        </div>
-
-        <div className="text-sm mt-3">
-          {loading ? (
-            <ProposalMainDescriptionSkeletonLoader />
-          ) : error ? (
-            <p>Error: {error}</p>
-          ) : (
-            <>
-              <div
-                ref={contentRef}
-                className={` transition-max-height duration-500 ease-in-out overflow-hidden ${isExpanded ? "max-h-full" : "max-h-36"
-                  }`}
+      <div className="flex flex-col 1.3lg:flex-row gap-2 mx-4 md:mx-6 1.7lg:mx-16">
+        <div
+          className={`w-full 1.3lg:w-[70%] rounded-[1rem] px-4 pb-6 pt-[68px] transition-shadow duration-300 ease-in-out shadow-xl bg-gradient-to-br from-gray-50 to-slate-50 font-poppins relative h-auto`}
+        >
+          <div className="w-full flex items-center justify-end gap-2 absolute top-6 right-6 sm:right-12">
+            <div className="">
+              <Tooltips
+                showArrow
+                content={<div className="font-poppins">OnChain</div>}
+                placement="right"
+                className="rounded-md bg-opacity-90"
+                closeDelay={1}
               >
-                <div
-                  className="description-content"
-                  dangerouslySetInnerHTML={{ __html: formattedDescription }}
+                <Image
+                  src={chainImg}
+                  alt=""
+                  className="w-6 h-6 cursor-pointer"
                 />
+              </Tooltips>
+            </div>
+            {isActive && (
+              <button
+                className={`rounded-full px-3 py-1.5 text-white shadow-md ${
+                  hasVoted
+                    ? "bg-green-400 cursor-default"
+                    : "bg-blue-600 hover:bg-blue-500 hover:shadow-lg"
+                }`}
+                type="button"
+                onClick={!hasVoted ? voteOnchain : undefined}
+                disabled={hasVoted}
+              >
+                {hasVoted ? "Voted" : "Vote onchain"}
+              </button>
+            )}
+            <div className="flex-shrink-0">
+              <div
+                className={`rounded-full flex items-center justify-center text-xs py-1 px-2 font-medium ${
+                  status
+                    ? status === "Closed"
+                      ? "bg-[#f4d3f9] border border-[#77367a] text-[#77367a]"
+                      : "bg-[#f4d3f9] border border-[#77367a] text-[#77367a]"
+                    : "bg-gray-200 animate-pulse rounded-full"
+                }`}
+              >
+                {status ? status : <div className="h-4 w-16"></div>}
               </div>
-              {contentRef.current && contentRef.current.scrollHeight > 144 && (
-                <button
-                  className="text-sm text-blue-shade-200 mt-2"
-                  onClick={toggleExpansion}
-                >
-                  {isExpanded ? "View Less" : "View More"}
-                </button>
+            </div>
+          </div>
+          <div className="w-full mb-4 md:mb-0">
+            <div className="flex gap-2 items-center">
+              {loading ? (
+                <div className="h-5 bg-gray-200 animate-pulse w-[50vw] rounded-full"></div>
+              ) : (
+                <p className="text-xl md:text-2xl font-semibold">
+                  {formattedTitle}
+                </p>
               )}
-            </>
+            </div>
+          </div>
+          {showConnectWallet && (
+            <ConnectwalletHomePage
+              onClose={() => setShowConnectWallet(false)}
+            />
           )}
+          <VotingPopup
+            isOpen={isVotingOpen}
+            onClose={() => setIsVotingOpen(false)}
+            onSubmit={handleVoteSubmit}
+            proposalId={props.id}
+            proposalTitle={truncateText(data?.description, 50)}
+            address={walletAddress || ""}
+            dao={props.daoDelegates}
+            customOptions={optimismVoteOptions}
+          />
+
+          <div className="flex gap-1 my-1 items-center">
+            <div className="flex text-xs font-normal items-center">
+              {date ? (
+                formatDate(date)
+              ) : (
+                <div className="animate-pulse bg-gray-200  h-4 w-32 rounded-full"></div>
+              )}
+            </div>
+            {isLoading ? (
+              <div
+                className={`rounded-full flex items-center justify-center text-xs h-fit py-0.5 border font-medium w-24 bg-gray-200 animate-pulse`}
+              >
+                <div className="h-5 w-20"></div>
+              </div>
+            ) : (
+              <div
+                className={`rounded-full flex items-center justify-center text-xs h-fit py-0.5 border font-medium w-24 ${
+                  Proposalstatus
+                    ? getStatusColor(Proposalstatus)
+                    : "bg-gray-200 animate-pulse rounded-full"
+                }`}
+              >
+                {Proposalstatus ? (
+                  Proposalstatus
+                ) : (
+                  <div className="h-5 w-20"></div>
+                )}
+              </div>
+            )}
+          </div>
+
+          <div className="text-sm mt-3">
+            {loading ? (
+              <ProposalMainDescriptionSkeletonLoader />
+            ) : error ? (
+              <p>Error: {error}</p>
+            ) : (
+              <>
+                <div
+                  ref={contentRef}
+                  className={` transition-max-height duration-500 ease-in-out overflow-hidden ${
+                    isExpanded
+                      ? "max-h-full"
+                      : "max-h-[200px] 1.3lg:max-h-[640px]"
+                  }`}
+                >
+                  <div
+                    className="description-content"
+                    dangerouslySetInnerHTML={{ __html: formattedDescription }}
+                  />
+                </div>
+                {contentRef.current &&
+                  contentRef.current.scrollHeight > 144 && (
+                    <button
+                      className="text-sm text-blue-shade-200 mt-2"
+                      onClick={toggleExpansion}
+                    >
+                      {isExpanded ? "View Less" : "View More"}
+                    </button>
+                  )}
+              </>
+            )}
+          </div>
+        </div>
+        <div className="flex flex-col md:flex-row 1.3lg:flex-col 1.3lg:w-[30%] gap-2">
+          <div className="w-full z-10 rounded-[1rem] shadow-xl transition-shadow duration-300 ease-in-out bg-gradient-to-br from-gray-50 to-slate-50 font-poppins min-h-[416px] 1.3lg:h-fit h-full">
+            <Proposalvotes />
+            {/* Add skeleton loader when data is loading */}
+            {/* <ProposalvotesSkeletonLoader/>   */}
+          </div>
+
+          <div className="w-full z-10  rounded-[1rem] shadow-xl transition-shadow duration-300 ease-in-out bg-gradient-to-br from-gray-50 to-slate-50 font-poppins h-fit min-h-[390px]">
+            <ProposalMainStatus />
+            {/* Add skeleton loader when data is loading */}
+            {/* <ProposalMainStatusSkeletonLoader/> */}
+          </div>
         </div>
 
       </div>
@@ -1268,22 +1315,23 @@ function ProposalMain({ props }: { props: Props }) {
   </div>
 ) : null}
 
-      <h1 className="my-8 mx-4 md:mx-6 lg:mx-16 text-2xl lg:text-4xl font-semibold text-blue-shade-100 font-poppins">
+      <h1 className="my-8 mx-4 md:mx-6 1.7lg:mx-16 text-2xl lg:text-4xl font-semibold text-blue-shade-100 font-poppins">
         Voters
       </h1>
-      <div className="flex mb-20 mx-4 md:mx-6 lg:mx-16">
+      <div className="flex mb-20 mx-4 md:mx-6 1.7lg:mx-16">
         <div className="flex flex-col 2md:flex-row gap-8 items-center w-full">
-          <div className="h-[500px] w-full 2md:w-[40%] font-poppins px-2 0.2xs:px-4 flex items-center justify-center rounded-2xl bg-gray-50 transition-shadow duration-300 ease-in-out shadow-xl">
+          <div className="h-[500px] w-full 2md:w-[40%] font-poppins px-2 0.2xs:px-4 flex items-center justify-center rounded-2xl bg-gradient-to-br from-gray-50 to-slate-50 transition-shadow duration-300 ease-in-out shadow-xl">
             {isLoading ? (
               <div className="">
                 <ProposalMainVotersSkeletonLoader />
               </div>
             ) : (
               <div
-                className={`flex flex-col gap-2 py-3 pl-2 pr-1 w-full xl:pl-3 xl:pr-2 my-3 border-gray-200 ${voterList?.length > 5
-                  ? `h-[440px] overflow-y-auto ${style.scrollbar}`
-                  : "h-fit"
-                  }`}
+                className={`flex flex-col gap-2 py-3 pl-2 pr-1 w-full xl:pl-3 xl:pr-2 my-3 border-gray-200 ${
+                  voterList?.length > 5
+                    ? `h-[440px] overflow-y-auto ${style.scrollbar}`
+                    : "h-fit"
+                }`}
               >
                 {voterList && voterList?.length === 0 ? (
                   <div className="flex items-center justify-center h-full text-gray-500">
@@ -1333,20 +1381,21 @@ function ProposalMain({ props }: { props: Props }) {
                         </div>
                         <div className="flex items-center space-x-1 0.5xs:space-x-2 1.3lg:space-x-4">
                           <div
-                            className={`py-1 xs:py-2 rounded-full 1.5lg:text-sm w-24 0.2xs:w-28 xs:w-36 2md:w-28 lg:w-[100px] 1.3lg:w-28 1.5xl:w-36 flex items-center justify-center xl:font-medium text-xs ${voter.support === 1
-                              ? "bg-green-100 text-green-800"
-                              : voter.support === 0
+                            className={`py-1 xs:py-2 rounded-full 1.5lg:text-sm w-24 0.2xs:w-28 xs:w-36 2md:w-28 lg:w-[100px] 1.3lg:w-28 1.5xl:w-36 flex items-center justify-center xl:font-medium text-xs ${
+                              voter.support === 1
+                                ? "bg-green-100 text-green-800"
+                                : voter.support === 0
                                 ? "bg-red-100 text-red-800"
                                 : "bg-blue-100 text-blue-800"
-                              }`}
+                            }`}
                           >
                             {formatWeight(voter.votingPower / 10 ** 18)}
                             &nbsp;
                             {voter.support === 1
                               ? "For"
                               : voter.support === 0
-                                ? "Against"
-                                : "Abstain"}
+                              ? "Against"
+                              : "Abstain"}
                           </div>
                           <Tooltips
                             showArrow
@@ -1498,8 +1547,6 @@ function ProposalMain({ props }: { props: Props }) {
           )}
         </div>
       </div>
-
-
     </>
   );
 }
