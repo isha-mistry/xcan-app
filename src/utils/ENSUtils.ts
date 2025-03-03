@@ -8,6 +8,7 @@ import { getEnsAddress } from '@wagmi/core'
 import { config } from "./config";
 import { normalize } from "viem/ens";
 import { mainnet } from "@wagmi/core/chains";
+import { IMAGE_URL } from "@/config/staticDataUtils";
 
 const provider = new ethers.JsonRpcProvider(
   process.env.NEXT_PUBLIC_ENS_RPC_PROVIDER
@@ -112,13 +113,11 @@ export async function fetchEnsName(address: any) {
 }
 
 export async function getENSName(address: string): Promise<string | null> {
-  // Connect to the Ethereum mainnet
   const provider = new ethers.JsonRpcProvider(
     process.env.NEXT_PUBLIC_ENS_RPC_PROVIDER
   );
 
   try {
-    // Look up the ENS name
     const ensName = await provider.lookupAddress(address);
     return ensName;
   } catch (error) {
@@ -167,3 +166,92 @@ export async function getMetadataEnsData(address: string) {
   }
 }
 
+
+export async function getEnsAvatarUrl(address: string): Promise<string | null> {
+  try {
+    // First check if the address is valid
+    if (!address || !address.startsWith('0x')) {
+      console.log('Invalid address format:', address);
+      return null;
+    }
+
+    // Create provider instance
+    const provider = new ethers.JsonRpcProvider(
+      process.env.NEXT_PUBLIC_ENS_RPC_PROVIDER || 'https://eth.llamarpc.com'
+    );
+
+    // First get the ENS name for the address
+    const ensName = await provider.lookupAddress(address);
+    
+    // If no ENS name found, return null early
+    if (!ensName) {
+      console.log(`No ENS name found for address: ${address}`);
+      return null;
+    }
+
+    console.log(`Found ENS name: ${ensName} for address: ${address}`);
+
+    // Now that we have a valid ENS name, we can resolve the avatar
+    const resolver = await provider.getResolver(ensName);
+    if (!resolver) {
+      console.log(`No resolver found for ENS name: ${ensName}`);
+      return null;
+    }
+
+    // Get the avatar text record
+    const avatar = await resolver.getText('avatar');
+    
+    // If no avatar is set, return null
+    if (!avatar) {
+      console.log(`No avatar found for ENS name: ${ensName}`);
+      return null;
+    }
+
+    console.log(`Found avatar for ${ensName}:`, avatar);
+
+    // Process IPFS URLs to use a gateway
+    if (avatar.startsWith('ipfs://')) {
+      const ipfsHash = avatar.replace('ipfs://', '');
+      return `https://cloudflare-ipfs.com/ipfs/${ipfsHash}`;
+    }
+
+    if (avatar.includes('/ipfs/')) {
+      // Extract the IPFS hash from the URL
+      const ipfsHashMatch = avatar.match(/\/ipfs\/([a-zA-Z0-9]+)/);
+      if (ipfsHashMatch && ipfsHashMatch[1]) {
+        // Use a different gateway
+        return `https://ipfs.io/ipfs/${ipfsHashMatch[1]}`;
+      }
+    }
+
+    if (avatar.startsWith('eip155:')) {
+      console.log(`Found NFT avatar URL: ${avatar}`);
+      // For NFT avatars, you might want to convert them to actual image URLs
+      // This is complex and might require additional API calls
+      return IMAGE_URL; 
+    }
+    
+    // Handle data URLs (rare but possible)
+    if (avatar.startsWith('data:')) {
+      return avatar;
+    }
+    
+    // Handle HTTP/HTTPS URLs
+    if (avatar.startsWith('http://') || avatar.startsWith('https://')) {
+      if (avatar.includes('cloudflare-ipfs.com')) {
+        const ipfsHashMatch = avatar.match(/\/ipfs\/([a-zA-Z0-9]+)/);
+        if (ipfsHashMatch && ipfsHashMatch[1]) {
+          return `https://ipfs.io/ipfs/${ipfsHashMatch[1]}`;
+        }
+      }
+      return avatar;
+    }
+    
+    // For any other format, log and return as is
+    console.log(`Avatar URL in unknown format: ${avatar}`);
+    return avatar;
+  } catch (error) {
+    console.error(`Error fetching ENS avatar for address ${address}:`, error);
+    return null;
+  }
+}
