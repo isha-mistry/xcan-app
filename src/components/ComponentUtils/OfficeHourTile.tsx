@@ -43,6 +43,14 @@ interface OfficeHoursTileProps {
   data: OfficeHoursProps[];
 }
 
+interface GTMEvent {
+  event: string;
+  category: string;
+  action: string;
+  label: string;
+  value?: number;
+}
+
 const OfficeHourTile = ({
   isHosted,
   isAttended,
@@ -249,6 +257,13 @@ const OfficeHourTile = ({
     );
   };
 
+  const pushToGTM = (eventData: GTMEvent) => {
+    if (typeof window !== 'undefined' && window.dataLayer) {
+      window.dataLayer.push(eventData);
+    }
+  };
+
+
   return (
     <div
       className={`grid min-[475px]:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 sm:gap-10 py-8 font-poppins`}
@@ -261,6 +276,13 @@ const OfficeHourTile = ({
           key={index}
           onClick={() => {
             isRecorded && router.push(`/watch/${data.meetingId}`);
+            pushToGTM({
+              event: 'office_hours_video_click',
+              category: 'Office Hours Video Engagement',
+              action: 'Video Click',
+              label: `Office Hours Video - ${data.title} clicked in Library}`,
+            });
+        
           }}
         >
           <div
@@ -564,9 +586,16 @@ const OfficeHourTile = ({
             )}
             {isOngoing && (
               <button
-                onClick={() =>{
+                onClick={(e) =>{
+                  e.stopPropagation(); 
                   data.meetingId && handleStartSession(data.meetingId);
                   // data.meetingId && handleJoinMeeting(data.meetingId);
+                  pushToGTM({
+                    event: 'office_hours_video_click',
+                    category: 'Office Hours Video Engagement',
+                    action: 'Video Click',
+                    label: `Office Hours Video - ${data.title} clicked in Live}`,
+                  });
                 }}
                 className="flex items-center justify-center gap-2 w-full px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-indigo-500 to-blue-500 rounded-full hover:from-indigo-600 hover:to-blue-600 transition-all duration-300 transform hover:scale-[1.02]"
               >
