@@ -40,6 +40,13 @@ interface Type {
   started: string;
   desc: string;
 }
+interface GTMEvent {
+  event: string;
+  category: string;
+  action: string;
+  label: string;
+  value?: number;
+}
 
 function DaoOfficeHours() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -171,6 +178,23 @@ function DaoOfficeHours() {
     return filteredData[currentTab] || [];
   };
 
+  const pushToGTM = (eventData: GTMEvent) => {
+    if (typeof window !== 'undefined' && window.dataLayer) {
+      window.dataLayer.push(eventData);
+    }
+  };
+
+  const handleNavigation = (url: string, category: string, action: string, label: string) => {
+    //setIsNavigating(true); // If you still want to use this in your loading state
+    pushToGTM({
+      event: 'tab_selection',
+      category: category,
+      action: action,
+      label: label,
+    });
+    router.push(url);
+  };
+
   return (
     <>
       {/* For Mobile Screen */}
@@ -189,7 +213,8 @@ function DaoOfficeHours() {
                   ? "text-[#0500FF] font-semibold bg-[#f5f5f5]"
                   : "text-[#3E3D3D] bg-white"
               }`}
-              onClick={() => router.push(path + "?hours=ongoing")}
+              // onClick={() => router.push(path + "?hours=ongoing")}
+              onClick={() => handleNavigation(path + "?hours=ongoing", 'Office Hours Navigation', 'Live Tab Clicked', 'Live')}
             >
               <Clock size={16} className="drop-shadow-lg" />
               Live
@@ -200,7 +225,8 @@ function DaoOfficeHours() {
                   ? "text-[#0500FF] font-semibold bg-[#f5f5f5]"
                   : "text-[#3E3D3D] bg-white"
               }`}
-              onClick={() => router.push(path + "?hours=upcoming")}
+              // onClick={() => router.push(path + "?hours=upcoming")}
+              onClick={() => handleNavigation(path + "?hours=upcoming", 'Office Hours Navigation', 'Scheduled Tab Clicked', 'Scheduled')}
             >
               <Calendar size={16} className="drop-shadow-lg" />
               Scheduled
@@ -211,7 +237,8 @@ function DaoOfficeHours() {
                   ? "text-[#0500FF] font-semibold bg-[#f5f5f5]"
                   : "text-[#3E3D3D] bg-white"
               }`}
-              onClick={() => router.push(path + "?hours=recorded")}
+              // onClick={() => router.push(path + "?hours=recorded")}
+              onClick={() => handleNavigation(path + "?hours=recorded", 'Office Hours Navigation', 'Library Tab Clicked', 'Library')}
             >
               <BookOpen size={16} className="drop-shadow-lg" />
               Library
