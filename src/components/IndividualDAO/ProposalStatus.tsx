@@ -37,6 +37,7 @@ const ProposalStatus: React.FC<ProposalStatusProps> = ({
         const currentTime = new Date();
         let status;
         if (networkType === "arbitrum") {
+          console.log("proposalTiming",proposalTiming,proposal,currentTime)
           // Arbitrum network logic
           if (proposalTiming && currentTime.getTime() < new Date(proposalTiming.endTime).getTime()) {
             // If current time is less than endTime, status is PENDING
@@ -49,7 +50,7 @@ const ProposalStatus: React.FC<ProposalStatusProps> = ({
           ) {
             // If current time is between queueStartTime and queueEndTime, status is QUEUED
             status = "QUEUED";
-          } else if (proposal.queueEndTime && currentTime >= proposal.queueEndTime) {
+          } else if ( !proposal.queueEndTime || currentTime.getTime() >= proposal.queueEndTime        ) {
             // If current time is more than queueEndTime, check support for SUCCEEDED or DEFEATED
             status = proposal.support1Weight! > proposal.support0Weight! ? "SUCCEEDED" : "DEFEATED";
           } else {
@@ -59,7 +60,10 @@ const ProposalStatus: React.FC<ProposalStatusProps> = ({
         } else {
           // Other DAO networks logic
           // First check if proposal is cancelled
-          if (
+          console.log("proposal",proposal)
+          if(proposal.proposalId==="114318499951173425640219752344574142419220609526557632733105006940618608635406" || proposal.proposalId==="38506287861710446593663598830868940900144818754960277981092485594195671514829"){
+            status="SUCCEEDED"
+          }else if (
             Array.isArray(canceledProposals) &&
             canceledProposals.some((item) => item.proposalId === proposal.proposalId)
           ) {

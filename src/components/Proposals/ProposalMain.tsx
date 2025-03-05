@@ -159,6 +159,9 @@ function ProposalMain({ props }: { props: Props }) {
   const [winners, setWinners] = useState<string[]>([]);
   const [votingEndTime, setVotingEndTime] = useState<any>();
   const [proposalState, setProposalState] = useState<string | null>(null);
+  const [proposalTimeline, setProposalTimeline] = useState<any[]>([]);
+  const [shouldFetch, setShouldFetch] = useState(false);
+
   const pushToGTM = (eventData: GTMEvent) => {
     if (typeof window !== "undefined" && window.dataLayer) {
       window.dataLayer.push(eventData);
@@ -414,6 +417,31 @@ function ProposalMain({ props }: { props: Props }) {
     args: [props.id, walletAddress],
   });
 
+  useEffect(() => {
+    if (data) {
+      setShouldFetch(true);
+    }
+  }, [data]);
+
+  const quorumDataConfig = shouldFetch
+  ? {
+      address:
+        daoConfigs[props.daoDelegates.toLowerCase()].useContractSourceAddress?.Address ??
+        data?.contractSource?.contractAddress,
+      abi: daoConfigs[props.daoDelegates.toLowerCase()].proposalAbi,
+      functionName: 'quorum',
+      args:
+        daoConfigs[props.daoDelegates.toLowerCase()].name === "arbitrum"
+          ? [data?.startBlock !== undefined ? BigInt(data.startBlock) : BigInt(0)]
+          : [props.id !== undefined ? BigInt(props.id) : BigInt(0)],
+      chainId: daoConfigs[props.daoDelegates.toLowerCase()].chainId,
+    }
+  : null;
+
+const { data: quorumData, isLoading: isQuorumLoading } = useReadContract(quorumDataConfig || {});
+
+const quorum = Number(quorumData) / 10 ** 18;
+  console.log("quorum",quorum,quorumDataConfig)
   // Use the appropriate data based on the network
   // const hasUserVoted = props.daoDelegates === "optimism" 
   // ? Boolean(hasVotedOptimism) 
@@ -700,17 +728,105 @@ function ProposalMain({ props }: { props: Props }) {
             proposalCreated3S,
             proposalCreateds,
           } = result.data;
+
+
+          console.log("optimism result", result.data);
           const currentTime = Date.now() / 1000;
           if (proposalCreated1S.length > 0) {
+            const proposalTime = {
+              publishOnchain: {
+                block: proposalCreated1S[0].blockNumber,
+                time: proposalCreated1S[0].blockTimestamp
+              },
+              votingStart: {
+                block: proposalCreated1S[0].startBlock,
+                time: proposalCreated1S[0].startTime
+              },
+              votingEnd: {
+                block: proposalCreated1S[0].endBlock,
+                time: proposalCreated1S[0].endTime,
+              },
+              votingExtended: 0,
+              proposalQueue: 0,
+              proposalExecution: {
+                block: proposalCreated1S[0].endBlock,
+                time: proposalCreated1S[0].endTime
+              },
+            }
+
+            setProposalTimeline([proposalTime])
             setData(proposalCreated1S[0]);
             setProposalState(currentTime < proposalCreated1S[0].endTime ? "Active" : "Closed");
           } else if (proposalCreated2S.length > 0) {
+            const proposalTime = {
+              publishOnchain: {
+                block: proposalCreated2S[0].blockNumber,
+                time: proposalCreated2S[0].blockTimestamp
+              },
+              votingStart: {
+                block: proposalCreated2S[0].startBlock,
+                time: proposalCreated2S[0].startTime
+              },
+              votingEnd: {
+                block: proposalCreated2S[0].endBlock,
+                time: proposalCreated2S[0].endTime,
+              },
+              votingExtended: 0,
+              proposalQueue: 0,
+              proposalExecution: {
+                block: proposalCreated2S[0].endBlock,
+                time: proposalCreated2S[0].endTime
+              },
+            }
+            setProposalTimeline([proposalTime])
             setData(proposalCreated2S[0]);
             setProposalState(currentTime < proposalCreated2S[0].endTime ? "Active" : "Closed");
           } else if (proposalCreated3S.length > 0) {
+            const proposalTime = {
+              publishOnchain: {
+                block: proposalCreated3S[0].blockNumber,
+                time: proposalCreated3S[0].blockTimestamp
+              },
+              votingStart: {
+                block: proposalCreated3S[0].startBlock,
+                time: proposalCreated3S[0].startTime
+              },
+              votingEnd: {
+                block: proposalCreated3S[0].endBlock,
+                time: proposalCreated3S[0].endTime,
+              },
+              votingExtended: 0,
+              proposalQueue: 0,
+              proposalExecution: {
+                block: proposalCreated3S[0].endBlock,
+                time: proposalCreated3S[0].endTime
+              },
+            }
+            setProposalTimeline([proposalTime])
             setData(proposalCreated3S[0]);
             setProposalState(currentTime < proposalCreated3S[0].endTime ? "Active" : "Closed");
           } else if (proposalCreateds.length > 0) {
+            const proposalTime = {
+              publishOnchain: {
+                block: proposalCreateds[0].blockNumber,
+                time: proposalCreateds[0].blockTimestamp
+              },
+              votingStart: {
+                block: proposalCreateds[0].startBlock,
+                time: proposalCreateds[0].startTime
+              },
+              votingEnd: {
+                block: proposalCreateds[0].endBlock,
+                time: proposalCreateds[0].endTime,
+              },
+              votingExtended: 0,
+              proposalQueue: 0,
+              proposalExecution: {
+                block: proposalCreateds[0].endBlock,
+                time: proposalCreateds[0].endTime
+              },
+            }
+            setProposalTimeline([proposalTime])
             setData(proposalCreateds[0]);
             setProposalState(currentTime < proposalCreateds[0].endTime ? "Active" : "Closed");
           } else {
@@ -732,10 +848,13 @@ function ProposalMain({ props }: { props: Props }) {
             `${proposalEndpoint}?proposalId=${props.id}`
           );
           const result = await response.json();
+          console.log("arbitrum result", result);
           const deadlineBlock = result.data[0].extension?.extendedDeadline || result.data[0].endBlock;
+          const proposalStarttimestamp = await calculateEthBlockMiningTime(Number(result.data[0].startBlock), props.daoDelegates);
           const proposalEndtimestamp = await calculateEthBlockMiningTime(Number(deadlineBlock), props.daoDelegates);
+         console.log("proposalEndtimestamp",proposalEndtimestamp)
           setProposalState(proposalEndtimestamp.isExpired ? "Closed" : "Active");
-          setVotingEndTime(proposalEndtimestamp.endDate);
+          setVotingEndTime(proposalEndtimestamp.estimatedMiningTime);
           setData(result.data[0]);
 
           const queueResponse = await fetch(`${proposalQueueEndpoint}`);
@@ -746,6 +865,35 @@ function ProposalMain({ props }: { props: Props }) {
           );
           setQueueStartTime(queueInfo?.blockTimestamp);
           setQueueEndTime(queueInfo?.eta);
+          const proposalTime = {
+            publishOnchain: {
+              block: result.data[0].blockNumber,
+              time: result.data[0].blockTimestamp
+            },
+            votingStart: {
+              block: result.data[0].startBlock,
+              time: proposalStarttimestamp.TimeInEpoch
+            },
+            votingEnd: {
+              block: deadlineBlock,
+              time: proposalEndtimestamp.TimeInEpoch,
+            },
+            votingExtended: {
+              block: result.data[0].extension?.extendedDeadline,
+              time:result.data[0].extension?.extendedDeadline
+            },
+            proposalQueue: {
+              block: queueInfo?.blockNumber,
+              time:queueInfo?.blockTimestamp
+            },
+            proposalExecution: {
+              block: queueInfo?.eta,
+              time: queueInfo?.eta
+            },
+          }
+          console.log("proposalTime",proposalTime);
+          setProposalTimeline([proposalTime])
+          console.log("proposalTimeline");
         } catch (err: any) {
           setError(err.message);
         }
@@ -1025,6 +1173,7 @@ function ProposalMain({ props }: { props: Props }) {
     }
 
     if (props.daoDelegates === "arbitrum") {
+      console.log(quorum, support1Weight, support0Weight);
       if (queueStartTime && queueEndTime) {
         const currentTime = currentDate.getTime() / 1000; // Convert to seconds
         if (currentTime < queueStartTime) {
@@ -1033,24 +1182,26 @@ function ProposalMain({ props }: { props: Props }) {
           currentTime >= queueStartTime &&
           currentTime < queueEndTime
         ) {
-          return "QUEUED";
+          return (quorum < support1Weight && support1Weight! > support0Weight!) ? "SUCCEEDED" : "DEFEATED";
         } else {
-          return support1Weight! > support0Weight! ? "SUCCEEDED" : "DEFEATED";
+          return(quorum <support1Weight && support1Weight! > support0Weight!) ? "SUCCEEDED" : "DEFEATED";
         }
       } else {
         return !votingEndTime
           ? "PENDING"
           : currentDate > votingEndTime
-            ? support1Weight > support0Weight
+            ? (quorum < support1Weight && support1Weight! > support0Weight!) 
               ? "SUCCEEDED"
               : "DEFEATED"
             : "PENDING";
       }
     } else {
-
+      if(props.id==="114318499951173425640219752344574142419220609526557632733105006940618608635406" || props.id==="38506287861710446593663598830868940900144818754960277981092485594195671514829"){
+        return "SUCCEEDED";
+      }
       const currentTimeEpoch = Date.now() / 1000;
       return currentTimeEpoch > data.endTime!
-        ? support1Weight! > support0Weight!
+        ? (quorum < support1Weight && support1Weight! > support0Weight!) 
           ? "SUCCEEDED"
           : "DEFEATED"
         : "PENDING";
@@ -1186,14 +1337,14 @@ function ProposalMain({ props }: { props: Props }) {
             <div className="flex-shrink-0">
               <div
                 className={`rounded-full flex items-center justify-center text-xs py-1 px-2 font-medium ${
-                  status
-                    ? status === "Closed"
+                  proposalState
+                    ? proposalState === "Closed"
                       ? "bg-[#f4d3f9] border border-[#77367a] text-[#77367a]"
                       : "bg-[#f4d3f9] border border-[#77367a] text-[#77367a]"
                     : "bg-gray-200 animate-pulse rounded-full"
                 }`}
               >
-                {status ? status : <div className="h-4 w-16"></div>}
+                {proposalState ? proposalState : <div className="h-4 w-16"></div>}
               </div>
             </div>
           </div>
@@ -1289,16 +1440,19 @@ function ProposalMain({ props }: { props: Props }) {
           </div>
         </div>
         <div className="flex flex-col md:flex-row 1.3lg:flex-col 1.3lg:w-[30%] gap-2">
+        {loading?( <ProposalvotesSkeletonLoader/>) :(
           <div className="w-full z-10 rounded-[1rem] shadow-xl transition-shadow duration-300 ease-in-out bg-gradient-to-br from-gray-50 to-slate-50 font-poppins min-h-[416px] 1.3lg:h-fit h-full">
-            <Proposalvotes />
+            <Proposalvotes dao={props.daoDelegates} contract={daoConfigs[props.daoDelegates.toLowerCase()].useContractSourceAddress?.Address ? daoConfigs[props.daoDelegates.toLowerCase()].useContractSourceAddress?.Address : data?.contractSource?.contractAddress} proposalId={props.id} blockNumber={data.startBlock}/>
             {/* Add skeleton loader when data is loading */}
             {/* <ProposalvotesSkeletonLoader/>   */}
-          </div>
+          </div>)}
+          
 
           <div className="w-full z-10  rounded-[1rem] shadow-xl transition-shadow duration-300 ease-in-out bg-gradient-to-br from-gray-50 to-slate-50 font-poppins h-fit min-h-[390px]">
-            <ProposalMainStatus />
+            {loading ? (<ProposalMainStatusSkeletonLoader/>):( <ProposalMainStatus proposalTimeline={proposalTimeline} dao={props.daoDelegates} />)}
+           
             {/* Add skeleton loader when data is loading */}
-            {/* <ProposalMainStatusSkeletonLoader/> */}
+            
           </div>
         </div>
 

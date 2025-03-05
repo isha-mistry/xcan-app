@@ -1,3 +1,4 @@
+import { daoConfigs } from "@/config/daos";
 import React, { useState, useRef, useEffect } from "react";
 import {
   FaFileAlt,
@@ -10,16 +11,20 @@ import {
   FaEllipsisV,
   FaExternalLinkAlt,
   FaCopy,
+  FaCalendarAlt,
 } from "react-icons/fa";
 
 interface TimelineItem {
   title: string;
   date: string;
   description: string;
+  blockTitle: string;
+  blockNumber: string | number | null;
+  blockExplorerUrl: string;
   icon: React.ReactNode;
 }
 
-const ProposalMainStatus = () => {
+const ProposalMainStatus = ({ proposalTimeline, dao }: any) => {
   const [activeItem, setActiveItem] = useState<number | null>(null);
   const [tooltipPosition, setTooltipPosition] = useState({ top: 0, left: 0 });
   const [tooltipPlacement, setTooltipPlacement] = useState("bottom");
@@ -34,53 +39,75 @@ const ProposalMainStatus = () => {
   const menuTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 });
 
-  const blockNumber = "12345678"; // Example block number
-  const blockExplorerUrl = "https://arbiscan.io/block/" + blockNumber;
+  // const blockNumber = "12345678"; // Example block number
+  console.log("proposalTimeline", proposalTimeline)
 
-  const timelineData: TimelineItem[] = [
-    {
-      title: "Proposed",
-      date: "2024-03-03T00:00:00Z",
-      description: "Proposal submitted for community review",
-      icon: <FaFileAlt size={20} />,
-    },
+  const timelineData: TimelineItem[] = ([
     {
       title: "Published Onchain",
-      date: "2024-03-25T00:00:00Z",
+      date: proposalTimeline[0]?.publishOnchain.time
+        ? new Date(proposalTimeline[0].publishOnchain.time * 1000).toString()
+        : null,
       description: "Community members casting votes on proposal",
+      blockTitle: `${dao} Block :`,
+      blockNumber: proposalTimeline[0]?.publishOnchain.block,
+      blockExplorerUrl: `${daoConfigs[dao].explorerUrl}/block/${proposalTimeline[0]?.publishOnchain.block}`,
       icon: <FaUpload size={20} />,
     },
     {
       title: "Voting Period Started",
-      date: "2024-03-03T00:00:00Z",
+      date: proposalTimeline[0]?.votingStart.time
+        ? new Date(proposalTimeline[0].votingStart.time * 1000).toString()
+        : null,
       description: "Proposal approved and awaiting execution",
+      blockTitle: dao === "arbitrum" ? `Ethereum Block :` : `${dao} Block :`,
+      blockNumber: proposalTimeline[0]?.votingStart.block,
+      blockExplorerUrl: dao !== "arbitrum" ? `${daoConfigs[dao].explorerUrl}/block/${proposalTimeline[0]?.votingStart.block}` : null,
       icon: <FaVoteYea size={20} />,
     },
-    {
-      title: "Voting Period Extended",
-      date: "2024-03-04T00:00:00Z",
-      description: "Proposal changes successfully implemented",
-      icon: <FaClock size={20} />,
-    },
+    proposalTimeline[0]?.votingExtended.time
+      ? {
+        title: "Voting Period Extended",
+        date: new Date(proposalTimeline[0].votingExtended.time * 1000).toString(),
+        description: "Proposal changes successfully implemented",
+        blockTitle: dao === "arbitrum" ? `Ethereum Block :` : `${dao} Block :`,
+        blockNumber: proposalTimeline[0]?.votingExtended.block,
+        blockExplorerUrl: dao !== "arbitrum" ? `${daoConfigs[dao].explorerUrl}/block/${proposalTimeline[0]?.votingExtended.block}` : null,
+        icon: <FaClock size={20} />,
+      }
+      : null,
     {
       title: "Voting Period Ended",
-      date: "2024-04-04T00:00:00Z",
+      date: proposalTimeline[0]?.votingEnd.time
+        ? new Date(proposalTimeline[0].votingEnd.time * 1000).toString()
+        : null,
       description: "Proposal changes successfully implemented",
+      blockTitle: dao === "arbitrum" ? `Ethereum Block :` : `${dao} Block :`,
+      blockNumber: proposalTimeline[0]?.votingEnd.block,
+      blockExplorerUrl: dao !== "arbitrum" ? `${daoConfigs[dao].explorerUrl}/block/${proposalTimeline[0]?.votingEnd.block}` : null,
       icon: <FaCheckCircle size={20} />,
     },
-    {
+    daoConfigs[dao].name === "arbitrum" ? {
       title: "Proposal Queued",
-      date: "2025-03-04T00:00:00Z",
+      date: proposalTimeline[0].proposalQueue.time ? new Date(proposalTimeline[0].proposalQueue.time * 1000).toString() : null,
       description: "Proposal changes successfully implemented",
+      blockTitle: `${dao} Block :`,
+      blockNumber: proposalTimeline[0].proposalQueue.block,
+      blockExplorerUrl: `${daoConfigs[dao].explorerUrl}/block/${proposalTimeline[0]?.proposalQueue.block}`,
       icon: <FaListAlt size={20} />,
-    },
+    } : null,
     {
       title: "Proposal Executed",
-      date: "2025-03-04T00:00:00Z",
+      date: proposalTimeline[0]?.proposalExecution.time
+        ? new Date(proposalTimeline[0].proposalExecution.time * 1000).toString()
+        : null,
       description: "Proposal changes successfully implemented",
+      blockTitle: `${dao} Block :`,
+      blockNumber: dao !== "arbitrum" ? proposalTimeline[0]?.proposalExecution.block :null,
+      blockExplorerUrl:dao !== "arbitrum" ? `${daoConfigs[dao].explorerUrl}/block/${proposalTimeline[0]?.proposalExecution.block}`:null,
       icon: <FaRocket size={20} />,
     },
-  ];
+  ] as TimelineItem[]).filter(Boolean); // ✅ Removes null values
 
   const formatDate = (dateString: string): string => {
     const date = new Date(dateString);
@@ -97,6 +124,7 @@ const ProposalMainStatus = () => {
 
     return `${day} ${month}, ${formattedHours}:${formattedMinutes} ${ampm}`;
   };
+
   const formatDatewithYear = (dateString: string): string => {
     const date = new Date(dateString);
     const day = date.getUTCDate();
@@ -115,6 +143,10 @@ const ProposalMainStatus = () => {
 
   // Function to check if a date is in the past using UTC time
   const isDatePassed = (dateString: string): boolean => {
+
+    if (!dateString) {
+      return false;
+    }
     const itemDate = new Date(dateString);
     const today = new Date();
 
@@ -199,7 +231,7 @@ const ProposalMainStatus = () => {
     }, 500);
   };
 
-  const copyBlockNumber = () => {
+  const copyBlockNumber = (blockNumber: any) => {
     navigator.clipboard.writeText(blockNumber);
     setCopySuccess(true);
     setTimeout(() => setCopySuccess(false), 2000);
@@ -383,6 +415,7 @@ const ProposalMainStatus = () => {
           const radius = 124;
           const x = radius * Math.cos(angle - Math.PI / 2) + 128;
           const y = radius * Math.sin(angle - Math.PI / 2) + 128;
+          const hasValidDate = item.date !== null;
 
           let pointStyle =
             "bg-gradient-to-br from-gray-400 to-slate-500 text-white"; // pending
@@ -419,21 +452,22 @@ const ProposalMainStatus = () => {
                   {/* Pulse animation for active item */}
                   {activeItem === index && (
                     <div
-                      className={`absolute w-full h-full rounded-full animate-ping opacity-30 ${
-                        !isLastCompleted
-                          ? "bg-indigo-400"
-                          : isPassed
+                      className={`absolute w-full h-full rounded-full animate-ping opacity-30 ${!isLastCompleted
+                        ? "bg-indigo-400"
+                        : isPassed
                           ? "bg-blue-200"
                           : "bg-gray-400"
-                      }`}
+                        }`}
                     ></div>
                   )}
                 </div>
 
                 {/* Date below the circle */}
-                <div className="absolute left-[-15px] mt-2 text-[10px] font-medium text-center px-2 py-1 rounded-md w-max bg-gray-200 text-gray-700">
-                  {formatDate(item.date)}
-                </div>
+                {hasValidDate && (
+                  <div className="absolute left-[-15px] mt-2 text-[10px] font-medium text-center px-2 py-1 rounded-md w-max bg-gray-200 text-gray-700">
+                    {formatDate(item.date)}
+                  </div>
+                )}
               </div>
             </div>
           );
@@ -525,64 +559,73 @@ const ProposalMainStatus = () => {
             overflow: "auto",
           }}
           onMouseEnter={() => {
-            // Keep tooltip open when mouse enters it
             if (tooltipTimeoutRef.current) {
               clearTimeout(tooltipTimeoutRef.current);
             }
           }}
-          onMouseLeave={() => {
-            // Resume closing after mouse leaves
-            handleMouseLeave();
-          }}
+          onMouseLeave={handleMouseLeave}
         >
           <div className="flex justify-between items-start">
             <div
-              className={`text-sm font-bold ${
-                activeItem === lastCompletedIndex
-                  ? "text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-indigo-600"
-                  : isDatePassed(timelineData[activeItem].date)
+              className={`text-sm font-bold ${activeItem === lastCompletedIndex
+                ? "text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-indigo-600"
+                : timelineData[activeItem]?.date &&
+                  isDatePassed(timelineData[activeItem].date)
                   ? "text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-indigo-600"
                   : "text-transparent bg-clip-text bg-gradient-to-r from-gray-500 to-slate-600"
-              }`}
+                }`}
             >
-              {timelineData[activeItem].title}
+              {timelineData[activeItem]?.title}
             </div>
-            <div className="relative" ref={menuRef}>
-              <div
-                className="w-6 h-6 flex items-center justify-center rounded-full hover:bg-gray-200 cursor-pointer transition-colors ml-2"
-                onClick={toggleMenu}
-              >
-                <FaEllipsisV className="text-gray-500 text-xs" />
+
+            {/* Only show menu icon if the date is available and in the past */}
+            {timelineData[activeItem]?.date && isDatePassed(timelineData[activeItem].date) && (
+              <div className="relative" ref={menuRef}>
+                <div
+                  className="w-6 h-6 flex items-center justify-center rounded-full hover:bg-gray-200 cursor-pointer transition-colors ml-2"
+                  onClick={toggleMenu}
+                >
+                  <FaEllipsisV className="text-gray-500 text-xs" />
+                </div>
               </div>
-            </div>
+            )}
           </div>
-          <div className="text-xs text-gray-500 mt-1">
-            {formatDatewithYear(timelineData[activeItem].date)}
-          </div>
+
+          {/* Only show date-related info if date is not null */}
+          {timelineData[activeItem]?.date && (
+            <>
+              <div className="text-xs text-gray-500 mt-1">
+                {isDatePassed(timelineData[activeItem].date)
+                  ? formatDatewithYear(timelineData[activeItem].date)
+                  : "Scheduled for the future"}
+              </div>
+
+              <div className="text-xs mt-2 flex items-center">
+                Status:{" "}
+                <span
+                  className={`ml-1 px-2 py-1 rounded-full text-white text-xs ${activeItem === lastCompletedIndex
+                    ? "bg-gradient-to-r from-indigo-400 to-indigo-600"
+                    : isDatePassed(timelineData[activeItem].date)
+                      ? "bg-gradient-to-r from-indigo-400 to-indigo-600"
+                      : "bg-gradient-to-r from-gray-400 to-slate-500"
+                    }`}
+                >
+                  {isDatePassed(timelineData[activeItem].date)
+                    ? activeItem === lastCompletedIndex
+                      ? "Active"
+                      : "Completed"
+                    : "Pending"}
+                </span>
+              </div>
+            </>
+          )}
           <div className="text-xs mt-2 text-gray-700">
             {timelineData[activeItem].description}
           </div>
-          <div className="text-xs font-medium mt-2 flex items-center">
-            Status:{" "}
-            <span
-              className={`ml-1 px-2 py-1 rounded-full text-white text-xs ${
-                activeItem === lastCompletedIndex
-                  ? "bg-gradient-to-r from-indigo-400 to-indigo-600"
-                  : isDatePassed(timelineData[activeItem].date)
-                  ? "bg-gradient-to-r from-indigo-400 to-indigo-600"
-                  : "bg-gradient-to-r from-gray-400 to-slate-500"
-              }`}
-            >
-              {isDatePassed(timelineData[activeItem].date)
-                ? activeItem === lastCompletedIndex
-                  ? "Current"
-                  : "Completed"
-                : "Pending"}
-            </span>
-          </div>
         </div>
       )}
-      {menuOpen && (
+
+      {menuOpen && activeItem !== null && timelineData[activeItem].blockNumber !== null && timelineData[activeItem]?.date && isDatePassed(timelineData[activeItem].date)  && (
         <div
           ref={menuRef}
           className="fixed w-56 bg-white rounded-lg shadow-xl z-50 border border-gray-100 overflow-hidden"
@@ -596,44 +639,38 @@ const ProposalMainStatus = () => {
           onMouseLeave={handleMenuMouseLeave}
         >
           <div className="py-1">
-            {/* View on Block Explorer */}
-            <a
-              href={blockExplorerUrl}
+            {timelineData[activeItem].blockExplorerUrl !== null && (<a
+              href={timelineData[activeItem].blockExplorerUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center px-3 py-2 hover:bg-gray-100 cursor-pointer"
               onClick={(e) => e.stopPropagation()}
             >
               <FaExternalLinkAlt className="text-gray-500 mr-2 text-xs" />
-              <span className="text-xs text-gray-700">
-                View on Block Explorer
-              </span>
-            </a>
+              <span className="text-xs text-gray-700">View on Block Explorer</span>
+            </a>)}
 
-            {/* Block Number */}
-            <div
+            {timelineData[activeItem].blockNumber !== null && (<div
               className="flex items-center justify-between px-3 py-2 hover:bg-gray-100 cursor-pointer"
               onClick={(e) => {
                 e.stopPropagation();
-                copyBlockNumber();
+                copyBlockNumber(timelineData[activeItem].blockNumber);
               }}
             >
               <div className="flex items-center">
                 <FaCopy className="text-gray-500 mr-2 text-xs" />
                 <div>
-                  <span className="text-xs text-gray-700 block">
-                    Arbitrum Block:
-                  </span>
-                  <span className="text-xs text-gray-500">{blockNumber}</span>
+                  <span className="text-xs text-gray-700 block">{timelineData[activeItem].blockTitle}</span>
+                  {/* {console.log("blockNumber",timelineData.blockNumber)} */}
+                  <span className="text-xs text-gray-500">{timelineData[activeItem].blockNumber}</span>
                 </div>
               </div>
-              <div className="text-xs text-green-500">
-                {copySuccess ? "Copied!" : ""}
-              </div>
-            </div>
+              <div className="text-xs text-green-500">{copySuccess ? "Copied!" : ""}</div>
+            </div>)}
           </div>
         </div>
       )}
+
     </div>
   );
 };

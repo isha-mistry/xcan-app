@@ -165,10 +165,11 @@ function SpecificDelegate({ props }: { props: Type }) {
 
   const { data: accountBalance }: any = useReadContract({
     abi: dao_abi.abi,
-    address: "0x4200000000000000000000000000000000000042",
+    address: daoConfigs[props.daoDelegates].chainAddress as `0x${string}`,
     functionName: "balanceOf",
     // args:['0x6eda5acaff7f5964e1ecc3fd61c62570c186ca0c' as Address]
     args: [walletAddress as Address],
+    chainId:daoConfigs[props.daoDelegates].chainId  
   });
 
   const tabs = [

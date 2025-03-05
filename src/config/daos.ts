@@ -16,6 +16,7 @@ export const daoConfigs: { [key: string]: DAOConfig } = {
     viemchain: optimism,
     lighthoueseIcon:
       "https://gateway.lighthouse.storage/ipfs/QmXaKNwUxvd4Ksc9R6hd36eBo97e7e7YPDCVuvHwqG4zgQ",
+    useContractSourceAddress:{Address:"0xcDF27F107725988f2261Ce2256bDfCdE8B382B10"},
     discourseUrl: "https://gov.optimism.io/u",
     explorerUrl: "https://optimistic.etherscan.io",
     governanceUrl: "https://vote.optimism.io",
@@ -60,7 +61,6 @@ export const daoConfigs: { [key: string]: DAOConfig } = {
     viemchain: arbitrum,
     lighthoueseIcon:
       "https://gateway.lighthouse.storage/ipfs/QmdP6ZkLq4FF8dcvxBs48chqFiXu7Gr8SgPCqMtfr7VA4L",
-    useContractSourceAddress:{Address:"0xcDF27F107725988f2261Ce2256bDfCdE8B382B10"},
     discourseUrl: "https://forum.arbitrum.foundation/u",
     explorerUrl: "https://arbiscan.io",
     governanceUrl: "https://snapshot.org/#/arbitrum",

@@ -22,6 +22,7 @@ const GET_PROPOSALS = gql`
       transactionHash
       startTime
       endTime
+      blockNumber
     }
     proposalCreated2S(orderDirection: desc, orderBy: blockTimestamp, first: 100) {
       proposalId
@@ -34,6 +35,7 @@ const GET_PROPOSALS = gql`
       transactionHash
       startTime
       endTime
+      blockNumber
     }
     proposalCreated3S(orderDirection: desc, orderBy: blockTimestamp, first: 100) {
       proposalId
@@ -45,6 +47,7 @@ const GET_PROPOSALS = gql`
       transactionHash
       startTime
       endTime
+      blockNumber
     }
     proposalCreateds(orderDirection: desc, orderBy: blockTimestamp, first: 100) {
       proposalId
@@ -56,6 +59,7 @@ const GET_PROPOSALS = gql`
       transactionHash
       startTime
       endTime 
+      blockNumber
     }
   }
 `;
@@ -69,6 +73,7 @@ const GET_PROPOSAL_DESCRIPTIONS = gql`
       endBlock
       startTime
       endTime 
+      blockNumber
     }
     proposalCreated2S(where: { proposalId: $proposalId }) {
       description
@@ -77,6 +82,7 @@ const GET_PROPOSAL_DESCRIPTIONS = gql`
       endBlock
       startTime
       endTime 
+      blockNumber
     }
     proposalCreated3S(where: { proposalId: $proposalId }) {
       description
@@ -84,7 +90,8 @@ const GET_PROPOSAL_DESCRIPTIONS = gql`
       startBlock
       endBlock
       startTime
-      endTime 
+      endTime
+      blockNumber
     }
     proposalCreateds(where: { proposalId: $proposalId }) {
       description
@@ -93,6 +100,7 @@ const GET_PROPOSAL_DESCRIPTIONS = gql`
       endBlock
       startTime
       endTime 
+      blockNumber
     }
   }
 `;

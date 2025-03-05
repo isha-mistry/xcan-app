@@ -12,6 +12,7 @@ query GetAllProposals {
   proposalCreateds(orderBy: blockTimestamp, orderDirection: desc, first: 1000) {
     blockTimestamp
     description
+    blockNumber
     proposalId
     proposer
     transactionHash
@@ -34,6 +35,7 @@ const GET_PROPOSAL = gql`
 query GetProposal($proposalId: BigInt!) {
   proposalCreateds(where: { proposalId: $proposalId }) {
     blockTimestamp
+    blockNumber
     description
     proposalId
     proposer
@@ -116,7 +118,7 @@ export async function GET(req: NextRequest) {
 
     // Merge the proposal and extension data
     const mergedData = mergeProposalData(result.data);
-
+console.log("merged data",mergedData)
     return NextResponse.json({ data: mergedData });
   } catch (error) {
     console.error('Unexpected error:', error);
