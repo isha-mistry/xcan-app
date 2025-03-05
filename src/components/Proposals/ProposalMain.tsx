@@ -850,11 +850,12 @@ const quorum = Number(quorumData) / 10 ** 18;
           const result = await response.json();
           console.log("arbitrum result", result);
           const deadlineBlock = result.data[0].extension?.extendedDeadline || result.data[0].endBlock;
+          console.log("deadlineBlock",deadlineBlock)
           const proposalStarttimestamp = await calculateEthBlockMiningTime(Number(result.data[0].startBlock), props.daoDelegates);
           const proposalEndtimestamp = await calculateEthBlockMiningTime(Number(deadlineBlock), props.daoDelegates);
          console.log("proposalEndtimestamp",proposalEndtimestamp)
           setProposalState(proposalEndtimestamp.isExpired ? "Closed" : "Active");
-          setVotingEndTime(proposalEndtimestamp.estimatedMiningTime);
+          setVotingEndTime(proposalEndtimestamp.TimeInEpoch);
           setData(result.data[0]);
 
           const queueResponse = await fetch(`${proposalQueueEndpoint}`);
@@ -1189,7 +1190,7 @@ const quorum = Number(quorumData) / 10 ** 18;
       } else {
         return !votingEndTime
           ? "PENDING"
-          : currentDate > votingEndTime
+          : currentTime > votingEndTime
             ? (quorum < support1Weight && support1Weight! > support0Weight!) 
               ? "SUCCEEDED"
               : "DEFEATED"
