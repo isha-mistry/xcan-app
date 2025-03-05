@@ -9,10 +9,10 @@ export async function PUT(req: Request) {
     const { host_address, dao_name, reference_id, attendees, ...updateFields } =
       updateData;
 
-    // if(cacheWrapper.isAvailable){
-    //   const cacheKey = `office-hours-all`;
-    //   await cacheWrapper.delete(cacheKey);
-    // }
+    if(cacheWrapper.isAvailable){
+      const cacheKey = `office-hours-all`;
+      await cacheWrapper.delete(cacheKey);
+    }
 
     if (!host_address || !dao_name || !reference_id) {
       return NextResponse.json(

@@ -32,6 +32,7 @@ import NoResultsFound from "@/utils/Noresult";
 import oplogo from "@/assets/images/daos/op.png";
 import arbcir from "@/assets/images/daos/arb.png";
 import { daoConfigs } from "@/config/daos";
+import useSWR from 'swr'
 interface Type {
   img: StaticImageData;
   title: string;
@@ -69,37 +70,70 @@ function DaoOfficeHours() {
   });
 
   // Fetch data from API
-  useEffect(() => {
-    const fetchOfficeHours = async () => {
-      try {
-        setDataLoading(true);
-        const response = await fetchApi(`/get-office-hours`, {
-          headers: {
-            Authorization: `Bearer ${await getAccessToken()}`,
-          },
-        });
+  // useEffect(() => {
+  //   const fetchOfficeHours = async () => {
+  //     try {
+  //       setDataLoading(true);
+  //       const response = await fetchApi(`/get-office-hours`, {
+  //         headers: {
+  //           Authorization: `Bearer ${await getAccessToken()}`,
+  //         },
+  //       });
 
-        const result = await response.json();
+  //       const result = await response.json();
 
-        const data = {
-          ongoing: result.data.ongoing,
-          upcoming: result.data.upcoming,
-          recorded: result.data.recorded,
-        };
+  //       const data = {
+  //         ongoing: result.data.ongoing,
+  //         upcoming: result.data.upcoming,
+  //         recorded: result.data.recorded,
+  //       };
 
-        setOriginalData(data);
-        setFilteredData(data); // Initially, filtered data is same as original
-      } catch (error) {
-        console.error("Error fetching office hours:", error);
-      } finally {
-        setDataLoading(false);
-      }
+  //       setOriginalData(data);
+  //       setFilteredData(data); // Initially, filtered data is same as original
+  //     } catch (error) {
+  //       console.error("Error fetching office hours:", error);
+  //     } finally {
+  //       setDataLoading(false);
+  //     }
+  //   };
+
+  //   if (walletAddress) {
+  //     fetchOfficeHours();
+  //   }
+  // }, [walletAddress]);
+
+// In your DaoOfficeHours component
+const { data, error, mutate } = useSWR(
+  walletAddress ? '/get-office-hours' : null,
+  async () => {
+    const response = await fetchApi(`/get-office-hours`, {
+      headers: {
+        Authorization: `Bearer ${await getAccessToken()}`,
+      },
+    });
+    return response.json();
+  },
+  {
+    revalidateOnFocus: true,  // Revalidate when user comes back to the tab
+    revalidateOnMount: true,  // Revalidate when component mounts
+    dedupingInterval: 10000,  // Don't make duplicate requests within 10 seconds
+  }
+);
+
+// Process data when it arrives
+useEffect(() => {
+  if (data) {
+    const processedData = {
+      ongoing: data.data.ongoing,
+      upcoming: data.data.upcoming,
+      recorded: data.data.recorded,
     };
-
-    if (walletAddress) {
-      fetchOfficeHours();
-    }
-  }, [walletAddress]);
+    
+    setOriginalData(processedData);
+    setFilteredData(processedData);
+    setDataLoading(false);
+  }
+}, [data]);
 
   // Search function
   const handleSearch = (searchTerm: string) => {
@@ -174,6 +208,15 @@ function DaoOfficeHours() {
     return filteredData[currentTab] || [];
   };
 
+  const handleTabChange = (tab:string) => {
+    router.push(path + "?hours=" + tab);
+    
+    // Force revalidate data when switching to certain tabs
+    if (tab === 'ongoing' || tab === 'upcoming') {
+      mutate(); // This will re-fetch fresh data from the API
+    }
+  };
+
   return (
     <>
       {/* For Mobile Screen */}
@@ -192,7 +235,7 @@ function DaoOfficeHours() {
                   ? "text-[#0500FF] font-semibold bg-[#f5f5f5]"
                   : "text-[#3E3D3D] bg-white"
               }`}
-              onClick={() => router.push(path + "?hours=ongoing")}
+              onClick={() => handleTabChange('ongoing')}
             >
               <Clock size={16} className="drop-shadow-lg" />
               Live
