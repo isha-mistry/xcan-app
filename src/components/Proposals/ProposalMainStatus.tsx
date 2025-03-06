@@ -13,6 +13,8 @@ import {
   FaCopy,
   FaCalendarAlt,
 } from "react-icons/fa";
+import { FaCross } from "react-icons/fa6";
+import { RxCross2 } from "react-icons/rx";
 
 interface TimelineItem {
   title: string;
@@ -24,7 +26,7 @@ interface TimelineItem {
   icon: React.ReactNode;
 }
 
-const ProposalMainStatus = ({ proposalTimeline, dao }: any) => {
+const ProposalMainStatus = ({ proposalTimeline, dao , defeated}: any) => {
   const [activeItem, setActiveItem] = useState<number | null>(null);
   const [tooltipPosition, setTooltipPosition] = useState({ top: 0, left: 0 });
   const [tooltipPlacement, setTooltipPlacement] = useState("bottom");
@@ -100,7 +102,12 @@ const ProposalMainStatus = ({ proposalTimeline, dao }: any) => {
             : null,
         icon: <FaCheckCircle size={20} />,
       },
-      daoConfigs[dao].name === "arbitrum"
+      defeated ?{
+        title:"Defeated",
+        icon:<RxCross2  size={20}/>,
+        date:null
+      }: null,
+      daoConfigs[dao].name === "arbitrum" && !defeated
         ? {
             title: "Proposal Queued",
             date: proposalTimeline[0].proposalQueue.time
@@ -115,7 +122,7 @@ const ProposalMainStatus = ({ proposalTimeline, dao }: any) => {
             icon: <FaListAlt size={20} />,
           }
         : null,
-      {
+        !defeated ? {
         title: "Proposal Executed",
         date: proposalTimeline[0]?.proposalExecution.time
           ? new Date(
@@ -133,7 +140,7 @@ const ProposalMainStatus = ({ proposalTimeline, dao }: any) => {
             ? `${daoConfigs[dao].explorerUrl}/block/${proposalTimeline[0]?.proposalExecution.block}`
             : null,
         icon: <FaRocket size={20} />,
-      },
+      } : null,
     ] as TimelineItem[]
   ).filter(Boolean); // ✅ Removes null values
 
@@ -442,7 +449,9 @@ const ProposalMainStatus = ({ proposalTimeline, dao }: any) => {
 
           let pointStyle =
             "bg-gradient-to-br from-gray-400 to-slate-500 text-white"; // pending
-          if (isPassed) {
+            if (defeated) {
+              pointStyle = "bg-gradient-to-br from-indigo-500 to-indigo-400 text-white";
+            } else if (isPassed) {
             pointStyle =
               isLastItem && isLastCompleted // Apply the special style if it's the last item AND last completed
                 ? "bg-gradient-to-br from-indigo-500 to-indigo-400 text-white"
@@ -595,7 +604,7 @@ const ProposalMainStatus = ({ proposalTimeline, dao }: any) => {
           <div className="flex justify-between items-start">
             <div
               className={`text-sm font-bold ${
-                activeItem === lastCompletedIndex
+                timelineData[activeItem].date < new Date().toString()
                   ? "text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-indigo-600"
                   : timelineData[activeItem]?.date &&
                     isDatePassed(timelineData[activeItem].date)
@@ -640,14 +649,16 @@ const ProposalMainStatus = ({ proposalTimeline, dao }: any) => {
                       : "bg-gradient-to-r from-gray-400 to-slate-500"
                   }`}
                 >
-                  {isDatePassed(timelineData[activeItem].date)
-                    ? activeItem === lastCompletedIndex &&
-                      activeItem === timelineData.length - 1
-                      ? "Completed" // Show "Completed" if last and lastCompleted
-                      : activeItem === lastCompletedIndex
-                      ? "Active"
-                      : "Completed"
-                    : "Pending"}
+                  {defeated
+    ? "Completed"
+    : isDatePassed(timelineData[activeItem].date)
+      ? activeItem === lastCompletedIndex &&
+        activeItem === timelineData.length - 1
+        ? "Completed" // Show "Completed" if last and lastCompleted
+        : activeItem === lastCompletedIndex
+          ? "Active"
+          : "Completed"
+      : "Pending"}
                 </span>
               </div>
             </>

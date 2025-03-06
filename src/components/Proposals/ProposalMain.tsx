@@ -161,6 +161,24 @@ function ProposalMain({ props }: { props: Props }) {
   const [proposalState, setProposalState] = useState<string | null>(null);
   const [proposalTimeline, setProposalTimeline] = useState<any[]>([]);
   const [shouldFetch, setShouldFetch] = useState(false);
+  const [isLargeScreen, setIsLargeScreen] = useState(false);
+  const [showViewMoreButton, setShowViewMoreButton] = useState(false);
+
+  useEffect(() => {
+    // Update isLargeScreen on window resize and initial load
+    const handleResize = () => {
+      setIsLargeScreen(window.innerWidth > 1100);
+    };
+
+    // Set initial value
+    handleResize();
+
+    // Add event listener
+    window.addEventListener('resize', handleResize);
+
+    // Clean up event listener on unmount
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const pushToGTM = (eventData: GTMEvent) => {
     if (typeof window !== "undefined" && window.dataLayer) {
@@ -573,6 +591,18 @@ const quorum = Number(quorumData) / 10 ** 18;
   //     }
   //   }
   // }, [isExpanded, data?.description]);
+
+  useEffect(() => {
+    if (contentRef.current) {
+      console.log(contentRef.current.scrollHeight,"scroll height")
+      const shouldShowButton = isLargeScreen
+        ? contentRef.current.scrollHeight > 640
+        : contentRef.current.scrollHeight > 200;
+console.log(shouldShowButton, "shouldshow button")
+      setShowViewMoreButton(shouldShowButton);
+    }
+  }, [data?.description, isLargeScreen, loading, , formattedDescription]);
+
   useEffect(() => {
     if (contentRef.current) {
       const isLargeScreen = window.innerWidth > 1100; // Check screen size
@@ -585,7 +615,7 @@ const quorum = Number(quorumData) / 10 ** 18;
         contentRef.current.style.maxHeight = "180px";
       }
     }
-  }, [isExpanded, data?.description]);
+  }, [isExpanded, data?.description, isLargeScreen]);
   const toggleExpansion = () => {
     setIsExpanded(!isExpanded);
     pushToGTM({
@@ -1427,8 +1457,7 @@ const quorum = Number(quorumData) / 10 ** 18;
                     dangerouslySetInnerHTML={{ __html: formattedDescription }}
                   />
                 </div>
-                {contentRef.current &&
-                  contentRef.current.scrollHeight > 144 && (
+                {showViewMoreButton && (
                     <button
                       className="text-sm text-blue-shade-200 mt-2"
                       onClick={toggleExpansion}
@@ -1450,7 +1479,7 @@ const quorum = Number(quorumData) / 10 ** 18;
           
 
           <div className="w-full z-10  rounded-[1rem] shadow-xl transition-shadow duration-300 ease-in-out bg-gradient-to-br from-gray-50 to-slate-50 font-poppins h-fit min-h-[390px]">
-            {loading ? (<ProposalMainStatusSkeletonLoader/>):( <ProposalMainStatus proposalTimeline={proposalTimeline} dao={props.daoDelegates} />)}
+            {loading ? (<ProposalMainStatusSkeletonLoader/>):( <ProposalMainStatus proposalTimeline={proposalTimeline} dao={props.daoDelegates} defeated={Proposalstatus==="DEFEATED"}/>)}
            
             {/* Add skeleton loader when data is loading */}
             
