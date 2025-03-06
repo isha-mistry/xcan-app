@@ -1188,9 +1188,10 @@ const quorum = Number(quorumData) / 10 ** 18;
           return(quorum <support1Weight && support1Weight! > support0Weight!) ? "SUCCEEDED" : "DEFEATED";
         }
       } else {
+        console.log("votingEndTime", votingEndTime, currentTime.getTime(),quorum,support1Weight,support0Weight);
         return !votingEndTime
           ? "PENDING"
-          : currentTime > votingEndTime
+          : currentTime.getTime()/1000 > votingEndTime
             ? (quorum < support1Weight && support1Weight! > support0Weight!) 
               ? "SUCCEEDED"
               : "DEFEATED"
