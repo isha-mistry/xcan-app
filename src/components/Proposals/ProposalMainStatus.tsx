@@ -26,7 +26,7 @@ interface TimelineItem {
   icon: React.ReactNode;
 }
 
-const ProposalMainStatus = ({ proposalTimeline, dao , defeated}: any) => {
+const ProposalMainStatus = ({ proposalTimeline, dao , defeated, cancelled, cancelledTime}: any) => {
   const [activeItem, setActiveItem] = useState<number | null>(null);
   const [tooltipPosition, setTooltipPosition] = useState({ top: 0, left: 0 });
   const [tooltipPlacement, setTooltipPlacement] = useState("bottom");
@@ -41,12 +41,21 @@ const ProposalMainStatus = ({ proposalTimeline, dao , defeated}: any) => {
   const menuTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 });
 
+  const isBeforeCancellation = (itemDate: string | null): boolean => {
+    if (!itemDate || !cancelled || !cancelledTime) {
+      return true; // If no cancellation or no date, item is valid
+    }
+    
+    const itemTimestamp = new Date(itemDate).getTime() / 1000;
+    return itemTimestamp < Number(cancelledTime);
+  };
+
+
   // const blockNumber = "12345678"; // Example block number
   console.log("proposalTimeline", proposalTimeline);
-
   const timelineData: TimelineItem[] = (
     [
-      {
+      (!cancelled || isBeforeCancellation(new Date(proposalTimeline[0].publishOnchain.time * 1000).toString())) ? {
         title: "Published Onchain",
         date: proposalTimeline[0]?.publishOnchain.time
           ? new Date(proposalTimeline[0].publishOnchain.time * 1000).toString()
@@ -56,8 +65,8 @@ const ProposalMainStatus = ({ proposalTimeline, dao , defeated}: any) => {
         blockNumber: proposalTimeline[0]?.publishOnchain.block,
         blockExplorerUrl: `${daoConfigs[dao].explorerUrl}/block/${proposalTimeline[0]?.publishOnchain.block}`,
         icon: <FaUpload size={20} />,
-      },
-      {
+      }: null ,
+      (!cancelled || isBeforeCancellation(new Date(proposalTimeline[0].votingStart.time * 1000).toString())) ? {
         title: "Voting Period Started",
         date: proposalTimeline[0]?.votingStart.time
           ? new Date(proposalTimeline[0].votingStart.time * 1000).toString()
@@ -70,8 +79,8 @@ const ProposalMainStatus = ({ proposalTimeline, dao , defeated}: any) => {
             ? `${daoConfigs[dao].explorerUrl}/block/${proposalTimeline[0]?.votingStart.block}`
             : null,
         icon: <FaVoteYea size={20} />,
-      },
-      proposalTimeline[0]?.votingExtended.time
+      }: null,
+      proposalTimeline[0]?.votingExtended.time &&  (!cancelled || isBeforeCancellation(new Date(proposalTimeline[0].votingExtended.time * 1000).toString()))
         ? {
             title: "Voting Period Extended",
             date: new Date(
@@ -88,7 +97,7 @@ const ProposalMainStatus = ({ proposalTimeline, dao , defeated}: any) => {
             icon: <FaClock size={20} />,
           }
         : null,
-      {
+        (!cancelled || isBeforeCancellation(new Date(proposalTimeline[0].votingEnd.time * 1000).toString())) ? {
         title: "Voting Period Ended",
         date: proposalTimeline[0]?.votingEnd.time
           ? new Date(proposalTimeline[0].votingEnd.time * 1000).toString()
@@ -101,13 +110,13 @@ const ProposalMainStatus = ({ proposalTimeline, dao , defeated}: any) => {
             ? `${daoConfigs[dao].explorerUrl}/block/${proposalTimeline[0]?.votingEnd.block}`
             : null,
         icon: <FaCheckCircle size={20} />,
-      },
+      }: null,
       defeated ?{
         title:"Defeated",
         icon:<RxCross2  size={20}/>,
         date:null
       }: null,
-      daoConfigs[dao].name === "arbitrum" && !defeated
+      daoConfigs[dao].name === "arbitrum" && !defeated &&  (!cancelled || isBeforeCancellation(new Date(proposalTimeline[0].proposalQueue.time * 1000).toString()))
         ? {
             title: "Proposal Queued",
             date: proposalTimeline[0].proposalQueue.time
@@ -122,7 +131,7 @@ const ProposalMainStatus = ({ proposalTimeline, dao , defeated}: any) => {
             icon: <FaListAlt size={20} />,
           }
         : null,
-        !defeated ? {
+        !defeated &&  (!cancelled || isBeforeCancellation(new Date(proposalTimeline[0].proposalExecution.time * 1000).toString())) ? {
         title: "Proposal Executed",
         date: proposalTimeline[0]?.proposalExecution.time
           ? new Date(
@@ -141,6 +150,11 @@ const ProposalMainStatus = ({ proposalTimeline, dao , defeated}: any) => {
             : null,
         icon: <FaRocket size={20} />,
       } : null,
+      cancelled ? {
+        title:"Cancelled",
+        icon:<RxCross2  size={20}/>,
+        date:null
+      }: null
     ] as TimelineItem[]
   ).filter(Boolean); // ✅ Removes null values
 
@@ -449,7 +463,7 @@ const ProposalMainStatus = ({ proposalTimeline, dao , defeated}: any) => {
 
           let pointStyle =
             "bg-gradient-to-br from-gray-400 to-slate-500 text-white"; // pending
-            if (defeated) {
+            if (defeated || cancelled) {
               pointStyle = "bg-gradient-to-br from-indigo-500 to-indigo-400 text-white";
             } else if (isPassed) {
             pointStyle =
@@ -649,7 +663,7 @@ const ProposalMainStatus = ({ proposalTimeline, dao , defeated}: any) => {
                       : "bg-gradient-to-r from-gray-400 to-slate-500"
                   }`}
                 >
-                  {defeated
+                  {defeated || cancelled
     ? "Completed"
     : isDatePassed(timelineData[activeItem].date)
       ? activeItem === lastCompletedIndex &&

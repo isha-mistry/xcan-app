@@ -163,6 +163,7 @@ function ProposalMain({ props }: { props: Props }) {
   const [shouldFetch, setShouldFetch] = useState(false);
   const [isLargeScreen, setIsLargeScreen] = useState(false);
   const [showViewMoreButton, setShowViewMoreButton] = useState(false);
+  const [cancelledTime, setCancelledTime]= useState();
 
   useEffect(() => {
     // Update isLargeScreen on window resize and initial load
@@ -1191,6 +1192,17 @@ console.log(shouldShowButton, "shouldshow button")
   const isActive = proposalState === "Active" && !(props.daoDelegates === "optimism");
 
   const currentDate = new Date();
+  useEffect(() => {
+    if (canceledProposals && props.id) {
+      const canceledProposal = canceledProposals.find(
+        (item) => item.proposalId === props.id
+      );
+
+      if (canceledProposal) {
+        setCancelledTime(canceledProposal.blockTimestamp); // Pass blockTimestamp directly
+      }
+    }
+  }, [canceledProposals, props.id]);
 
   const getProposalStatusData = () => {
     if (!data || !data.blockTimestamp) return null;
@@ -1199,6 +1211,7 @@ console.log(shouldShowButton, "shouldshow button")
     const timeDifference = currentTime - proposalTime;
     const daysDifference = timeDifference / (24 * 60 * 60 * 1000);
 
+    console.log(canceledProposals, "cancle proposal")
     if (canceledProposals.some((item) => item.proposalId === props.id)) {
       return "CANCELLED";
     }
@@ -1480,7 +1493,7 @@ console.log(shouldShowButton, "shouldshow button")
           
 
           <div className="w-full z-10  rounded-[1rem] shadow-xl transition-shadow duration-300 ease-in-out bg-gradient-to-br from-gray-50 to-slate-50 font-poppins h-fit min-h-[390px]">
-            {loading ? (<ProposalMainStatusSkeletonLoader/>):( <ProposalMainStatus proposalTimeline={proposalTimeline} dao={props.daoDelegates} defeated={Proposalstatus==="DEFEATED"}/>)}
+            {loading ? (<ProposalMainStatusSkeletonLoader/>):( <ProposalMainStatus proposalTimeline={proposalTimeline} dao={props.daoDelegates} defeated={Proposalstatus==="DEFEATED"} cancelled={Proposalstatus==="CANCELLED"} cancelledTime={cancelledTime}/>)}
            
             {/* Add skeleton loader when data is loading */}
             

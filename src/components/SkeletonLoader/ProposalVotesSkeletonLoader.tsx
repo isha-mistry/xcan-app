@@ -1,6 +1,7 @@
 import React from "react";
 const ProposalvotesSkeletonLoader = () => {
   return (
+    <div className="w-full z-10 rounded-[1rem] shadow-xl transition-shadow duration-300 ease-in-out bg-gradient-to-br from-gray-50 to-slate-50 font-poppins min-h-[416px] 1.3lg:h-fit h-full">
     <div className="w-full flex justify-center flex-col rounded-[1rem] font-poppins h-fit p-6 min-h-[416px] 1.3lg:h-fit">
       {/* Title skeleton */}
       <div className="text-2xl font-bold mb-6 bg-gray-200 animate-pulse h-8 w-48 mx-auto rounded-full"></div>
@@ -43,6 +44,7 @@ const ProposalvotesSkeletonLoader = () => {
           <div className="bg-gray-200 animate-pulse h-4 w-12 rounded-full"></div>
         </div>
       </div>
+    </div>
     </div>
   );
 };
