@@ -40,74 +40,102 @@ const ProposalMainStatus = ({ proposalTimeline, dao }: any) => {
   const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 });
 
   // const blockNumber = "12345678"; // Example block number
-  console.log("proposalTimeline", proposalTimeline)
+  console.log("proposalTimeline", proposalTimeline);
 
-  const timelineData: TimelineItem[] = ([
-    {
-      title: "Published Onchain",
-      date: proposalTimeline[0]?.publishOnchain.time
-        ? new Date(proposalTimeline[0].publishOnchain.time * 1000).toString()
+  const timelineData: TimelineItem[] = (
+    [
+      {
+        title: "Published Onchain",
+        date: proposalTimeline[0]?.publishOnchain.time
+          ? new Date(proposalTimeline[0].publishOnchain.time * 1000).toString()
+          : null,
+        description: "Community members casting votes on proposal",
+        blockTitle: `${dao} Block :`,
+        blockNumber: proposalTimeline[0]?.publishOnchain.block,
+        blockExplorerUrl: `${daoConfigs[dao].explorerUrl}/block/${proposalTimeline[0]?.publishOnchain.block}`,
+        icon: <FaUpload size={20} />,
+      },
+      {
+        title: "Voting Period Started",
+        date: proposalTimeline[0]?.votingStart.time
+          ? new Date(proposalTimeline[0].votingStart.time * 1000).toString()
+          : null,
+        description: "Proposal approved and awaiting execution",
+        blockTitle: dao === "arbitrum" ? `Ethereum Block :` : `${dao} Block :`,
+        blockNumber: proposalTimeline[0]?.votingStart.block,
+        blockExplorerUrl:
+          dao !== "arbitrum"
+            ? `${daoConfigs[dao].explorerUrl}/block/${proposalTimeline[0]?.votingStart.block}`
+            : null,
+        icon: <FaVoteYea size={20} />,
+      },
+      proposalTimeline[0]?.votingExtended.time
+        ? {
+            title: "Voting Period Extended",
+            date: new Date(
+              proposalTimeline[0].votingExtended.time * 1000
+            ).toString(),
+            description: "Proposal changes successfully implemented",
+            blockTitle:
+              dao === "arbitrum" ? `Ethereum Block :` : `${dao} Block :`,
+            blockNumber: proposalTimeline[0]?.votingExtended.block,
+            blockExplorerUrl:
+              dao !== "arbitrum"
+                ? `${daoConfigs[dao].explorerUrl}/block/${proposalTimeline[0]?.votingExtended.block}`
+                : null,
+            icon: <FaClock size={20} />,
+          }
         : null,
-      description: "Community members casting votes on proposal",
-      blockTitle: `${dao} Block :`,
-      blockNumber: proposalTimeline[0]?.publishOnchain.block,
-      blockExplorerUrl: `${daoConfigs[dao].explorerUrl}/block/${proposalTimeline[0]?.publishOnchain.block}`,
-      icon: <FaUpload size={20} />,
-    },
-    {
-      title: "Voting Period Started",
-      date: proposalTimeline[0]?.votingStart.time
-        ? new Date(proposalTimeline[0].votingStart.time * 1000).toString()
-        : null,
-      description: "Proposal approved and awaiting execution",
-      blockTitle: dao === "arbitrum" ? `Ethereum Block :` : `${dao} Block :`,
-      blockNumber: proposalTimeline[0]?.votingStart.block,
-      blockExplorerUrl: dao !== "arbitrum" ? `${daoConfigs[dao].explorerUrl}/block/${proposalTimeline[0]?.votingStart.block}` : null,
-      icon: <FaVoteYea size={20} />,
-    },
-    proposalTimeline[0]?.votingExtended.time
-      ? {
-        title: "Voting Period Extended",
-        date: new Date(proposalTimeline[0].votingExtended.time * 1000).toString(),
+      {
+        title: "Voting Period Ended",
+        date: proposalTimeline[0]?.votingEnd.time
+          ? new Date(proposalTimeline[0].votingEnd.time * 1000).toString()
+          : null,
         description: "Proposal changes successfully implemented",
         blockTitle: dao === "arbitrum" ? `Ethereum Block :` : `${dao} Block :`,
-        blockNumber: proposalTimeline[0]?.votingExtended.block,
-        blockExplorerUrl: dao !== "arbitrum" ? `${daoConfigs[dao].explorerUrl}/block/${proposalTimeline[0]?.votingExtended.block}` : null,
-        icon: <FaClock size={20} />,
-      }
-      : null,
-    {
-      title: "Voting Period Ended",
-      date: proposalTimeline[0]?.votingEnd.time
-        ? new Date(proposalTimeline[0].votingEnd.time * 1000).toString()
+        blockNumber: proposalTimeline[0]?.votingEnd.block,
+        blockExplorerUrl:
+          dao !== "arbitrum"
+            ? `${daoConfigs[dao].explorerUrl}/block/${proposalTimeline[0]?.votingEnd.block}`
+            : null,
+        icon: <FaCheckCircle size={20} />,
+      },
+      daoConfigs[dao].name === "arbitrum"
+        ? {
+            title: "Proposal Queued",
+            date: proposalTimeline[0].proposalQueue.time
+              ? new Date(
+                  proposalTimeline[0].proposalQueue.time * 1000
+                ).toString()
+              : null,
+            description: "Proposal changes successfully implemented",
+            blockTitle: `${dao} Block :`,
+            blockNumber: proposalTimeline[0].proposalQueue.block,
+            blockExplorerUrl: `${daoConfigs[dao].explorerUrl}/block/${proposalTimeline[0]?.proposalQueue.block}`,
+            icon: <FaListAlt size={20} />,
+          }
         : null,
-      description: "Proposal changes successfully implemented",
-      blockTitle: dao === "arbitrum" ? `Ethereum Block :` : `${dao} Block :`,
-      blockNumber: proposalTimeline[0]?.votingEnd.block,
-      blockExplorerUrl: dao !== "arbitrum" ? `${daoConfigs[dao].explorerUrl}/block/${proposalTimeline[0]?.votingEnd.block}` : null,
-      icon: <FaCheckCircle size={20} />,
-    },
-    daoConfigs[dao].name === "arbitrum" ? {
-      title: "Proposal Queued",
-      date: proposalTimeline[0].proposalQueue.time ? new Date(proposalTimeline[0].proposalQueue.time * 1000).toString() : null,
-      description: "Proposal changes successfully implemented",
-      blockTitle: `${dao} Block :`,
-      blockNumber: proposalTimeline[0].proposalQueue.block,
-      blockExplorerUrl: `${daoConfigs[dao].explorerUrl}/block/${proposalTimeline[0]?.proposalQueue.block}`,
-      icon: <FaListAlt size={20} />,
-    } : null,
-    {
-      title: "Proposal Executed",
-      date: proposalTimeline[0]?.proposalExecution.time
-        ? new Date(proposalTimeline[0].proposalExecution.time * 1000).toString()
-        : null,
-      description: "Proposal changes successfully implemented",
-      blockTitle: `${dao} Block :`,
-      blockNumber: dao !== "arbitrum" ? proposalTimeline[0]?.proposalExecution.block :null,
-      blockExplorerUrl:dao !== "arbitrum" ? `${daoConfigs[dao].explorerUrl}/block/${proposalTimeline[0]?.proposalExecution.block}`:null,
-      icon: <FaRocket size={20} />,
-    },
-  ] as TimelineItem[]).filter(Boolean); // ✅ Removes null values
+      {
+        title: "Proposal Executed",
+        date: proposalTimeline[0]?.proposalExecution.time
+          ? new Date(
+              proposalTimeline[0].proposalExecution.time * 1000
+            ).toString()
+          : null,
+        description: "Proposal changes successfully implemented",
+        blockTitle: `${dao} Block :`,
+        blockNumber:
+          dao !== "arbitrum"
+            ? proposalTimeline[0]?.proposalExecution.block
+            : null,
+        blockExplorerUrl:
+          dao !== "arbitrum"
+            ? `${daoConfigs[dao].explorerUrl}/block/${proposalTimeline[0]?.proposalExecution.block}`
+            : null,
+        icon: <FaRocket size={20} />,
+      },
+    ] as TimelineItem[]
+  ).filter(Boolean); // ✅ Removes null values
 
   const formatDate = (dateString: string): string => {
     const date = new Date(dateString);
@@ -143,7 +171,6 @@ const ProposalMainStatus = ({ proposalTimeline, dao }: any) => {
 
   // Function to check if a date is in the past using UTC time
   const isDatePassed = (dateString: string): boolean => {
-
     if (!dateString) {
       return false;
     }
@@ -310,80 +337,75 @@ const ProposalMainStatus = ({ proposalTimeline, dao }: any) => {
   }, []);
 
   const updateTooltipPosition = (index: number) => {
-    if (!containerRef.current || !pointRefs.current[index]) {
-      return;
-    }
+    if (!containerRef.current || !pointRefs.current[index]) return;
 
-    // Get coordinates and measurements
     const containerRect = containerRef.current.getBoundingClientRect();
-    const pointRect = pointRefs.current[index]!.getBoundingClientRect();
+    const pointElement = pointRefs.current[index];
+    if (!pointElement) return;
 
-    // Initial position calculation (relative to container)
-    const pointX = pointRect.left + pointRect.width / 2 - containerRect.left;
-    const pointY = pointRect.top + pointRect.height / 2 - containerRect.top;
+    // Get the bounding rectangle of the point element
+    const pointRect = pointElement.getBoundingClientRect();
 
-    // Set initial position (will be refined once tooltip is rendered)
+    // Calculate position relative to the container
+    const tooltipLeft =
+      pointRect.left - containerRect.left + pointRect.width / 2;
+    const tooltipTop = pointRect.bottom - containerRect.top + 10; // 10px gap below the point
+
+    // Set tooltip position
     setTooltipPosition({
-      left: pointX,
-      top: pointY + 70,
+      left: tooltipLeft,
+      top: tooltipTop,
     });
-    setTooltipPlacement("bottom");
   };
 
   // Adjust tooltip position after it's rendered
   useEffect(() => {
-    if (!tooltipVisible || activeItem === null || !tooltipRef.current) {
+    if (
+      !tooltipVisible ||
+      activeItem === null ||
+      !tooltipRef.current ||
+      !containerRef.current
+    ) {
       return;
     }
 
     const tooltipElement = tooltipRef.current;
-    const pointElement = pointRefs.current[activeItem];
-
-    if (!tooltipElement || !pointElement) {
-      return;
-    }
-
+    const containerElement = containerRef.current;
     const tooltipRect = tooltipElement.getBoundingClientRect();
-    const pointRect = pointElement.getBoundingClientRect();
+    const containerRect = containerElement.getBoundingClientRect();
 
-    // Point center coordinates relative to viewport
-    const pointViewportX = pointRect.left + pointRect.width / 2;
-    const pointViewportY = pointRect.top + pointRect.height / 2;
+    // Container dimensions
+    const containerWidth = containerRect.width;
+    const containerHeight = containerRect.height;
 
-    // Viewport dimensions
-    const viewportWidth = window.innerWidth;
-    const viewportHeight = window.innerHeight;
-
-    // Calculate tooltip position
-    // Start with position below the point
-    let posLeft = pointViewportX - tooltipRect.width / 2;
-    let posTop = pointViewportY + 40; // Gap between point and tooltip
-
-    // Check if tooltip would extend beyond right edge
-    if (posLeft + tooltipRect.width > viewportWidth - 20) {
-      posLeft = viewportWidth - tooltipRect.width - 20;
+    // Adjust horizontal position if tooltip goes beyond right edge
+    let posLeft = tooltipPosition.left - tooltipRect.width / 2;
+    if (posLeft + tooltipRect.width > containerWidth - 20) {
+      posLeft = containerWidth - tooltipRect.width - 20;
     }
 
-    // Check if tooltip would extend beyond left edge
+    // Adjust horizontal position if tooltip goes beyond left edge
     if (posLeft < 20) {
       posLeft = 20;
     }
 
-    // Check if tooltip would extend beyond bottom edge
-    if (posTop + tooltipRect.height > viewportHeight - 20) {
-      // Position tooltip above point instead
-      posTop = pointViewportY - tooltipRect.height - 20;
+    // Adjust vertical position if tooltip goes beyond bottom edge
+    let posTop = tooltipPosition.top;
+    if (posTop + tooltipRect.height > containerHeight - 20) {
+      // Move tooltip above the point if it would go beyond bottom
+      posTop = tooltipPosition.top - tooltipRect.height - 40; // 40px total gap
     }
 
-    // Check if tooltip would extend beyond top edge
+    // Adjust vertical position if tooltip goes beyond top edge
     if (posTop < 20) {
       posTop = 20;
     }
 
-    // Update tooltip position
+    // Update tooltip position relative to container
+    tooltipElement.style.position = "absolute";
     tooltipElement.style.left = `${posLeft}px`;
     tooltipElement.style.top = `${posTop}px`;
-  }, [tooltipVisible, activeItem]);
+  }, [tooltipVisible, activeItem, tooltipPosition]);
 
   // Fixed width tooltip positioned absolutely within the container
   const getTooltipClasses = () => {
@@ -411,6 +433,7 @@ const ProposalMainStatus = ({ proposalTimeline, dao }: any) => {
         {timelineData.map((item, index) => {
           const isPassed = isDatePassed(item.date);
           const isLastCompleted = index === lastCompletedIndex;
+          const isLastItem = index === timelineData.length - 1;
           const angle = index * (360 / timelineData.length) * (Math.PI / 180);
           const radius = 124;
           const x = radius * Math.cos(angle - Math.PI / 2) + 128;
@@ -420,9 +443,12 @@ const ProposalMainStatus = ({ proposalTimeline, dao }: any) => {
           let pointStyle =
             "bg-gradient-to-br from-gray-400 to-slate-500 text-white"; // pending
           if (isPassed) {
-            pointStyle = !isLastCompleted
-              ? "bg-gradient-to-br from-indigo-500 to-indigo-400 text-white" // last completed (indigo)
-              : "bg-white text-black"; // completed (blue)
+            pointStyle =
+              isLastItem && isLastCompleted // Apply the special style if it's the last item AND last completed
+                ? "bg-gradient-to-br from-indigo-500 to-indigo-400 text-white"
+                : !isLastCompleted
+                ? "bg-gradient-to-br from-indigo-500 to-indigo-400 text-white" // last completed (indigo)
+                : "bg-white text-black"; // completed (blue)
           }
 
           return (
@@ -452,12 +478,13 @@ const ProposalMainStatus = ({ proposalTimeline, dao }: any) => {
                   {/* Pulse animation for active item */}
                   {activeItem === index && (
                     <div
-                      className={`absolute w-full h-full rounded-full animate-ping opacity-30 ${!isLastCompleted
-                        ? "bg-indigo-400"
-                        : isPassed
+                      className={`absolute w-full h-full rounded-full animate-ping opacity-30 ${
+                        !isLastCompleted
+                          ? "bg-indigo-400"
+                          : isPassed
                           ? "bg-blue-200"
                           : "bg-gray-400"
-                        }`}
+                      }`}
                     ></div>
                   )}
                 </div>
@@ -567,28 +594,30 @@ const ProposalMainStatus = ({ proposalTimeline, dao }: any) => {
         >
           <div className="flex justify-between items-start">
             <div
-              className={`text-sm font-bold ${activeItem === lastCompletedIndex
-                ? "text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-indigo-600"
-                : timelineData[activeItem]?.date &&
-                  isDatePassed(timelineData[activeItem].date)
+              className={`text-sm font-bold ${
+                activeItem === lastCompletedIndex
+                  ? "text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-indigo-600"
+                  : timelineData[activeItem]?.date &&
+                    isDatePassed(timelineData[activeItem].date)
                   ? "text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-indigo-600"
                   : "text-transparent bg-clip-text bg-gradient-to-r from-gray-500 to-slate-600"
-                }`}
+              }`}
             >
               {timelineData[activeItem]?.title}
             </div>
 
             {/* Only show menu icon if the date is available and in the past */}
-            {timelineData[activeItem]?.date && isDatePassed(timelineData[activeItem].date) && (
-              <div className="relative" ref={menuRef}>
-                <div
-                  className="w-6 h-6 flex items-center justify-center rounded-full hover:bg-gray-200 cursor-pointer transition-colors ml-2"
-                  onClick={toggleMenu}
-                >
-                  <FaEllipsisV className="text-gray-500 text-xs" />
+            {timelineData[activeItem]?.date &&
+              isDatePassed(timelineData[activeItem].date) && (
+                <div className="relative" ref={menuRef}>
+                  <div
+                    className="w-6 h-6 flex items-center justify-center rounded-full hover:bg-gray-200 cursor-pointer transition-colors ml-2"
+                    onClick={toggleMenu}
+                  >
+                    <FaEllipsisV className="text-gray-500 text-xs" />
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
           </div>
 
           {/* Only show date-related info if date is not null */}
@@ -603,15 +632,19 @@ const ProposalMainStatus = ({ proposalTimeline, dao }: any) => {
               <div className="text-xs mt-2 flex items-center">
                 Status:{" "}
                 <span
-                  className={`ml-1 px-2 py-1 rounded-full text-white text-xs ${activeItem === lastCompletedIndex
-                    ? "bg-gradient-to-r from-indigo-400 to-indigo-600"
-                    : isDatePassed(timelineData[activeItem].date)
+                  className={`ml-1 px-2 py-1 rounded-full text-white text-xs ${
+                    activeItem === lastCompletedIndex
+                      ? "bg-gradient-to-r from-indigo-400 to-indigo-600"
+                      : isDatePassed(timelineData[activeItem].date)
                       ? "bg-gradient-to-r from-indigo-400 to-indigo-600"
                       : "bg-gradient-to-r from-gray-400 to-slate-500"
-                    }`}
+                  }`}
                 >
                   {isDatePassed(timelineData[activeItem].date)
-                    ? activeItem === lastCompletedIndex
+                    ? activeItem === lastCompletedIndex &&
+                      activeItem === timelineData.length - 1
+                      ? "Completed" // Show "Completed" if last and lastCompleted
+                      : activeItem === lastCompletedIndex
                       ? "Active"
                       : "Completed"
                     : "Pending"}
@@ -625,52 +658,67 @@ const ProposalMainStatus = ({ proposalTimeline, dao }: any) => {
         </div>
       )}
 
-      {menuOpen && activeItem !== null && timelineData[activeItem].blockNumber !== null && timelineData[activeItem]?.date && isDatePassed(timelineData[activeItem].date)  && (
-        <div
-          ref={menuRef}
-          className="fixed w-56 bg-white rounded-lg shadow-xl z-50 border border-gray-100 overflow-hidden"
-          style={{
-            top: menuPosition.top,
-            left: menuPosition.left,
-            maxHeight: "calc(100vh - 40px)",
-            overflowY: "auto",
-          }}
-          onMouseEnter={handleMenuMouseEnter}
-          onMouseLeave={handleMenuMouseLeave}
-        >
-          <div className="py-1">
-            {timelineData[activeItem].blockExplorerUrl !== null && (<a
-              href={timelineData[activeItem].blockExplorerUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center px-3 py-2 hover:bg-gray-100 cursor-pointer"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <FaExternalLinkAlt className="text-gray-500 mr-2 text-xs" />
-              <span className="text-xs text-gray-700">View on Block Explorer</span>
-            </a>)}
+      {menuOpen &&
+        activeItem !== null &&
+        timelineData[activeItem].blockNumber !== null &&
+        timelineData[activeItem]?.date &&
+        isDatePassed(timelineData[activeItem].date) && (
+          <div
+            ref={menuRef}
+            className="fixed w-56 bg-white rounded-lg shadow-xl z-50 border border-gray-100 overflow-hidden"
+            style={{
+              top: menuPosition.top,
+              left: menuPosition.left,
+              maxHeight: "calc(100vh - 40px)",
+              overflowY: "auto",
+            }}
+            onMouseEnter={handleMenuMouseEnter}
+            onMouseLeave={handleMenuMouseLeave}
+          >
+            <div className="py-1">
+              {timelineData[activeItem].blockExplorerUrl !== null && (
+                <a
+                  href={timelineData[activeItem].blockExplorerUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center px-3 py-2 hover:bg-gray-100 cursor-pointer"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <FaExternalLinkAlt className="text-gray-500 mr-2 text-xs" />
+                  <span className="text-xs text-gray-700">
+                    View on Block Explorer
+                  </span>
+                </a>
+              )}
 
-            {timelineData[activeItem].blockNumber !== null && (<div
-              className="flex items-center justify-between px-3 py-2 hover:bg-gray-100 cursor-pointer"
-              onClick={(e) => {
-                e.stopPropagation();
-                copyBlockNumber(timelineData[activeItem].blockNumber);
-              }}
-            >
-              <div className="flex items-center">
-                <FaCopy className="text-gray-500 mr-2 text-xs" />
-                <div>
-                  <span className="text-xs text-gray-700 block">{timelineData[activeItem].blockTitle}</span>
-                  {/* {console.log("blockNumber",timelineData.blockNumber)} */}
-                  <span className="text-xs text-gray-500">{timelineData[activeItem].blockNumber}</span>
+              {timelineData[activeItem].blockNumber !== null && (
+                <div
+                  className="flex items-center justify-between px-3 py-2 hover:bg-gray-100 cursor-pointer"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    copyBlockNumber(timelineData[activeItem].blockNumber);
+                  }}
+                >
+                  <div className="flex items-center">
+                    <FaCopy className="text-gray-500 mr-2 text-xs" />
+                    <div>
+                      <span className="text-xs text-gray-700 block">
+                        {timelineData[activeItem].blockTitle}
+                      </span>
+                      {/* {console.log("blockNumber",timelineData.blockNumber)} */}
+                      <span className="text-xs text-gray-500">
+                        {timelineData[activeItem].blockNumber}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="text-xs text-green-500">
+                    {copySuccess ? "Copied!" : ""}
+                  </div>
                 </div>
-              </div>
-              <div className="text-xs text-green-500">{copySuccess ? "Copied!" : ""}</div>
-            </div>)}
+              )}
+            </div>
           </div>
-        </div>
-      )}
-
+        )}
     </div>
   );
 };
