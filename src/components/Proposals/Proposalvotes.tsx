@@ -115,13 +115,13 @@ console.log("votedata",quorum,votesData)
   };
 
   // Show loading state
-  if (!isReady || isVotesLoading || isQuorumLoading) {
-    return (
-      <div className="w-full flex justify-center flex-col rounded-[1rem] font-poppins h-fit p-6 min-h-[416px]">
-        <h2 className="text-2xl font-bold mb-6 text-center">Loading votes...</h2>
-      </div>
-    );
-  }
+  // if (!isReady || isVotesLoading || isQuorumLoading) {
+  //   return (
+  //     <div className="w-full flex justify-center flex-col rounded-[1rem] font-poppins h-fit p-6 min-h-[416px]">
+  //       <h2 className="text-2xl font-bold mb-6 text-center">Loading votes...</h2>
+  //     </div>
+  //   );
+  // }
 
   return (
     <div className="w-full flex justify-center flex-col rounded-[1rem] font-poppins h-fit p-6 min-h-[416px] 1.3lg:h-fit">

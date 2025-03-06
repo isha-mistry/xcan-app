@@ -79,6 +79,7 @@ function Proposals({ props }: { props: string }) {
   const [page, setPage] = useState(1); // Track the number of times "View More" is clicked
   const[showAlert, setShowAlert]=useState(true)
   const [proposalStatuses, setProposalStatuses] = useState<{ [key: string]: string }>({});
+  const [loadingMore, setLoadingMore] = useState(false);
   const handleCloseAlert = () => {
     setShowAlert(false);
   };
@@ -584,7 +585,8 @@ function Proposals({ props }: { props: string }) {
   };
 
   const loadMoreProposals = useCallback(async () => {
-
+    setLoadingMore(true);
+    try{
     if (props === "optimism") {
       let nextPage;
       if (currentCache) {
@@ -629,6 +631,11 @@ function Proposals({ props }: { props: string }) {
         fetchProposals();
       }
     }
+  } catch (error) {
+    console.error("Error loading more proposals:", error);
+  } finally {
+    setLoadingMore(false); // Stop loading regardless of success or failure
+  }
   }, [
     props,
     allProposals,
@@ -802,12 +809,18 @@ function Proposals({ props }: { props: string }) {
           <div className="flex items-center justify-center">
             <button
               onClick={loadMoreProposals}
-              className="bg-blue-shade-100 text-white py-2 px-4 w-fit rounded-lg font-medium"
+              className="bg-blue-shade-100 text-white py-2 px-4 w-[115px] flex justify-center items-center rounded-lg font-medium"
             >
-              View More
-            </button>
-          </div>
-        )}
+                {loadingMore ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white"></div>
+                </>
+                ) : (
+                "View More"
+                )}
+              </button>
+            </div>
+           )}
       </div>
     </>
   );

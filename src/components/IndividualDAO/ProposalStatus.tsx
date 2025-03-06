@@ -21,7 +21,7 @@ const ProposalStatus: React.FC<ProposalStatusProps> = ({
   networkType,
   proposalTiming
 }) => {
-  const [status, setStatus] = useState("");
+  const [status, setStatus] =  useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   // const [proposalTiming, setProposalTiming] = useState<ProposalTiming | null>(null);
 
@@ -35,13 +35,13 @@ const ProposalStatus: React.FC<ProposalStatusProps> = ({
     const fetchStatus = async () => {
       try {
         const currentTime = new Date();
-        let status;
+        let calculatedStatus: string | null = null;
         if (networkType === "arbitrum") {
           console.log("proposalTiming",proposalTiming,proposal,currentTime)
           // Arbitrum network logic
           if (proposalTiming && currentTime.getTime() < new Date(proposalTiming.endTime).getTime()) {
             // If current time is less than endTime, status is PENDING
-            status = "PENDING";
+            calculatedStatus  = "PENDING";
           } else if (
             proposal.queueStartTime &&
             proposal.queueEndTime &&
@@ -49,36 +49,36 @@ const ProposalStatus: React.FC<ProposalStatusProps> = ({
             currentTime < proposal.queueEndTime
           ) {
             // If current time is between queueStartTime and queueEndTime, status is QUEUED
-            status = "QUEUED";
+            calculatedStatus  = "QUEUED";
           } else if ( !proposal.queueEndTime || currentTime.getTime() >= proposal.queueEndTime        ) {
             // If current time is more than queueEndTime, check support for SUCCEEDED or DEFEATED
-            status = proposal.support1Weight! > proposal.support0Weight! ? "SUCCEEDED" : "DEFEATED";
+            calculatedStatus  = proposal.support1Weight! > proposal.support0Weight! ? "SUCCEEDED" : "DEFEATED";
           } else {
             // Default case for arbitrum if timing conditions aren't met
-            status = "PENDING";
+            calculatedStatus  = "PENDING";
           }
         } else {
           // Other DAO networks logic
           // First check if proposal is cancelled
           console.log("proposal",proposal)
           if(proposal.proposalId==="114318499951173425640219752344574142419220609526557632733105006940618608635406" || proposal.proposalId==="38506287861710446593663598830868940900144818754960277981092485594195671514829"){
-            status="SUCCEEDED"
+            calculatedStatus ="SUCCEEDED"
           }else if (
             Array.isArray(canceledProposals) &&
             canceledProposals.some((item) => item.proposalId === proposal.proposalId)
           ) {
-            status = "CANCELLED";
+            calculatedStatus  = "CANCELLED";
           } else if (proposal && currentTime.getTime() / 1000 > proposal.endTime) {
             // Otherwise check support for SUCCEEDED or DEFEATED
-            status = proposal.support1Weight! > proposal.support0Weight! ? "SUCCEEDED" : "DEFEATED";
+            calculatedStatus  = proposal.support1Weight! > proposal.support0Weight! ? "SUCCEEDED" : "DEFEATED";
             
           } else {
             // If current time is less than endTime, status is PENDING
-            status = "PENDING";
+            calculatedStatus  = "PENDING";
           }
         }
 
-        setStatus(status);
+        setStatus(calculatedStatus );
         setLoading(false);
       } catch (error) {
         console.error("Error calculating proposal status:", error);
@@ -89,7 +89,7 @@ const ProposalStatus: React.FC<ProposalStatusProps> = ({
     fetchStatus();
   }, [proposal, canceledProposals, networkType, proposalTiming]);
 
-  const getStatusStyles = (status: string) => {
+  const getStatusStyles = (status: string|null) => {
     switch (status) {
       case "SUCCEEDED":
         return "bg-green-200 border-green-600 text-green-600";
@@ -117,7 +117,7 @@ const ProposalStatus: React.FC<ProposalStatusProps> = ({
 
   return (
     <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getStatusStyles(status)}`}>
-      {status}
+       {status === null ? <StatusLoader/> : status} 
     </div>
   );
 };
