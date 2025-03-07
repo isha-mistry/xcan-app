@@ -733,7 +733,11 @@ function Proposals({ props }: { props: string }) {
         />
       )} */}
       <div className="rounded-[2rem] mt-4">
-        {displayedProposals.map((proposal: Proposal, index: number) => (
+        {displayedProposals.map((proposal: Proposal, index: number) => {
+          const calculatedProposalTiming = proposalTiming 
+          ? proposalTiming.find((timing: any) => timing.createdTransactionHash === proposal.transactionHash) 
+          : undefined;
+          return(
           <div
             key={index}
             className="flex flex-col 1.5md:flex-row px-2 py-4 0.5xs:p-4 text-lg mb-2 gap-2 1.5md:gap-5 bg-gray-100  hover:bg-gray-50 rounded-3xl transition-shadow duration-300 ease-in-out shadow-lg cursor-pointer 1.5md:items-center group"
@@ -774,16 +778,17 @@ function Proposals({ props }: { props: string }) {
             </div>
 
             <div className="flex flex-wrap justify-between items-center 1.5md:w-[45%] 2md:w-[40%] mt-2 1.5md:mt-0 gap-1 2md:gap-2 mx-auto 1.5md:mx-0">
-              {proposal.votesLoaded ? (
-                <ProposalStatus
-                  proposal={proposal}
-                  canceledProposals={canceledProposals}
-                  networkType={props} // or whatever network you're using
-                  proposalTiming={proposalTiming?.find((timing: any) => timing.createdTransactionHash === proposal.transactionHash)}
-                />
-              ) : (
-                <StatusLoader />
-              )}
+            
+            {proposal.votesLoaded && calculatedProposalTiming ? (
+              <ProposalStatus
+                proposal={proposal}
+                canceledProposals={canceledProposals}
+                networkType={props} // or whatever network you're using
+                proposalTiming={calculatedProposalTiming}
+              />
+            ) : (
+              <StatusLoader />
+            )}
 
               {proposal.votesLoaded ? (
                 <div
@@ -804,7 +809,7 @@ function Proposals({ props }: { props: string }) {
                 </div>
             </div>
           </div>
-        ))}
+        )})}
         {displayedProposals?.length < cache[props]?.length && (
           <div className="flex items-center justify-center">
             <button

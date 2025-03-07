@@ -24,7 +24,7 @@ const ProposalStatus: React.FC<ProposalStatusProps> = ({
   const [status, setStatus] =  useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   // const [proposalTiming, setProposalTiming] = useState<ProposalTiming | null>(null);
-
+console.log("--------proposalStatus--------",proposal,"-----",canceledProposals,"-----",networkType,"-----",proposalTiming)
   const StatusLoader = () => (
     <div className="flex items-center justify-center p-2">
       <Loader2 className="h-4 w-4 animate-spin" />
@@ -50,7 +50,7 @@ const ProposalStatus: React.FC<ProposalStatusProps> = ({
           ) {
             // If current time is between queueStartTime and queueEndTime, status is QUEUED
             calculatedStatus  = "QUEUED";
-          } else if ( !proposal.queueEndTime || currentTime.getTime() >= proposal.queueEndTime        ) {
+          } else if ( !proposal.queueEndTime || currentTime.getTime() >= proposal.queueEndTime) {
             // If current time is more than queueEndTime, check support for SUCCEEDED or DEFEATED
             calculatedStatus  = proposal.support1Weight! > proposal.support0Weight! ? "SUCCEEDED" : "DEFEATED";
           } else {
