@@ -779,15 +779,35 @@ function Proposals({ props }: { props: string }) {
 
             <div className="flex flex-wrap justify-between items-center 1.5md:w-[45%] 2md:w-[40%] mt-2 1.5md:mt-0 gap-1 2md:gap-2 mx-auto 1.5md:mx-0">
             
-            {proposal.votesLoaded && calculatedProposalTiming ? (
+            {/* {proposal.votesLoaded && calculatedProposalTiming ? ( */}
+              {/* <ProposalStatus
+                proposal={proposal}
+                canceledProposals={canceledProposals}
+                networkType={props} // or whatever network you're using
+                proposalTiming={calculatedProposalTiming}
+              /> */}
+             {/* ) : (
+               <StatusLoader />
+             )} */}
+
+            {props === "arbitrum" ? (
+              proposal.votesLoaded && calculatedProposalTiming ? (
+                <ProposalStatus
+                  proposal={proposal}
+                  canceledProposals={canceledProposals}
+                  networkType={props}
+                  proposalTiming={calculatedProposalTiming}
+                />
+              ) : (
+                <StatusLoader />
+              )
+            ) : (
               <ProposalStatus
                 proposal={proposal}
                 canceledProposals={canceledProposals}
                 networkType={props} // or whatever network you're using
                 proposalTiming={calculatedProposalTiming}
               />
-            ) : (
-              <StatusLoader />
             )}
 
               {proposal.votesLoaded ? (

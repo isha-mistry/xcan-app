@@ -157,22 +157,20 @@ const ProposalMainStatus = ({ proposalTimeline, dao , defeated, cancelled, cance
       }: null
     ] as TimelineItem[]
   ).filter(Boolean); // ✅ Removes null values
+console.log("timelineData",timelineData)
+const formatDate = (dateString: string): string => {
+  const date = new Date(dateString);
+  const day = date.getDate(); // Get local date
+  const month = date.toLocaleString("en-US", { month: "short" }); // Local month
+  const hours = date.getHours(); // Local hours
+  const minutes = date.getMinutes(); // Local minutes
+  const ampm = hours >= 12 ? "PM" : "AM";
+  const formattedHours = hours % 12 || 12; // Convert 0 to 12 for 12 AM
+  const formattedMinutes = minutes.toString().padStart(2, "0");
 
-  const formatDate = (dateString: string): string => {
-    const date = new Date(dateString);
-    const day = date.getUTCDate();
-    const month = date.toLocaleString("en-US", {
-      month: "short",
-      timeZone: "UTC",
-    });
-    const hours = date.getUTCHours();
-    const minutes = date.getUTCMinutes();
-    const ampm = hours >= 12 ? "PM" : "AM";
-    const formattedHours = hours % 12 || 12; // Convert 0 to 12 for 12 AM
-    const formattedMinutes = minutes.toString().padStart(2, "0");
+  return `${day} ${month}, ${formattedHours}:${formattedMinutes} ${ampm}`;
+};
 
-    return `${day} ${month}, ${formattedHours}:${formattedMinutes} ${ampm}`;
-  };
 
   const formatDatewithYear = (dateString: string): string => {
     const date = new Date(dateString);
