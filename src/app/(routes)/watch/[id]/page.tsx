@@ -1,14 +1,7 @@
 import WatchComponentMain from "@/components/WatchMeeting/WatchComponentMain";
 import React, { useEffect } from "react";
 import { Metadata } from "next";
-import {
-  processAddressOrEnsName,
-  resolveENSProfileImage,
-  getMetaAddressOrEnsName,
-  getMetadataEnsData,
-} from "@/utils/ENSUtils";
-import { getEnsAvatar } from "@wagmi/core";
-import { getFrameMetadata } from "@coinbase/onchainkit/core";
+import { getMetadataEnsData } from "@/utils/ENSUtils";
 import { IMAGE_URL } from "@/config/staticDataUtils";
 import { BASE_URL } from "@/config/constants";
 interface Type {
@@ -33,36 +26,39 @@ async function getWatchData(id: string) {
   }
 
   const result = await response.json();
-  return result.data[0]; // Assuming your API returns data in this structure
+  return result.data[0];
 }
 
 async function prepareOgImage(watchData: any) {
-  const title = watchData.title || "";
+  let title = watchData.title || "";
   let description = watchData.description || "";
   const dao_name = watchData.dao_name || "";
   const address = watchData.host_address || "";
-  
+
   const ensData = await getMetadataEnsData(address);
   const defaultAvatar = IMAGE_URL;
   const avatarUrl = watchData.hostProfileInfo?.image
     ? `https://gateway.lighthouse.storage/ipfs/${watchData.hostProfileInfo.image}`
     : defaultAvatar;
-  
+
   // Trim description if needed
-  if (description.length > 55) {
-    description = description.substring(0, 55) + "...";
+  if (description.length > 60) {
+    description = description.substring(0, 60) + "...";
   }
-  
+  if (title.length > 45) {
+    title = title.substring(0, 45) + "...";
+  }
+
+  console.log(title,"title of vifeo")
   // Construct the URL for the image API
   const imageApiUrl = `${BASE_URL}/api/images/og/video?title=${encodeURIComponent(
     title
   )}&desc=${encodeURIComponent(description)}&dao_name=${encodeURIComponent(
     dao_name
-  )}&address=${encodeURIComponent(ensData.formattedAddress)}&avatar=${encodeURIComponent(
-    avatarUrl
-  )}`;
-  
-  // Pre-warm the image by making a request to it
+  )}&address=${encodeURIComponent(
+    ensData.formattedAddress
+  )}&avatar=${encodeURIComponent(avatarUrl)}`;
+
   try {
     // This will trigger the API call and ensure the image is generated
     const imgResponse = await fetch(imageApiUrl);
@@ -72,7 +68,7 @@ async function prepareOgImage(watchData: any) {
   } catch (error) {
     console.error("Error pre-warming OG image:", error);
   }
-  
+
   return imageApiUrl;
 }
 
@@ -83,7 +79,6 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   try {
     const watchData = await getWatchData(params.id);
-    console.log(watchData, "watch data data")
 
     if (!watchData) {
       return {
@@ -95,54 +90,16 @@ export async function generateMetadata({
     const title = watchData.title || "";
     let description = watchData.description || "";
     const dao_name = watchData.dao_name || "";
-  //   const address = watchData.host_address || "";
-  //   const ensOrTruncatedAddress = await getMetaAddressOrEnsName(
-  //     dao_name,
-  //     address
-  //   );
-  //   const defaultAvatar = IMAGE_URL;
-  //   // const avatarUrl =
-  //   //   `https://gateway.lighthouse.storage/ipfs/${watchData.hostProfileInfo.image}` ||
-  //   //   defaultAvatar;
-  //   const avatarUrl = watchData.hostProfileInfo?.image
-  // ? `https://gateway.lighthouse.storage/ipfs/${watchData.hostProfileInfo.image}`
-  // : defaultAvatar;
-  //   const ensData = await getMetadataEnsData(address);
 
     const formattedDaoName = dao_name
       ? dao_name.charAt(0).toUpperCase() + dao_name.slice(1)
-      : "Unknown DAO"; //Provide a default
-
-    // console.log(
-    //   address,
-    //   "address",
-    //   avatarUrl,
-    //   "ens avatar",
-    //   ensData,
-    //   "ens data",
-    //   ensData.formattedAddress,
-    //   "ens name or address"
-    // );
+      : "Unknown DAO"; 
 
     if (description.length > 55) {
       description = description.substring(0, 55) + "...";
     }
 
-    console.log(dao_name,"dao name in page")
-
     const imageApiUrl = await prepareOgImage(watchData);
-    console.log("OG Image URL prepared:", imageApiUrl);
-
-    // Construct the URL for the image API (assuming it's at /api/og-image)
-    // const imageApiUrl = `${BASE_URL}/api/images/og/video?title=${encodeURIComponent(
-    //   title
-    // )}&desc=${encodeURIComponent(description)}&dao_name=${encodeURIComponent(
-    //   dao_name
-    // )}&address=${encodeURIComponent(ensData.formattedAddress)}&avatar=${encodeURIComponent(
-    //   avatarUrl
-    // )}`;
-
-    console.log("imageApiUrl in watch:", imageApiUrl);
 
     return {
       title: "Chora Club",

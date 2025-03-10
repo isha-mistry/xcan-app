@@ -12,29 +12,16 @@ const size = {
 };
 
 export async function GET(req: NextRequest) {
-  console.log("api calling in cctest")
   const { searchParams } = new URL(req.url);
 
   const address = searchParams.get("address") || "";
   const avatar = searchParams.get("avatar") || "";
   const dao_name = searchParams.get("dao_name") || "";
 
-  console.log(address,avatar, dao_name, "paramas data")
-
-
-  const currentDAO=daoConfigs[dao_name];
-
+  const currentDAO = daoConfigs[dao_name];
   let icon = "";
 
-  icon=currentDAO.lighthoueseIcon;
-
-  // if (dao_name === "optimism") {
-  //   icon =
-  //     "https://gateway.lighthouse.storage/ipfs/QmXaKNwUxvd4Ksc9R6hd36eBo97e7e7YPDCVuvHwqG4zgQ";
-  // } else if (dao_name === "arbitrum") {
-  //   icon =
-  //     "https://gateway.lighthouse.storage/ipfs/QmdP6ZkLq4FF8dcvxBs48chqFiXu7Gr8SgPCqMtfr7VA4L";
-  // }
+  icon = currentDAO.lighthoueseIcon;
 
   const main = await fetch(new URL("../assets/main.jpg", import.meta.url)).then(
     (res) => res.arrayBuffer()

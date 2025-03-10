@@ -1,14 +1,10 @@
 import SpecificDelegate from "@/components/IndividualDelegate/SpecificDelegate";
 import { BASE_URL } from "@/config/constants";
 import {
-  processAddressOrEnsName,
-  resolveENSProfileImage,
-  getMetaAddressOrEnsName,
-  fetchEnsNameAndAvatar,
   getMetadataEnsData,
 } from "@/utils/ENSUtils";
 import { Metadata } from "next";
-import React, { useEffect } from "react";
+import React from "react";
 import { getFrameMetadata } from "@coinbase/onchainkit/core";
 import { IMAGE_URL } from "@/config/staticDataUtils";
 
@@ -19,13 +15,10 @@ interface Type {
 
 function sanitizeAvatarUrl(url: string, defaultUrl: string): string {
   try {
-    // Check if the URL is empty or null
     if (!url) return defaultUrl;
     
-    // Try to create a URL object to validate it
     const urlObj = new URL(url);
     
-    // Check for common image file extensions
     const validExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.svg', '.webp'];
     const hasValidExtension = validExtensions.some(ext => 
       urlObj.pathname.toLowerCase().endsWith(ext)
@@ -41,7 +34,6 @@ function sanitizeAvatarUrl(url: string, defaultUrl: string): string {
     
     // If it has a protocol other than http/https that's not a data URL, use default
     if (!urlObj.protocol.match(/^https?:$/i) && !isDataUrl) {
-      console.log(`Unsupported URL protocol: ${urlObj.protocol}`);
       return defaultUrl;
     }
 
@@ -49,14 +41,12 @@ function sanitizeAvatarUrl(url: string, defaultUrl: string): string {
       const ipfsHashMatch = url.match(/\/ipfs\/([a-zA-Z0-9]+)/);
       if (ipfsHashMatch && ipfsHashMatch[1]) {
         if (url.includes('cloudflare-ipfs.com')) {
-          console.log('Switching from Cloudflare IPFS to IPFS.io gateway');
           return `https://ipfs.io/ipfs/${ipfsHashMatch[1]}`;
         }
       }
     }
 
     if (url.includes('<svg') || url.includes('</svg>')) {
-      console.log('Found SVG content in URL, using default instead');
       return defaultUrl;
     }
     
@@ -83,7 +73,6 @@ async function prepareOgImage(params: Type) {
       const data = await response.json();
       if (data.avatarUrl) {
         avatarUrl = sanitizeAvatarUrl(data.avatarUrl, defaultAvatar);
-        console.log("Successfully fetched avatar from API:", avatarUrl);
       } else {
         console.log("No avatar found from API, using default");
       }
@@ -95,9 +84,6 @@ async function prepareOgImage(params: Type) {
   }
   const dao_name = params.daoDelegates;
 
-  console.log(ensData,"ens data", ensData.formattedAddress, "formatted address", avatarUrl,"avatarurl")
-
-  // const imageAPiUrl = `${BASE_URL}/api/images/og/ccTest?avatar=${encodeURIComponent(avatarUrl)}&address=${encodeURIComponent(ensData.formattedAddress)}&dao_name=${encodeURIComponent(dao_name)}`;
   const imgParams = [
     `avatar=${encodeURIComponent(avatarUrl)}`,
     dao_name ? `dao_name=${encodeURIComponent(dao_name)}` : null,
@@ -106,8 +92,6 @@ async function prepareOgImage(params: Type) {
   const imageAPiUrl = `${BASE_URL}/api/images/og/ccTest?${imgParams.join(
     "&"
   )}&address=${ensData.formattedAddress}`;
-
-  console.log(imageAPiUrl,"image api url")
 
   try {
     // This will trigger the API call and ensure the image is generated
@@ -129,36 +113,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const name = "Chora Club";
 
-  // const address = await getMetaAddressOrEnsName(
-  //   params.daoDelegates,
-  //   params.individualDelegate
-  // );
-
-  // const ensOrTruncatedAddress = await getMetaAddressOrEnsName(
-  //   params.daoDelegates,
-  //   params.individualDelegate
-  // );
-
-  
-  
-
-  // const dao_name = params.daoDelegates;
-  // const tokenName = "Optimism";
-
-  // console.log(ensData,"ens data", ensData.formattedAddress, "formatted address", avatarUrl,"avatarurl")
-
-  // const imgParams = [
-  //   `avatar=${encodeURIComponent(avatarUrl)}`,
-  //   dao_name ? `dao_name=${encodeURIComponent(dao_name)}` : null,
-  // ].filter((param): param is string => param !== null);
-
-  // const preview = `${BASE_URL}/api/images/og/ccTest?${imgParams.join(
-  //   "&"
-  // )}&address=${ensData.formattedAddress}`;
-
   const imageApiUrl = await prepareOgImage(params);
-    console.log("OG Image URL prepared:", imageApiUrl);
-
   const frameMetadata = getFrameMetadata({
     buttons: [
       {
