@@ -17,89 +17,6 @@ interface Type {
   individualDelegate: string;
 }
 
-export async function generateMetadata({
-  params,
-}: {
-  params: Type;
-}): Promise<Metadata> {
-  const name = "Chora Club";
-
-  const address = await getMetaAddressOrEnsName(
-    params.daoDelegates,
-    params.individualDelegate
-  );
-
-  const ensOrTruncatedAddress = await getMetaAddressOrEnsName(
-    params.daoDelegates,
-    params.individualDelegate
-  );
-
-  const ensData = await getMetadataEnsData(params.individualDelegate);
-  const defaultAvatar = IMAGE_URL; 
-
-  let avatarUrl = defaultAvatar;
-  try {
-    const response = await fetch(
-      `${BASE_URL}/api/get-avatar?address=${params.individualDelegate}`,
-      { next: { revalidate: 3600 } } // Cache for 1 hour
-    );
-    
-    if (response.ok) {
-      const data = await response.json();
-      if (data.avatarUrl) {
-        avatarUrl = sanitizeAvatarUrl(data.avatarUrl, defaultAvatar);
-        console.log("Successfully fetched avatar from API:", avatarUrl);
-      } else {
-        console.log("No avatar found from API, using default");
-      }
-    } else {
-      console.log("Failed to fetch avatar from API, using default");
-    }
-  } catch (error) {
-    console.error("Error fetching avatar from API:", error);
-  }
-
-  const dao_name = params.daoDelegates;
-  const tokenName = "Optimism";
-
-  console.log(ensData,"ens data", ensData.formattedAddress, "formatted address", avatarUrl,"avatarurl")
-
-  const imgParams = [
-    `avatar=${encodeURIComponent(avatarUrl)}`,
-    dao_name ? `dao_name=${encodeURIComponent(dao_name)}` : null,
-  ].filter((param): param is string => param !== null);
-
-  const preview = `${BASE_URL}/api/images/og/ccTest?${imgParams.join(
-    "&"
-  )}&address=${ensData.formattedAddress}`;
-
-  const frameMetadata = getFrameMetadata({
-    buttons: [
-      {
-        label: "Delegate",
-        action: "tx",
-        target: `https://farcaster-frames-ivory.vercel.app/api/transaction`,
-      },
-    ],
-    image: preview,
-    post_url: preview,
-  });
-
-  return {
-    title: name,
-    description: "Chora Club",
-    openGraph: {
-      title: name,
-      description: "Delegate",
-      images: [preview],
-    },
-    other: {
-      ...frameMetadata,
-      "fc:frame:image:aspect_ratio": "1.91:1",
-    },
-  };
-}
-
 function sanitizeAvatarUrl(url: string, defaultUrl: string): string {
   try {
     // Check if the URL is empty or null
@@ -149,6 +66,127 @@ function sanitizeAvatarUrl(url: string, defaultUrl: string): string {
     return defaultUrl;
   }
 }
+
+async function prepareOgImage(params: Type) {
+  const ensData = await getMetadataEnsData(params.individualDelegate);
+  const defaultAvatar = IMAGE_URL; 
+
+  let avatarUrl = defaultAvatar;
+
+  try {
+    const response = await fetch(
+      `${BASE_URL}/api/get-avatar?address=${params.individualDelegate}`,
+      { next: { revalidate: 3600 } } // Cache for 1 hour
+    );
+    
+    if (response.ok) {
+      const data = await response.json();
+      if (data.avatarUrl) {
+        avatarUrl = sanitizeAvatarUrl(data.avatarUrl, defaultAvatar);
+        console.log("Successfully fetched avatar from API:", avatarUrl);
+      } else {
+        console.log("No avatar found from API, using default");
+      }
+    } else {
+      console.log("Failed to fetch avatar from API, using default");
+    }
+  } catch (error) {
+    console.error("Error fetching avatar from API:", error);
+  }
+  const dao_name = params.daoDelegates;
+
+  console.log(ensData,"ens data", ensData.formattedAddress, "formatted address", avatarUrl,"avatarurl")
+
+  // const imageAPiUrl = `${BASE_URL}/api/images/og/ccTest?avatar=${encodeURIComponent(avatarUrl)}&address=${encodeURIComponent(ensData.formattedAddress)}&dao_name=${encodeURIComponent(dao_name)}`;
+  const imgParams = [
+    `avatar=${encodeURIComponent(avatarUrl)}`,
+    dao_name ? `dao_name=${encodeURIComponent(dao_name)}` : null,
+  ].filter((param): param is string => param !== null);
+
+  const imageAPiUrl = `${BASE_URL}/api/images/og/ccTest?${imgParams.join(
+    "&"
+  )}&address=${ensData.formattedAddress}`;
+
+  console.log(imageAPiUrl,"image api url")
+
+  try {
+    // This will trigger the API call and ensure the image is generated
+    const imgResponse = await fetch(imageAPiUrl);
+    if (!imgResponse.ok) {
+      console.error("Failed to generate OG image:", imgResponse.status);
+    }
+  } catch (error) {
+    console.error("Error pre-warming OG image:", error);
+  }
+  
+  return imageAPiUrl;
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Type;
+}): Promise<Metadata> {
+  const name = "Chora Club";
+
+  // const address = await getMetaAddressOrEnsName(
+  //   params.daoDelegates,
+  //   params.individualDelegate
+  // );
+
+  // const ensOrTruncatedAddress = await getMetaAddressOrEnsName(
+  //   params.daoDelegates,
+  //   params.individualDelegate
+  // );
+
+  
+  
+
+  // const dao_name = params.daoDelegates;
+  // const tokenName = "Optimism";
+
+  // console.log(ensData,"ens data", ensData.formattedAddress, "formatted address", avatarUrl,"avatarurl")
+
+  // const imgParams = [
+  //   `avatar=${encodeURIComponent(avatarUrl)}`,
+  //   dao_name ? `dao_name=${encodeURIComponent(dao_name)}` : null,
+  // ].filter((param): param is string => param !== null);
+
+  // const preview = `${BASE_URL}/api/images/og/ccTest?${imgParams.join(
+  //   "&"
+  // )}&address=${ensData.formattedAddress}`;
+
+  const imageApiUrl = await prepareOgImage(params);
+    console.log("OG Image URL prepared:", imageApiUrl);
+
+  const frameMetadata = getFrameMetadata({
+    buttons: [
+      {
+        label: "Delegate",
+        action: "tx",
+        target: `https://farcaster-frames-ivory.vercel.app/api/transaction`,
+      },
+    ],
+    image: imageApiUrl,
+    post_url: imageApiUrl,
+  });
+
+  return {
+    title: name,
+    description: "Chora Club",
+    openGraph: {
+      title: name,
+      description: "Delegate",
+      images: [imageApiUrl],
+    },
+    other: {
+      ...frameMetadata,
+      "fc:frame:image:aspect_ratio": "1.91:1",
+    },
+  };
+}
+
+
 
 function page({ params }: { params: Type }) {
   return (

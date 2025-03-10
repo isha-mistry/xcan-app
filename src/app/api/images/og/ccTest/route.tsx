@@ -4,7 +4,7 @@ import { IMAGE_URL } from "@/config/staticDataUtils";
 import { daoConfigs } from "@/config/daos";
 export const revalidate = 0;
 
-// export const runtime = "edge";
+export const runtime = "edge";
 
 const size = {
   width: 1200,
@@ -12,11 +12,15 @@ const size = {
 };
 
 export async function GET(req: NextRequest) {
+  console.log("api calling in cctest")
   const { searchParams } = new URL(req.url);
 
   const address = searchParams.get("address") || "";
   const avatar = searchParams.get("avatar") || "";
   const dao_name = searchParams.get("dao_name") || "";
+
+  console.log(address,avatar, dao_name, "paramas data")
+
 
   const currentDAO=daoConfigs[dao_name];
 

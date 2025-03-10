@@ -8,6 +8,7 @@ const size = {
   };
 
 export async function GET(req: NextRequest) {
+  console.log("api called")
     const {searchParams} = new URL(req.url);
     const address = searchParams.get("address")||"";
     const title = searchParams.get("title") || "";
@@ -15,7 +16,7 @@ export async function GET(req: NextRequest) {
     const dao_name = searchParams.get("dao_name") || "";
     const avatar = searchParams.get("avatar") || "";
 
-    console.log(address, "addr5ess", dao_name, "dao name", title, "title")
+    console.log(address, "addr5ess", dao_name, "dao name", title, "title", description,"description", avatar,"avatar")
 
 
     let icon = "";
