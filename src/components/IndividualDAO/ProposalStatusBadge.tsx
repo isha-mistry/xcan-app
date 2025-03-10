@@ -73,7 +73,7 @@ export const ProposalStatusBadge = ({
           
           // Make API call for this proposal
           const response = await fetch(`/api/get-tally-proposal?onchainId=${proposal.proposalId}&governorId=${governorId}`);
-          
+          console.log("response",response)
           if (response.ok) {
             const data = await response.json();
             console.log("data is ",data);

@@ -108,10 +108,11 @@ function DelegatesList({ props }: { props: string }) {
   };
   const { data: accountBalance }: any = useReadContract({
     abi: dao_abi.abi,
-    address: "0x4200000000000000000000000000000000000042",
+    address: daoConfigs[props].chainAddress as `0x${string}`,
     functionName: "balanceOf",
     // args:['0x6eda5acaff7f5964e1ecc3fd61c62570c186ca0c' as Address]
     args: [walletAddress as Address],
+    chainId: daoConfigs[props].chainId,
   });
 
   const fetchDelegates = useCallback(async () => {
@@ -160,10 +161,14 @@ function DelegatesList({ props }: { props: string }) {
       toast("Coming soon 🚀");
       return;
     }
-    setSortOption(value);
-    setDelegateData([]); // Clear existing data
-    setSkip(0); // Reset pagination
-    setHasMore(true);
+    if (value !== sortOption) {
+      setSortOption(value);
+      setDelegateData([]); // Clear existing data
+      setSkip(0); // Reset pagination
+      setHasMore(true);
+    }
+    // Always close the dropdown
+    setIsOpen(false);
   };
 
   const debouncedSearch = useMemo(
@@ -736,7 +741,7 @@ function DelegatesList({ props }: { props: string }) {
                     key={option.value}
                     onClick={() => {
                       handleSortChange(option.value);
-                      setIsOpen(false);
+                      // setIsOpen(false);
                     }}
                     className={`group flex items-center w-full px-6 py-3 text-sm text-gray-800 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-gray-800 focus:outline-none focus:bg-blue-50 dark:focus:bg-gray-800 transition-colors duration-150 ${option.value === sortOption ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300 font-semibold' : ''}`}
                     role="menuitem"

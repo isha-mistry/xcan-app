@@ -1217,25 +1217,27 @@ console.log(shouldShowButton, "shouldshow button")
     }
 
     if (props.daoDelegates === "arbitrum") {
+      console.log("queue start and end",queueStartTime, queueEndTime);
       console.log(quorum, support1Weight, support0Weight);
       if (queueStartTime && queueEndTime) {
         const currentTime = currentDate.getTime() / 1000; // Convert to seconds
+        console.log("currentTime", currentTime < queueStartTime, queueEndTime);  
         if (currentTime < queueStartTime) {
           return currentDate <= votingEndTime! ? "PENDING" : "QUEUED";
         } else if (
           currentTime >= queueStartTime &&
           currentTime < queueEndTime
         ) {
-          return (quorum < support1Weight && support1Weight! > support0Weight!) ? "SUCCEEDED" : "DEFEATED";
+          return "QUEUED";
         } else {
-          return(quorum <support1Weight && support1Weight! > support0Weight!) ? "SUCCEEDED" : "DEFEATED";
+          return(quorum <(support1Weight + support2Weight) && support1Weight! > support0Weight!) ? "SUCCEEDED" : "DEFEATED";
         }
       } else {
         console.log("votingEndTime", votingEndTime, currentTime.getTime(),quorum,support1Weight,support0Weight);
         return !votingEndTime
           ? "PENDING"
           : currentTime.getTime()/1000 > votingEndTime
-            ? (quorum < support1Weight && support1Weight! > support0Weight!) 
+            ? (quorum < (support1Weight + support2Weight) && support1Weight! > support0Weight!) 
               ? "SUCCEEDED"
               : "DEFEATED"
             : "PENDING";
@@ -1246,7 +1248,7 @@ console.log(shouldShowButton, "shouldshow button")
       }
       const currentTimeEpoch = Date.now() / 1000;
       return currentTimeEpoch > data.endTime!
-        ? (quorum < support1Weight && support1Weight! > support0Weight!) 
+        ? (quorum < (support1Weight + support2Weight) && support1Weight! > support0Weight!) 
           ? "SUCCEEDED"
           : "DEFEATED"
         : "PENDING";

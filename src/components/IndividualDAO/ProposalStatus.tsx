@@ -24,7 +24,7 @@ const ProposalStatus: React.FC<ProposalStatusProps> = ({
   const [status, setStatus] =  useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   // const [proposalTiming, setProposalTiming] = useState<ProposalTiming | null>(null);
-
+console.log("--------proposalStatus--------",proposal,"-----",canceledProposals,"-----",networkType,"-----",proposalTiming)
   const StatusLoader = () => (
     <div className="flex items-center justify-center p-2">
       <Loader2 className="h-4 w-4 animate-spin" />
@@ -34,15 +34,19 @@ const ProposalStatus: React.FC<ProposalStatusProps> = ({
   useEffect(() => {
     const fetchStatus = async () => {
       try {
-        const currentTime = new Date();
+        const TodayDate = new Date();
+        const currentTime = Math.round(TodayDate.getTime() / 1000);
+        console.log("currentTime",currentTime)
         let calculatedStatus: string | null = null;
         if (networkType === "arbitrum") {
-          console.log("proposalTiming",proposalTiming,proposal,currentTime)
+          console.log("proposalTiming",currentTime)
           // Arbitrum network logic
-          if (proposalTiming && currentTime.getTime() < new Date(proposalTiming.endTime).getTime()) {
-            // If current time is less than endTime, status is PENDING
-            calculatedStatus  = "PENDING";
-          } else if (
+          // if (proposalTiming && currentTime < new Date(proposalTiming.endTime).getTime()/1000) {
+          //   // If current time is less than endTime, status is PENDING
+          //   calculatedStatus  = "PENDING";
+          // } else 
+          console.log("proposalTiming",proposal.queueStartTime,proposal.queueEndTime,currentTime)
+          if (
             proposal.queueStartTime &&
             proposal.queueEndTime &&
             currentTime >= proposal.queueStartTime &&
@@ -50,7 +54,7 @@ const ProposalStatus: React.FC<ProposalStatusProps> = ({
           ) {
             // If current time is between queueStartTime and queueEndTime, status is QUEUED
             calculatedStatus  = "QUEUED";
-          } else if ( !proposal.queueEndTime || currentTime.getTime() >= proposal.queueEndTime        ) {
+          } else if ( !proposal.queueEndTime || currentTime >= proposal.queueEndTime) {
             // If current time is more than queueEndTime, check support for SUCCEEDED or DEFEATED
             calculatedStatus  = proposal.support1Weight! > proposal.support0Weight! ? "SUCCEEDED" : "DEFEATED";
           } else {
@@ -68,7 +72,7 @@ const ProposalStatus: React.FC<ProposalStatusProps> = ({
             canceledProposals.some((item) => item.proposalId === proposal.proposalId)
           ) {
             calculatedStatus  = "CANCELLED";
-          } else if (proposal && currentTime.getTime() / 1000 > proposal.endTime) {
+          } else if (proposal && currentTime> proposal.endTime) {
             // Otherwise check support for SUCCEEDED or DEFEATED
             calculatedStatus  = proposal.support1Weight! > proposal.support0Weight! ? "SUCCEEDED" : "DEFEATED";
             
