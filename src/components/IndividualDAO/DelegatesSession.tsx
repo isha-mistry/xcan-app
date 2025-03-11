@@ -244,7 +244,7 @@ function DelegatesSession({ props }: { props: string }) {
             ) : sessionDetails.length > 0 ? (
               <RecordedSessionsTile meetingData={sessionDetails} />
             ) : (
-              <div className="flex flex-col justify-center items-center pt-10">
+              <div className="flex flex-col justify-center items-center">
                 <div className="text-5xl">☹️</div>
                 <div className="pt-4 font-semibold text-lg">
                   {searchQuery

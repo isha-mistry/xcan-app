@@ -469,7 +469,7 @@ const formatDate = (dateString: string): string => {
                 ? "bg-gradient-to-br from-indigo-500 to-indigo-400 text-white"
                 : !isLastCompleted
                 ? "bg-gradient-to-br from-indigo-500 to-indigo-400 text-white" // last completed (indigo)
-                : "bg-white text-black"; // completed (blue)
+                : "bg-black text-white"; // completed (blue)
           }
 
           return (

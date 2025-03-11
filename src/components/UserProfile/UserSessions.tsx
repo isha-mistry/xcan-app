@@ -239,7 +239,7 @@ function UserSessions({
             (dataLoading ? (
               <RecordedSessionsSkeletonLoader />
             ) : hostedDetails.length === 0 ? (
-              <div className="flex flex-col justify-center items-center pt-10">
+              <div className="flex flex-col justify-center items-center">
                 <NoResultsFound/>
               </div>
             ) : (
@@ -254,7 +254,7 @@ function UserSessions({
             (dataLoading ? (
               <RecordedSessionsSkeletonLoader />
             ) : attendedDetails.length === 0 ? (
-              <div className="flex flex-col justify-center items-center pt-10">
+              <div className="flex flex-col justify-center items-center">
                 <NoResultsFound/>
               </div>
             ) : (

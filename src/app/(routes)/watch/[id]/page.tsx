@@ -1,21 +1,14 @@
 import WatchComponentMain from "@/components/WatchMeeting/WatchComponentMain";
 import React, { useEffect } from "react";
 import { Metadata } from "next";
-import {
-  processAddressOrEnsName,
-  resolveENSProfileImage,
-  getMetaAddressOrEnsName,
-  fetchEnsNameAndAvatar,
-  fetchEnsName,
-  getMetadataEnsData,
-} from "@/utils/ENSUtils";
-import { getEnsAvatar } from "@wagmi/core";
-import { getFrameMetadata } from "@coinbase/onchainkit/core";
+import { getMetadataEnsData } from "@/utils/ENSUtils";
 import { IMAGE_URL } from "@/config/staticDataUtils";
 import { BASE_URL } from "@/config/constants";
 interface Type {
   id: string;
 }
+
+export const revalidate = 0;
 
 async function getWatchData(id: string) {
   const requestOptions: RequestInit = {
@@ -33,7 +26,50 @@ async function getWatchData(id: string) {
   }
 
   const result = await response.json();
-  return result.data[0]; // Assuming your API returns data in this structure
+  return result.data[0];
+}
+
+async function prepareOgImage(watchData: any) {
+  let title = watchData.title || "";
+  let description = watchData.description || "";
+  const dao_name = watchData.dao_name || "";
+  const address = watchData.host_address || "";
+
+  const ensData = await getMetadataEnsData(address);
+  const defaultAvatar = IMAGE_URL;
+  const avatarUrl = watchData.hostProfileInfo?.image
+    ? `https://gateway.lighthouse.storage/ipfs/${watchData.hostProfileInfo.image}`
+    : defaultAvatar;
+
+  // Trim description if needed
+  if (description.length > 60) {
+    description = description.substring(0, 60) + "...";
+  }
+  if (title.length > 45) {
+    title = title.substring(0, 45) + "...";
+  }
+
+  console.log(title,"title of vifeo")
+  // Construct the URL for the image API
+  const imageApiUrl = `${BASE_URL}/api/images/og/video?title=${encodeURIComponent(
+    title
+  )}&desc=${encodeURIComponent(description)}&dao_name=${encodeURIComponent(
+    dao_name
+  )}&address=${encodeURIComponent(
+    ensData.formattedAddress
+  )}&avatar=${encodeURIComponent(avatarUrl)}`;
+
+  try {
+    // This will trigger the API call and ensure the image is generated
+    const imgResponse = await fetch(imageApiUrl);
+    if (!imgResponse.ok) {
+      console.error("Failed to generate OG image:", imgResponse.status);
+    }
+  } catch (error) {
+    console.error("Error pre-warming OG image:", error);
+  }
+
+  return imageApiUrl;
 }
 
 export async function generateMetadata({
@@ -54,44 +90,16 @@ export async function generateMetadata({
     const title = watchData.title || "";
     let description = watchData.description || "";
     const dao_name = watchData.dao_name || "";
-    const address = watchData.host_address || "";
-    const ensOrTruncatedAddress = await getMetaAddressOrEnsName(
-      dao_name,
-      address
-    );
-    const defaultAvatar = IMAGE_URL;
-    const avatarUrl =
-      `https://gateway.lighthouse.storage/ipfs/${watchData.hostProfileInfo.image}` ||
-      defaultAvatar;
-    const ensData = await getMetadataEnsData(address);
 
     const formattedDaoName = dao_name
       ? dao_name.charAt(0).toUpperCase() + dao_name.slice(1)
-      : "Unknown DAO"; //Provide a default
-
-    console.log(
-      address,
-      "address",
-      avatarUrl,
-      "ens avatar",
-      ensData,
-      "ens data",
-      ensData.formattedAddress,
-      "ens name or address"
-    );
+      : "Unknown DAO"; 
 
     if (description.length > 55) {
       description = description.substring(0, 55) + "...";
     }
 
-    // Construct the URL for the image API (assuming it's at /api/og-image)
-    const imageApiUrl = `${BASE_URL}/api/images/og/video?title=${encodeURIComponent(
-      title
-    )}&desc=${encodeURIComponent(description)}&dao_name=${encodeURIComponent(
-      dao_name
-    )}&address=${ensData.formattedAddress}&avatar=${encodeURIComponent(
-      avatarUrl
-    )}`;
+    const imageApiUrl = await prepareOgImage(watchData);
 
     return {
       title: "Chora Club",

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { TimeSlot } from "@/types/OfficeHoursTypes";
 import { X } from "lucide-react";
 import toast from "react-hot-toast";
@@ -6,6 +6,7 @@ import { fetchApi } from "@/utils/api";
 import { usePrivy } from "@privy-io/react-auth";
 import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 import { LuDot } from "react-icons/lu";
+import { CgAttachment } from "react-icons/cg";
 
 interface EditOfficeHoursModalProps {
   slot: TimeSlot;
@@ -30,6 +31,7 @@ const EditOfficeHoursModal: React.FC<EditOfficeHoursModalProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const { user, ready, getAccessToken, authenticated } = usePrivy();
   const { walletAddress } = useWalletAddress();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const updateMeeting = async () => {
     try {
@@ -89,6 +91,10 @@ const EditOfficeHoursModal: React.FC<EditOfficeHoursModalProps> = ({
     }
   };
 
+  const handleImageUploadClick = () => {
+    toast("Coming Soon! 🚀");
+  };
+
   return (
     <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
       <div className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md transform transition-all duration-200 ease-out scale-100 mx-2 0.2xs:mx-4 ">
@@ -107,6 +113,56 @@ const EditOfficeHoursModal: React.FC<EditOfficeHoursModalProps> = ({
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-4">
+            <div>
+              <label
+                htmlFor="title"
+                className="block text-sm font-semibold text-gray-700 mb-2"
+              >
+                Update Image
+              </label>
+              <div className="flex gap-3 items-end">
+                <div className="w-40 h-24 bg-gray-100 rounded-lg flex items-center justify-center">
+                  {/* {sessionDetails.image ? (
+                              <Image
+                                src={`https://gateway.lighthouse.storage/ipfs/${sessionDetails.image}`}
+                                alt="Profile"
+                                className="w-full h-full object-cover rounded-md"
+                                width={100}
+                                height={100}
+                              />
+                            ) : ( */}
+                  <div className="text-gray-400">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-12 w-12"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                  </div>
+                  {/* )} */}
+                </div>
+                <div className="flex bg-[#EEF8FF] items-center gap-6 rounded-lg p-3">
+                  <label className="bg-[#EEF8FF]  text-blue-shade-100 font-medium text-sm py-3 px-4 rounded-full border cursor-pointer border-blue-shade-100 cursor-point flex gap-2 items-center " onClick={handleImageUploadClick}>
+                    <CgAttachment />
+                    <span>Upload Image</span>
+                    {/* <input */}
+                      {/* // type="file"
+                      // name="image"
+                      // ref={fileInputRef}
+                      // accept="/image"
+                      // className="hidden"
+                      // onChange={(e) => handleChange(e.target.files)}
+                    /> */}
+                  </label>
+                </div>
+              </div>
+            </div>
             <div>
               <label
                 htmlFor="title"
