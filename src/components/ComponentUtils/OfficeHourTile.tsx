@@ -543,7 +543,7 @@ const OfficeHourTile = ({
                       </button>
                       <button
                         onClick={() => handleDeleteModalOpen(data)}
-                        className="flex items-center justify-center gap-2 w-full px-4 py-2 text-sm font-medium text-red-600 bg-red-50 rounded-full hover:bg-red-100 transition-colors"
+                        className="flex items-center justify-center gap-2 w-full px-4 py-2 text-sm font-medium text-red-600 bg-red-50 rounded-full hover:bg-red-100 transition-all duration-300 transform hover:scale-[1.02]"
                       >
                         <Trash2 className="w-4 h-4" />
                         <span>Delete</span>
