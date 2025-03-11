@@ -7,6 +7,9 @@ import { usePrivy } from "@privy-io/react-auth";
 import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 import { LuDot } from "react-icons/lu";
 import { CgAttachment } from "react-icons/cg";
+import { LIGHTHOUSE_BASE_API_KEY } from "@/config/constants";
+import lighthouse from "@lighthouse-web3/sdk";
+import Image from "next/image";
 
 interface EditOfficeHoursModalProps {
   slot: TimeSlot;
@@ -32,7 +35,9 @@ const EditOfficeHoursModal: React.FC<EditOfficeHoursModalProps> = ({
   const { user, ready, getAccessToken, authenticated } = usePrivy();
   const { walletAddress } = useWalletAddress();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [thumbnailImage, setThumbnailImage] = useState<string | null>(slot.thumbnail_image || null);
 
+  console.log(slot,"slot", slot.thumbnail_image)
   const updateMeeting = async () => {
     try {
       const token = await getAccessToken();
@@ -53,6 +58,7 @@ const EditOfficeHoursModal: React.FC<EditOfficeHoursModalProps> = ({
           reference_id: slot.reference_id,
           title,
           description,
+          thumbnail_image:thumbnailImage
         }),
       });
 
@@ -91,9 +97,32 @@ const EditOfficeHoursModal: React.FC<EditOfficeHoursModalProps> = ({
     }
   };
 
-  const handleImageUploadClick = () => {
-    toast("Coming Soon! 🚀");
-  };
+  const handleChange = async (selectedImage: any) => {
+      const apiKey = LIGHTHOUSE_BASE_API_KEY ? LIGHTHOUSE_BASE_API_KEY : "";
+      console.log(apiKey, "api key")
+      if (selectedImage) {
+        setIsLoading(true);
+        try {
+          console.log(selectedImage, "selected image")
+        const output = await lighthouse.upload(selectedImage, apiKey);
+        console.log(output, "output")
+        const imageCid = output.data.Hash;
+        console.log(imageCid, "image cid")
+        setThumbnailImage(imageCid); 
+
+        // onSessionDetailsChange("image", imageCid);
+        console.log(thumbnailImage, "image 1")
+        }catch(error:any){
+          setThumbnailImage(slot.thumbnail_image)
+          console.log(thumbnailImage, "image 2", error, "error response", error.response)
+        }finally{
+          setIsLoading(false)
+        }
+      }else{
+        setThumbnailImage(slot.thumbnail_image)
+        console.log(thumbnailImage, "image 3")
+      }
+    };
 
   return (
     <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
@@ -122,15 +151,16 @@ const EditOfficeHoursModal: React.FC<EditOfficeHoursModalProps> = ({
               </label>
               <div className="flex gap-3 items-end">
                 <div className="w-40 h-24 bg-gray-100 rounded-lg flex items-center justify-center">
-                  {/* {sessionDetails.image ? (
+                 {/* { console.log(thumbnailImage, "image 4")} */}
+                  {thumbnailImage ? (
                               <Image
-                                src={`https://gateway.lighthouse.storage/ipfs/${sessionDetails.image}`}
+                                src={`https://gateway.lighthouse.storage/ipfs/${thumbnailImage}`}
                                 alt="Profile"
                                 className="w-full h-full object-cover rounded-md"
                                 width={100}
                                 height={100}
                               />
-                            ) : ( */}
+                            ) : (
                   <div className="text-gray-400">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -145,20 +175,20 @@ const EditOfficeHoursModal: React.FC<EditOfficeHoursModalProps> = ({
                       />
                     </svg>
                   </div>
-                  {/* )} */}
+                  )} 
                 </div>
                 <div className="flex bg-[#EEF8FF] items-center gap-6 rounded-lg p-3">
-                  <label className="bg-[#EEF8FF]  text-blue-shade-100 font-medium text-sm py-3 px-4 rounded-full border cursor-pointer border-blue-shade-100 cursor-point flex gap-2 items-center " onClick={handleImageUploadClick}>
+                  <label className="bg-[#EEF8FF]  text-blue-shade-100 font-medium text-sm py-3 px-4 rounded-full border cursor-pointer border-blue-shade-100 cursor-point flex gap-2 items-center ">
                     <CgAttachment />
                     <span>Upload Image</span>
-                    {/* <input */}
-                      {/* // type="file"
-                      // name="image"
-                      // ref={fileInputRef}
-                      // accept="/image"
-                      // className="hidden"
-                      // onChange={(e) => handleChange(e.target.files)}
-                    /> */}
+                    <input
+                       type="file"
+                      name="image"
+                      ref={fileInputRef}
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => e.target.files && handleChange(e.target.files[0])}
+                    />
                   </label>
                 </div>
               </div>

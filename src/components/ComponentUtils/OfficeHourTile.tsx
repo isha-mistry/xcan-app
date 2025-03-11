@@ -251,6 +251,8 @@ const OfficeHourTile = ({
     );
   };
 
+  console.log(data,"data in officehours")
+
   return (
     <div
       className={`grid min-[475px]:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 sm:gap-10 py-8 font-poppins`}
@@ -617,6 +619,7 @@ const OfficeHourTile = ({
             endTime: new Date(
               editModalData.itemData.endTime
             ).toLocaleTimeString(),
+            thumbnail_image:editModalData.itemData.thumbnail_image
           }}
           date={new Date(editModalData.itemData.startTime)}
           onClose={handleEditModalClose}
