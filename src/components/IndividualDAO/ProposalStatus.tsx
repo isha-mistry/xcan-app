@@ -39,13 +39,11 @@ console.log("--------proposalStatus--------",proposal,"-----",canceledProposals,
         console.log("currentTime",currentTime)
         let calculatedStatus: string | null = null;
         if (networkType === "arbitrum") {
-          console.log("proposalTiming",currentTime)
-          // Arbitrum network logic
-          // if (proposalTiming && currentTime < new Date(proposalTiming.endTime).getTime()/1000) {
-          //   // If current time is less than endTime, status is PENDING
-          //   calculatedStatus  = "PENDING";
-          // } else 
+          console.log("proposalTiming",proposalTiming)
           console.log("proposalTiming",proposal.queueStartTime,proposal.queueEndTime,currentTime)
+          const endTimeEpoch = proposal.timing?.endTime 
+          ? Math.floor(new Date(proposal.timing.endTime).getTime() / 1000) 
+          : null;
           if (
             proposal.queueStartTime &&
             proposal.queueEndTime &&
@@ -53,13 +51,16 @@ console.log("--------proposalStatus--------",proposal,"-----",canceledProposals,
             currentTime < proposal.queueEndTime
           ) {
             // If current time is between queueStartTime and queueEndTime, status is QUEUED
-            calculatedStatus  = "QUEUED";
-          } else if ( !proposal.queueEndTime || currentTime >= proposal.queueEndTime) {
-            // If current time is more than queueEndTime, check support for SUCCEEDED or DEFEATED
-            calculatedStatus  = proposal.support1Weight! > proposal.support0Weight! ? "SUCCEEDED" : "DEFEATED";
+            calculatedStatus = "QUEUED";
+          } else if (proposal.queueEndTime && currentTime >= proposal.queueEndTime) {
+            calculatedStatus= proposal.support1Weight! > proposal.support0Weight!
+                               ? "SUCCEEDED" : "DEFEATED";
+          } else if (endTimeEpoch && currentTime > endTimeEpoch) {
+            calculatedStatus= proposal.support1Weight! > proposal.support0Weight! ? "SUCCEEDED" : "DEFEATED";
           } else {
-            // Default case for arbitrum if timing conditions aren't met
-            calculatedStatus  = "PENDING";
+            console.log(proposal,currentTime)
+            // Default case if proposal is still in voting period or pending
+            calculatedStatus = "PENDING";
           }
         } else {
           // Other DAO networks logic

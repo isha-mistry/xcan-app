@@ -737,6 +737,10 @@ function Proposals({ props }: { props: string }) {
           const calculatedProposalTiming = proposalTiming 
           ? proposalTiming.find((timing: any) => timing.createdTransactionHash === proposal.transactionHash) 
           : undefined;
+           // Combine proposal with timing data if available
+            const enrichedProposal = calculatedProposalTiming 
+            ? { ...proposal, timing: calculatedProposalTiming }
+            : proposal;
           return(
           <div
             key={index}
@@ -793,7 +797,7 @@ function Proposals({ props }: { props: string }) {
             {props === "arbitrum" ? (
               proposal.votesLoaded && calculatedProposalTiming ? (
                 <ProposalStatus
-                  proposal={proposal}
+                  proposal={enrichedProposal}
                   canceledProposals={canceledProposals}
                   networkType={props}
                   proposalTiming={calculatedProposalTiming}

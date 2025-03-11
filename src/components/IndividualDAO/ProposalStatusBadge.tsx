@@ -17,7 +17,34 @@ export const ProposalStatusBadge = ({
   const clearPendingApiCall = (cacheKey: string) => {
     delete pendingApiCallsRef.current[cacheKey];
   };
-  
+  const getRemainingTime = (startTimestamp: number) => {
+    const currentTime = Math.floor(Date.now() / 1000); // Get current time in seconds
+    const startTime = Math.floor(startTimestamp/1000); // Ensure startTimestamp is in seconds
+
+    console.log("currentTime:", currentTime, "startTime:", startTime);
+
+    const timeDiff = startTime - currentTime; // Time difference in seconds
+    console.log("timeDiff:", timeDiff);
+
+    if (timeDiff <= 0) {
+        return "Starting now"; // Handle case when time difference is zero or negative
+    }
+
+    const days = Math.floor(timeDiff / (3600 * 24));
+    const hours = Math.floor((timeDiff % (3600 * 24)) / 3600);
+    const minutes = Math.floor((timeDiff % 3600) / 60);
+
+    // Build the message dynamically, filtering out zeros
+    const timeParts = [];
+    if (days > 0) timeParts.push(`${days}d`);
+    if (hours > 0) timeParts.push(`${hours}h`);
+    if (minutes > 0) timeParts.push(`${minutes}m`);
+
+    console.log("timeParts:", timeParts);
+    
+    return `Starts in ${timeParts.join(" ")}`;
+};
+
   // Get proposal status without dependencies that change frequently
   const getProposalStatus = useCallback(async (proposal: any) => {
     // First check if proposal has its own startTime and endTime
@@ -25,8 +52,9 @@ export const ProposalStatusBadge = ({
       const currentTime = Math.floor(Date.now() / 1000);
       const startTime = proposal.startTime;
       const endTime = proposal.endTime;
-  
+
       if (currentTime < startTime) {
+        // return getRemainingTime(startTime.getTime());
         return "Upcoming";
       } else if (currentTime >= startTime && currentTime <= endTime) {
         return "Active";
@@ -42,8 +70,9 @@ export const ProposalStatusBadge = ({
         const currentTime = new Date();
         const startTime = new Date(matchedProposal.startTime);
         const endTime = new Date(matchedProposal.endTime);
-    
+
         if (currentTime < startTime) {
+          // return getRemainingTime(startTime.getTime());
           return "Upcoming";
         } else if (currentTime >= startTime && currentTime <= endTime) {
           return "Active";
@@ -94,10 +123,10 @@ export const ProposalStatusBadge = ({
                 
                 // Clear the pending API call flag
                 clearPendingApiCall(cacheKey);
-                
                 if (currentTime < startTime) {
+                  // return getRemainingTime(startTime.getTime());
                   return "Upcoming";
-                } else if (currentTime >= startTime && currentTime <= endTime) {
+                 } else if (currentTime >= startTime && currentTime <= endTime) {
                   return "Active";
                 } else {
                   return "Closed";
@@ -140,7 +169,7 @@ export const ProposalStatusBadge = ({
     const fetchStatus = async () => {
       const result = await getProposalStatus(proposal);
       if (isMounted) {
-        setStatus(result);
+        setStatus(result ?? "Unknown");
       }
     };
     

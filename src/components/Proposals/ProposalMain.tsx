@@ -163,7 +163,7 @@ function ProposalMain({ props }: { props: Props }) {
   const [shouldFetch, setShouldFetch] = useState(false);
   const [isLargeScreen, setIsLargeScreen] = useState(false);
   const [showViewMoreButton, setShowViewMoreButton] = useState(false);
-  const [cancelledTime, setCancelledTime]= useState();
+  const [cancelledTime, setCancelledTime] = useState();
 
   useEffect(() => {
     // Update isLargeScreen on window resize and initial load
@@ -287,11 +287,11 @@ function ProposalMain({ props }: { props: Props }) {
     //   chain = "";
     // }
 
-    if(walletClient?.chain.name===daoConfigs[props.daoDelegates.toLowerCase()].chainName){
-      chain=daoConfigs[props.daoDelegates.toLowerCase()].name;
+    if (walletClient?.chain.name === daoConfigs[props.daoDelegates.toLowerCase()].chainName) {
+      chain = daoConfigs[props.daoDelegates.toLowerCase()].name;
     }
-    else{
-      chain="";
+    else {
+      chain = "";
     }
 
     if (chain !== props.daoDelegates) {
@@ -332,17 +332,17 @@ function ProposalMain({ props }: { props: Props }) {
     //   return;
     // }
 
-    if(chain?.name){
-      if(daoConfigs[props.daoDelegates.toLowerCase()].useContractSourceAddress?.Address){
-        chainAddress=daoConfigs[props.daoDelegates.toLowerCase()].useContractSourceAddress?.Address;
-        currentChain=daoConfigs[props.daoDelegates.toLowerCase()].name.toLowerCase();
+    if (chain?.name) {
+      if (daoConfigs[props.daoDelegates.toLowerCase()].useContractSourceAddress?.Address) {
+        chainAddress = daoConfigs[props.daoDelegates.toLowerCase()].useContractSourceAddress?.Address;
+        currentChain = daoConfigs[props.daoDelegates.toLowerCase()].name.toLowerCase();
       }
-      else if(!daoConfigs[props.daoDelegates.toLowerCase()].useContractSourceAddress?.Address){
-        currentChain=daoConfigs[props.daoDelegates.toLowerCase()].name.toLowerCase()
-        chainAddress=data.contractSource.contractAddress;  
+      else if (!daoConfigs[props.daoDelegates.toLowerCase()].useContractSourceAddress?.Address) {
+        currentChain = daoConfigs[props.daoDelegates.toLowerCase()].name.toLowerCase()
+        chainAddress = data.contractSource.contractAddress;
       }
-      else{
-        currentChain="";
+      else {
+        currentChain = "";
         return;
       }
     }
@@ -355,11 +355,11 @@ function ProposalMain({ props }: { props: Props }) {
           const delegateTx = await walletClient.writeContract({
             address: chainAddress,
             // chain: props.daoDelegates === "arbitrum" ? arbitrum : optimism,
-            chain:daoConfigs[props.daoDelegates].viemchain,
-            abi:daoConfigs[props.daoDelegates].proposalAbi,
-              // props.daoDelegates === "arbitrum"
-              //   ? arb_proposals_abi
-              //   : op_proposals_abi,
+            chain: daoConfigs[props.daoDelegates].viemchain,
+            abi: daoConfigs[props.daoDelegates].proposalAbi,
+            // props.daoDelegates === "arbitrum"
+            //   ? arb_proposals_abi
+            //   : op_proposals_abi,
             functionName: "castVoteWithReason",
             args: [proposalId, vote, comment],
             account: walletAddress,
@@ -387,11 +387,11 @@ function ProposalMain({ props }: { props: Props }) {
           const delegateTx = await walletClient.writeContract({
             address: chainAddress,
             // chain: props.daoDelegates === "arbitrum" ? arbitrum : optimism,
-            chain:daoConfigs[props.daoDelegates].viemchain,
-            abi:daoConfigs[props.daoDelegates].proposalAbi,
-              // props.daoDelegates === "arbitrum"
-              //   ? arb_proposals_abi
-              //   : op_proposals_abi,
+            chain: daoConfigs[props.daoDelegates].viemchain,
+            abi: daoConfigs[props.daoDelegates].proposalAbi,
+            // props.daoDelegates === "arbitrum"
+            //   ? arb_proposals_abi
+            //   : op_proposals_abi,
             functionName: "castVote",
             args: [proposalId, vote],
             account: walletAddress,
@@ -431,7 +431,7 @@ function ProposalMain({ props }: { props: Props }) {
 
   const { data: has_Voted } = useReadContract({
     abi: daoConfigs[props.daoDelegates.toLowerCase()].proposalAbi,
-    address: daoConfigs[props.daoDelegates.toLowerCase()].useContractSourceAddress?.Address?daoConfigs[props.daoDelegates.toLowerCase()].useContractSourceAddress?.Address:data?.contractSource?.contractAddress,
+    address: daoConfigs[props.daoDelegates.toLowerCase()].useContractSourceAddress?.Address ? daoConfigs[props.daoDelegates.toLowerCase()].useContractSourceAddress?.Address : data?.contractSource?.contractAddress,
     functionName: "hasVoted",
     args: [props.id, walletAddress],
   });
@@ -443,7 +443,7 @@ function ProposalMain({ props }: { props: Props }) {
   }, [data]);
 
   const quorumDataConfig = shouldFetch
-  ? {
+    ? {
       address:
         daoConfigs[props.daoDelegates.toLowerCase()].useContractSourceAddress?.Address ??
         data?.contractSource?.contractAddress,
@@ -455,19 +455,19 @@ function ProposalMain({ props }: { props: Props }) {
           : [props.id !== undefined ? BigInt(props.id) : BigInt(0)],
       chainId: daoConfigs[props.daoDelegates.toLowerCase()].chainId,
     }
-  : null;
+    : null;
 
-const { data: quorumData, isLoading: isQuorumLoading } = useReadContract(quorumDataConfig || {});
+  const { data: quorumData, isLoading: isQuorumLoading } = useReadContract(quorumDataConfig || {});
 
-const quorum = Number(quorumData) / 10 ** 18;
-  console.log("quorum",quorum,quorumDataConfig)
+  const quorum = Number(quorumData) / 10 ** 18;
+  console.log("quorum", quorum, quorumDataConfig)
   // Use the appropriate data based on the network
   // const hasUserVoted = props.daoDelegates === "optimism" 
   // ? Boolean(hasVotedOptimism) 
   // : Boolean(hasVotedArbitrum);
 
 
-  const hasUserVoted=Boolean(has_Voted);
+  const hasUserVoted = Boolean(has_Voted);
 
   useEffect(() => {
     setHasVoted(hasUserVoted);
@@ -595,11 +595,11 @@ const quorum = Number(quorumData) / 10 ** 18;
 
   useEffect(() => {
     if (contentRef.current) {
-      console.log(contentRef.current.scrollHeight,"scroll height")
+      console.log(contentRef.current.scrollHeight, "scroll height")
       const shouldShowButton = isLargeScreen
         ? contentRef.current.scrollHeight > 640
         : contentRef.current.scrollHeight > 200;
-console.log(shouldShowButton, "shouldshow button")
+      console.log(shouldShowButton, "shouldshow button")
       setShowViewMoreButton(shouldShowButton);
     }
   }, [data?.description, isLargeScreen, loading, , formattedDescription]);
@@ -666,9 +666,8 @@ console.log(shouldShowButton, "shouldshow button")
         text = `<em>${matchem[1]}</em>`;
       }
 
-      return `<a href="${href}" title="${
-        title || ""
-      }" target="_blank" rel="noopener noreferrer" class="text-blue-shade-100">${text}</a>`;
+      return `<a href="${href}" title="${title || ""
+        }" target="_blank" rel="noopener noreferrer" class="text-blue-shade-100">${text}</a>`;
     };
 
     marked.setOptions({
@@ -872,8 +871,8 @@ console.log(shouldShowButton, "shouldshow button")
       } else {
         setError(null);
         try {
-          const proposalEndpoint=daoConfigs[props.daoDelegates].proposalAPIendpoint?.ProposalEndpoint;
-          const proposalQueueEndpoint=daoConfigs[props.daoDelegates].proposalAPIendpoint?.ProposalQueueEndpoint;
+          const proposalEndpoint = daoConfigs[props.daoDelegates].proposalAPIendpoint?.ProposalEndpoint;
+          const proposalQueueEndpoint = daoConfigs[props.daoDelegates].proposalAPIendpoint?.ProposalQueueEndpoint;
 
           const response = await fetch(
             `${proposalEndpoint}?proposalId=${props.id}`
@@ -881,12 +880,48 @@ console.log(shouldShowButton, "shouldshow button")
           const result = await response.json();
           console.log("arbitrum result", result);
           const deadlineBlock = result.data[0].extension?.extendedDeadline || result.data[0].endBlock;
-          console.log("deadlineBlock",deadlineBlock)
+          console.log("deadlineBlock", deadlineBlock)
           const proposalStarttimestamp = await calculateEthBlockMiningTime(Number(result.data[0].startBlock), props.daoDelegates);
           const proposalEndtimestamp = await calculateEthBlockMiningTime(Number(deadlineBlock), props.daoDelegates);
-         console.log("proposalEndtimestamp",proposalEndtimestamp)
-          setProposalState(proposalEndtimestamp.isExpired ? "Closed" : "Active");
-          setVotingEndTime(proposalEndtimestamp.TimeInEpoch);
+
+          console.log("proposal timestamps", proposalStarttimestamp, proposalEndtimestamp);
+
+          const currentDate = Date.now() / 1000; // Convert to seconds
+          console.log("proposalStarttimestamp", proposalStarttimestamp, currentDate, proposalEndtimestamp);
+          // Extract epoch times
+          const proposalStartTime = proposalStarttimestamp?.TimeInEpoch;
+          const proposalEndTime = proposalEndtimestamp?.TimeInEpoch;
+
+          let state = "Closed";
+          let message = "";
+
+          if (proposalStartTime && proposalStartTime > currentDate) {
+            // Proposal is yet to start, show countdown
+            const timeDiff = proposalStartTime - currentDate;
+            const days = Math.floor(timeDiff / (3600 * 24));
+            const hours = Math.floor((timeDiff % (3600 * 24)) / 3600);
+            const minutes = Math.floor((timeDiff % 3600) / 60);
+
+            // Build the message dynamically, filtering out zeros
+            const timeParts = [];
+            if (days > 0) timeParts.push(`${days}d`);
+            if (hours > 0) timeParts.push(`${hours}h`);
+            if (minutes > 0) timeParts.push(`${minutes}m`);
+
+            state = `Starts in ${timeParts.join(" ")}`;
+          } else if (proposalStartTime && proposalEndTime && currentDate >= proposalStartTime && currentDate < proposalEndTime) {
+            // Proposal is active
+            state = "Active";
+          } else {
+            // Proposal has ended
+            state = "Closed";
+          }
+
+          setProposalState(state);
+          
+          setVotingEndTime(proposalEndTime);
+          console.log("Proposal state:", state, message);
+
           setData(result.data[0]);
 
           const queueResponse = await fetch(`${proposalQueueEndpoint}`);
@@ -912,18 +947,18 @@ console.log(shouldShowButton, "shouldshow button")
             },
             votingExtended: {
               block: result.data[0].extension?.extendedDeadline,
-              time:result.data[0].extension?.extendedDeadline
+              time: result.data[0].extension?.extendedDeadline
             },
             proposalQueue: {
               block: queueInfo?.blockNumber,
-              time:queueInfo?.blockTimestamp
+              time: queueInfo?.blockTimestamp
             },
             proposalExecution: {
               block: queueInfo?.eta,
               time: queueInfo?.eta
             },
           }
-          console.log("proposalTime",proposalTime);
+          console.log("proposalTime", proposalTime);
           setProposalTimeline([proposalTime])
           console.log("proposalTimeline");
         } catch (err: any) {
@@ -1145,9 +1180,9 @@ console.log(shouldShowButton, "shouldshow button")
     isArbitrum
       ? window.open(`https://arbiscan.io/tx/${transactionHash}`, "_blank")
       : window.open(
-          `https://optimistic.etherscan.io/tx/${transactionHash}`,
-          "_blank"
-        );
+        `https://optimistic.etherscan.io/tx/${transactionHash}`,
+        "_blank"
+      );
   };
 
   const shareOnTwitter = () => {
@@ -1164,9 +1199,9 @@ console.log(shouldShowButton, "shouldshow button")
 
   const handleAddressClick = (address: any) => {
 
-    const currentDAO=daoConfigs[props.daoDelegates];
+    const currentDAO = daoConfigs[props.daoDelegates];
 
-    if(currentDAO){
+    if (currentDAO) {
       router.push(`/${currentDAO.name.toLowerCase()}/${address}?active=info`);
     }
 
@@ -1217,11 +1252,11 @@ console.log(shouldShowButton, "shouldshow button")
     }
 
     if (props.daoDelegates === "arbitrum") {
-      console.log("queue start and end",queueStartTime, queueEndTime);
+      console.log("queue start and end", queueStartTime, queueEndTime);
       console.log(quorum, support1Weight, support0Weight);
       if (queueStartTime && queueEndTime) {
         const currentTime = currentDate.getTime() / 1000; // Convert to seconds
-        console.log("currentTime", currentTime < queueStartTime, queueEndTime);  
+        console.log("currentTime", currentTime < queueStartTime, queueEndTime);
         if (currentTime < queueStartTime) {
           return currentDate <= votingEndTime! ? "PENDING" : "QUEUED";
         } else if (
@@ -1230,25 +1265,25 @@ console.log(shouldShowButton, "shouldshow button")
         ) {
           return "QUEUED";
         } else {
-          return(quorum <(support1Weight + support2Weight) && support1Weight! > support0Weight!) ? "SUCCEEDED" : "DEFEATED";
+          return (quorum < (support1Weight + support2Weight) && support1Weight! > support0Weight!) ? "SUCCEEDED" : "DEFEATED";
         }
       } else {
-        console.log("votingEndTime", votingEndTime, currentTime.getTime(),quorum,support1Weight,support0Weight);
+        console.log("votingEndTime", votingEndTime, currentTime.getTime(), quorum, support1Weight, support0Weight);
         return !votingEndTime
           ? "PENDING"
-          : currentTime.getTime()/1000 > votingEndTime
-            ? (quorum < (support1Weight + support2Weight) && support1Weight! > support0Weight!) 
+          : currentTime.getTime() / 1000 > votingEndTime
+            ? (quorum < (support1Weight + support2Weight) && support1Weight! > support0Weight!)
               ? "SUCCEEDED"
               : "DEFEATED"
             : "PENDING";
       }
     } else {
-      if(props.id==="114318499951173425640219752344574142419220609526557632733105006940618608635406" || props.id==="38506287861710446593663598830868940900144818754960277981092485594195671514829"){
+      if (props.id === "114318499951173425640219752344574142419220609526557632733105006940618608635406" || props.id === "38506287861710446593663598830868940900144818754960277981092485594195671514829") {
         return "SUCCEEDED";
       }
       const currentTimeEpoch = Date.now() / 1000;
       return currentTimeEpoch > data.endTime!
-        ? (quorum < (support1Weight + support2Weight) && support1Weight! > support0Weight!) 
+        ? (quorum < (support1Weight + support2Weight) && support1Weight! > support0Weight!)
           ? "SUCCEEDED"
           : "DEFEATED"
         : "PENDING";
@@ -1369,11 +1404,10 @@ console.log(shouldShowButton, "shouldshow button")
             </div>
             {isActive && (
               <button
-                className={`rounded-full px-3 py-1.5 text-white shadow-md ${
-                  hasVoted
+                className={`rounded-full px-3 py-1.5 text-white shadow-md ${hasVoted
                     ? "bg-green-400 cursor-default"
                     : "bg-blue-600 hover:bg-blue-500 hover:shadow-lg"
-                }`}
+                  }`}
                 type="button"
                 onClick={!hasVoted ? voteOnchain : undefined}
                 disabled={hasVoted}
@@ -1383,13 +1417,12 @@ console.log(shouldShowButton, "shouldshow button")
             )}
             <div className="flex-shrink-0">
               <div
-                className={`rounded-full flex items-center justify-center text-xs py-1 px-2 font-medium ${
-                  proposalState
+                className={`rounded-full flex items-center justify-center text-xs py-1 px-2 font-medium ${proposalState
                     ? proposalState === "Closed"
                       ? "bg-[#f4d3f9] border border-[#77367a] text-[#77367a]"
                       : "bg-[#f4d3f9] border border-[#77367a] text-[#77367a]"
                     : "bg-gray-200 animate-pulse rounded-full"
-                }`}
+                  }`}
               >
                 {proposalState ? proposalState : <div className="h-4 w-16"></div>}
               </div>
@@ -1438,11 +1471,10 @@ console.log(shouldShowButton, "shouldshow button")
               </div>
             ) : (
               <div
-                className={`rounded-full flex items-center justify-center text-xs h-fit py-0.5 border font-medium w-24 ${
-                  Proposalstatus
+                className={`rounded-full flex items-center justify-center text-xs h-fit py-0.5 border font-medium w-24 ${Proposalstatus
                     ? getStatusColor(Proposalstatus)
                     : "bg-gray-200 animate-pulse rounded-full"
-                }`}
+                  }`}
               >
                 {Proposalstatus ? (
                   Proposalstatus
@@ -1462,11 +1494,10 @@ console.log(shouldShowButton, "shouldshow button")
               <>
                 <div
                   ref={contentRef}
-                  className={` transition-max-height duration-500 ease-in-out overflow-hidden ${
-                    isExpanded
+                  className={` transition-max-height duration-500 ease-in-out overflow-hidden ${isExpanded
                       ? "max-h-full"
                       : "max-h-[200px] 1.3lg:max-h-[640px]"
-                  }`}
+                    }`}
                 >
                   <div
                     className="description-content"
@@ -1474,46 +1505,46 @@ console.log(shouldShowButton, "shouldshow button")
                   />
                 </div>
                 {showViewMoreButton && (
-                    <button
-                      className="text-sm text-blue-shade-200 mt-2"
-                      onClick={toggleExpansion}
-                    >
-                      {isExpanded ? "View Less" : "View More"}
-                    </button>
-                  )}
+                  <button
+                    className="text-sm text-blue-shade-200 mt-2"
+                    onClick={toggleExpansion}
+                  >
+                    {isExpanded ? "View Less" : "View More"}
+                  </button>
+                )}
               </>
             )}
           </div>
         </div>
         <div className="flex flex-col md:flex-row 1.3lg:flex-col 1.3lg:w-[30%] gap-2">
-        {loading?( <ProposalvotesSkeletonLoader/>) :(
-          <div className="w-full z-10 rounded-[1rem] shadow-xl transition-shadow duration-300 ease-in-out bg-gradient-to-br from-gray-50 to-slate-50 font-poppins min-h-[416px] 1.3lg:h-fit h-full">
-            <Proposalvotes dao={props.daoDelegates} contract={daoConfigs[props.daoDelegates.toLowerCase()].useContractSourceAddress?.Address ? daoConfigs[props.daoDelegates.toLowerCase()].useContractSourceAddress?.Address : data?.contractSource?.contractAddress} proposalId={props.id} blockNumber={data.startBlock}/>
-            {/* Add skeleton loader when data is loading */}
-            {/* <ProposalvotesSkeletonLoader/>   */}
-          </div>)}
-          
+          {loading ? (<ProposalvotesSkeletonLoader />) : (
+            <div className="w-full z-10 rounded-[1rem] shadow-xl transition-shadow duration-300 ease-in-out bg-gradient-to-br from-gray-50 to-slate-50 font-poppins min-h-[416px] 1.3lg:h-fit h-full">
+              <Proposalvotes dao={props.daoDelegates} contract={daoConfigs[props.daoDelegates.toLowerCase()].useContractSourceAddress?.Address ? daoConfigs[props.daoDelegates.toLowerCase()].useContractSourceAddress?.Address : data?.contractSource?.contractAddress} proposalId={props.id} blockNumber={data.startBlock} />
+              {/* Add skeleton loader when data is loading */}
+              {/* <ProposalvotesSkeletonLoader/>   */}
+            </div>)}
+
 
           <div className="w-full z-10  rounded-[1rem] shadow-xl transition-shadow duration-300 ease-in-out bg-gradient-to-br from-gray-50 to-slate-50 font-poppins h-fit min-h-[390px]">
-            {loading ? (<ProposalMainStatusSkeletonLoader/>):( <ProposalMainStatus proposalTimeline={proposalTimeline} dao={props.daoDelegates} defeated={Proposalstatus==="DEFEATED"} cancelled={Proposalstatus==="CANCELLED"} cancelledTime={cancelledTime}/>)}
-           
+            {loading ? (<ProposalMainStatusSkeletonLoader />) : (<ProposalMainStatus proposalTimeline={proposalTimeline} dao={props.daoDelegates} defeated={Proposalstatus === "DEFEATED"} cancelled={Proposalstatus === "CANCELLED"} cancelledTime={cancelledTime} />)}
+
             {/* Add skeleton loader when data is loading */}
-            
+
           </div>
         </div>
 
       </div>
-  {daoConfigs[props.daoDelegates.toLowerCase()].name==="optimism" && optimismVoteOptions ? (
-  <div className={`rounded-[1rem] mx-4 my-3 md:mx-6 px-4 lg:mx-16 pb-6 pt-6 transition-shadow duration-300 ease-in-out shadow-xl bg-gray-50 font-poppins relative flex justify-center items-center font-extralight tracking-wide`}>
-    {loading ? (
-      <div className="flex items-center justify-center w-full h-[500px]">
-        <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-black-shade-900"></div>
-      </div>
-    ) : (
-      <VotingTreemap votingData={optimismVoteOptions} winners={winners} />
-    )}
-  </div>
-) : null}
+      {daoConfigs[props.daoDelegates.toLowerCase()].name === "optimism" && optimismVoteOptions && optimismVoteOptions.length > 0 ? (
+        <div className={`rounded-[1rem] mx-4 my-3 md:mx-6 px-4 lg:mx-16 pb-6 pt-6 transition-shadow duration-300 ease-in-out shadow-xl bg-gray-50 font-poppins relative flex justify-center items-center font-extralight tracking-wide`}>
+          {loading ? (
+            <div className="flex items-center justify-center w-full h-[500px]">
+              <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-black-shade-900"></div>
+            </div>
+          ) : (
+            <VotingTreemap votingData={optimismVoteOptions} winners={winners} />
+          )}
+        </div>
+      ) : null}
 
       <h1 className="my-8 mx-4 md:mx-6 1.7lg:mx-16 text-2xl lg:text-4xl font-semibold text-blue-shade-100 font-poppins">
         Voters
@@ -1527,11 +1558,10 @@ console.log(shouldShowButton, "shouldshow button")
               </div>
             ) : (
               <div
-                className={`flex flex-col gap-2 py-3 pl-2 pr-1 w-full xl:pl-3 xl:pr-2 my-3 border-gray-200 ${
-                  voterList?.length > 5
+                className={`flex flex-col gap-2 py-3 pl-2 pr-1 w-full xl:pl-3 xl:pr-2 my-3 border-gray-200 ${voterList?.length > 5
                     ? `h-[440px] overflow-y-auto ${style.scrollbar}`
                     : "h-fit"
-                }`}
+                  }`}
               >
                 {voterList && voterList?.length === 0 ? (
                   <div className="flex items-center justify-center h-full text-gray-500">
@@ -1581,21 +1611,20 @@ console.log(shouldShowButton, "shouldshow button")
                         </div>
                         <div className="flex items-center space-x-1 0.5xs:space-x-2 1.3lg:space-x-4">
                           <div
-                            className={`py-1 xs:py-2 rounded-full 1.5lg:text-sm w-24 0.2xs:w-28 xs:w-36 2md:w-28 lg:w-[100px] 1.3lg:w-28 1.5xl:w-36 flex items-center justify-center xl:font-medium text-xs ${
-                              voter.support === 1
+                            className={`py-1 xs:py-2 rounded-full 1.5lg:text-sm w-24 0.2xs:w-28 xs:w-36 2md:w-28 lg:w-[100px] 1.3lg:w-28 1.5xl:w-36 flex items-center justify-center xl:font-medium text-xs ${voter.support === 1
                                 ? "bg-green-100 text-green-800"
                                 : voter.support === 0
-                                ? "bg-red-100 text-red-800"
-                                : "bg-blue-100 text-blue-800"
-                            }`}
+                                  ? "bg-red-100 text-red-800"
+                                  : "bg-blue-100 text-blue-800"
+                              }`}
                           >
                             {formatWeight(voter.votingPower / 10 ** 18)}
                             &nbsp;
                             {voter.support === 1
                               ? "For"
                               : voter.support === 0
-                              ? "Against"
-                              : "Abstain"}
+                                ? "Against"
+                                : "Abstain"}
                           </div>
                           <Tooltips
                             showArrow

@@ -2,12 +2,12 @@ import { connectDB } from "@/config/connectDB";
 
 export async function GET(request: any) {
     let client;
+
     try {
         client = await connectDB();
         const db = client.db();
 
         const { searchParams } = new URL(request.url);
-
         const dao = searchParams.get("dao");
         const page = parseInt(searchParams.get("page") || "1", 10); // Default to page 1
         const limit = 7; // Number of proposals per page
@@ -24,7 +24,6 @@ export async function GET(request: any) {
         if (dao.toLowerCase().includes("arbitrum")) {
             collectionName = "tally-proposals";
         } else {
-            await client.close();
             return new Response(
                 JSON.stringify({ error: "Invalid DAO chain specified" }),
                 { status: 400, headers: { "Content-Type": "application/json" } }
@@ -40,31 +39,25 @@ export async function GET(request: any) {
         const proposals = await collection
             .find({})
             .sort({ createdAt: -1 })
-            .skip(skip) // Apply pagination
+            .skip(skip)
             .limit(limit)
             .toArray();
 
         // Format proposals
-        const formattedProposals = proposals.map((proposal) => {
-
-            return {
-                startTime: proposal.start?.timestamp,
-                endTime: proposal.end?.timestamp,
-                status: proposal.status,
-                createdTransactionHash: proposal.metadata?.txHash,
-            };
-
-        });
-
-        await client.close();
+        const formattedProposals = proposals.map((proposal) => ({
+            startTime: proposal.start?.timestamp,
+            endTime: proposal.end?.timestamp,
+            status: proposal.status,
+            createdTransactionHash: proposal.metadata?.txHash,
+        }));
 
         return new Response(
             JSON.stringify({
-                dao: dao,
+                dao,
                 proposals: formattedProposals,
-                totalProposals, // Include total count for pagination
-                currentPage: page, // Return current page
-                totalPages: Math.ceil(totalProposals / limit), // Calculate total pages
+                totalProposals,
+                currentPage: page,
+                totalPages: Math.ceil(totalProposals / limit),
             }),
             { status: 200, headers: { "Content-Type": "application/json" } }
         );
@@ -74,5 +67,9 @@ export async function GET(request: any) {
             JSON.stringify({ error: "Internal server error" }),
             { status: 500, headers: { "Content-Type": "application/json" } }
         );
+    } finally {
+        if (client) {
+            await client.close(); // Ensure the connection is always closed
+        }
     }
 }
