@@ -740,10 +740,10 @@ function Proposals({ props }: { props: string }) {
           return(
           <div
             key={index}
-            className="flex flex-col 1.5md:flex-row px-2 py-4 0.5xs:p-4 text-lg mb-2 gap-2 1.5md:gap-5 bg-gray-100  hover:bg-gray-50 rounded-3xl transition-shadow duration-300 ease-in-out shadow-lg cursor-pointer 1.5md:items-center group"
+            className="flex flex-col 1.3lg:flex-row px-2 py-4 0.5xs:p-4 text-lg mb-2 gap-2 1.3lg:gap-5 bg-gray-100  hover:bg-gray-50 rounded-3xl transition-shadow duration-300 ease-in-out shadow-lg cursor-pointer 1.3lg:items-center group"
             onClick={() => handleClick(proposal)}
           >
-            <div className="flex items-center 1.5md:w-[55%] 2md:w-[60%]">
+            <div className="flex items-center 1.3lg:w-[55%] ">
               <Image
                 src={dao_details[props as keyof typeof dao_details].logo}
                 alt={`${dao_details[props as keyof typeof dao_details].title
@@ -777,7 +777,7 @@ function Proposals({ props }: { props: string }) {
               </div>
             </div>
 
-            <div className="flex flex-wrap justify-between items-center 1.5md:w-[45%] 2md:w-[40%] mt-2 1.5md:mt-0 gap-1 2md:gap-2 mx-auto 1.5md:mx-0">
+            <div className="flex flex-wrap justify-between items-center 1.3lg:w-[45%] mt-2 1.3lg:mt-0 gap-1 mx-auto 1.3lg:mx-0">
             
             {/* {proposal.votesLoaded && calculatedProposalTiming ? ( */}
               {/* <ProposalStatus
@@ -822,7 +822,7 @@ function Proposals({ props }: { props: string }) {
               ) : (
                 <VoteLoader />
               )}
-              <div className="rounded-full bg-[#F4D3F9] border border-[#77367A] flex text-[#77367A] text-[10px] xs:text-xs h-[22px] items-center justify-center w-[92px] xs:h-fit py-[1px] xs:py-0.5 font-medium px-2 ">
+              <div className="rounded-full bg-[#F4D3F9] border border-[#77367A] flex text-[#77367A] text-[10px] xs:text-xs h-[22px] items-center justify-center w-[80px] xs:w-[92px] xs:h-fit py-[1px] xs:py-0.5 font-medium px-2 ">
                 <ProposalStatusBadge
                   proposal={proposal} matchedProposal={proposalTiming?.find((timing: any) => timing.createdTransactionHash === proposal.transactionHash)} canceledProposals={canceledProposals}
                 />              

@@ -124,7 +124,7 @@ function EventTile({ tileIndex, data: initialData, isEvent }: TileProps) {
     if (walletAddress != null) {
       fetchEnsData();
     }
-  }, [data.host_address, data.attendees[0].attendee_address]);
+  }, [data.host_address, data.attendees[0]?.attendee_address]);
 
   useEffect(() => {
     setIsPageLoading(false);
@@ -231,6 +231,28 @@ function EventTile({ tileIndex, data: initialData, isEvent }: TileProps) {
         "The meeting can only be started 5 minutes before the meeting time."
       );
     }
+  };
+
+  const handleOpenInNewTab = () => {
+    setStartLoading(true); // Start loading
+
+    const currentTime = new Date();
+    const slotTime = new Date(data.slot_time);
+    const currentTimestamp = currentTime.getTime();
+    const slotTimestamp = slotTime.getTime();
+    const timeDifference = slotTimestamp - currentTimestamp;
+
+    if (timeDifference <= 300000) {
+      window.open(
+        `${MEETING_BASE_URL}/meeting/session/${data.meetingId}/lobby`,
+        "_blank"
+      );
+    } else {
+      toast.error(
+        "The meeting can only be started 5 minutes before the meeting time."
+      );
+    }
+    setStartLoading(false); // Stop loading
   };
 
   return (
@@ -432,11 +454,10 @@ function EventTile({ tileIndex, data: initialData, isEvent }: TileProps) {
                         size={32}
                         color="#004DFF"
                         onClick={() => {
-                          setStartLoading(true);
-                          router.push(
-                            `${MEETING_BASE_URL}/meeting/session/${data.meetingId}/lobby`
-                          );
-                          // handleJoinClick();
+                          setStartLoading(true); // Start loading
+                          const meetingUrl = `${MEETING_BASE_URL}/meeting/session/${data.meetingId}/lobby`;
+                          window.open(meetingUrl, "_blank"); // Open in a new tab
+                          setStartLoading(false); // Stop loading immediately after opening the tab
                         }}
                       />
                     </span>
@@ -512,13 +533,7 @@ function EventTile({ tileIndex, data: initialData, isEvent }: TileProps) {
           ) : isEvent === "Attending" ? (
             data.booking_status === "Approved" && (
               <div
-                onClick={() => {
-                  setStartLoading(true);
-                  router.push(
-                    `${MEETING_BASE_URL}/meeting/session/${data.meetingId}/lobby`
-                  );
-                  handleJoinClick();
-                }}
+                onClick={handleOpenInNewTab}
                 className="text-center rounded-full font-bold text-white mt-2 text-xs cursor-pointer"
               >
                 {startLoading ? (

@@ -120,7 +120,7 @@ console.log("--------proposalStatus--------",proposal,"-----",canceledProposals,
   }
 
   return (
-    <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getStatusStyles(status)}`}>
+    <div className={`w-[96px] h-[22px] xs:h-auto xs:w-[108px] inline-flex justify-center items-center px-2.5 py-0.5 rounded-full text-[10px] xs:text-xs font-medium border ${getStatusStyles(status)}`}>
        {status === null ? <StatusLoader/> : status} 
     </div>
   );
