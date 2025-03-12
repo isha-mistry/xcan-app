@@ -95,11 +95,17 @@ const Proposalvotes: React.FC<ProposalvotesProps> = ({
   }, [votesData]);
 
   const isVoteDataEmpty = useMemo(() => {
+    // First check if data is still loading
+    if (isVotesLoading ) {
+      return false; // Don't consider it empty during loading
+    }
+    
+    // Then check if votesData exists and has valid content
     if (!votesData || !Array.isArray(votesData)) {
-        return true;
+      return true;
     }
     return votesData.every(vote => Number(vote) === 0 || vote === undefined);
-}, [votesData]);
+  }, [votesData, isVotesLoading, isQuorumLoading]);
 
   // Calculate total votes
   const totalVotes = useMemo(() => {
@@ -131,15 +137,6 @@ const Proposalvotes: React.FC<ProposalvotesProps> = ({
     return null;
   };
 
-  // Show loading state
-  // if (!isReady || isVotesLoading || isQuorumLoading) {
-  //   return (
-  //     <div className="w-full flex justify-center flex-col rounded-[1rem] font-poppins h-fit p-6 min-h-[416px]">
-  //       <h2 className="text-2xl font-bold mb-6 text-center">Loading votes...</h2>
-  //     </div>
-  //   );
-  // }
-
   return (
     <div
       className="w-full flex justify-center flex-col rounded-[1rem] font-poppins h-fit p-6 min-h-[416px] 1.3lg:h-fit"
@@ -148,65 +145,73 @@ const Proposalvotes: React.FC<ProposalvotesProps> = ({
         Current Votes
       </h2>
       
-          <div className="mb-4 flex flex-col items-start gap-2">
-            {parseFloat(formattedQuorum) !== 0.0 && (
-              <p className="text-sm flex justify-between w-full font-medium">
-                <span className="flex gap-2">
-                  <FaBalanceScale size={18} className="text-indigo-600" />
-                  Quorum
-                </span>{" "}
-                <span className="">
-                  {formattedTotalVotes} of {formattedQuorum}
-                </span>
-              </p>
-            )}
-            <p className="text-sm flex justify-between w-full font-medium">
-              <span className="flex gap-2">
-                <FaVoteYea size={18} className="text-indigo-600" />
-                Total Votes
-              </span>{" "}
-              <span>{formattedTotalVotes}</span>
-            </p>
-          </div>
-          {!isVoteDataEmpty ? (
-          <div style={{ width: "100%", height: 200 }}>
-            <ResponsiveContainer>
-              <PieChart>
-                <Pie
-                  data={voteData}
-                  dataKey="value"
-                  nameKey="name"
-                  cx="50%"
-                  cy="50%"
-                  outerRadius={80}
-                  innerRadius={30}
-                  labelLine={false}
-                  label={false}
-                >
-                  {voteData.map((entry, index) => (
-                    <Cell
-                      key={`cell-${index}`}
-                      fill={COLORS[index % COLORS.length]}
-                      strokeWidth={2}
-                      stroke="#fff"
-                    />
-                  ))}
-                </Pie>
-                <Tooltip content={<CustomTooltip />} />
-                <Legend
-                  iconSize={12}
-                  layout="horizontal"
-                  verticalAlign="bottom"
-                  align="center"
-                  wrapperStyle={{ paddingTop: 10 }}
-                />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-      ) : (
-        <p className="text-lg font-poppins text-gray-500 flex items-center" style={{ width: "100%", height: 200 }}>
-          📊 Chart Empty: No votes have been recorded on this chart.
+      <div className="mb-4 flex flex-col items-start gap-2">
+        {parseFloat(formattedQuorum) !== 0.0 && (
+          <p className="text-sm flex justify-between w-full font-medium">
+            <span className="flex gap-2">
+              <FaBalanceScale size={18} className="text-indigo-600" />
+              Quorum
+            </span>{" "}
+            <span className="">
+              {formattedTotalVotes} of {formattedQuorum}
+            </span>
+          </p>
+        )}
+        <p className="text-sm flex justify-between w-full font-medium">
+          <span className="flex gap-2">
+            <FaVoteYea size={18} className="text-indigo-600" />
+            Total Votes
+          </span>{" "}
+          <span>{formattedTotalVotes}</span>
         </p>
+      </div>
+
+      {isVotesLoading  ? (
+        <div className="flex items-center justify-center" style={{ width: "100%", height: 200 }}>
+          <p className="text-lg font-poppins text-gray-500">
+          </p>
+        </div>
+      ) : isVoteDataEmpty ? (
+        <div className="flex items-center justify-center" style={{ width: "100%", height: 200 }}>
+          <p className="text-lg font-poppins text-gray-500">
+            📊 Chart Empty: No votes have been recorded on this chart.
+          </p>
+        </div>
+      ) : (
+        <div style={{ width: "100%", height: 200 }}>
+          <ResponsiveContainer>
+            <PieChart>
+              <Pie
+                data={voteData}
+                dataKey="value"
+                nameKey="name"
+                cx="50%"
+                cy="50%"
+                outerRadius={80}
+                innerRadius={30}
+                labelLine={false}
+                label={false}
+              >
+                {voteData.map((entry, index) => (
+                  <Cell
+                    key={`cell-${index}`}
+                    fill={COLORS[index % COLORS.length]}
+                    strokeWidth={2}
+                    stroke="#fff"
+                  />
+                ))}
+              </Pie>
+              <Tooltip content={<CustomTooltip />} />
+              <Legend
+                iconSize={12}
+                layout="horizontal"
+                verticalAlign="bottom"
+                align="center"
+                wrapperStyle={{ paddingTop: 10 }}
+              />
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
       )}
     </div>
   );
