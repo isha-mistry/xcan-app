@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { TimeSlot } from "@/types/OfficeHoursTypes";
 import { X } from "lucide-react";
 import toast from "react-hot-toast";
@@ -36,10 +36,37 @@ const EditOfficeHoursModal: React.FC<EditOfficeHoursModalProps> = ({
   const { walletAddress } = useWalletAddress();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [thumbnailImage, setThumbnailImage] = useState<string | null>(slot.thumbnail_image || null);
+  const [isAuthorized, setIsAuthorized] = useState(true);
 
-  console.log(slot,"slot", slot.thumbnail_image)
+
+  useEffect(() => {
+    if (walletAddress && hostAddress) {
+      const authorized = walletAddress.toLowerCase() === hostAddress.toLowerCase();
+      setIsAuthorized(authorized);
+      
+      if (!authorized) {
+        toast.error("You are not authorized to edit this office hours slot");
+      }
+      
+      if (!authenticated || !walletAddress) {
+        toast.error("Please connect your wallet to edit this meeting");
+      }
+    }
+  }, [walletAddress, hostAddress, authenticated]);
+  
   const updateMeeting = async () => {
     try {
+
+      if (!authenticated || !walletAddress) {
+        toast.error("Please connect your wallet to edit this meeting");
+        return null;
+      }
+
+      // Check if the current user is the host
+      if (walletAddress.toLowerCase() !== hostAddress.toLowerCase()) {
+        toast.error("You are not authorized to edit this office hours slot");
+        return null;
+      }
       const token = await getAccessToken();
       const myHeaders: HeadersInit = {
         "Content-Type": "application/json",
@@ -62,11 +89,20 @@ const EditOfficeHoursModal: React.FC<EditOfficeHoursModalProps> = ({
         }),
       });
 
-      const data = await response.json();
-
+      
       if (!response.ok) {
-        throw new Error(data.error || "Failed to update meeting");
+        const data = await response.json();
+        if (response.status === 401) {
+          toast.error("Authentication required. Please connect your wallet.");
+          return null;
+        } else if (response.status === 403) {
+          toast.error("You are not authorized to edit this office hours slot");
+          return null;
+        } else {
+          throw new Error(data.error || "Failed to update meeting");
+        }
       }
+      const data = await response.json();
 
       return data;
     } catch (error) {
@@ -76,14 +112,31 @@ const EditOfficeHoursModal: React.FC<EditOfficeHoursModalProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!isAuthorized) {
+      toast.error("You are not authorized to edit this office hours slot");
+      return;
+    }
+    
+    if (!authenticated || !walletAddress) {
+      toast.error("Please connect your wallet to edit this meeting");
+      return;
+    }
+
     setIsLoading(true);
 
     try {
-      await updateMeeting();
+      const result = await updateMeeting();
+      
+      // If updateMeeting returned null, it means an auth error was displayed
+      if (!result) {
+        setIsLoading(false);
+        return;
+      }
       onUpdate({
         ...slot,
         bookedTitle: title,
         bookedDescription: description,
+        thumbnail_image: thumbnailImage || slot.thumbnail_image || ""
       });
 
       toast("Meeting updated successfully");
@@ -98,29 +151,25 @@ const EditOfficeHoursModal: React.FC<EditOfficeHoursModalProps> = ({
   };
 
   const handleChange = async (selectedImage: any) => {
+    if (!isAuthorized) {
+      toast.error("You are not authorized to edit this office hours slot");
+      return;
+    }
       const apiKey = LIGHTHOUSE_BASE_API_KEY ? LIGHTHOUSE_BASE_API_KEY : "";
-      console.log(apiKey, "api key")
       if (selectedImage) {
         setIsLoading(true);
         try {
-          console.log(selectedImage, "selected image")
-        const output = await lighthouse.upload(selectedImage, apiKey);
-        console.log(output, "output")
+        const output = await lighthouse.upload([selectedImage], apiKey);
         const imageCid = output.data.Hash;
-        console.log(imageCid, "image cid")
         setThumbnailImage(imageCid); 
-
-        // onSessionDetailsChange("image", imageCid);
-        console.log(thumbnailImage, "image 1")
         }catch(error:any){
           setThumbnailImage(slot.thumbnail_image)
-          console.log(thumbnailImage, "image 2", error, "error response", error.response)
+          console.log(error, "error response")
         }finally{
           setIsLoading(false)
         }
       }else{
         setThumbnailImage(slot.thumbnail_image)
-        console.log(thumbnailImage, "image 3")
       }
     };
 
@@ -151,7 +200,6 @@ const EditOfficeHoursModal: React.FC<EditOfficeHoursModalProps> = ({
               </label>
               <div className="flex gap-3 items-end">
                 <div className="w-40 h-24 bg-gray-100 rounded-lg flex items-center justify-center">
-                 {/* { console.log(thumbnailImage, "image 4")} */}
                   {thumbnailImage ? (
                               <Image
                                 src={`https://gateway.lighthouse.storage/ipfs/${thumbnailImage}`}

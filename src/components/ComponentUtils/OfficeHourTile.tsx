@@ -157,6 +157,9 @@ const OfficeHourTile = ({
             description: updatedData.bookedDescription
               ? updatedData.bookedDescription
               : item.description,
+              thumbnail_image:updatedData.thumbnail_image
+              ? updatedData.thumbnail_image
+              : item.thumbnail_image,
           };
         }
         return item;
