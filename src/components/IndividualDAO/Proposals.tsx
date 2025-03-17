@@ -618,6 +618,9 @@ function Proposals({ props }: { props: string }) {
         }
       }
     } else {
+      if(proposal.proposalId==="114318499951173425640219752344574142419220609526557632733105006940618608635406" || proposal.proposalId==="38506287861710446593663598830868940900144818754960277981092485594195671514829"){
+        return "SUCCEEDED"
+     }
       if (
         Array.isArray(canceledProposals) &&
         canceledProposals.some(

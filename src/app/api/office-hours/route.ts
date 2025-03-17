@@ -358,6 +358,10 @@ export async function POST(req: NextRequest) {
         await addNewDAOWithMeetings(collection, hostAddress, daoName, meetings);
       }
     } else {
+      if (cacheWrapper.isAvailable) {
+        const cacheKey = `office-hours-all`;
+        await cacheWrapper.delete(cacheKey);
+      }
       await createNewHostWithMeetings(
         collection,
         hostAddress,
