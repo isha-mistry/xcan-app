@@ -1,4 +1,3 @@
-// app/api/proposals/route.ts
 import { NextResponse } from 'next/server';
 
 // Define types for the proposal data
@@ -65,7 +64,6 @@ export async function GET(request: Request) {
     if (!onchainId || !governorId) {
       return NextResponse.json({ error: 'Missing required parameters' }, { status: 400 });
     }
-    console.log("onchainId is ", onchainId, "governorId is ", governorId);
 
     // Connect to database
     client = await connectDB();
@@ -167,7 +165,6 @@ export async function GET(request: Request) {
     });
 
     const result: GraphQLResponse = await response.json();
-    console.log("result is ", result);
 
     if (!result.data?.proposal) {
       return NextResponse.json({ error: 'No proposal found' }, { status: 404 });
@@ -176,14 +173,14 @@ export async function GET(request: Request) {
     // Save the new proposal data to the database
     const dbResult = await db.collection('tally-proposals').insertOne({
       ...result.data.proposal,
-      onchainId: result.data.proposal.onchainId, // Ensure onchainId is properly saved for future lookups
+      proposalId: result.data.proposal.onchainId, // Ensure onchainId is properly saved for future lookups
       updatedAt: new Date()
     });
 
     return NextResponse.json({
       success: true,
       message: 'New proposal fetched and saved',
-      proposalId: result.data.proposal.id,
+      proposalId: result.data.proposal.onchainId,
       proposal: result.data.proposal,
       source: 'tally_api'
     });

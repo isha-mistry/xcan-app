@@ -78,7 +78,6 @@ function Proposals({ props }: { props: string }) {
   const [proposalTiming, setProposalTiming] = useState<any>(null);
   const [page, setPage] = useState(1); // Track the number of times "View More" is clicked
   const[showAlert, setShowAlert]=useState(true)
-  const [proposalStatuses, setProposalStatuses] = useState<{ [key: string]: string }>({});
   const [loadingMore, setLoadingMore] = useState(false);
   const handleCloseAlert = () => {
     setShowAlert(false);
@@ -269,27 +268,36 @@ function Proposals({ props }: { props: string }) {
       if (!response.ok) throw new Error("Failed to fetch proposal timing");
       const data = await response.json();
       setPage(data.currentPage + 1); // Increment page
-      console.log("arbitrum data",data) 
-      setProposalTiming((prevProposals: any) => {
+      
+      setProposalTiming((prevProposals:any) => {
         if (reset) {
           return [...data.proposals]; // Reset state with new data
         }
-
-        // Use a Map to ensure unique proposals based on transaction hash
-        const proposalMap = new Map(prevProposals.map((p: any) => [p.createdTransactionHash, p]));
-
-        data.proposals.forEach((proposal: any) => {
-          proposalMap.set(proposal.createdTransactionHash, proposal);
+  
+        if (!prevProposals) {
+          return [...data.proposals]; // Initialize if null
+        }
+  
+        // Create a map of existing proposals for efficient lookup
+        const existingProposalsMap = new Map(
+          prevProposals.map((p:any) => [p.createdTransactionHash, p])
+        );
+  
+        // Add new proposals to the map
+        data.proposals.forEach((proposal:any) => {
+          existingProposalsMap.set(proposal.createdTransactionHash, proposal);
         });
-
-        return Array.from(proposalMap.values());
+  
+        // Convert map back to array
+        return Array.from(existingProposalsMap.values());
       });
+      
+      return data.proposals; // Return the new proposals
     } catch (error) {
       console.error("Error fetching proposal timing:", error);
+      return [];
     }
   };
-
-
 
   // Initial fetch when component mounts
   useEffect(() => {
@@ -297,6 +305,7 @@ function Proposals({ props }: { props: string }) {
       fetchProposalTiming(true); // Reset data on first load
     }
   }, []);
+
   const sleep = (ms: number) =>
     new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -583,59 +592,60 @@ function Proposals({ props }: { props: string }) {
           : "bg-[#fa989a] text-[#e13b15] border-[#e13b15]",
     };
   };
-
   const loadMoreProposals = useCallback(async () => {
     setLoadingMore(true);
-    try{
-    if (props === "optimism") {
-      let nextPage;
-      if (currentCache) {
-        nextPage =
-          Math.ceil(currentCache.updatedProposals.length / proposalsPerPage) +
-          1;
+    try {
+      if (props === "optimism") {
+        let nextPage;
+        if (currentCache) {
+          nextPage = Math.ceil(currentCache.updatedProposals.length / proposalsPerPage) + 1;
+        } else {
+          nextPage = currentPage + 1;
+        }
+        const startIndex = (nextPage - 1) * proposalsPerPage;
+        const endIndex = startIndex + proposalsPerPage;
+        const newProposals = cache[props].slice(startIndex, endIndex);
+  
+        // Use a Set to ensure uniqueness based on proposalId
+        const uniqueProposals = new Set(
+          [...displayedProposals, ...newProposals].map((p) => JSON.stringify(p))
+        );
+        setDisplayedProposals(Array.from(uniqueProposals).map((p) => JSON.parse(p)));
+        setCurrentPage(nextPage);
       } else {
-        nextPage = currentPage + 1;
+        // For Arbitrum
+        // First, fetch the timing data and wait for it to complete
+        const newTimingData = await fetchProposalTiming();
+        
+        const currentLength = displayedProposals.length;
+        const moreProposals = cache[props].slice(
+          currentLength,
+          currentLength + proposalsPerPage
+        );
+  
+        // Enrich the proposals with timing data before adding them
+        const enrichedProposals = moreProposals.map((proposal:any) => {
+          const matchedTiming = newTimingData.find(
+            (timing:any) => timing.createdTransactionHash === proposal.transactionHash
+          );
+          return matchedTiming ? { ...proposal, timing: matchedTiming } : proposal;
+        });
+  
+        // Use a Set to ensure uniqueness based on proposalId
+        const uniqueProposals = new Set(
+          [...displayedProposals, ...enrichedProposals].map((p) => JSON.stringify(p))
+        );
+        setDisplayedProposals(Array.from(uniqueProposals).map((p) => JSON.parse(p)));
+  
+        if (currentLength + proposalsPerPage >= cache[props].length) {
+          fetchProposals();
+        }
       }
-      const startIndex = (nextPage - 1) * proposalsPerPage;
-      const endIndex = startIndex + proposalsPerPage;
-      const newProposals = cache[props].slice(startIndex, endIndex);
-
-      // Use a Set to ensure uniqueness based on proposalId
-      const uniqueProposals = new Set(
-        [...displayedProposals, ...newProposals].map((p) => JSON.stringify(p))
-      );
-      setDisplayedProposals(
-        Array.from(uniqueProposals).map((p) => JSON.parse(p))
-      );
-
-      setCurrentPage(nextPage);
-    } else {
-      // For Arbitrum
-      // setPage((prevPage) => prevPage + 1); // Increment page
-      await fetchProposalTiming(); // Fetch more proposals
-      const currentLength = displayedProposals.length;
-      const moreProposals = cache[props].slice(
-        currentLength,
-        currentLength + proposalsPerPage
-      );
-
-      // Use a Set to ensure uniqueness based on proposalId
-      const uniqueProposals = new Set(
-        [...displayedProposals, ...moreProposals].map((p) => JSON.stringify(p))
-      );
-      setDisplayedProposals(
-        Array.from(uniqueProposals).map((p) => JSON.parse(p))
-      );
-
-      if (currentLength + proposalsPerPage >= cache[props].length) {
-        fetchProposals();
-      }
+    } catch (error) {
+      console.error("Error loading more proposals:", error);
+    } finally {
+      setLoadingMore(false);
     }
-  } catch (error) {
-    console.error("Error loading more proposals:", error);
-  } finally {
-    setLoadingMore(false); // Stop loading regardless of success or failure
-  }
   }, [
     props,
     allProposals,
@@ -645,6 +655,7 @@ function Proposals({ props }: { props: string }) {
     cache,
     proposalsPerPage,
     fetchProposals,
+    fetchProposalTiming,
   ]);
 
   const truncateText = (text: string, charLimit: number) => {
@@ -795,7 +806,7 @@ function Proposals({ props }: { props: string }) {
              )} */}
 
             {props === "arbitrum" ? (
-              proposal.votesLoaded && calculatedProposalTiming ? (
+              proposal.votesLoaded  ? (
                 <ProposalStatus
                   proposal={enrichedProposal}
                   canceledProposals={canceledProposals}
@@ -838,6 +849,7 @@ function Proposals({ props }: { props: string }) {
           <div className="flex items-center justify-center">
             <button
               onClick={loadMoreProposals}
+              disabled={loadingMore}
               className="bg-blue-shade-100 text-white py-2 px-4 w-[115px] flex justify-center items-center rounded-lg font-medium"
             >
                 {loadingMore ? (

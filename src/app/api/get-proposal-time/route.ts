@@ -10,7 +10,7 @@ export async function GET(request: any) {
         const { searchParams } = new URL(request.url);
         const dao = searchParams.get("dao");
         const page = parseInt(searchParams.get("page") || "1", 10); // Default to page 1
-        const limit = 7; // Number of proposals per page
+        const limit = 14; // Number of proposals per page
         const skip = (page - 1) * limit; // Calculate the number of documents to skip
 
         if (!dao) {

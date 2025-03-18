@@ -40,6 +40,8 @@ const ProposalMainStatus = ({ proposalTimeline, dao , defeated, cancelled, cance
   const menuRef = useRef<HTMLDivElement>(null);
   const menuTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 });
+  const [menuCloseTimeout, setMenuCloseTimeout] = useState<NodeJS.Timeout | null>(null);
+
 
   const isBeforeCancellation = (itemDate: string | null): boolean => {
     if (!itemDate || !cancelled || !cancelledTime) {
@@ -60,7 +62,7 @@ const ProposalMainStatus = ({ proposalTimeline, dao , defeated, cancelled, cance
         date: proposalTimeline[0]?.publishOnchain.time
           ? new Date(proposalTimeline[0].publishOnchain.time * 1000).toString()
           : null,
-        description: "Community members casting votes on proposal",
+        description: "Proposal has been published on the blockchain.",
         blockTitle: `${dao} Block :`,
         blockNumber: proposalTimeline[0]?.publishOnchain.block,
         blockExplorerUrl: `${daoConfigs[dao].explorerUrl}/block/${proposalTimeline[0]?.publishOnchain.block}`,
@@ -71,7 +73,7 @@ const ProposalMainStatus = ({ proposalTimeline, dao , defeated, cancelled, cance
         date: proposalTimeline[0]?.votingStart.time
           ? new Date(proposalTimeline[0].votingStart.time * 1000).toString()
           : null,
-        description: "Proposal approved and awaiting execution",
+        description: "Voting period has officially started.",
         blockTitle: dao === "arbitrum" ? `Ethereum Block :` : `${dao} Block :`,
         blockNumber: proposalTimeline[0]?.votingStart.block,
         blockExplorerUrl:
@@ -86,7 +88,7 @@ const ProposalMainStatus = ({ proposalTimeline, dao , defeated, cancelled, cance
             date: new Date(
               proposalTimeline[0].votingExtended.time * 1000
             ).toString(),
-            description: "Proposal changes successfully implemented",
+            description: "Voting period has been extended for additional participation.",
             blockTitle:
               dao === "arbitrum" ? `Ethereum Block :` : `${dao} Block :`,
             blockNumber: proposalTimeline[0]?.votingExtended.block,
@@ -102,7 +104,7 @@ const ProposalMainStatus = ({ proposalTimeline, dao , defeated, cancelled, cance
         date: proposalTimeline[0]?.votingEnd.time
           ? new Date(proposalTimeline[0].votingEnd.time * 1000).toString()
           : null,
-        description: "Proposal changes successfully implemented",
+        description: "Voting period has ended, and results are being processed.",
         blockTitle: dao === "arbitrum" ? `Ethereum Block :` : `${dao} Block :`,
         blockNumber: proposalTimeline[0]?.votingEnd.block,
         blockExplorerUrl:
@@ -114,7 +116,8 @@ const ProposalMainStatus = ({ proposalTimeline, dao , defeated, cancelled, cance
       defeated ?{
         title:"Defeated",
         icon:<RxCross2  size={20}/>,
-        date:null
+        date:null,
+        description: "The proposal did not receive enough votes to pass."
       }: null,
       daoConfigs[dao].name === "arbitrum" && !defeated &&  (!cancelled || isBeforeCancellation(new Date(proposalTimeline[0].proposalQueue.time * 1000).toString()))
         ? {
@@ -124,7 +127,7 @@ const ProposalMainStatus = ({ proposalTimeline, dao , defeated, cancelled, cance
                   proposalTimeline[0].proposalQueue.time * 1000
                 ).toString()
               : null,
-            description: "Proposal changes successfully implemented",
+              description: "Proposal has been queued for execution.",
             blockTitle: `${dao} Block :`,
             blockNumber: proposalTimeline[0].proposalQueue.block,
             blockExplorerUrl: `${daoConfigs[dao].explorerUrl}/block/${proposalTimeline[0]?.proposalQueue.block}`,
@@ -138,7 +141,7 @@ const ProposalMainStatus = ({ proposalTimeline, dao , defeated, cancelled, cance
               proposalTimeline[0].proposalExecution.time * 1000
             ).toString()
           : null,
-        description: "Proposal changes successfully implemented",
+          description: "Proposal has been successfully executed on the blockchain.",
         blockTitle: `${dao} Block :`,
         blockNumber:
           dao !== "arbitrum"
@@ -153,7 +156,8 @@ const ProposalMainStatus = ({ proposalTimeline, dao , defeated, cancelled, cance
       cancelled ? {
         title:"Cancelled",
         icon:<RxCross2  size={20}/>,
-        date:null
+        date:null,
+        description: "The proposal has been cancelled and will not be executed."
       }: null
     ] as TimelineItem[]
   ).filter(Boolean); // ✅ Removes null values
@@ -256,7 +260,7 @@ const formatDate = (dateString: string): string => {
     tooltipTimeoutRef.current = setTimeout(() => {
       setActiveItem(null);
       setTooltipVisible(false);
-    }, 500);
+    }, 2000);
   };
 
   const handleMenuMouseEnter = () => {

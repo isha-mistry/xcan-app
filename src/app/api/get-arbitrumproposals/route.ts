@@ -118,7 +118,6 @@ export async function GET(req: NextRequest) {
 
     // Merge the proposal and extension data
     const mergedData = mergeProposalData(result.data);
-console.log("merged data",mergedData)
     return NextResponse.json({ data: mergedData });
   } catch (error) {
     console.error('Unexpected error:', error);
