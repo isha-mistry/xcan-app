@@ -531,6 +531,7 @@ function Proposals({ props }: { props: string }) {
     proposals();
   }, [props]);
 
+
   const isProposalCanceled = (proposalId: string, canceledProposals: any[]) => {
     return (
       Array.isArray(canceledProposals) &&

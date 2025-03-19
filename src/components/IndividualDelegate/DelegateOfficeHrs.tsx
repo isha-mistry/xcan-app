@@ -40,6 +40,7 @@ function DelegateOfficeHrs({ props }: { props: Type }) {
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
   const [showLeftShadow, setShowLeftShadow] = useState(false);
   const [showRightShadow, setShowRightShadow] = useState(false);
+  const currentTab = searchParams.get("hours") || ""; 
 
   // Original data from API
   const [originalData, setOriginalData] = useState({
@@ -128,7 +129,7 @@ function DelegateOfficeHrs({ props }: { props: Type }) {
     const fetchUserOfficeHours = async () => {
       try {
         const response = await fetchApi(
-          `/get-office-hours?host_address=${props.individualDelegate}&dao_name=${props.daoDelegates}`,
+          `/get-office-hours?host_address=${props.individualDelegate}&dao_name=${props.daoDelegates}&type=${currentTab}`,
           {
             headers: {
               Authorization: `Bearer ${await getAccessToken()}`,

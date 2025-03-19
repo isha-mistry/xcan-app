@@ -35,7 +35,7 @@ const EditOfficeHoursModal: React.FC<EditOfficeHoursModalProps> = ({
   const { user, ready, getAccessToken, authenticated } = usePrivy();
   const { walletAddress } = useWalletAddress();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [thumbnailImage, setThumbnailImage] = useState<string | null>(slot.thumbnail_image || null);
+  const [thumbnailImage, setThumbnailImage] = useState<string | null>(slot.thumbnail_image !== undefined ? slot.thumbnail_image : null);
   const [isAuthorized, setIsAuthorized] = useState(true);
 
 
@@ -136,7 +136,7 @@ const EditOfficeHoursModal: React.FC<EditOfficeHoursModalProps> = ({
         ...slot,
         bookedTitle: title,
         bookedDescription: description,
-        thumbnail_image: thumbnailImage || slot.thumbnail_image || ""
+        thumbnail_image: thumbnailImage !== null ? thumbnailImage : ""
       });
 
       toast("Meeting updated successfully");
@@ -163,13 +163,13 @@ const EditOfficeHoursModal: React.FC<EditOfficeHoursModalProps> = ({
         const imageCid = output.data.Hash;
         setThumbnailImage(imageCid); 
         }catch(error:any){
-          setThumbnailImage(slot.thumbnail_image)
+          setThumbnailImage(slot.thumbnail_image !== undefined ? slot.thumbnail_image : null)
           console.log(error, "error response")
         }finally{
           setIsLoading(false)
         }
       }else{
-        setThumbnailImage(slot.thumbnail_image)
+        setThumbnailImage(slot.thumbnail_image !== undefined ? slot.thumbnail_image : null)
       }
     };
 

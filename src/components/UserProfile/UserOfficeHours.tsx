@@ -37,6 +37,7 @@ function UserOfficeHours({
   const path = usePathname();
   const searchParams = useSearchParams();
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
+  const currentTab = searchParams.get("hours") || ""; 
 
   // Original data from API
   const [originalData, setOriginalData] = useState({
@@ -106,7 +107,7 @@ function UserOfficeHours({
     try {
       const token = await getAccessToken();
       const response = await fetchApi(
-        `/get-office-hours?host_address=${walletAddress}&dao_name=${daoName}`,
+        `/get-office-hours?host_address=${walletAddress}&dao_name=${daoName}&type=${currentTab}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
