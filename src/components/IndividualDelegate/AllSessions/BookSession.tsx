@@ -73,6 +73,7 @@ function BookSession({ props }: { props: Type }) {
   const [continueAPICalling, setContinueAPICalling] = useState<Boolean>(false);
   const [userRejected, setUserRejected] = useState<Boolean>();
   const [addingEmail, setAddingEmail] = useState<boolean>();
+  const [isApiCallInProgress, setIsApiCallInProgress] = useState(false);
   const { ready, authenticated, login, logout, getAccessToken, user } =
     usePrivy();
   const { walletAddress } = useWalletAddress();
@@ -274,7 +275,7 @@ function BookSession({ props }: { props: Type }) {
   }, [userRejected, sessionStorage.getItem("bookingMailRejected")]);
 
   useEffect(() => {
-    if (continueAPICalling) {
+    if (continueAPICalling && !isApiCallInProgress) {
       apiCall();
     }
   }, [continueAPICalling]);
@@ -342,6 +343,10 @@ function BookSession({ props }: { props: Type }) {
   }, [walletAddress]); // Include walletAddress or other dependencies
 
   const checkBeforeApiCall = async () => {
+    if (isApiCallInProgress || confirmSave) {
+      return; // Prevent multiple simultaneous calls
+    }
+
     if (modalData.title.length > 0 && modalData.description.length > 0) {
       try {
         setConfirmSave(true);
@@ -357,7 +362,10 @@ function BookSession({ props }: { props: Type }) {
             apiCall();
           }
         }
-      } catch (error) {console.log("Line 360:",error)};
+      } catch (error) {
+        console.log("Line 360:",error);
+        setConfirmSave(false);
+      };
     } else {
       toast.error("Please enter title and description!");
     }
@@ -376,6 +384,14 @@ function BookSession({ props }: { props: Type }) {
     return roomId;
   };
   const apiCall = async () => {
+      // Set flag to prevent multiple simultaneous API calls
+      if (isApiCallInProgress) {
+        return;
+      }
+      
+      setIsApiCallInProgress(true);
+      
+      try {
     // const ChainName = chain?.name === "OP Mainnet" ? "optimism" : "arbitrum";
     const ChainName=daoConfigs[props.daoDelegates].chainName;
     // const CHAIN_ID = props.daoDelegates == "optimism" ? 10 : 42161;
@@ -385,10 +401,10 @@ function BookSession({ props }: { props: Type }) {
 
     if (props.daoDelegates !== ChainName) {
       await switchChain({ chainId: CHAIN_ID });
-      setIsLoading(false);
-      setConfirmSave(false);
-      setIsScheduling(false);
-      setContinueAPICalling(false);
+      // setIsLoading(false);
+      // setConfirmSave(false);
+      // setIsScheduling(false);
+      // setContinueAPICalling(false);
       // return;
     }
 
@@ -426,28 +442,36 @@ function BookSession({ props }: { props: Type }) {
       redirect: "follow",
     };
 
-    try {
-      setConfirmSave(true);
+    // try {
+    //   setConfirmSave(true);
       const response = await fetchApi("/book-slot", requestOptions);
       const result = await response.json();
       if (result.success) {
         setIsScheduled(true);
-        setConfirmSave(false);
+        // setConfirmSave(false);
         setModalOpen(true);
       }
     } catch (error) {
-      setConfirmSave(false);
-      setIsScheduled(false);
+      // setConfirmSave(false);
+      // setIsScheduled(false);
       console.error("Error:", error);
     }
 
-    setModalData({
-      dao_name: "",
-      date: "",
-      title: "",
-      description: "",
-    });
-    onClose();
+    finally {
+      // Reset all the states
+      setConfirmSave(false);
+      setIsApiCallInProgress(false);
+      setIsScheduling(false);
+      setContinueAPICalling(false);
+      
+      setModalData({
+        dao_name: "",
+        date: "",
+        title: "",
+        description: "",
+      });
+      onClose();
+    }
   };
 
   const timeSlotSizeMinutes = 30;
@@ -694,6 +718,7 @@ function BookSession({ props }: { props: Type }) {
                       onClose();
                       setIsScheduling(false);
                     }}
+                    disabled={confirmSave || isApiCallInProgress}
                   >
                     <MdCancel className="w-6 h-6 sm:w-7 sm:h-7" />
                   </button>
@@ -705,7 +730,7 @@ function BookSession({ props }: { props: Type }) {
                     Title:
                   </label>
                   <input
-                    disabled={confirmSave}
+                    disabled={confirmSave || isApiCallInProgress}
                     type="text"
                     name="title"
                     value={modalData.title}
@@ -720,7 +745,7 @@ function BookSession({ props }: { props: Type }) {
                     Description:
                   </label>
                   <textarea
-                    disabled={confirmSave}
+                    disabled={confirmSave || isApiCallInProgress}
                     name="description"
                     value={modalData.description}
                     onChange={handleModalInputChange}
@@ -735,7 +760,7 @@ function BookSession({ props }: { props: Type }) {
                     <button
                       className="absolute top-2 right-2 sm:top-3 sm:right-3"
                       onClick={handleGetMailModalClose}
-                      disabled={addingEmail}
+                      disabled={addingEmail || isApiCallInProgress}
                     >
                       <MdCancel className="w-5 h-5 sm:w-6 sm:h-6" />
                     </button>
@@ -757,7 +782,7 @@ function BookSession({ props }: { props: Type }) {
                       <button
                         onClick={handleSubmit}
                         className="w-full sm:w-auto bg-black text-white px-6 sm:px-8 py-2 sm:py-3 rounded-3xl hover:bg-gray-900 text-sm sm:text-base"
-                        disabled={addingEmail}
+                        disabled={addingEmail || isApiCallInProgress}
                       >
                         {addingEmail ? (
                           <div className="flex items-center justify-center ">
@@ -786,11 +811,11 @@ function BookSession({ props }: { props: Type }) {
               </div>
               <div className="flex justify-center px-4 sm:px-8 py-4">
                 <button
-                  className="bg-blue-shade-200 text-white px-6 sm:px-8 py-2 sm:py-3 font-semibold rounded-full text-sm sm:text-base w-full sm:w-auto"
+                  className="bg-blue-shade-200 text-white px-6 sm:px-8 py-2 sm:py-3 font-semibold rounded-full text-sm sm:text-base w-full sm:w-auto disabled:bg-gray-400"
                   onClick={checkBeforeApiCall}
-                  disabled={confirmSave}
+                  disabled={confirmSave || isApiCallInProgress || !modalData.title || !modalData.description}
                 >
-                  {confirmSave ? (
+                  {confirmSave || isApiCallInProgress ? (
                     <div className="flex items-center justify-center">
                       <Oval
                         visible={true}
