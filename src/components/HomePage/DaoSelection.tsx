@@ -44,6 +44,15 @@ function DaoSelection({
   const [isNavigating, setIsNavigating] = useState(false);
   const { authenticated } = usePrivy();
   const [showWalletPopup, setShowWalletPopup] = useState(false);
+  const [selectedDao, setSelectedDao] = useState<"optimism" | "arbitrum" | "">("");
+
+    useEffect(() => {
+      if (authenticated && selectedDao && showWalletPopup) {
+        setShowWalletPopup(false); 
+        checkDelegateStatus(selectedDao); 
+      }
+    }, [authenticated, selectedDao]);
+  
 
   const pushToGTM = (eventData: GTMEvent) => {
     if (typeof window !== 'undefined' && window.dataLayer) {
@@ -61,11 +70,10 @@ function DaoSelection({
       event: 'dao_selection',
       category: 'DAO Selection',
       action: 'Optimism DAO Selected',
-      label: 'optimism',  // This will be tracked as dao_name
-      value: joinAsDelegate ? 1 : feature ? 2 : 3  // This will be tracked as journey_type
+      label: 'optimism',
+      value: joinAsDelegate ? 1 : feature ? 2 : 3
     });
-    checkDelegateStatus("optimism");
-    setDao("optimism");
+    handleDaoSelection("optimism");
   };
   
   const handleArbitrum = () => {
@@ -76,9 +84,21 @@ function DaoSelection({
       label: 'arbitrum',
       value: joinAsDelegate ? 1 : feature ? 2 : 3
     });
-    checkDelegateStatus("arbitrum");
-    setDao("arbitrum");
+    handleDaoSelection("arbitrum");
   };
+
+  const handleDaoSelection = (network: "optimism" | "arbitrum") => {
+    setDao(network);
+    setSelectedDao(network);
+    
+    if (!authenticated) {
+      setShowWalletPopup(true);
+      return;
+    }
+    
+    checkDelegateStatus(network);
+  };
+
   
   const checkDelegateStatus = async (network: "optimism" | "arbitrum") => {
     setShowError(false);
@@ -107,7 +127,6 @@ function DaoSelection({
         })) as string;
   
         isContractDelegate = delegateTx.toLowerCase() === address?.toLowerCase();
-        console.log("Contract delegate status:", isContractDelegate);
       } catch (error) {
         console.error("Error in reading contract:", error);
       }
@@ -139,14 +158,9 @@ function DaoSelection({
         if (feature) {
           setShowPopup(true);
         } else if (joinAsDelegate || featureSchedule) {
-          if (authenticated) {
-            handleNavigation(
-              `${path}profile/${address}?active=sessions&session=schedule`
-            );
-          } else {
-            setShowWalletPopup(true);
-            console.log("not authenticated");
-          }
+          handleNavigation(
+            `/profile/${address}?active=sessions&session=schedule`
+          );
         }
       } else {
         pushToGTM({
@@ -172,15 +186,6 @@ function DaoSelection({
       setIsLoading(false);
     }
   };
-  useEffect(() => {
-    if (isConnected && authenticated && showWalletPopup) {
-      // Close the wallet modal and redirect
-      setShowWalletPopup(false);
-      handleNavigation(
-        `${path}profile/${address}?active=sessions&session=schedule`
-      );
-    }
-  }, [isConnected, showWalletPopup, router, path, authenticated]);
 
   const handlePopupClose = () => {
     setShowPopup(false);
@@ -278,7 +283,9 @@ function DaoSelection({
       </div>
       {showPopup && <PopupGenerateLink onclose={handlePopupClose} dao={dao} />}
       {showWalletPopup && (
-        <ConnectWalletHomePage onClose={() => setShowWalletPopup(false)} />
+        <ConnectWalletHomePage 
+          onClose={() => setShowWalletPopup(false)} 
+        />
       )}
     </>
   );

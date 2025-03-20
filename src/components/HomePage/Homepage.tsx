@@ -258,7 +258,7 @@ const Homepage = () => {
     if (isConnected && showConnectWallet) {
       // Close the wallet modal and redirect
       setShowConnectWallet(false);
-      router.push(path + "sessions?active=recordedSessions");
+      router.push("/sessions?active=recordedSessions");
     }
   }, [isConnected, showConnectWallet, router, path]);
 
@@ -278,7 +278,7 @@ const Homepage = () => {
       setShowConnectWallet(true);
       setIsLoading(false);
     } else {
-      router.push(path + "sessions?active=recordedSessions");
+      router.push("/sessions?active=recordedSessions");
     }
   };
   const handleGetStartedDelegate = () => {
@@ -289,14 +289,7 @@ const Homepage = () => {
       label: 'Join As a Delegate',
       value: 2
     });
-    console.log(isConnected, "is connect?", authenticated, "authenicate");
-    if (!isConnected) {
-      setShowConnectWalletDelegate(true);
-    } else if (!authenticated) {
-      setShowConnectWalletDelegate(true);
-    } else {
       setShowDaoSelection(true);
-    }
   };
 
   return (

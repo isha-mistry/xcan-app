@@ -16,6 +16,7 @@ import SidebarMainMobile from "@/components/MainSidebar/SidebarMainMobile";
 import { ApiDataProvider } from "@/contexts/ApiDataContext";
 import TopNavbar from "@/components/TopNavbar/TopNavbar";
 import { Toaster } from "react-hot-toast";
+import AuthGuard from "@/components/ComponentUtils/AuthGuard";
 const poppins = Poppins({
   subsets: ["latin"],
   weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
@@ -126,7 +127,7 @@ export default function RootLayout({
                   </div>
                   <div className="w-[100%] ml-auto mt-[78px] sm:mt-[64px] lg:mt-[60px] z-0">
                     <FeedbackTile />
-                    <div>{children}</div>
+                    <AuthGuard>{children}</AuthGuard>
                   </div>
                 </div>
               </ApiDataProvider>
