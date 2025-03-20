@@ -110,7 +110,7 @@ const Homepage = () => {
             setShowConnectWalletBookSession(true);
           } else {
             if (authenticated) {
-              await router.push(path + "sessions?active=availableDelegates");
+              await router.push("/sessions?active=availableDelegates");
             } else {
               setShowConnectWalletBookSession(true);
               console.log("not authenticated");
@@ -170,12 +170,12 @@ const Homepage = () => {
     if (isConnected && authenticated && ShowConnectWalletBookSession) {
       // Close the wallet modal and redirect
       setShowConnectWalletBookSession(false);
-      router.push(path + "sessions?active=availableDelegates");
+      router.push("/sessions?active=availableDelegates");
     }
   }, [isConnected, ShowConnectWalletBookSession, router, path, authenticated]);
 
   const handleJoinAsUser = () => {
-    router.push(path + "sessions?active=recordedSessions");
+    router.push("/sessions?active=recordedSessions");
   };
   const checkDelegateStatus = async (network: string) => {
     setShowError(false);
@@ -204,8 +204,7 @@ const Homepage = () => {
 
       delegateTxAddr = delegateTx;
       if (delegateTxAddr.toLowerCase() === address?.toLowerCase()) {
-        router.push(
-          path + `profile/${address}?active=sessions&session=schedule`
+        router.push(`/profile/${address}?active=sessions&session=schedule`
         );
       } else {
         setShowError(true);
