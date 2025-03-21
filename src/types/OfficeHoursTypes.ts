@@ -48,6 +48,7 @@ export interface TimeSlot {
   bookedTitle?: string;
   bookedDescription?: string;
   reference_id?: string;
+  thumbnail_image?:string;
 }
 
 export interface DateSchedule {

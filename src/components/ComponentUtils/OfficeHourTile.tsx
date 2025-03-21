@@ -157,6 +157,9 @@ const OfficeHourTile = ({
             description: updatedData.bookedDescription
               ? updatedData.bookedDescription
               : item.description,
+              thumbnail_image:updatedData.thumbnail_image
+              ? updatedData.thumbnail_image
+              : item.thumbnail_image,
           };
         }
         return item;
@@ -250,6 +253,8 @@ const OfficeHourTile = ({
       })
     );
   };
+
+  console.log(data,"data in officehours")
 
   return (
     <div
@@ -617,6 +622,7 @@ const OfficeHourTile = ({
             endTime: new Date(
               editModalData.itemData.endTime
             ).toLocaleTimeString(),
+            thumbnail_image:editModalData.itemData.thumbnail_image
           }}
           date={new Date(editModalData.itemData.startTime)}
           onClose={handleEditModalClose}

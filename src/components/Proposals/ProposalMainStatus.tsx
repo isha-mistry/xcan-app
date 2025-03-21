@@ -176,21 +176,19 @@ const formatDate = (dateString: string): string => {
 };
 
 
-  const formatDatewithYear = (dateString: string): string => {
-    const date = new Date(dateString);
-    const day = date.getUTCDate();
-    const month = date.toLocaleString("en-US", {
-      month: "short",
-      timeZone: "UTC",
-    });
-    const hours = date.getUTCHours();
-    const minutes = date.getUTCMinutes();
-    const ampm = hours >= 12 ? "PM" : "AM";
-    const formattedHours = hours % 12 || 12; // Convert 0 to 12 for 12 AM
-    const formattedMinutes = minutes.toString().padStart(2, "0");
+    const formatDatewithYear = (dateString: string): string => {
+      const date = new Date(dateString);
+      const day = date.getDate(); // Local day
+      const month = date.toLocaleString("en-US", { month: "short" }); // Local month
+      const year = date.getFullYear(); // Local year
+      const hours = date.getHours(); // Local hours
+      const minutes = date.getMinutes(); // Local minutes
+      const ampm = hours >= 12 ? "PM" : "AM";
+      const formattedHours = hours % 12 || 12; // Convert 0 to 12 for 12 AM
+      const formattedMinutes = minutes.toString().padStart(2, "0");
 
-    return `${day} ${month} ${date.getUTCFullYear()}, ${formattedHours}:${formattedMinutes} ${ampm}`;
-  };
+      return `${day} ${month} ${year}, ${formattedHours}:${formattedMinutes} ${ampm}`;
+    };
 
   // Function to check if a date is in the past using UTC time
   const isDatePassed = (dateString: string): boolean => {
