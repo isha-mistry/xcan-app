@@ -82,13 +82,7 @@ const Homepage = () => {
           label: 'Generate Link',
           value: 1
         });
-        if (!isConnected) {
-          setShowConnectWalletGenerate(true);
-        } else if (!authenticated) {
-          setShowConnectWalletGenerate(true);
-        } else {
           setShowDaoSelectionFeature(true);
-        }
       },
     },
     {
@@ -136,13 +130,7 @@ const Homepage = () => {
           label: 'Schedule Now',
           value: 3
         });
-        if (!isConnected) {
-          setShowConnectWalletFeature(true);
-        } else if (!authenticated) {
-          setShowConnectWalletFeature(true);
-        } else {
           setShowDaoSelectionSchedule(true);
-        }
       },
     },
     {
