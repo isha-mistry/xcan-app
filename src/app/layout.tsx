@@ -51,6 +51,7 @@ export const metadata: Metadata = {
     description: "Discover. Learn. Engage.",
     url: "https://app.chora.club/",
     siteName: "Chora Club",
+    
     images: [
       {
         url: "https://gateway.lighthouse.storage/ipfs/QmZmWxpdhQZnag8HZtwZPLR5wtK2jjfgsTBMpNpmijtZ5x",
@@ -67,6 +68,11 @@ export const metadata: Metadata = {
     ],
     locale: "en_US",
     type: "website",
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'ChoraClub PWA'
   },
 };
 
