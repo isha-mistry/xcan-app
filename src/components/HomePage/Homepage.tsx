@@ -110,7 +110,7 @@ const Homepage = () => {
             setShowConnectWalletBookSession(true);
           } else {
             if (authenticated) {
-              await router.push(path + "sessions?active=availableDelegates");
+              await router.push("/sessions?active=availableDelegates");
             } else {
               setShowConnectWalletBookSession(true);
               console.log("not authenticated");
@@ -170,12 +170,12 @@ const Homepage = () => {
     if (isConnected && authenticated && ShowConnectWalletBookSession) {
       // Close the wallet modal and redirect
       setShowConnectWalletBookSession(false);
-      router.push(path + "sessions?active=availableDelegates");
+      router.push("/sessions?active=availableDelegates");
     }
   }, [isConnected, ShowConnectWalletBookSession, router, path, authenticated]);
 
   const handleJoinAsUser = () => {
-    router.push(path + "sessions?active=recordedSessions");
+    router.push("/sessions?active=recordedSessions");
   };
   const checkDelegateStatus = async (network: string) => {
     setShowError(false);
@@ -204,8 +204,7 @@ const Homepage = () => {
 
       delegateTxAddr = delegateTx;
       if (delegateTxAddr.toLowerCase() === address?.toLowerCase()) {
-        router.push(
-          path + `profile/${address}?active=sessions&session=schedule`
+        router.push(`/profile/${address}?active=sessions&session=schedule`
         );
       } else {
         setShowError(true);
@@ -258,7 +257,7 @@ const Homepage = () => {
     if (isConnected && showConnectWallet) {
       // Close the wallet modal and redirect
       setShowConnectWallet(false);
-      router.push(path + "sessions?active=recordedSessions");
+      router.push("/sessions?active=recordedSessions");
     }
   }, [isConnected, showConnectWallet, router, path]);
 
@@ -278,7 +277,7 @@ const Homepage = () => {
       setShowConnectWallet(true);
       setIsLoading(false);
     } else {
-      router.push(path + "sessions?active=recordedSessions");
+      router.push("/sessions?active=recordedSessions");
     }
   };
   const handleGetStartedDelegate = () => {
@@ -289,14 +288,7 @@ const Homepage = () => {
       label: 'Join As a Delegate',
       value: 2
     });
-    console.log(isConnected, "is connect?", authenticated, "authenicate");
-    if (!isConnected) {
-      setShowConnectWalletDelegate(true);
-    } else if (!authenticated) {
-      setShowConnectWalletDelegate(true);
-    } else {
       setShowDaoSelection(true);
-    }
   };
 
   return (
