@@ -3,12 +3,28 @@ import { IoClose } from "react-icons/io5";
 import Image from "next/image";
 import logo from "@/assets/images/daos/CCLogo2.png";
 import ConnectWalletWithENS from "../ConnectWallet/ConnectWalletWithENS";
+import { Wallet } from "lucide-react";
+import { usePrivy } from "@privy-io/react-auth";
 
 interface ConnectWalletHomePageProps {
   onClose: () => void;
 }
 
 function ConnectWalletHomePage({ onClose }: ConnectWalletHomePageProps) {
+  const { authenticated, login, user, connectWallet } = usePrivy();
+  const handleLogin = async () => {
+    if (!authenticated) {
+      try {
+        await login();
+      } catch (error) {}
+    } else {
+      if (!user?.google && !user?.farcaster) {
+        try {
+          await connectWallet();
+        } catch (error) {}
+      }
+    }
+  };
   return (
     <>
       <div className="fixed inset-0 flex items-center justify-center z-50  overflow-hidden p-4">
@@ -34,7 +50,17 @@ function ConnectWalletHomePage({ onClose }: ConnectWalletHomePageProps) {
               To continue, please connect your wallet.
             </p>
             <div className="flex items-center justify-center">
-              <ConnectWalletWithENS />
+              <button
+                onClick={handleLogin}
+                type="button"
+                className="flex items-center justify-center  bg-gradient-to-br from-blue-50 to-blue-100 text-blue-shade-200 px-4 py-3 rounded-full  shadow-lg hover:shadow-xl  transition-all duration-300  group relative overflow-hidden transform-none hover:scale-105 text-xs font-medium"
+              >
+                <Wallet
+                  size={16}
+                  className="mr-2 size-5  group-hover:rotate-6 transition-transform"
+                />
+                <span className="font-poppins mt-1 ">Connect Wallet</span>
+              </button>
             </div>
           </div>
         </div>

@@ -14,11 +14,14 @@ function TopNavbar() {
   const { status, walletAddress, isConnected } = useSidebar();
   const sessionLoading = status === "loading";
 
+  const isHomePage = pathname === "/";
+  const isLoginPage = pathname === "/login";
+
   return (
     <>
       <div className="flex justify-between items-center w-screen px-4">
         <div className="flex gap-2 items-center">
-          <Link href={"/"} target="_blank">
+          <Link href={isConnected? "/":""} target="_blank">
             <Image
               src={logo}
               alt={"image"}
@@ -29,7 +32,7 @@ function TopNavbar() {
           </Link>
           <Link
             className="text-black font-semibold text-[28px] font-poppins flex items-center mt-[4px]"
-            href={"/"}
+            href={isConnected? "/":""}
           >
             Chora{" "}
             <span className="ml-1 text-white flex items-center">Club</span>
@@ -41,9 +44,9 @@ function TopNavbar() {
             <>
               <div className="flex gap-4">
                 <Link
-                  href={"/explore-daos"}
+                  href={"/"}
                   className={`${styles.item} text-blue-shade-500 font-medium ${
-                    pathname.includes("/explore-daos")
+                    isHomePage
                       ? `text-white ${styles.activeitem}`
                       : ""
                   }`}
@@ -108,10 +111,10 @@ function TopNavbar() {
                   Profile
                 </Link>
               </div>
-              <ConnectWalletWithENS />
+              {<ConnectWalletWithENS />}
             </>
           ) : (
-            <ConnectWalletWithENS />
+            (isLoginPage && isConnected && authenticated) && <ConnectWalletWithENS />
           )}
         </div>
       </div>
