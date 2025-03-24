@@ -46,12 +46,13 @@ export const metadata: Metadata = {
   icons: {
     icon: ["/favicon.png"],
   },
+  manifest: '/manifest.json',
   openGraph: {
     title: "Chora Club",
     description: "Discover. Learn. Engage.",
     url: "https://app.chora.club/",
     siteName: "Chora Club",
-    
+
     images: [
       {
         url: "https://gateway.lighthouse.storage/ipfs/QmZmWxpdhQZnag8HZtwZPLR5wtK2jjfgsTBMpNpmijtZ5x",
