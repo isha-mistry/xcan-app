@@ -174,14 +174,16 @@ const UserScheduledHours: React.FC<{
         }
 
         // Get existing schedules for the selected date
-        const dateString = format(date, "yyyy-MM-dd");
+        const dateString = format(date, "YYYY-MM-DD");
         const existingTimeSlotsForDate = existingSchedules
           .filter((schedule) => {
             const scheduleDate = format(
               new Date(schedule.startTime),
-              "yyyy-MM-dd"
+              "YYYY-MM-DD"
             );
-            return scheduleDate === dateString;
+            // return scheduleDate === dateString;
+            const isMatchingDate = scheduleDate === dateString;
+         return isMatchingDate;
           })
           .map((schedule) => ({
             startTime: format(new Date(schedule.startTime), "HH:mm"),
@@ -313,7 +315,7 @@ const UserScheduledHours: React.FC<{
         }
 
         const conflictingSlot = existingSchedules.find((existingSlot) => {
-          const dateString = format(schedule.date, "yyyy-MM-dd");
+          const dateString = format(schedule.date, "YYYY-MM-DD");
           const newSlotStart = new Date(
             `${dateString}T${newTimeSlot.startTime}:00`
           );
@@ -602,7 +604,7 @@ const UserScheduledHours: React.FC<{
       isDateSelected,
     ]
   );
-
+{console.log(selectedDates, "selected dates in user schedule")}
   const memoizedTimeSlotSection = useMemo(
     () => (
       <TimeSlotSection
