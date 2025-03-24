@@ -161,5 +161,53 @@
         "gov": "https://mantle.com/mantle"
       }
     }
+  },
+  "letsgrowdao": {
+    "introduction": "Let's Grow DAO is a leading Layer 2 (L2) scaling solution for Ethereum, designed to increase the network's transaction speed and reduce costs while maintaining Ethereum's robust security. Founded in 2019 by Jinglan Wang, Karl Floersch, and Ben Jones, Optimism launched its mainnet in 2021, marking a significant milestone in Ethereum scalability.",
+    "display_text":"Let's Grow DAO",
+    "mission_and_vision": {
+      "mission": "Scale Ethereum and make it accessible to all users by reducing transaction costs and increasing throughput.",
+      "vision": [
+        "Scaling Ethereum to global adoption",
+        "Fostering a more collaborative and innovative ecosystem",
+        "Promoting public goods funding and sustainable growth"
+      ]
+    },
+    "technology": {
+      "description": "Let's Grow DAO utilizes Optimistic Rollups, a Layer 2 scaling solution that bundles multiple transactions off-chain and then posts the bundled data to the Ethereum mainnet. This approach significantly reduces gas fees and increases transaction speed while inheriting Ethereum's security.",
+      "features": [
+        "Full EVM equivalence, ensuring compatibility with existing Ethereum smart contracts",
+        "The OP Stack, an open-source development framework for creating optimistic rollups",
+        "Bedrock upgrade, launched in June 2023, which improved efficiency and reduced costs"
+      ]
+    },
+    "governance_and_dao_structure": {
+      "description": "Let's Grow DAO operates as a Decentralized Autonomous Organization (DAO) known as the Optimism Collective. The governance structure consists of two houses:",
+      "houses": [
+        {
+          "name": "Token House",
+          "details": "Governed by OP token holders, focusing on technical decisions and protocol upgrades."
+        },
+        {
+          "name": "Citizens' House",
+          "details": "Comprised of 'soulbound' non-transferrable NFTs, addressing public goods funding and long-term value alignment. This bicameral structure aims to balance short-term incentives with long-term sustainability."
+        }
+      ]
+    },
+    "community_and_resources": {
+      "website": "https://www.optimism.io/",
+      "governance": "https://app.optimism.io/governance",
+      "forum": "https://gov.optimism.io/",
+      "bridge": "https://app.optimism.io/bridge",
+      "docs": "https://community.optimism.io/",
+      "mirror": "https://optimism.mirror.xyz/",
+      "github": "https://github.com/ethereum-optimism",
+      "discord": "https://discord.gg/optimism",
+      "block_explorer": "https://optimistic.etherscan.io/",
+      "twitter": {
+        "optimism": "https://twitter.com/Optimism",
+        "gov": "https://twitter.com/OptimismGov"
+      }
+    }
   }
 }
