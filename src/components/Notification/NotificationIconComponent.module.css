@@ -12,6 +12,10 @@
 
 .pulseBadge {
   animation: pulse 1s infinite;
-  top: 0;
-  right: 0;
+  top: -7px;
+  right: -7px;
+  width: 0;
+  height: 0;
+  min-width: 0;
+  min-height: 12px;
 }
