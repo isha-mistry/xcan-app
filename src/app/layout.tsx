@@ -43,10 +43,16 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://app.chora.club/"),
   title: "Chora Club",
   description: "Discover. Learn. Engage.",
-  icons: {
-    icon: ["/favicon.png"],
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'ChoraClub PWA'
   },
   manifest: '/manifest.json',
+  icons: {
+    icon: ["/favicon.png"],
+    apple: [{ url: "/favicon.png" }],
+  },
   openGraph: {
     title: "Chora Club",
     description: "Discover. Learn. Engage.",
@@ -70,11 +76,7 @@ export const metadata: Metadata = {
     locale: "en_US",
     type: "website",
   },
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: 'default',
-    title: 'ChoraClub PWA'
-  },
+
 };
 
 export default function RootLayout({
