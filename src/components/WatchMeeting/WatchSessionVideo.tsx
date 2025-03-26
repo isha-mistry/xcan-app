@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import VideoJs from "../ComponentUtils/VideoJs";
 import videojs from "video.js";
 import { v4 as uuidv4 } from "uuid";
@@ -56,27 +56,51 @@ function WatchSessionVideo({
   const handlePlayerReady = (player: any) => {
     playerRef.current = player;
 
-    // You can handle player events here, for example:
-    player.on("waiting", () => {
-      videojs.log("player is waiting");
-    });
-
-    player.on("dispose", () => {
-      videojs.log("player will dispose");
-    });
-
     let totalWatchTime = 0;
     let lastRecordedTime = 0;
     let hasCalledApi = false;
     let isPlaying = false;
+    let startTime: number | null = null;
+    let stopTime: number | null = null;
+
+    let startRealTime: number | null = null;
+    let stopRealTime: number | null = null;
 
     player.on("play", function () {
       isPlaying = true;
       lastRecordedTime = player.currentTime();
+
+      startRealTime = Date.now();
+
+      if (startTime === null) {
+        startTime = player.currentTime();
+        console.log(
+          `Video started at: ${startTime} (Clock time: ${startRealTime / 1000})`
+        );
+      } else {
+        startTime = player.currentTime();
+        console.log(
+          `Video resumed at: ${startTime} (Clock time: ${startRealTime / 1000})`
+        );
+      }
     });
 
     player.on("pause", function () {
       isPlaying = false;
+      stopTime = player.currentTime();
+      stopRealTime = Date.now();
+      console.log(
+        `Video paused at: ${stopTime} (Clock time: ${stopRealTime / 1000})`
+      );
+
+      // Calculate video watch duration
+      let diffTime = (stopTime ?? 0) - (startTime ?? 0);
+      console.log(`Video watched for: ${diffTime} seconds`);
+
+      // Calculate real-world duration
+      let realTimeDiff =
+        ((stopRealTime ?? Date.now()) - (startRealTime ?? Date.now())) / 1000;
+      console.log(`Real-world time difference: ${realTimeDiff} seconds`);
     });
 
     player.on("timeupdate", function () {
@@ -101,6 +125,21 @@ function WatchSessionVideo({
         }
       }
     });
+    //   player.on("seeking", function () {
+    //     const newTime = player.currentTime();
+    //     const seekDifference = Math.abs(newTime - lastRecordedTime);
+
+    //     if (seekDifference > 2) { // Ignore very small jumps
+    //       skippedTime += seekDifference;
+    //       // console.log(`User skipped: ${seekDifference} seconds`);
+    //       // console.log(`Total skipped time: ${skippedTime} seconds`);
+    //     }
+
+    //     lastRecordedTime = newTime; // Update last recorded time
+    //   });
+    //   player.on("seeked", function () {
+    //     lastRecordedTime = player.currentTime(); // Update last known position
+    //   });
   };
   async function countAsView(meetingId: string) {
     try {
