@@ -66,15 +66,6 @@ export async function GET(req: NextRequest) {
     let result;
 
     result=await client.query(COMBINED_VOTE_QUERY,{}).toPromise();
-    // if (dao === "optimism") {
-    //   result = await op_client
-    //     .query(COMBINED_VOTE_QUERY,{})
-    //     .toPromise();
-    // } else {
-    //   result = await arb_client
-    //     .query(COMBINED_VOTE_QUERY, {})
-    //     .toPromise();
-    // }
 
     if (result.error) {
       console.error("GraphQL query error:", result.error);

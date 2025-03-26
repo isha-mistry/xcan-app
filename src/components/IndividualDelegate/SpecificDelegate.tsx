@@ -44,6 +44,7 @@ import {
   DELEGATE_CHANGED_QUERY,
   GET_LATEST_DELEGATE_VOTES_CHANGED,
   op_client,
+  letsgrow_client,
 } from "@/config/staticDataUtils";
 // import { getEnsNameOfUser } from "../ConnectWallet/ENSResolver";
 import DelegateTileModal from "../ComponentUtils/DelegateTileModal";
@@ -147,7 +148,10 @@ function SpecificDelegate({ props }: { props: Type }) {
   const [isFromDatabase, setFromDatabase] = useState(false);
   const [errorOccurred, setErrorOccurred] = useState(false);
   const [avatar, setAvatar] = useState("");
-
+  const client = createClient({
+    url: daoConfigs[props.daoDelegates]?.subgraphUrl || "",
+    exchanges: [cacheExchange, fetchExchange],
+  });
   const pushToGTM = (eventData: GTMEvent) => {
     if (typeof window !== "undefined" && window.dataLayer) {
       window.dataLayer.push(eventData);
@@ -394,37 +398,13 @@ function SpecificDelegate({ props }: { props: Type }) {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const apiKey = process.env.NEXT_PUBLIC_TALLY_API_KEY;
-        if (!apiKey) {
-          throw new Error("API key is missing");
-        }
-        fetch("https://api.tally.xyz/query", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Api-Key": apiKey,
-          },
-          body: JSON.stringify({
-            query: totalCount,
-            variables: variables,
-          }),
-        })
-          .then((result) => result.json())
-          .then((finalCounting) => {
-            setVotesCount(finalCounting.data.delegate.votesCount);
-            setDelegatorsCount(finalCounting.data.delegate.delegatorsCount);
-          })
-          .catch((error) => {
-            console.error("Error:", error);
-          });
-
-        const data = await op_client
+        const data = await client
           .query(GET_LATEST_DELEGATE_VOTES_CHANGED, {
             delegate: props.individualDelegate.toString(),
           })
           .toPromise();
 
-        setVotingPower(data.data.delegateVotesChangeds[0].newBalance);
+        setVotingPower(data.data.delegates[0].latestBalance ? data.data.delegates[0].latestBalance : 0);
       } catch (error) {
         console.error("Error fetching data", error);
       }
@@ -1081,124 +1061,124 @@ function SpecificDelegate({ props }: { props: Type }) {
     }
   };
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        // Fetch data from your backend API to check if the address exists
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     try {
+  //       // Fetch data from your backend API to check if the address exists
 
-        // const dbResponse = await axios.get(`/api/profile/${address}`);
+  //       // const dbResponse = await axios.get(`/api/profile/${address}`);
 
-        const token = await getAccessToken();
-        const myHeaders: HeadersInit = {
-          "Content-Type": "application/json",
-          ...(walletAddress && {
-            "x-wallet-address": walletAddress,
-            Authorization: `Bearer ${token}`,
-          }),
-        };
+  //       const token = await getAccessToken();
+  //       const myHeaders: HeadersInit = {
+  //         "Content-Type": "application/json",
+  //         ...(walletAddress && {
+  //           "x-wallet-address": walletAddress,
+  //           Authorization: `Bearer ${token}`,
+  //         }),
+  //       };
 
-        // const raw = JSON.stringify({
-        //   address: props.individualDelegate,
-        //   // daoName: props.daoDelegates,
-        // });
+  //       // const raw = JSON.stringify({
+  //       //   address: props.individualDelegate,
+  //       //   // daoName: props.daoDelegates,
+  //       // });
 
-        const requestOptions: any = {
-          method: "GET",
-          headers: myHeaders,
-          // body: raw,
-          redirect: "follow",
-        };
-        const res = await fetchApi(
-          `/profile/${props.individualDelegate}`,
-          requestOptions
-        );
+  //       const requestOptions: any = {
+  //         method: "GET",
+  //         headers: myHeaders,
+  //         // body: raw,
+  //         redirect: "follow",
+  //       };
+  //       const res = await fetchApi(
+  //         `/profile/${props.individualDelegate}`,
+  //         requestOptions
+  //       );
 
-        const dbResponse = await res.json();
+  //       const dbResponse = await res.json();
 
-        if (
-          dbResponse &&
-          Array.isArray(dbResponse.data) &&
-          dbResponse.data.length > 0
-        ) {
-          // Iterate over each item in the response data array
-          for (const item of dbResponse.data) {
-            // Check if address and daoName match
+  //       if (
+  //         dbResponse &&
+  //         Array.isArray(dbResponse.data) &&
+  //         dbResponse.data.length > 0
+  //       ) {
+  //         // Iterate over each item in the response data array
+  //         for (const item of dbResponse.data) {
+  //           // Check if address and daoName match
 
-            // if (
-            //   item.daoName === dao &&
-            //   item.address === props.individualDelegate
-            // ) {
-            // Data found in the database, set the state accordingly
-            // setResponseFromDB(true);
+  //           // if (
+  //           //   item.daoName === dao &&
+  //           //   item.address === props.individualDelegate
+  //           // ) {
+  //           // Data found in the database, set the state accordingly
+  //           // setResponseFromDB(true);
 
-            if (item.image) {
-              setFromDatabase(true);
-              setDisplayImage(item.image);
-            }
+  //           if (item.image) {
+  //             setFromDatabase(true);
+  //             setDisplayImage(item.image);
+  //           }
 
-            setDescription(item.description);
-            setAttestationStatistics(item?.meetingRecords ?? null);
-            if (item.isEmailVisible) {
-              setIsEmailVisible(true);
-              setEmailId(item.emailId);
-            }
-            const matchingNetwork = item.networks?.find(
-              (network: any) => network.dao_name === props.daoDelegates
-            );
+  //           setDescription(item.description);
+  //           setAttestationStatistics(item?.meetingRecords ?? null);
+  //           if (item.isEmailVisible) {
+  //             setIsEmailVisible(true);
+  //             setEmailId(item.emailId);
+  //           }
+  //           const matchingNetwork = item.networks?.find(
+  //             (network: any) => network.dao_name === props.daoDelegates
+  //           );
 
-            // If a matching network is found, set the discourse ID
-            if (matchingNetwork) {
-              setDescription(matchingNetwork.description);
-            } else {
-              // Handle the case where no matching network is found
-              console.log(
-                "No matching network found for the specified dao_name"
-              );
-            }
-            setDisplayName(item.displayName);
+  //           // If a matching network is found, set the discourse ID
+  //           if (matchingNetwork) {
+  //             setDescription(matchingNetwork.description);
+  //           } else {
+  //             // Handle the case where no matching network is found
+  //             console.log(
+  //               "No matching network found for the specified dao_name"
+  //             );
+  //           }
+  //           setDisplayName(item.displayName);
 
-            if (!authenticated) {
-              setIsFollowing(false);
-              isNotification(false);
-              await fetchDelegateData();
-            } else {
-              // await updateFollowerState();
-              // await setFollowerscount();
-              await fetchDelegateData();
-              console.log("Followers count!", followers);
-              setFollowerCountLoading(false);
-              setIsFollowStatusLoading(false);
-            }
-            setSocials({
-              twitter: item.socialHandles.twitter,
-              discord: item.socialHandles.discord,
-              discourse: item.socialHandles.discourse,
-              github: item.socialHandles.github,
-            });
-            // Exit the loop since we found a match
-            //   break;
-            // }
-          }
-        } else {
-          console.log(
-            "Data not found in the database, fetching from third-party API"
-          );
-          const { avatar: fetchedAvatar } = await fetchEnsNameAndAvatar(
-            props.individualDelegate
-          );
-          setDisplayImage(fetchedAvatar ? fetchedAvatar : "");
-          setFollowerCountLoading(false);
-          setIsFollowStatusLoading(false);
-          // Data not found in the database, fetch data from the third-party API
-          // }
-        }
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      }
-    };
+  //           if (!authenticated) {
+  //             setIsFollowing(false);
+  //             isNotification(false);
+  //             await fetchDelegateData();
+  //           } else {
+  //             // await updateFollowerState();
+  //             // await setFollowerscount();
+  //             await fetchDelegateData();
+  //             console.log("Followers count!", followers);
+  //             setFollowerCountLoading(false);
+  //             setIsFollowStatusLoading(false);
+  //           }
+  //           setSocials({
+  //             twitter: item.socialHandles.twitter,
+  //             discord: item.socialHandles.discord,
+  //             discourse: item.socialHandles.discourse,
+  //             github: item.socialHandles.github,
+  //           });
+  //           // Exit the loop since we found a match
+  //           //   break;
+  //           // }
+  //         }
+  //       } else {
+  //         console.log(
+  //           "Data not found in the database, fetching from third-party API"
+  //         );
+  //         const { avatar: fetchedAvatar } = await fetchEnsNameAndAvatar(
+  //           props.individualDelegate
+  //         );
+  //         setDisplayImage(fetchedAvatar ? fetchedAvatar : "");
+  //         setFollowerCountLoading(false);
+  //         setIsFollowStatusLoading(false);
+  //         // Data not found in the database, fetch data from the third-party API
+  //         // }
+  //       }
+  //     } catch (error) {
+  //       console.error("Error fetching data:", error);
+  //     }
+  //   };
 
-    fetchData();
-  }, [props]);
+  //   fetchData();
+  // }, [props]);
 
   useEffect(() => {
     const fetchEnsName = async () => {

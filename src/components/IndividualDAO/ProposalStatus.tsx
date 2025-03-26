@@ -65,7 +65,7 @@ console.log("--------proposalStatus--------",proposal,"-----",canceledProposals,
         } else {
           // Other DAO networks logic
           // First check if proposal is cancelled
-          console.log("proposal",proposal)
+          console.log("proposal",proposal,currentTime,proposal.endTime)
           if(proposal.proposalId==="114318499951173425640219752344574142419220609526557632733105006940618608635406" || proposal.proposalId==="38506287861710446593663598830868940900144818754960277981092485594195671514829"){
             calculatedStatus ="SUCCEEDED"
           }else if (
@@ -74,8 +74,14 @@ console.log("--------proposalStatus--------",proposal,"-----",canceledProposals,
           ) {
             calculatedStatus  = "CANCELLED";
           } else if (proposal && currentTime> proposal.endTime) {
-            // Otherwise check support for SUCCEEDED or DEFEATED
-            calculatedStatus  = proposal.support1Weight! > proposal.support0Weight! ? "SUCCEEDED" : "DEFEATED";
+            if (proposal.quorumReached !== undefined) {
+              calculatedStatus =
+                proposal.quorumReached && proposal.support1Weight! > proposal.support0Weight!
+                  ? "SUCCEEDED"
+                  : "DEFEATED";
+            } else {
+              calculatedStatus = proposal.support1Weight! > proposal.support0Weight! ? "SUCCEEDED" : "DEFEATED";
+            }
             
           } else {
             // If current time is less than endTime, status is PENDING
@@ -83,7 +89,7 @@ console.log("--------proposalStatus--------",proposal,"-----",canceledProposals,
           }
         }
 
-        setStatus(calculatedStatus );
+        setStatus(calculatedStatus);
         setLoading(false);
       } catch (error) {
         console.error("Error calculating proposal status:", error);

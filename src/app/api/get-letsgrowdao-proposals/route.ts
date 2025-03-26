@@ -3,55 +3,43 @@ import { Client, cacheExchange, fetchExchange, gql } from 'urql';
 export const revalidate = 0;
 
 const client = new Client({
-  url: 'https://api.studio.thegraph.com/query/68573/arb_proxy/version/latest',
+  url: 'https://api.studio.thegraph.com/query/68573/lets_grow_dao_proposal/version/latest',
   exchanges: [fetchExchange],
 });
 
 const GET_PROPOSALS = gql`
 query GetAllProposals {
-  proposalCreateds(orderBy: blockTimestamp, orderDirection: desc, first: 1000) {
-    blockTimestamp
-    description
+   submitProposals(orderDirection: desc, orderBy: proposal) {
     blockNumber
-    proposalId
-    proposer
-    transactionHash
-    startBlock
-    endBlock
-    contractSource {
-      contractAddress
-      governors
-    }
-  }
-  proposalExtendeds(first: 1000) {
-    proposalId
-    extendedDeadline
-    id
     blockTimestamp
+    details
+    expiration
+    id
+    proposal
+    proposalData
+    proposalDataHash
+    selfSponsor
+    timestamp
+    transactionHash
+    votingPeriod
   }
 }`;
 
 const GET_PROPOSAL = gql`
 query GetProposal($proposalId: BigInt!) {
-  proposalCreateds(where: { proposalId: $proposalId }) {
-    blockTimestamp
+ submitProposals(orderDirection: desc, orderBy: proposal, where: {proposal: $proposalId}) {
     blockNumber
-    description
-    proposalId
-    proposer
-    transactionHash
-    startBlock
-    endBlock
-    contractSource {
-      contractAddress
-      governors
-    }
-  }
-  proposalExtendeds(where: { proposalId: $proposalId }) {
-    proposalId
-    extendedDeadline
-    id
     blockTimestamp
+    details
+    expiration
+    id
+    proposal
+    proposalData
+    proposalDataHash
+    selfSponsor
+    timestamp
+    transactionHash
+    votingPeriod
   }
 }`;
 
@@ -81,20 +69,20 @@ interface QueryResult {
   proposalExtendeds: ProposalExtended[];
 }
 
-function mergeProposalData(data: QueryResult) {
-  const { proposalCreateds, proposalExtendeds } = data;
+// function mergeProposalData(data: QueryResult) {
+//   const { proposalCreateds, proposalExtendeds } = data;
 
-  return proposalCreateds.map(proposal => {
-    const extension = proposalExtendeds.find(ext => ext.proposalId === proposal.proposalId);
-    return {
-      ...proposal,
-      extension: extension ? {
-        extendedDeadline: extension.extendedDeadline,
-        extensionTimestamp: extension.blockTimestamp
-      } : null
-    };
-  });
-}
+//   return proposalCreateds.map(proposal => {
+//     const extension = proposalExtendeds.find(ext => ext.proposalId === proposal.proposalId);
+//     return {
+//       ...proposal,
+//       extension: extension ? {
+//         extendedDeadline: extension.extendedDeadline,
+//         extensionTimestamp: extension.blockTimestamp
+//       } : null
+//     };
+//   });
+// }
 
 export async function GET(req: NextRequest) {
   try {
@@ -115,11 +103,21 @@ export async function GET(req: NextRequest) {
       console.error('GraphQL query error:', result.error);
       return NextResponse.json({ error: 'An error occurred while fetching data' }, { status: 500 });
     }
-
+    // Extract the data we nee
+    const dataToPass = result.data.submitProposals.map((proposal: any) => ({
+        blockTimestamp: proposal.blockTimestamp, 
+        description: proposal.details || "No description", 
+        blockNumber: proposal.blockNumber, 
+        proposalId: proposal.proposal, 
+        proposer: proposal.selfSponsor, 
+        transactionHash: proposal.transactionHash, 
+        startTime:proposal.blockTimestamp,
+        endTime: parseInt(proposal.blockTimestamp) + (parseInt(proposal.votingPeriod) )
+    }));
+  
     // Merge the proposal and extension data
-    const mergedData = mergeProposalData(result.data);
-    console.log(mergedData,"mergedData");
-    return NextResponse.json({ data: mergedData });
+    // const mergedData = mergeProposalData(result.data);
+    return NextResponse.json({ data: dataToPass });
   } catch (error) {
     console.error('Unexpected error:', error);
     return NextResponse.json({ error: 'An unexpected error occurred' }, { status: 500 });

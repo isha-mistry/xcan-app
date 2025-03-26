@@ -881,16 +881,21 @@ function ProposalMain({ props }: { props: Props }) {
           console.log("arbitrum result", result);
           const deadlineBlock = result.data[0].extension?.extendedDeadline || result.data[0].endBlock;
           console.log("deadlineBlock", deadlineBlock)
-          const proposalStarttimestamp = await calculateEthBlockMiningTime(Number(result.data[0].startBlock), props.daoDelegates);
-          const proposalEndtimestamp = await calculateEthBlockMiningTime(Number(deadlineBlock), props.daoDelegates);
+          const proposalStarttimestamp = result.data[0]?.startBlock 
+          ? await calculateEthBlockMiningTime(Number(result.data[0].startBlock), props.daoDelegates) 
+          : undefined;
+
+        const proposalEndtimestamp = deadlineBlock 
+          ? await calculateEthBlockMiningTime(Number(deadlineBlock), props.daoDelegates) 
+          : undefined;
 
           console.log("proposal timestamps", proposalStarttimestamp, proposalEndtimestamp);
 
           const currentDate = Date.now() / 1000; // Convert to seconds
           console.log("proposalStarttimestamp", proposalStarttimestamp, currentDate, proposalEndtimestamp);
           // Extract epoch times
-          const proposalStartTime = proposalStarttimestamp?.TimeInEpoch;
-          const proposalEndTime = proposalEndtimestamp?.TimeInEpoch;
+          const proposalStartTime = proposalStarttimestamp?.TimeInEpoch || 0;
+          const proposalEndTime = proposalEndtimestamp?.TimeInEpoch || 0;
 
           let state = "Closed";
           let message = "";
@@ -939,11 +944,11 @@ function ProposalMain({ props }: { props: Props }) {
             },
             votingStart: {
               block: result.data[0].startBlock,
-              time: proposalStarttimestamp.TimeInEpoch
+              time: proposalStarttimestamp?.TimeInEpoch ?? undefined
             },
             votingEnd: {
               block: deadlineBlock,
-              time: proposalEndtimestamp.TimeInEpoch,
+              time: proposalEndtimestamp?.TimeInEpoch ?? undefined,
             },
             votingExtended: {
               block: result.data[0].extension?.extendedDeadline,
@@ -1087,6 +1092,7 @@ function ProposalMain({ props }: { props: Props }) {
     }
   };
   const processProposalDailyVoteSummaries = (data: any[]) => {
+    console.log("data", data)
     // Transform the data directly from the new query
     const processedData = data.map((summary) => ({
       name: summary.dayString,
@@ -1096,7 +1102,7 @@ function ProposalMain({ props }: { props: Props }) {
       totalVotes: parseFloat(summary.totalVotes) / 1e18,
       date: new Date(summary.dayString), // Assuming 'day' is a valid date string
     }));
-
+console.log("processedData", processedData)
     // Optional: Sort the data by date
     const sortedData = processedData.sort(
       (a, b) => a.date.getTime() - b.date.getTime()
@@ -1282,8 +1288,12 @@ function ProposalMain({ props }: { props: Props }) {
         return "SUCCEEDED";
       }
       const currentTimeEpoch = Date.now() / 1000;
+      const effectiveQuorum = dailyVotes[0]?.quorum ?? quorum;
+      console.log("dailyVotes", dailyVotes, quorum,effectiveQuorum);
+      console.log("currentTimeEpoch", currentTimeEpoch, data.endTime,quorum, support1Weight, support0Weight,support2Weight);
+      console.log("conditioncheck",support1Weight! > support0Weight!, effectiveQuorum < (support1Weight + support2Weight));
       return currentTimeEpoch > data.endTime!
-        ? (quorum < (support1Weight + support2Weight) && support1Weight! > support0Weight!)
+        ? (effectiveQuorum < (support1Weight + support2Weight) && support1Weight! > support0Weight!)
           ? "SUCCEEDED"
           : "DEFEATED"
         : "PENDING";
@@ -1671,7 +1681,7 @@ function ProposalMain({ props }: { props: Props }) {
             >
               <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-black-shade-900"></div>
             </div>
-          ) : voterList.length === 0 && chartData.length === 0 ? (
+          ) : voterList?.length === 0 && chartData.length === 0 ? (
             <div
               className="w-full 2md:w-[60%] h-[500px] flex items-center justify-center bg-gray-50 rounded-2xl"
               style={{ boxShadow: "0px 4px 26.7px 0px rgba(0, 0, 0, 0.10)" }}

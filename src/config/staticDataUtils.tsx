@@ -9,6 +9,10 @@ export const op_client = createClient({
   url: "https://api.studio.thegraph.com/query/68573/op/v0.0.1",
   exchanges: [cacheExchange, fetchExchange],
 });
+export const letsgrow_client = createClient({
+  url: "https://api.studio.thegraph.com/query/68573/lets_grow_dao_votingtoken/version/latest",
+  exchanges: [cacheExchange, fetchExchange],
+});
 
 export const nft_client = createClient({
   url: "https://api.studio.thegraph.com/query/71916/choraxzora/version/latest",
@@ -30,13 +34,10 @@ export const DELEGATE_CHANGED_QUERY = gql`
 
 export const GET_LATEST_DELEGATE_VOTES_CHANGED = gql`
   query MyQuery($delegate: String!) {
-    delegateVotesChangeds(
-      first: 1
-      orderBy: blockTimestamp
-      orderDirection: desc
-      where: { delegate: $delegate }
+    delegates(
+      where:{ id: $delegate }
     ) {
-      newBalance
+      latestBalance
     }
   }
 `;

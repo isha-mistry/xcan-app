@@ -134,7 +134,7 @@ export const daoConfigs: { [key: string]: DAOConfig } = {
     logo: "/images/letsGrow.jpg", // Move images to public folder for better maintainability
     chainId: 10,
     chainName: "OP Mainnet",
-    chainAddress: "0x4200000000000000000000000000000000000042",
+    chainAddress: "0x6d95ad838d00427838d6e6fac043271a0ef2e484",
     viemchain: optimism,
     lighthoueseIcon:
       "https://gateway.lighthouse.storage/ipfs/QmXaKNwUxvd4Ksc9R6hd36eBo97e7e7YPDCVuvHwqG4zgQ",
@@ -144,17 +144,16 @@ export const daoConfigs: { [key: string]: DAOConfig } = {
     governanceUrl: "https://vote.optimism.io",
     tokenSymbol: "OP",
     dataSource:{},
-    subgraphUrl: "https://api.studio.thegraph.com/query/68573/op/v0.0.9",
+    subgraphUrl: "https://api.studio.thegraph.com/query/68573/lets_grow_dao_votingtoken/version/latest",
+    proposalAPIendpoint:{ProposalEndpoint:"/api/get-letsgrowdao-proposals",ProposalQueueEndpoint:"/api/get-arbitrum-queue-info"},
     alchemyAttestationUrl: process.env.NEXT_PUBLIC_OP_ATTESTATION_URL || "",
     offchainAttestationUrl: "https://optimism.easscan.org",
-    proposalUrl:
-      process.env.NEXT_PUBLIC_OPTIMISM_PROPOSALS_GRAPH_URL ||
-      "https://api.studio.thegraph.com/query/68573/v6_proxy/version/latest",
+    proposalUrl:"https://api.studio.thegraph.com/query/68573/lets_grow_dao_proposal/version/latest",
     proposalAbi: op_proposals_abi as Abi,
     attestationUrl: "https://optimism.easscan.org/offchain/attestation/view",
     eascontracAddress: "0x4200000000000000000000000000000000000021",
     delegateChangedsUrl:
-      "https://api.studio.thegraph.com/query/68573/op/v0.0.1",
+      "https://api.studio.thegraph.com/query/68573/lets_grow_dao_votingtoken/version/latest",
     descriptionQuery: gql`
       query OptimismDescription($proposalId: String!) {
         proposalCreated1S(where: { proposalId: $proposalId }) {

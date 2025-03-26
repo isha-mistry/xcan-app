@@ -469,7 +469,7 @@ function DelegatesList({ props }: { props: string }) {
 
       // console.log('Getting signer...');
       const signer = await provider.getSigner();
-
+console.log("signer",signer,chainAddress);
       // console.log('Creating contract instance...');
       const contract = new Contract(chainAddress, dao_abi.abi, signer);
 

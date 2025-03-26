@@ -120,8 +120,6 @@
 //   }
 // }
 
-
-
 import { cacheExchange, Client, createClient, fetchExchange, gql } from "urql";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
@@ -129,16 +127,19 @@ import { daoConfigs } from "@/config/daos";
 
 export const runtime = "nodejs";
 
-const client = new Client({
-  url: process.env.NEXT_PUBLIC_OPTIMISM_PROPOSALS_GRAPH_URL|| "https://api.studio.thegraph.com/query/95484/optimismproposals/version/latest",
-  exchanges: [fetchExchange],
-});
+// Define a type for the DAO-specific query configuration
+type DAOQueryConfig = {
+  query: string;
+  variables?: Record<string, any>;
+};
 
-const arb_client = new Client({
-  url:process.env.NEXT_PUBLIC_ARBITRUM_PROPOSALS_GRAPH_URL|| "https://api.studio.thegraph.com/query/95484/arbitrumproposals/version/latest",
-  exchanges: [fetchExchange],
-});
+// Extend the daoConfigs type to include optional custom query
+interface ExtendedDAOConfig {
+  proposalUrl?: string;
+  customQuery?: DAOQueryConfig;
+}
 
+// Default combined vote query
 const COMBINED_VOTE_QUERY = gql`
   query CombinedVoteQuery(
     $proposalId: String!
@@ -169,18 +170,40 @@ const COMBINED_VOTE_QUERY = gql`
       transactionHash
     }
   }
-`;export async function GET(req: NextRequest) {
-  const { searchParams } = new URL(req.url);
+`;
 
+// Letsgrow DAO specific query
+const LETSGROW_VOTE_QUERY = gql`
+  query MyQuery($proposal: String!) {
+    submitVotes(where: {proposal: $proposal}) {
+      transactionHash
+      proposal
+      member
+      id
+      blockTimestamp
+      blockNumber
+      balance
+      approved
+    }
+  }
+`;
+
+export async function GET(req: NextRequest) {
+  const { searchParams } = new URL(req.url);
+  
   const proposalId = searchParams.get("proposalId");
   const blockTimestamp = searchParams.get("blockTimestamp") || "0";
   const first = parseInt(searchParams.get("first") || "1000", 10);
   const dao = searchParams.get("dao");
 
-  const currentDAO=dao?daoConfigs[dao]:"";
+  // Type assertion to use extended config
+  const currentDAO = dao ? (daoConfigs[dao] as ExtendedDAOConfig) : null;
 
+  // Determine which client and query to use
+  const clientUrl = currentDAO?.proposalUrl || "";
+  
   const client = createClient({
-    url: currentDAO?currentDAO.proposalUrl:"",
+    url: clientUrl,
     exchanges: [fetchExchange],
   });
 
@@ -198,23 +221,52 @@ const COMBINED_VOTE_QUERY = gql`
 
   try {
     let result;
-
     
-
-    // if (dao === "optimism") {
+    // Check if it's Letsgrow DAO with a custom query
+    if (dao === "letsgrowdao") {
+      const voterlist = await client.query(LETSGROW_VOTE_QUERY, { 
+        proposal: proposalId 
+      }).toPromise();
+      const formattedVoterList = voterlist.data.submitVotes.map((vote:any) => ({
+        support: vote.approved ? 1 : 0, // Assuming 'approved' represents support (true/false)
+        transactionHash: vote.transactionHash,
+        voter: vote.member, // Using 'voter' instead of 'member'
+        votingPower: vote.balance, // Assuming 'balance' represents voting power
+      }));
       
-    // result=await client.query(COMBINED_VOTE_QUERY,{proposalId,blockTimestamp,first}).toPromise();  
-    //   result = await client
-    //     .query(COMBINED_VOTE_QUERY, { proposalId, blockTimestamp, first })
-    //     .toPromise();
-    // } else {
-    //   result = await arb_client
-    //     .query(COMBINED_VOTE_QUERY, { proposalId, blockTimestamp, first })
-    //     .toPromise();
-    // }
 
-    result=await client.query(COMBINED_VOTE_QUERY,{proposalId,blockTimestamp,first}).toPromise();  
+      const weightFor = formattedVoterList
+      .filter((vote:any) => vote.support === 1)
+      .reduce((sum:any, vote:any) => sum + Number(vote.votingPower) / 10 ** 18, 0);
+    
+    const weightAgainst = formattedVoterList
+      .filter((vote:any) => vote.support === 0)
+      .reduce((sum:any, vote:any) => sum + Number(vote.votingPower) / 10 ** 18, 0);
+    
+  const totalVotes = formattedVoterList.length;
 
+  result = {
+    voterDetails: formattedVoterList,
+    proposalDailyVoteSummaries: [
+      {
+        weightFor: weightFor.toString()*10**18, // Convert BigInt to string for JSON compatibility
+        weightAgainst: weightAgainst.toString()*10**18,
+        weightAbstain: (0 * 10**18).toString(),
+        totalVotes,
+        quorum : 10,
+      },
+    ],
+  };      console.log(result,"result");
+    } else {
+      // Use default combined vote query for other DAOs
+      result = await client.query(COMBINED_VOTE_QUERY, {
+        proposalId,
+        blockTimestamp,
+        first
+      }).toPromise();
+      result = result.data;
+      console.log(result,"result");
+    }
     if (result.error) {
       console.error("GraphQL query error:", result.error);
       return NextResponse.json(
@@ -227,9 +279,10 @@ const COMBINED_VOTE_QUERY = gql`
         }
       );
     }
+
     return NextResponse.json(
       {
-        ...result.data,
+        ...result,
         timestamp: new Date().toISOString(),
       },
       {

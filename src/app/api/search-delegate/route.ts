@@ -10,12 +10,25 @@ const arb_client = new Client({
     url: 'https://api.studio.thegraph.com/query/68573/arb_token/version/latest',
     exchanges: [cacheExchange, fetchExchange],
 });
+const letsgrow_client = new Client({
+    url: "https://api.studio.thegraph.com/query/68573/lets_grow_dao_votingtoken/version/latest",
+    exchanges: [cacheExchange, fetchExchange],
+});
+  
 const DELEGATE_QUERY = gql`
 query MyQuery($id: String!) {
   delegates(where:{id: $id}) {
     latestBalance
     id
     blockTimestamp
+  }
+}
+`;
+const LETSGROW_DELEGATE_QUERY = gql`
+query MyQuery($id: String!) {
+  delegates(where:{id: $id}) {
+    delegatedBalance
+    id
   }
 }
 `;
@@ -32,9 +45,11 @@ export const GET = async (req: NextRequest) => {
         console.log(address,dao)
         if(dao==="optimism"){
          data = await op_client.query(DELEGATE_QUERY,{id:address}).toPromise();
-        }else{
+        }else if(dao==="arbitrum"){
           data = await arb_client.query(DELEGATE_QUERY,{id:address}).toPromise();
-        } 
+        }else{
+        data= await letsgrow_client.query(LETSGROW_DELEGATE_QUERY,{id:address}).toPromise();
+        }
         if (!data || !data.data || !data.data.delegates || data.data.delegates.length === 0) {
             return NextResponse.json({ error: 'Delegate not found.' }, { status: 404 });
         }
