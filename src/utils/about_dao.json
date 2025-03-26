@@ -163,51 +163,61 @@
     }
   },
   "letsgrowdao": {
-    "introduction": "Let's Grow DAO is a leading Layer 2 (L2) scaling solution for Ethereum, designed to increase the network's transaction speed and reduce costs while maintaining Ethereum's robust security. Founded in 2019 by Jinglan Wang, Karl Floersch, and Ben Jones, Optimism launched its mainnet in 2021, marking a significant milestone in Ethereum scalability.",
+    "introduction": "Let's Grow DAO is a decentralized autonomous organization (DAO) dedicated to fostering the growth and unity of the Regen Movement through the development and support of public goods. It aims to connect individuals, projects, and resources within the regenerative ecosystem, leveraging Web3 principles to create accessible tools, knowledge, and funding mechanisms that empower the adoption of regenerative practices and contribute to a more sustainable and equitable future for all.",
     "display_text":"Let's Grow DAO",
     "mission_and_vision": {
-      "mission": "Scale Ethereum and make it accessible to all users by reducing transaction costs and increasing throughput.",
-      "vision": [
-        "Scaling Ethereum to global adoption",
-        "Fostering a more collaborative and innovative ecosystem",
-        "Promoting public goods funding and sustainable growth"
-      ]
+      "mission": "To unite and grow the Regen Movement through the public goods ecosystem. 💚🌳",
+      "vision": ["Let's GROW DAO aims to unite the Regen community and GROW the movement with initiatives that foster positive sum dynamics."]
     },
-    "technology": {
-      "description": "Let's Grow DAO utilizes Optimistic Rollups, a Layer 2 scaling solution that bundles multiple transactions off-chain and then posts the bundled data to the Ethereum mainnet. This approach significantly reduces gas fees and increases transaction speed while inheriting Ethereum's security.",
-      "features": [
-        "Full EVM equivalence, ensuring compatibility with existing Ethereum smart contracts",
-        "The OP Stack, an open-source development framework for creating optimistic rollups",
-        "Bedrock upgrade, launched in June 2023, which improved efficiency and reduced costs"
-      ]
-    },
-    "governance_and_dao_structure": {
-      "description": "Let's Grow DAO operates as a Decentralized Autonomous Organization (DAO) known as the Optimism Collective. The governance structure consists of two houses:",
-      "houses": [
+    "values":{
+      "value":[
         {
-          "name": "Token House",
-          "details": "Governed by OP token holders, focusing on technical decisions and protocol upgrades."
+          "title": "Unifying Vision",
+          "description": "We believe in the power of collective action. Our movement is a mosaic of diverse tribes, each contributing uniquely towards our shared vision. In unity, we find strength; in collaboration, we find progress."
         },
         {
-          "name": "Citizens' House",
-          "details": "Comprised of 'soulbound' non-transferrable NFTs, addressing public goods funding and long-term value alignment. This bicameral structure aims to balance short-term incentives with long-term sustainability."
+          "title": "Scalable Impact",
+          "description": "Our aim is not just to create ripples but to generate waves of positive change. We seek scalable solutions that extend their regenerative impact across communities, ecosystems, and borders."
+        },
+        {
+          "title": "Fairness in Action",
+          "description": "Equity and justice are the bedrock of our approach. We strive for fairness in every endeavor, ensuring that our initiatives are accessible and beneficial."
+        },
+        {
+          "title": "Service Beyond Self",
+          "description": "We work selflessly, guided by our mission, not ego. Our commitment is to the cause, and our reward is the collective success of our movement."
+        },
+        {
+          "title": "Empowering Communities",
+          "description": "At our core, we believe in the power of community. We are committed to empowering individuals and groups, fostering an environment where every voice is heard and valued."
+        },
+        {
+          "title": "Perseverance in Pursuit",
+          "description": "The path to regeneration is long and fraught with challenges. We embrace this journey with resilience, committed to overcoming obstacles and achieving our goals."
+        },
+        {
+          "title": "Authenticity in Action",
+          "description": "We lead by example, embodying the principles we preach. Our actions are a reflection of our true, regenerative intentions."
+        },
+        {
+          "title": "Accountability to All",
+          "description": "We hold ourselves accountable to our community, our planet, and future generations. Our decisions and actions are transparent and aligned with our mission."
         }
       ]
     },
+    
     "community_and_resources": {
-      "website": "https://www.optimism.io/",
-      "governance": "https://app.optimism.io/governance",
-      "forum": "https://gov.optimism.io/",
-      "bridge": "https://app.optimism.io/bridge",
-      "docs": "https://community.optimism.io/",
-      "mirror": "https://optimism.mirror.xyz/",
-      "github": "https://github.com/ethereum-optimism",
-      "discord": "https://discord.gg/optimism",
-      "block_explorer": "https://optimistic.etherscan.io/",
+      "website": "https://www.letsgrow.network/",
+      "dashboard":"https://link.letsgrow.network/dao",
+      "communityHub": "https://garden.letsgrow.network/page-8020229466123785",
       "twitter": {
-        "optimism": "https://twitter.com/Optimism",
-        "gov": "https://twitter.com/OptimismGov"
-      }
+        "letsgrowdao": "https://twitter.com/LetsGrowDAO"
+      },
+      "warpcast": "https://warpcast.com/letsgrowdao",
+      "telegram": "https://link.letsgrow.network/telegram",
+      "LGLJoinVideo": "https://link.letsgrow.network/video",
+      "manifesto":"https://link.letsgrow.network/manifesto",
+      "guild":"https://guild.xyz/letsgrowdao"
     }
   }
 }
