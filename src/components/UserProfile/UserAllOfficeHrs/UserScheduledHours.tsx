@@ -31,6 +31,7 @@ import Image from "next/image";
 import { useAccount, useSwitchChain } from "wagmi";
 import OPLogo from "@/assets/images/daos/op.png";
 import ArbLogo from "@/assets/images/daos/arb.png";
+import { daoConfigs } from "@/config/daos";
 
 const UserScheduledHours: React.FC<{
   daoName: string;
@@ -51,6 +52,8 @@ const UserScheduledHours: React.FC<{
   const [isOpen, setIsOpen] = useState(false);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const hoverDelay = 300;
+
+  let currentDAO=daoConfigs[daoName];
 
   const handleMouseLeave = () => {
     timeoutRef.current = setTimeout(() => {
@@ -483,7 +486,6 @@ const UserScheduledHours: React.FC<{
     try {
       const response = await fetchApi("/office-hours", requestOptions);
       const result = await response.json();
-      console.log("API Response:", result);
 
       toast.success("Schedule saved successfully!");
       resetState();
@@ -593,7 +595,7 @@ const UserScheduledHours: React.FC<{
         <div className="mb-8">
           <div className="mr-2 sm:mr-3 md:mr-4 lg:mr-5 flex items-center truncate mb-6">
             <Image
-              src={daoName === "optimism" ? OPLogo : ArbLogo}
+              src={currentDAO.logo}
               alt="Current Chain"
               width={48}
               height={48}
@@ -602,7 +604,8 @@ const UserScheduledHours: React.FC<{
             {/* {daoName.charAt(0).toUpperCase() + daoName.slice(1)} */}
             <div>
               <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
-                {daoName.charAt(0).toUpperCase() + daoName.slice(1)}
+                {/* {daoName.charAt(0).toUpperCase() + daoName.slice(1)} */}
+                {currentDAO.name}
               </h1>
               <p className="text-sm text-gray-500 mt-1">
                 Schedule your Office Hours

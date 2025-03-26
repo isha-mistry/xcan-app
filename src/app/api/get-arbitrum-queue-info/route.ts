@@ -13,6 +13,7 @@ query MyQuery {
     eta
     blockTimestamp
     proposalId
+    blockNumber
   }
 }`;
 const GET_PROPOSAL = gql`
@@ -22,6 +23,7 @@ query MyQuery($proposalId: String!) {
     description
     proposalId
     proposer
+    blockNumber
   }
 }`;
 

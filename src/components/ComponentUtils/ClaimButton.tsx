@@ -10,6 +10,7 @@ import confetti from "canvas-confetti";
 import { fetchApi } from "@/utils/api";
 import { usePrivy, useWallets } from "@privy-io/react-auth";
 import { useWalletAddress } from "@/app/hooks/useWalletAddress";
+import { daoConfigs } from "@/config/daos";
 
 interface ClaimButtonProps {
   meetingId: string;
@@ -222,18 +223,21 @@ const ClaimButton: React.FC<ClaimButtonProps> = ({
       let token = "";
       let EASContractAddress = "";
 
-      switch (dao.toLowerCase()) {
-        case "optimism":
-          token = "OP";
-          EASContractAddress = "0x4200000000000000000000000000000000000021";
-          break;
-        case "arbitrum":
-          token = "ARB";
-          EASContractAddress = "0xbD75f629A22Dc1ceD33dDA0b68c546A1c035c458";
-          break;
-        default:
-          throw new Error(`Unsupported DAO: ${dao}`);
-      }
+      // switch (dao.toLowerCase()) {
+      //   case "optimism":
+      //     token = "OP";
+      //     EASContractAddress = "0x4200000000000000000000000000000000000021";
+      //     break;
+      //   case "arbitrum":
+      //     token = "ARB";
+      //     EASContractAddress = "0xbD75f629A22Dc1ceD33dDA0b68c546A1c035c458";
+      //     break;
+      //   default:
+      //     throw new Error(`Unsupported DAO: ${dao}`);
+      // }
+
+      token=daoConfigs[dao.toLowerCase()].tokenSymbol;
+      EASContractAddress=daoConfigs[dao.toLowerCase()].eascontracAddress;
 
       // Prepare attestation data
       const data = {

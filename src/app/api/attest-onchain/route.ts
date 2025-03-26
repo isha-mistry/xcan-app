@@ -9,6 +9,7 @@ import {
 import { ethers } from "ethers";
 import { stringToBytes, bytesToHex } from "viem";
 import { BASE_URL } from "@/config/constants";
+import { daoConfigs } from "@/config/daos";
 
 interface AttestOnchainRequestBody {
   recipient: string;
@@ -45,23 +46,24 @@ export async function POST(req: NextRequest, res: NextResponse) {
   //       { status: 403 }
   //     );
   //   }
-  console.log("log1");
+
   (BigInt.prototype as any).toJSON = function () {
     return this.toString();
   };
   const requestData = (await req.json()) as AttestOnchainRequestBody;
   // Your validation logic here
 
-  console.log("request data: ", requestData);
 
-  try {
-    console.log("log2");
-    const atstUrl =
-      requestData.daoName === "optimism"
-        ? process.env.NEXT_PUBLIC_OP_ATTESTATION_URL
-        : requestData.daoName === "arbitrum"
-        ? process.env.NEXT_PUBLIC_ARB_ATTESTATION_URL
-        : "";
+
+  const currentDAO=daoConfigs[requestData.daoName];
+
+  try {;
+    const atstUrl =currentDAO.alchemyAttestationUrl;
+      // requestData.daoName === "optimism"
+      //   ? process.env.NEXT_PUBLIC_OP_ATTESTATION_URL
+      //   : requestData.daoName === "arbitrum"
+      //   ? process.env.NEXT_PUBLIC_ARB_ATTESTATION_URL
+      //   : "";
 
     // Set up your ethers provider and signer
     const provider = new ethers.JsonRpcProvider(atstUrl, undefined, {
@@ -69,12 +71,12 @@ export async function POST(req: NextRequest, res: NextResponse) {
     });
     const privateKey = process.env.PVT_KEY ?? "";
     const signer = new ethers.Wallet(privateKey, provider);
-    const EASContractAddress =
-      requestData.daoName === "optimism"
-        ? "0x4200000000000000000000000000000000000021"
-        : requestData.daoName === "arbitrum"
-        ? "0xbD75f629A22Dc1ceD33dDA0b68c546A1c035c458"
-        : "";
+    const EASContractAddress = currentDAO?currentDAO.eascontracAddress:"";
+      // requestData.daoName === "optimism"
+      //   ? "0x4200000000000000000000000000000000000021"
+      //   : requestData.daoName === "arbitrum"
+      //   ? "0xbD75f629A22Dc1ceD33dDA0b68c546A1c035c458"
+      //   : "";
     const eas = new EAS(EASContractAddress);
     eas.connect(signer);
 
@@ -123,7 +125,6 @@ export async function POST(req: NextRequest, res: NextResponse) {
       );
 
       console.log("delegatedAttestation: ", delegatedAttestation);
-      console.log("verifying...");
       const verify = await delegated.verifyDelegatedAttestationSignature(
         await signer.getAddress(),
         delegatedAttestation

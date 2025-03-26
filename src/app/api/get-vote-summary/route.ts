@@ -1,6 +1,7 @@
-import { Client, fetchExchange, gql } from "urql";
+import { Client, createClient, fetchExchange, gql } from "urql";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
+import { daoConfigs } from "@/config/daos";
 
 export const runtime = "nodejs";
 
@@ -42,6 +43,13 @@ export async function GET(req: NextRequest) {
 //   const first = parseInt(searchParams.get("first") || "1000", 10);
   const dao = searchParams.get("dao");
 
+  const currentDAO=dao?daoConfigs[dao]:"";
+
+  const client = createClient({
+    url: currentDAO?currentDAO.proposalUrl:"",
+    exchanges: [fetchExchange],
+  });
+
   if (!dao) {
     return NextResponse.json(
       { error: "Missing dao parameter" },
@@ -56,15 +64,17 @@ export async function GET(req: NextRequest) {
 
   try {
     let result;
-    if (dao === "optimism") {
-      result = await op_client
-        .query(COMBINED_VOTE_QUERY,{})
-        .toPromise();
-    } else {
-      result = await arb_client
-        .query(COMBINED_VOTE_QUERY, {})
-        .toPromise();
-    }
+
+    result=await client.query(COMBINED_VOTE_QUERY,{}).toPromise();
+    // if (dao === "optimism") {
+    //   result = await op_client
+    //     .query(COMBINED_VOTE_QUERY,{})
+    //     .toPromise();
+    // } else {
+    //   result = await arb_client
+    //     .query(COMBINED_VOTE_QUERY, {})
+    //     .toPromise();
+    // }
 
     if (result.error) {
       console.error("GraphQL query error:", result.error);

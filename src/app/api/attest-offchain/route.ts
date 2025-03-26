@@ -21,6 +21,8 @@ import {
 import { io } from "socket.io-client";
 // import redis from "@/utils/redis";
 import { cacheWrapper } from "@/utils/cacheWrapper";
+import { daoConfigs } from "@/config/daos";
+import { base } from "viem/chains";
 
 interface AttestOffchainRequestBody {
   recipient: string;
@@ -47,13 +49,15 @@ export async function POST(req: NextRequest, res: NextResponse) {
 
   // console.log("Line 47:",requestData);
 
+  const currentDAO=daoConfigs[requestData.daoName];
+
   try {
-    const atstUrl =
-      requestData.daoName === "optimism"
-        ? ATTESTATION_OP_URL
-        : requestData.daoName === "arbitrum"
-        ? ATTESTATION_ARB_URL
-        : "";
+    const atstUrl = currentDAO?currentDAO.alchemyAttestationUrl:"";
+      // requestData.daoName === "optimism"
+      //   ? ATTESTATION_OP_URL
+      //   : requestData.daoName === "arbitrum"
+      //   ? ATTESTATION_ARB_URL
+      //   : "";
 
     const provider2 = new ethers.JsonRpcProvider(ATTESTATION_ARB_URL);
     try {
@@ -73,12 +77,12 @@ export async function POST(req: NextRequest, res: NextResponse) {
 
     // console.log("Line 67:",signer);
 
-    const EASContractAddress =
-      requestData.daoName === "optimism"
-        ? "0x4200000000000000000000000000000000000021"
-        : requestData.daoName === "arbitrum"
-        ? "0xbD75f629A22Dc1ceD33dDA0b68c546A1c035c458"
-        : "";
+    const EASContractAddress = currentDAO?currentDAO.eascontracAddress:"";
+      // requestData.daoName === "optimism"
+      //   ? "0x4200000000000000000000000000000000000021"
+      //   : requestData.daoName === "arbitrum"
+      //   ? "0xbD75f629A22Dc1ceD33dDA0b68c546A1c035c458"
+      //   : "";
     const eas = new EAS(EASContractAddress);
 
     // console.log('Line 77:',EASContractAddress,eas);
@@ -87,7 +91,7 @@ export async function POST(req: NextRequest, res: NextResponse) {
     // Your initialization code remains the same
     const offchain = await eas.getOffchain();
 
-    console.log("Line 83:", offchain);
+    // console.log("Line 83:", offchain);
 
     const schemaEncoder = new SchemaEncoder(
       "bytes32 MeetingId,uint8 MeetingType,uint32 StartTime,uint32 EndTime"
@@ -130,11 +134,13 @@ export async function POST(req: NextRequest, res: NextResponse) {
 
     let baseUrl = "";
 
-    if (requestData.daoName === "optimism") {
-      baseUrl = OFFCHAIN_OP_ATTESTATION_BASE_URL;
-    } else if (requestData.daoName) {
-      baseUrl = OFFCHAIN_ARB_ATTESTATION_BASE_URL;
-    }
+    baseUrl=currentDAO.offchainAttestationUrl;
+
+    // if (requestData.daoName === "optimism") {
+    //   baseUrl = OFFCHAIN_OP_ATTESTATION_BASE_URL;
+    // } else if (requestData.daoName) {
+    //   baseUrl = OFFCHAIN_ARB_ATTESTATION_BASE_URL;
+    // }
     const url = baseUrl + createOffchainURL(pkg);
 
     // console.log("Line 135:",url);
@@ -339,11 +345,13 @@ export async function POST(req: NextRequest, res: NextResponse) {
     // Rest of your code remains the same
 
     let offchainAttestationLink = "";
-    if (requestData.daoName === "optimism") {
-      offchainAttestationLink = `https://optimism.easscan.org/offchain/attestation/view/${offchainAttestation.uid}`;
-    } else if (requestData.daoName === "arbitrum") {
-      offchainAttestationLink = `https://arbitrum.easscan.org/offchain/attestation/view/${offchainAttestation.uid}`;
-    }
+    offchainAttestationLink=`${currentDAO.attestationUrl}/${offchainAttestation.uid}`;
+    
+    // if (requestData.daoName === "optimism") {
+    //   offchainAttestationLink = `https://optimism.easscan.org/offchain/attestation/view/${offchainAttestation.uid}`;
+    // } else if (requestData.daoName === "arbitrum") {
+    //   offchainAttestationLink = `https://arbitrum.easscan.org/offchain/attestation/view/${offchainAttestation.uid}`;
+    // }
 
     // console.log("Line 258:",offchainAttestationLink);
 
