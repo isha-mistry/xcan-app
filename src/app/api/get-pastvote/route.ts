@@ -7,7 +7,7 @@ const op_client = createClient({
 });
 
 const arb_client = createClient({
-    url: process.env.ARBITRUM_PROPOSALS_GRAPH_URL!,
+    url: process.env.NEXT_PUBLIC_ARBITRUM_PROPOSALS_GRAPH_URL!,
     exchanges: [cacheExchange, fetchExchange],
 });
 

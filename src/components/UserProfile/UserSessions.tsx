@@ -1,19 +1,18 @@
 import React, { useState, useEffect, useRef } from "react";
 import ScheduledUserSessions from "./UserAllSessions/ScheduledUserSessions";
+import RecordedSessionsTile from "../ComponentUtils/RecordedSessionsTile";
 import BookedUserSessions from "./UserAllSessions/BookedUserSessions";
+import ErrorDisplay from "../ComponentUtils/ErrorDisplay";
 import AttendingUserSessions from "./UserAllSessions/AttendingUserSessions";
+import NoResultsFound from "@/utils/Noresult";
+import RecordedSessionsSkeletonLoader from "../SkeletonLoader/RecordedSessionsSkeletonLoader";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useRouter } from "next-nprogress-bar";
 import { useAccount } from "wagmi";
-import RecordedSessionsTile from "../ComponentUtils/RecordedSessionsTile";
-import RecordedSessionsSkeletonLoader from "../SkeletonLoader/RecordedSessionsSkeletonLoader";
-import ErrorDisplay from "../ComponentUtils/ErrorDisplay";
-import style from "./MainProfile.module.css";
-import { Calendar, CalendarCheck, CheckCircle, ChevronRight, UserCheck, Users } from "lucide-react";
+import { Calendar, CalendarCheck, CheckCircle,UserCheck, Users } from "lucide-react";
 import { usePrivy } from "@privy-io/react-auth";
 import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 import { fetchApi } from "@/utils/api";
-import Alert from "../Alert/Alert";
 
 interface UserSessionsProps {
   isDelegate: boolean | undefined;
@@ -22,46 +21,31 @@ interface UserSessionsProps {
 }
 
 function UserSessions({
-  isDelegate,
   selfDelegate,
   daoName,
 }: UserSessionsProps) {
-  const { address, isConnected } = useAccount();
-  // const address = "0xc622420AD9dE8E595694413F24731Dd877eb84E1";
-  const router = useRouter();
-  const path = usePathname();
-  const searchParams = useSearchParams();
+
+  const {getAccessToken} = usePrivy();
   const { chain } = useAccount();
-  const [sessionDetails, setSessionDetails] = useState([]);
+  const { walletAddress } = useWalletAddress();
   const [dataLoading, setDataLoading] = useState(true);
   const [attendedDetails, setAttendedDetails] = useState([]);
   const [hostedDetails, setHostedDetails] = useState([]);
   const [error, setError] = useState<string | null>(null);
-  const scrollContainerRef = useRef<HTMLDivElement | null>(null);
   const [showLeftShadow, setShowLeftShadow] = useState(false);
   const [showRightShadow, setShowRightShadow] = useState(false);
-  const { user, ready, getAccessToken, authenticated } = usePrivy();
-  const { walletAddress } = useWalletAddress();
+
+
+  const router = useRouter();
+  const path = usePathname();
+  const searchParams = useSearchParams();
+  const scrollContainerRef = useRef<HTMLDivElement | null>(null);
 
   const handleRetry = () => {
     setError(null);
     getUserMeetingData();
     window.location.reload();
   };
-
-  useEffect(() => {
-    const checkForOverflow = () => {
-      const container = scrollContainerRef.current;
-      if (container) {
-        setShowRightShadow(container.scrollWidth > container.clientWidth);
-      }
-    };
-
-    checkForOverflow();
-    window.addEventListener("resize", checkForOverflow);
-    return () => window.removeEventListener("resize", checkForOverflow);
-  }, []);
-
   const handleScroll = () => {
     const container = scrollContainerRef.current;
     if (container) {
@@ -71,11 +55,9 @@ function UserSessions({
       );
     }
   };
-
   const getUserMeetingData = async () => {
     setDataLoading(true);
     try {
-      // setDataLoading(true);
       const token = await getAccessToken();
       const myHeaders: HeadersInit = {
         "Content-Type": "application/json",
@@ -111,19 +93,28 @@ function UserSessions({
   };
 
   useEffect(() => {
+    const checkForOverflow = () => {
+      const container = scrollContainerRef.current;
+      if (container) {
+        setShowRightShadow(container.scrollWidth > container.clientWidth);
+      }
+    };
+
+    checkForOverflow();
+    window.addEventListener("resize", checkForOverflow);
+    return () => window.removeEventListener("resize", checkForOverflow);
+  }, []);
+  
+  useEffect(() => {
     if (walletAddress) {
       getUserMeetingData();
     }
   }, [
     walletAddress,
-    // sessionDetails,
     searchParams.get("session"),
-    // dataLoading,
     chain,
     chain?.name,
     daoName,
-    // hostedDetails,
-    // attendedDetails,
   ]);
 
   useEffect(() => {
@@ -138,11 +129,7 @@ function UserSessions({
         <ErrorDisplay message={error} onRetry={handleRetry} />
       </div>
     );
-  }
-  
-  // const handleCloseAlert = () => {
-  //   setShowAlert(false);
-  // };
+  };
 
   return (
     <div>
@@ -226,13 +213,6 @@ function UserSessions({
           </button>
         </div>
         <div className="px-4 md:px-6 lg:px-14">
-        {/* {showAlert && (
-          <Alert
-            message="We're currently experiencing issues generating meeting IDs due to a recent change in Huddle's API version. Our team is actively working on a fix to restore meeting functionality as soon as possible. Thanks for your patience! 🚀"
-            type="error"
-            onClose={handleCloseAlert}
-          />
-        )} */}
         </div>
         {showLeftShadow && (
           <div className="absolute left-0 top-0 bottom-0 w-8 h-16 bg-gradient-to-r from-white to-transparent pointer-events-none" />
@@ -240,15 +220,6 @@ function UserSessions({
         {showRightShadow && (
           <div className="absolute right-0 top-0 bottom-0 w-8 h-16 bg-gradient-to-l from-white to-transparent pointer-events-none" />
         )}
-
-        {/* {showRightShadow && (
-        <div className="absolute right-0 top-1/2 -translate-y-1/2 bg-white p-1 rounded-full shadow-md cursor-pointer">
-          <ChevronRight className="text-gray-600" size={24} />
-        </div>
-      )} */}
-        {/* <div className="absolute right-0 top-[19px] bg-white p-1 rounded-full shadow-md cursor-pointer" onClick={handleScrollRight}>
-        <ChevronRight className="text-gray-600" size={24} />
-      </div> */}
 
         <div className="py-6 sm:py-10 sm:px-20 md:px-6 lg:px-14">
           {selfDelegate === true &&
@@ -268,11 +239,8 @@ function UserSessions({
             (dataLoading ? (
               <RecordedSessionsSkeletonLoader />
             ) : hostedDetails.length === 0 ? (
-              <div className="flex flex-col justify-center items-center pt-10">
-                <div className="text-5xl">☹️</div>{" "}
-                <div className="pt-4 font-semibold text-lg">
-                  Oops, no such result available!
-                </div>
+              <div className="flex flex-col justify-center items-center">
+                <NoResultsFound/>
               </div>
             ) : (
               <RecordedSessionsTile
@@ -286,11 +254,8 @@ function UserSessions({
             (dataLoading ? (
               <RecordedSessionsSkeletonLoader />
             ) : attendedDetails.length === 0 ? (
-              <div className="flex flex-col justify-center items-center pt-10">
-                <div className="text-5xl">☹️</div>{" "}
-                <div className="pt-4 font-semibold text-lg">
-                  Oops, no such result available!
-                </div>
+              <div className="flex flex-col justify-center items-center">
+                <NoResultsFound/>
               </div>
             ) : (
               <RecordedSessionsTile

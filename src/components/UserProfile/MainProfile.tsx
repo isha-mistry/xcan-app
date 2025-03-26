@@ -1,80 +1,62 @@
 "use client";
 
+import React, { useEffect, useRef, useState } from "react";
 import Image from "next/image";
-import React, { ChangeEvent, useEffect, useRef, useState } from "react";
 import copy from "copy-to-clipboard";
-import { Tooltip } from "@nextui-org/react";
-import user from "@/assets/images/daos/user3.png";
-import { FaXTwitter, FaDiscord, FaGithub } from "react-icons/fa6";
-import {
-  BiSolidBellOff,
-  BiSolidBellRing,
-  BiSolidMessageRoundedDetail,
-} from "react-icons/bi";
-import { IoCopy, IoShareSocialSharp } from "react-icons/io5";
+import Link from "next/link";
+import ccLogo from "@/assets/images/daos/CCLogo2.png";
+import dao_abi from "../../artifacts/Dao.sol/GovernanceToken.json";;
+import lighthouse from "@lighthouse-web3/sdk";
+import InstantMeet from "./InstantMeet";
 import UserInfo from "./UserInfo";
 import UserVotes from "./UserVotes";
 import UserSessions from "./UserSessions";
 import UserOfficeHours from "./UserOfficeHours";
+import FollowingModal from "../ComponentUtils/FollowingModal";
+import style from "./MainProfile.module.css";
+import UpdateProfileModal from "../ComponentUtils/UpdateProfileModal";
+import MainProfileSkeletonLoader from "../SkeletonLoader/MainProfileSkeletonLoader";
+import SelectDaoButton from "../ComponentUtils/SelectDaoButton";
+import RewardButton from "../ClaimReward/RewardButton";
+import Heading from "../ComponentUtils/Heading";
+import toast, { Toaster } from "react-hot-toast";
+import { ChevronDownIcon } from "lucide-react";
+import { usePrivy, useWallets } from "@privy-io/react-auth";
+import { useWalletAddress } from "@/app/hooks/useWalletAddress";
+import { fetchApi } from "@/utils/api";
+import { BrowserProvider, Contract } from "ethers";
+import { MeetingRecords } from "@/types/UserProfileTypes";
+import { Tooltip } from "@nextui-org/react";
+import { FaXTwitter, FaDiscord, FaGithub } from "react-icons/fa6";
+import { BiSolidMessageRoundedDetail } from "react-icons/bi";
+import { IoCopy, IoShareSocialSharp } from "react-icons/io5";
+import { createPublicClient, http } from "viem";
+import { optimism, arbitrum, mantle } from "viem/chains";
+import { daoConfigs } from "@/config/daos";
 import { FaPencil } from "react-icons/fa6";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useRouter } from "next-nprogress-bar";
-// import { useRouter } from 'next/navigation';
-import toast, { Toaster } from "react-hot-toast";
-import Link from "next/link";
-import OPLogo from "@/assets/images/daos/op.png";
-import ArbLogo from "@/assets/images/daos/arb.png";
-import ccLogo from "@/assets/images/daos/CCLogo2.png";
 import { Button, useDisclosure } from "@nextui-org/react";
-// import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { useAccount, useDisconnect } from "wagmi";
-import WalletAndPublicClient from "@/helpers/signer";
-import dao_abi from "../../artifacts/Dao.sol/GovernanceToken.json";
-import axios from "axios";
-import { Oval, InfinitySpin } from "react-loader-spinner";
-import lighthouse from "@lighthouse-web3/sdk";
-import InstantMeet from "./InstantMeet";
+import { Oval } from "react-loader-spinner"
 import { useSession } from "next-auth/react";
-// import { useConnectModal } from "@rainbow-me/rainbowkit";
-import ConnectWalletWithENS from "../ConnectWallet/ConnectWalletWithENS";
-import MainProfileSkeletonLoader from "../SkeletonLoader/MainProfileSkeletonLoader";
 import { BASE_URL, LIGHTHOUSE_BASE_API_KEY } from "@/config/constants";
-import FollowingModal from "../ComponentUtils/FollowingModal";
-import { IoClose } from "react-icons/io5";
-import style from "./MainProfile.module.css";
-import UpdateProfileModal from "../ComponentUtils/UpdateProfileModal";
-import { getChainAddress, getDaoName } from "@/utils/chainUtils";
+import { getDaoName } from "@/utils/chainUtils";
+
 interface Following {
   follower_address: string;
   isFollowing: boolean;
   isNotification: boolean;
 }
-import { cookies } from "next/headers";
-import { m } from "framer-motion";
-import MobileResponsiveMessage from "../MobileResponsiveMessage/MobileResponsiveMessage";
-import RewardButton from "../ClaimReward/RewardButton";
-import Heading from "../ComponentUtils/Heading";
-import { ChevronDownIcon } from "lucide-react";
-import { getAccessToken, usePrivy, useWallets } from "@privy-io/react-auth";
-import { useWalletAddress } from "@/app/hooks/useWalletAddress";
-import { fetchApi } from "@/utils/api";
-import { BrowserProvider, Contract } from "ethers";
-import { MeetingRecords } from "@/types/UserProfileTypes";
-import SelectDaoButton from "../ComponentUtils/SelectDaoButton";
-import { createPublicClient, http } from "viem";
-import { optimism, arbitrum } from "viem/chains";
 
 function MainProfile() {
   const { isConnected, chain } = useAccount();
-  // const { isConnected, chain } = useAccount();
-  // const address = "0xc622420AD9dE8E595694413F24731Dd877eb84E1";
-  const { data: session, status } = useSession();
-  // const { openConnectModal } = useConnectModal();
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const router = useRouter();
-  const path = usePathname();
-  const searchParams = useSearchParams();
-  const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure();
+  const { data: session } = useSession();
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const { authenticated, login, logout, getAccessToken, user } = usePrivy();
+  const { disconnect } = useDisconnect();
+  const { walletAddress } = useWalletAddress();
+  const { wallets } = useWallets();
   const [description, setDescription] = useState("");
   const [isDelegate, setIsDelegate] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -84,24 +66,19 @@ function MainProfile() {
   const [isPageLoading, setIsPageLoading] = useState(true);
   const [selfDelegate, setSelfDelegate] = useState(false);
   const [daoName, setDaoName] = useState("optimism");
-  const [attestationStatistics, setAttestationStatistics] =
-    useState<MeetingRecords | null>(null);
+  const [attestationStatistics, setAttestationStatistics] =useState<MeetingRecords | null>(null);
   const [isCopied, setIsCopied] = useState(false);
   const [followings, setFollowings] = useState(0);
   const [followers, setFollowers] = useState(0);
   const [loading, setLoading] = useState(false);
   const [isFollowingModalOpen, setIsFollowingModalOpen] = useState(false);
-  const [isOpentoaster, settoaster] = useState(false);
   const [userFollowings, setUserFollowings] = useState<Following[]>([]);
   const [isModalLoading, setIsModalLoading] = useState(false);
-  const { ready, authenticated, login, logout, getAccessToken, user,connectWallet } =
-    usePrivy();
-  const { disconnect } = useDisconnect();
+  const [isToggled, setToggle] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [selectedTab, setSelectedTab] = useState("Info");
+  const [copiedAddress, setCopiedAddress] = useState<string | null>(null);
   const [isspin, setSpin] = useState(false);
-  // const [walletAddress, setWalletAddress] = useState<string | null>(null);
-  const { walletAddress } = useWalletAddress();
-  const { wallets } = useWallets();
-  // const [dbResponse, setDbResponse] = useState<any>(null);
   const [modalData, setModalData] = useState({
     displayImage: "",
     displayName: "",
@@ -111,7 +88,6 @@ function MainProfile() {
     discourse: "",
     github: "",
   });
-
   const [userData, setUserData] = useState({
     displayImage: "",
     displayName: "",
@@ -120,28 +96,23 @@ function MainProfile() {
     discourse: "",
     github: "",
   });
-  const [isToggled, setToggle] = useState(false);
-  const { publicClient, walletClient } = WalletAndPublicClient();
-
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [selectedTab, setSelectedTab] = useState("Info");
-  const dropdownRef = useRef<HTMLDivElement | null>(null);
-  const [copiedAddress, setCopiedAddress] = useState<string | null>(null);
-
   const tabs = [
     { name: "Info", value: "info" },
     ...(selfDelegate ? [{ name: "Past Votes", value: "votes" }] : []),
-    // { name: "Past Votes", value: "votes" },
     { name: "Sessions", value: "sessions" },
     { name: "Office Hours", value: "officeHours" },
     ...(selfDelegate ? [{ name: "Instant Meet", value: "instant-meet" }] : []),
-    // { name: "Instant Meet", value: "instant-meet" }
   ];
 
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const dropdownRef = useRef<HTMLDivElement | null>(null);
+  const router = useRouter();
+  const path = usePathname();
+  const searchParams = useSearchParams();
+
+  //Functions
   const handleTabChange = (tabValue: string) => {
-    // console.log(tabValue);
     const selected = tabs.find((tab) => tab.value === tabValue);
-    // console.log(selected);
     if (selected) {
       setSelectedTab(selected.name);
       setIsDropdownOpen(false);
@@ -160,41 +131,10 @@ function MainProfile() {
     }
   };
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
-      ) {
-        setIsDropdownOpen(false);
-      }
-    }
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
-
-  const handleLogout=async()=>{
-    localStorage.removeItem("persistentWalletAddress"); 
+  const handleLogout = async () => {
+    localStorage.removeItem("persistentWalletAddress");
     await logout();
     disconnect();
-  }
-
-  useEffect(()=>{
-    const currentWalletAddress = user?.wallet?.address;
-    if (currentWalletAddress && 
-      walletAddress && 
-      currentWalletAddress.toLowerCase() !== walletAddress.toLowerCase()) {
-    
-    handleLogout();
-    login();
-  }
-  },[authenticated,walletAddress])
-
-  const handleMouseEnter = () => {
-    setIsDropdownOpen(true);
   };
 
   const handleMouseLeave = () => {
@@ -205,57 +145,11 @@ function MainProfile() {
     }, 100);
   };
 
-  useEffect(() => {
-    const activeTab = searchParams.get("active");
-    if (activeTab) {
-      const tab = tabs.find((t) => t.value === activeTab);
-      setSelectedTab(tab?.name || "Info");
-    }
-  }, [searchParams, tabs]);
-
-  useEffect(() => {
-    // if (chain && chain.name === "Optimism") {
-    //   setDaoName("optimism");
-    // } else if (chain && chain?.name === "Arbitrum One") {
-    //   setDaoName("arbitrum");
-    // }
-    let daoName = getDaoName(chain?.name);
-    setDaoName(daoName);
-  }, [chain, chain?.name]);
-
-  useEffect(() => {
-    if (isConnected && authenticated && path.includes("profile/undefined")) {
-      const newPath = path.includes("profile/undefined")
-        ? path.replace("profile/undefined", `profile/${walletAddress}?active=info`)
-        : path;
-      router.replace(`${newPath}`);
-    } else if (!isConnected && !authenticated) {
-      if (!authenticated) {
-        // openConnectModal();
-        login();
-        return;
-      } else {
-        console.error("openConnectModal is not defined");
-      }
-    }
-  }, [
-    isConnected,
-    walletAddress,
-    router,
-    session,
-    path.includes("profile/undefined"),
-  ]);
+  const handleMouseEnter = () => {
+    setIsDropdownOpen(true);
+  };
 
   const uploadImage = async (selectedFile: any) => {
-    const progressCallback = async (progressData: any) => {
-      let percentageDone =
-        100 -
-        (
-          ((progressData?.total as any) / progressData?.uploaded) as any
-        )?.toFixed(2);
-      // console.log(percentageDone);
-    };
-
     const apiKey = LIGHTHOUSE_BASE_API_KEY ? LIGHTHOUSE_BASE_API_KEY : "";
 
     const output = await lighthouse.upload(selectedFile, apiKey);
@@ -264,103 +158,15 @@ function MainProfile() {
       ...prevUserData,
       displayImage: output.data.Hash,
     }));
-
-    // console.log(
-    //   "Visit at https://gateway.lighthouse.storage/ipfs/" + output.data.Hash
-    // );
   };
 
-  useEffect(() => {
-    const checkDelegateStatus = async () => {
-      // const addr = await walletClient.getAddresses();
-      // const address1 = addr[0];
-      if (!walletAddress || !chain) return;
-      try {
-        const contractAddress = getChainAddress(chain.name);
-        const network = getDaoName(chain.name);
-        // if (walletAddress) {
-        //   const delegateTx = await publicClient?.readContract({
-        //     address: contractAddress as `0x${string}`,
-        //     abi: dao_abi.abi,
-        //     functionName: "delegates",
-        //     args: [walletAddress],
-        //     // account: address1,
-        //   });
-
-        //   // console.log("DelegateTx",delegateTx)
-
-        //   const delegateTxAddr = delegateTx.toLowerCase();
-
-        //   if (delegateTxAddr === "0x0000000000000000000000000000000000000000") {
-        //     setSelfDelegate(false);
-        //   } else {
-        //     setSelfDelegate(true);
-        //   }
-        // }
-        const public_client = createPublicClient({
-          chain: network === "optimism" ? optimism : arbitrum,
-          transport: http(),
-        });
-
-        const delegateTx = await public_client.readContract({
-          address: contractAddress as `0x${string}`,
-          abi: dao_abi.abi,
-          functionName: "delegates",
-          args: [walletAddress],
-        }) as string;
-
-        const isSelfDelegate = 
-          delegateTx.toLowerCase() !== "0x0000000000000000000000000000000000000000" &&
-          delegateTx.toLowerCase() === walletAddress.toLowerCase();
-
-        console.log("Is self delegate (MainProfile):", isSelfDelegate);
-        setSelfDelegate(isSelfDelegate);
-      } catch (e) {
-        console.log("error in function: ", e);
-        setSelfDelegate(false);
-      }
-    };
-    checkDelegateStatus();
-  }, [walletAddress, chain]);
-
-  // Pass the address of whom you want to delegate the voting power to
-  // const handleDelegateVotes = async (to: string) => {
-  //   try {
-  //     // const addr = await walletClient.getAddresses();
-  //     // const address1 = addr[0];
-  //     const contractAddress = getChainAddress(chain?.name);
-
-  //     const delegateTx = await walletClient.writeContract({
-  //       address: contractAddress,
-  //       abi: dao_abi.abi,
-  //       functionName: "delegate",
-  //       args: [to],
-  //       account: walletAddress,
-  //     });
-
-  //     console.log(delegateTx);
-  //   } catch (error) {
-  //     console.log("Error:", error);
-  //     toast.error("Failed to become delegate. Please try again.");
-  //   }
-  // };
-
-  const handleDelegateVotes = async (
-    to: string
-    // walletAddress: string | undefined,
-    // wallets: any[],
-    // setDelegatingToAddr: (value: boolean) => void,
-    // setConfettiVisible: (value: boolean) => void
-  ) => {
+  const handleDelegateVotes = async (to: string) => {
     if (!walletAddress) {
       toast.error("Please connect your wallet!");
       return;
     }
 
-    
     try {
-      // setDelegatingToAddr(true);
-
       // Get provider from Privy wallet
       const privyProvider = await wallets[0]?.getEthereumProvider();
 
@@ -376,42 +182,25 @@ function MainProfile() {
       const currentNetwork = await provider.getNetwork();
       const currentChainId = Number(currentNetwork.chainId);
 
-      // Determine the required network based on current chain
-      const chainConfig = {
-        10: {
-          name: "OP Mainnet",
-          chainId: 10,
-        },
-        42161: {
-          name: "Arbitrum One",
-          chainId: 42161,
-        },
-      };
+      const daoKey = Object.keys(daoConfigs).find(
+        (key) => daoConfigs[key].chainId == currentChainId
+      );
 
-      const currentChainConfig =
-        chainConfig[currentChainId as keyof typeof chainConfig];
-
-      if (!currentChainConfig) {
-        toast.error("Please connect to OP Mainnet or Arbitrum One");
-        return;
-      }
-
-      // Get contract address for current chain
-      const chainAddress = getChainAddress(currentChainConfig.name);
-      if (!chainAddress) {
-        toast.error("Invalid chain address for current network");
+      // Ensure daoKey is not undefined before accessing chainAddress
+      const ContractAddress = daoKey
+        ? daoConfigs[daoKey].chainAddress
+        : undefined;
+      if (!ContractAddress) {
+        toast.error("Invalid ContractAddress address for current network");
         return;
       }
 
       const signer = await provider.getSigner();
 
-      const contract = new Contract(chainAddress, dao_abi.abi, signer);
+      const contract = new Contract(ContractAddress, dao_abi.abi, signer);
 
       const tx = await contract.delegate(to);
       await tx.wait();
-
-      // setConfettiVisible(true);
-      // setTimeout(() => setConfettiVisible(false), 5000);
       toast.success("Delegation successful!");
       const currentNetworkDAO = await provider.getNetwork();
 
@@ -425,35 +214,31 @@ function MainProfile() {
               from_delegate: "0x0000000000000000000000000000000000000000",
               token: "0.00",
               page: "Mainprofile",
-              timestamp:new Date()
+              timestamp: new Date(),
             },
           ],
         },
       };
 
-      const Clienttoken=await getAccessToken();
-        const myHeaders: HeadersInit = {
-          "Content-Type": "application/json",
-          ...(walletAddress && {
-            "x-wallet-address": walletAddress,
-            Authorization: `Bearer ${Clienttoken}`,
-          }),
-        };
-        const response = await fetchApi("/track-delegation", {
-          method: "POST",
-          headers: myHeaders,
-          body: JSON.stringify(apiCallData),
-        });
+      const Clienttoken = await getAccessToken();
+      const myHeaders: HeadersInit = {
+        "Content-Type": "application/json",
+        ...(walletAddress && {
+          "x-wallet-address": walletAddress,
+          Authorization: `Bearer ${Clienttoken}`,
+        }),
+      };
+      const response = await fetchApi("/track-delegation", {
+        method: "POST",
+        headers: myHeaders,
+        body: JSON.stringify(apiCallData),
+      });
 
-        if (!response.ok) {
-          throw new Error("Failed to save delegation data!");
-        }
-
-      setSpin(false);
+      if (!response.ok) {
+        throw new Error("Failed to save delegation data!");
+      }
     } catch (error) {
       console.error("Delegation failed:", error);
-      setSpin(false);
-
       const errorMessage =
         error instanceof Error ? error.message : String(error);
 
@@ -482,6 +267,7 @@ function MainProfile() {
       setCopiedAddress(null);
     }, 4000);
   };
+
   const handleUpdateFollowings = async (
     daoname: string,
     isChange: number,
@@ -489,57 +275,85 @@ function MainProfile() {
   ) => {
     setLoading(true);
     setIsModalLoading(true);
-    const token=await getAccessToken();
-    const myHeaders: HeadersInit = {
-      "Content-Type": "application/json",
-      ...(walletAddress && {
-        "x-wallet-address": walletAddress,
-        Authorization: `Bearer ${token}`,
-      }),
-    };
 
-    const raw = JSON.stringify({
-      address: walletAddress,
-      // daoName: dao,
-    });
+    try {
+      const token = await getAccessToken();
+      const myHeaders: HeadersInit = {
+        "Content-Type": "application/json",
+        ...(walletAddress && {
+          "x-wallet-address": walletAddress,
+          Authorization: `Bearer ${token}`,
+        }),
+      };
 
-    const requestOptions: any = {
-      method: "POST",
-      headers: myHeaders,
-      body: raw,
-      redirect: "follow",
-    };
-    const res = await fetchApi(`/delegate-follow/savefollower`, requestOptions);
+      const raw = JSON.stringify({
+        address: walletAddress,
+      });
 
-    const dbResponse = await res.json();
+      const requestOptions: any = {
+        method: "POST",
+        headers: myHeaders,
+        body: raw,
+        redirect: "follow",
+      };
 
-    if (isfollowingchange == 1) {
-      updateFollowerState(dbResponse);
-    } else {
-      // setDbResponse(dbResponse);
-      setIsFollowingModalOpen(true);
-      for (const item of dbResponse.data) {
-        const matchDao = item.followings.find(
-          (daoItem: any) => daoItem.dao === daoname
-        );
+      const res = await fetchApi(
+        `/delegate-follow/savefollower`,
+        requestOptions
+      );
+      const dbResponse = await res.json();
 
-        if (matchDao) {
-          const activeFollowings = matchDao.following.filter(
-            (f: Following) => f.isFollowing
+      if (isfollowingchange === 1) {
+        updateFollowerState(dbResponse);
+      } else {
+        setIsFollowingModalOpen(true);
+        if (daoname === "all") {
+          const allFollowings = dbResponse.data.reduce(
+            (acc: any[], item: any) => {
+              const daoFollowings = item.followings.flatMap((daoItem: any) =>
+                daoItem.following
+                  .filter((f: Following) => f.isFollowing)
+                  .map((f: Following) => ({
+                    ...f,
+                    dao: daoItem.dao, // Add the dao name to each following
+                  }))
+              );
+              return [...acc, ...daoFollowings];
+            },
+            []
           );
-          if (isChange == 1) {
-            setFollowings(activeFollowings.length);
-          }
-          setUserFollowings(activeFollowings);
+          setUserFollowings(allFollowings);
         } else {
-          // setFollowings(0);
-          setUserFollowings([]);
+          // Filter for specific DAO
+          for (const item of dbResponse.data) {
+            const matchDao = item.followings.find(
+              (daoItem: any) => daoItem.dao === daoname
+            );
+
+            if (matchDao) {
+              const activeFollowings = matchDao.following
+                .filter((f: Following) => f.isFollowing)
+                .map((f: Following) => ({
+                  ...f,
+                  dao: matchDao.dao, // Add the dao name to each following
+                }));
+              if (isChange === 1) {
+                setFollowings(activeFollowings.length);
+              }
+              setUserFollowings(activeFollowings);
+            } else {
+              setUserFollowings([]);
+            }
+          }
         }
       }
+    } catch (error) {
+      console.error("Error updating followings:", error);
+      setUserFollowings([]);
+    } finally {
+      setLoading(false);
+      setIsModalLoading(false);
     }
-    // Close the modal
-    setLoading(false);
-    setIsModalLoading(false);
   };
 
   const toggleFollowing = async (
@@ -555,7 +369,7 @@ function MainProfile() {
 
     if (!userupdate.isFollowing) {
       setFollowings(followings + 1);
-      const token=await getAccessToken();
+      const token = await getAccessToken();
       const myHeaders: HeadersInit = {
         "Content-Type": "application/json",
         ...(walletAddress && {
@@ -568,7 +382,6 @@ function MainProfile() {
           method: "PUT",
           headers: myHeaders,
           body: JSON.stringify({
-            // Add any necessary data
             delegate_address: userupdate.follower_address,
             follower_address: walletAddress,
             dao: unfollowDao,
@@ -580,7 +393,6 @@ function MainProfile() {
         }
 
         const data = await response.json();
-        // settoaster(false);
       } catch (error) {
         console.error("Error following:", error);
       }
@@ -589,9 +401,8 @@ function MainProfile() {
         setFollowings(followings - 1);
       }
       setLoading(true);
-      // settoaster(true);
       try {
-        const token=await getAccessToken();
+        const token = await getAccessToken();
         const myHeaders: HeadersInit = {
           "Content-Type": "application/json",
           ...(walletAddress && {
@@ -616,7 +427,6 @@ function MainProfile() {
         }
 
         const data = await response.json();
-        // settoaster(false);
         setLoading(false);
       } catch (error) {
         setLoading(false);
@@ -635,10 +445,8 @@ function MainProfile() {
         i === index ? { ...user, isNotification: !user.isNotification } : user
       )
     );
-    // settoaster(true);
-
     try {
-      const token=await getAccessToken();
+      const token = await getAccessToken();
       const myHeaders: HeadersInit = {
         "Content-Type": "application/json",
         ...(walletAddress && {
@@ -650,7 +458,6 @@ function MainProfile() {
         method: "PUT",
         headers: myHeaders,
         body: JSON.stringify({
-          // Add any necessary data
           delegate_address: userupdate.follower_address,
           follower_address: walletAddress,
           action: 2,
@@ -664,7 +471,6 @@ function MainProfile() {
       }
 
       const data = await response.json();
-      // settoaster(false);
     } catch (error) {
       console.error("Error following:", error);
     }
@@ -679,19 +485,17 @@ function MainProfile() {
 
   const updateFollowerState = async (dbResponse: any) => {
     const userData = dbResponse?.data?.[0];
-    // let address = await walletClient.getAddresses();
-    // let address_user = address[0].toLowerCase();
-    let currentDaoName = getDaoName(chain?.name);
-    // if (chain?.name === "Optimism") {
-    //   currentDaoName = "optimism";
-    // } else if (chain?.name === "Arbitrum One") {
-    //   currentDaoName = "arbitrum";
-    // }
+
+    const daoKey = Object.keys(daoConfigs).find(
+      (key) => daoConfigs[key].chainName === chain?.name
+    );
+
+    let currentDaoName = daoKey;
 
     // Process following details
     const matchDao = userData?.followings?.find(
       (daoItem: any) =>
-        daoItem.dao.toLowerCase() === currentDaoName.toLowerCase()
+        daoItem.dao.toLowerCase() === currentDaoName?.toLowerCase()
     );
 
     if (matchDao) {
@@ -720,7 +524,7 @@ function MainProfile() {
     setIsLoading(true);
     const isEmailVisible = !isToggled;
     try {
-      const token=await getAccessToken();
+      const token = await getAccessToken();
       const myHeaders: HeadersInit = {
         "Content-Type": "application/json",
         ...(walletAddress && {
@@ -754,16 +558,283 @@ function MainProfile() {
     }
   };
 
+  const handleSave = async (newDescription?: string) => {
+    try {
+      // Check if the delegate already exists in the database
+      if (newDescription) {
+        setDescription(newDescription);
+      }
+      setIsLoading(true);
+      const isExisting = await checkDelegateExists(walletAddress);
+
+      if (isExisting) {
+        // If delegate exists, update the delegate
+        await handleUpdate(newDescription);
+        setIsLoading(false);
+        onClose();
+      } else {
+        // If delegate doesn't exist, add a new delegate
+        setIsLoading(false);
+        onClose();
+      }
+
+      toast.success("Saved");
+    } catch (error) {
+      console.error("Error handling delegate:", error);
+      toast.error("Error saving");
+      setIsLoading(false);
+    }
+  };
+
+  const checkDelegateExists = async (address: any) => {
+    try {
+      // Make a request to your backend API to check if the address exists
+      const token = await getAccessToken();
+      const myHeaders: HeadersInit = {
+        "Content-Type": "application/json",
+        ...(walletAddress && {
+          "x-wallet-address": walletAddress,
+          Authorization: `Bearer ${token}`,
+        }),
+      };
+
+      const raw = JSON.stringify({
+        address: address,
+      });
+
+      const requestOptions: any = {
+        method: "POST",
+        headers: myHeaders,
+        body: raw,
+        redirect: "follow",
+      };
+      const res = await fetchApi(`/profile/${address}`, requestOptions);
+
+      const response = await res.json();
+
+      if (Array.isArray(response.data) && response.data.length > 0) {
+        for (const item of response.data) {
+          const dbAddress = item.address;
+          if (dbAddress.toLowerCase() === address.toLowerCase()) {
+            return true; // Return true if match found
+          }
+        }
+      }
+      return false;
+    } catch (error) {
+      console.error("Error checking delegate existence:", error);
+      return false;
+    }
+  };
+
+  const handleUpdate = async (newDescription?: string) => {
+    try {
+      const token = await getAccessToken();
+      const myHeaders: HeadersInit = {
+        "Content-Type": "application/json",
+        ...(walletAddress && {
+          "x-wallet-address": walletAddress,
+          Authorization: `Bearer ${token}`,
+        }),
+      };
+      const raw = JSON.stringify({
+        address: walletAddress,
+        image: modalData.displayImage,
+        isDelegate: true,
+        displayName: modalData.displayName,
+        emailId: modalData.emailId,
+        socialHandles: {
+          twitter: modalData.twitter,
+          discord: modalData.discord,
+          github: modalData.github,
+        },
+        networks: [
+          {
+            dao_name: daoName,
+            network: chain?.name,
+            discourse: modalData.discourse,
+            description: newDescription ? newDescription : description,
+          },
+        ],
+      });
+
+      const requestOptions: any = {
+        method: "PUT",
+        headers: myHeaders,
+        body: raw,
+        redirect: "follow",
+      };
+      const response = await fetchApi("/profile", requestOptions);
+      const result = await response.json();
+      if (response.status === 200) {
+        setIsLoading(false);
+        setUserData({
+          displayImage: modalData.displayImage,
+          displayName: modalData.displayName,
+          twitter: modalData.twitter,
+          discord: modalData.discord,
+          discourse: modalData.discourse,
+          github: modalData.github,
+        });
+      } else {
+        console.error("Failed to update delegate:", result.error);
+        setIsLoading(false);
+      }
+    } catch (error) {
+      console.error("Error calling PUT API:", error);
+      setIsLoading(false);
+    }
+  };
+
+  //Hooks
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  useEffect(() => {
+    const currentWalletAddress = user?.wallet?.address;
+    if (
+      currentWalletAddress &&
+      walletAddress &&
+      currentWalletAddress.toLowerCase() !== walletAddress.toLowerCase()
+    ) {
+      handleLogout();
+      login();
+    }
+  }, [authenticated, walletAddress]);
+
+  useEffect(() => {
+    const activeTab = searchParams.get("active");
+    if (activeTab) {
+      const tab = tabs.find((t) => t.value === activeTab);
+      setSelectedTab(tab?.name || "Info");
+    }
+  }, [searchParams, tabs]);
+
+  useEffect(() => {
+    const daoKey = Object.keys(daoConfigs).find(
+      (key) => daoConfigs[key].chainName === chain?.name
+    );
+    setDaoName(daoKey ? daoKey : "");
+  }, [chain, chain?.name]);
+
+  useEffect(() => {
+    if (isConnected && authenticated && path.includes("profile/undefined")) {
+      const newPath = path.includes("profile/undefined")
+        ? path.replace(
+            "profile/undefined",
+            `profile/${walletAddress}?active=info`
+          )
+        : path;
+      router.replace(`${newPath}`);
+    } else if (!isConnected && !authenticated) {
+      if (!authenticated) {
+        login();
+        return;
+      } else {
+        console.error("openConnectModal is not defined");
+      }
+    }
+  }, [
+    isConnected,
+    walletAddress,
+    router,
+    session,
+    path.includes("profile/undefined"),
+  ]);
+
+  useEffect(() => {
+    const checkDelegateStatus = async () => {
+      if (!walletAddress || !chain) return;
+      try {
+        const daoKey = Object.keys(daoConfigs).find(
+          (key) => daoConfigs[key].chainName === chain.name
+        );
+
+        const contractAddress = daoKey ? daoConfigs[daoKey].chainAddress : null;
+        const network = daoKey;
+
+        const predefinedChains: Record<string, any> = {
+          optimism,
+          arbitrum,
+          mantle,
+        };
+
+        const chainMappings: Record<string, any> = Object.fromEntries(
+          Object.entries(daoConfigs).map(([key, config]) => {
+            // Use predefined viem chains if available, otherwise define it dynamically
+            return [
+              key,
+              predefinedChains[key] || {
+                id: config.chainId,
+                name: config.name,
+                network: key,
+                nativeCurrency: {
+                  name: config.tokenSymbol,
+                  symbol: config.tokenSymbol,
+                  decimals: 18,
+                },
+                rpcUrls: { default: { http: [`https://rpc.${key}.xyz`] } }, // Update with actual RPC URL
+                blockExplorers: {
+                  default: {
+                    name: `${config.name} Explorer`,
+                    url: config.explorerUrl,
+                  },
+                },
+              },
+            ];
+          })
+        );
+        const viemChain = daoKey ? chainMappings[daoKey] : null;
+
+        const public_client = createPublicClient({
+          chain: viemChain || optimism,
+          transport: http(),
+        });
+
+        const delegateTx = (await public_client.readContract({
+          address: contractAddress as `0x${string}`,
+          abi: dao_abi.abi,
+          functionName: "delegates",
+          args: [walletAddress],
+        })) as string;
+
+        const isSelfDelegate =
+          delegateTx.toLowerCase() !==
+            "0x0000000000000000000000000000000000000000" &&
+          delegateTx.toLowerCase() === walletAddress.toLowerCase();
+        setSelfDelegate(isSelfDelegate);
+      } catch (e) {
+        console.log("error in function: ", e);
+        setSelfDelegate(false);
+      }
+    };
+    checkDelegateStatus();
+  }, [walletAddress, chain]);
+
   useEffect(() => {
     if (!walletAddress) return;
     const fetchData = async () => {
       try {
-        // Fetch data from your backend API to check if the address exists
-        // const dbResponse = await axios.get(`/api/profile/${address}`);
+        const token = await getAccessToken();
 
-        const token=await getAccessToken();
+        const daoKey = Object.keys(daoConfigs).find(
+          (key) => daoConfigs[key].chainName === chain?.name
+        );
 
-        let dao = getDaoName(chain?.name);
+        let dao = daoKey;
         const myHeaders: HeadersInit = {
           "Content-Type": "application/json",
           ...(walletAddress && {
@@ -774,7 +845,6 @@ function MainProfile() {
 
         const raw = JSON.stringify({
           address: walletAddress,
-          // daoName: dao,
         });
 
         const requestOptions: any = {
@@ -810,14 +880,7 @@ function MainProfile() {
         }
 
         if (dbResponse.data.length > 0) {
-          // console.log(`Length ${dbResponse.data.length}`);
-          const profileData = dbResponse.data[0];
-          // console.log(profileData);
-          // console.log(
-          //   "dbResponse.data[0]?.networks:",
-          //   dbResponse.data[0]?.networks
-          // );
-          // alert(dbResponse.data[0]);
+          setIsPageLoading(false);
           setUserData({
             displayName: dbResponse.data[0]?.displayName,
             discord: dbResponse.data[0]?.socialHandles?.discord,
@@ -829,7 +892,6 @@ function MainProfile() {
             github: dbResponse.data[0].socialHandles?.github,
             displayImage: dbResponse.data[0]?.image,
           });
-
           setAttestationStatistics(dbResponse.data[0]?.meetingRecords ?? null);
 
           setModalData({
@@ -855,9 +917,8 @@ function MainProfile() {
             setFollowings(0);
             setFollowers(0);
           } else {
-            await handleUpdateFollowings(daoName, 0, 1);
+            await handleUpdateFollowings("all", 0, 1);
           }
-          setIsPageLoading(false);
         } else {
           setUserData({
             displayName: karmaDetails.data.delegate.ensName,
@@ -872,7 +933,6 @@ function MainProfile() {
         }
       } catch (error) {
         console.error("Error fetching data:", error);
-        // toast.error("Failed to load profile data. Please try again later.");
         setIsPageLoading(false);
       }
     };
@@ -882,214 +942,8 @@ function MainProfile() {
     }
   }, [chain, walletAddress]);
 
-  const handleSave = async (newDescription?: string) => {
-    try {
-      // Check if the delegate already exists in the database
-      if (newDescription) {
-        setDescription(newDescription);
-      }
-      setIsLoading(true);
-      const isExisting = await checkDelegateExists(walletAddress);
-
-      if (isExisting) {
-        // If delegate exists, update the delegate
-        await handleUpdate(newDescription);
-        setIsLoading(false);
-        onClose();
-      } else {
-        // If delegate doesn't exist, add a new delegate
-        await handleAdd(newDescription);
-        setIsLoading(false);
-        onClose();
-      }
-
-      toast.success("Saved");
-    } catch (error) {
-      console.error("Error handling delegate:", error);
-      toast.error("Error saving");
-      setIsLoading(false);
-    }
-  };
-
-  const checkDelegateExists = async (address: any) => {
-    try {
-      // Make a request to your backend API to check if the address exists
-      const token=await getAccessToken();
-      const myHeaders: HeadersInit = {
-        "Content-Type": "application/json",
-        ...(walletAddress && {
-          "x-wallet-address": walletAddress,
-          Authorization: `Bearer ${token}`,
-        }),
-      };
-
-      const raw = JSON.stringify({
-        address: address,
-        // daoName: dao,
-      });
-
-      const requestOptions: any = {
-        method: "POST",
-        headers: myHeaders,
-        body: raw,
-        redirect: "follow",
-      };
-      const res = await fetchApi(`/profile/${address}`, requestOptions);
-
-      const response = await res.json();
-
-      if (Array.isArray(response.data) && response.data.length > 0) {
-        // Iterate over each item in the response data array
-        for (const item of response.data) {
-          // Check if address and daoName match
-          const dbAddress = item.address;
-          if (dbAddress.toLowerCase() === address.toLowerCase()) {
-            return true; // Return true if match found
-          }
-        }
-      }
-
-      return false;
-      // Assuming the API returns whether the delegate exists
-    } catch (error) {
-      console.error("Error checking delegate existence:", error);
-      return false;
-    }
-  };
-
-  const handleAdd = async (newDescription?: string) => {
-    try {
-      // Call the POST API function for adding a new delegate
-      const token=await getAccessToken();
-      const myHeaders: HeadersInit = {
-        "Content-Type": "application/json",
-        ...(walletAddress && {
-          "x-wallet-address": walletAddress,
-          Authorization: `Bearer ${token}`,
-        }),
-      };
-      const raw = JSON.stringify({
-        address: walletAddress,
-        image: modalData.displayImage,
-        isDelegate: true,
-        displayName: modalData.displayName,
-        emailId: modalData.emailId,
-        isEmailVisible: false,
-        socialHandles: {
-          twitter: modalData.twitter,
-          discord: modalData.discord,
-          github: modalData.github,
-        },
-        networks: [
-          {
-            dao_name: daoName,
-            network: chain?.name,
-            discourse: modalData.discourse,
-            description: newDescription,
-          },
-        ],
-      });
-
-      const requestOptions: any = {
-        method: "POST",
-        headers: myHeaders,
-        body: raw,
-        redirect: "follow",
-      };
-
-      const response = await fetchApi("/profile/", requestOptions);
-
-      if (response.status === 200) {
-        // Delegate added successfully
-        setIsLoading(false);
-        setUserData({
-          displayImage: modalData.displayImage,
-          displayName: modalData.displayName,
-          twitter: modalData.twitter,
-          discord: modalData.discord,
-          discourse: modalData.discourse,
-          github: modalData.github,
-        });
-      } else {
-        console.error("Failed to add delegate:", response.statusText);
-        setIsLoading(false);
-      }
-    } catch (error) {
-      console.error("Error calling POST API:", error);
-      setIsLoading(false);
-    }
-  };
-
-  // Function to handle updating an existing delegate
-  const handleUpdate = async (newDescription?: string) => {
-    try {
-      const token=await getAccessToken();
-      const myHeaders: HeadersInit = {
-        "Content-Type": "application/json",
-        ...(walletAddress && {
-          "x-wallet-address": walletAddress,
-          Authorization: `Bearer ${token}`,
-        }),
-      };
-      const raw = JSON.stringify({
-        address: walletAddress,
-        image: modalData.displayImage,
-        isDelegate: true,
-        displayName: modalData.displayName,
-        emailId: modalData.emailId,
-        socialHandles: {
-          twitter: modalData.twitter,
-          discord: modalData.discord,
-          github: modalData.github,
-        },
-        networks: [
-          {
-            dao_name: daoName,
-            network: chain?.name,
-            discourse: modalData.discourse,
-            description: newDescription ? newDescription : description,
-          },
-        ],
-      });
-
-
-      const requestOptions: any = {
-        method: "PUT",
-        headers: myHeaders,
-        body: raw,
-        redirect: "follow",
-      };
-      const response = await fetchApi("/profile", requestOptions);
-      const result = await response.json();
-      // Handle response from the PUT API function
-      if (response.status === 200) {
-        // Delegate updated successfully
-        setIsLoading(false);
-        setUserData({
-          displayImage: modalData.displayImage,
-          displayName: modalData.displayName,
-          twitter: modalData.twitter,
-          discord: modalData.discord,
-          discourse: modalData.discourse,
-          github: modalData.github,
-        });
-      } else {
-        console.error("Failed to update delegate:", result.error);
-        setIsLoading(false);
-      }
-    } catch (error) {
-      console.error("Error calling PUT API:", error);
-      setIsLoading(false);
-    }
-  };
-
   return (
     <>
-      {/* For Mobile Screen */}
-      {/* <MobileResponsiveMessage/> */}
-
-      {/* For Desktop Screen  */}
-      {/* <div className="hidden md:block"> */}
       <div className="lg:hidden pt-2 xs:pt-4 sm:pt-6 px-4 md:px-6 lg:px-14">
         <Heading />
       </div>
@@ -1107,17 +961,13 @@ function MainProfile() {
                 }}
               >
                 <div className="w-full h-full xs:w-28 xs:h-28 sm:w-36 sm:h-36 lg:w-40 lg:h-40 flex items-center justify-center ">
-                  {/* <div className="flex justify-center items-center w-40 h-40"> */}
                   <Image
                     src={
-                      (userData.displayImage
+                      userData.displayImage
                         ? `https://gateway.lighthouse.storage/ipfs/${userData.displayImage}`
-                        : karmaImage) ||
-                      (daoName === "optimism"
-                        ? OPLogo
-                        : daoName === "arbitrum"
-                        ? ArbLogo
-                        : ccLogo)
+                        : daoName && typeof daoConfigs === 'object' && daoConfigs[daoName.toLowerCase()] 
+                          ? daoConfigs[daoName.toLowerCase()].logo || ccLogo
+                          : ccLogo
                     }
                     alt="user"
                     width={256}
@@ -1127,8 +977,8 @@ function MainProfile() {
                         ? "w-full xs:w-28 xs:h-28 sm:w-36 sm:h-36 lg:w-40 lg:h-40 rounded-3xl"
                         : "w-14 h-14 sm:w-20 sm:h-20 lg:w-20 lg:h-20 rounded-3xl"
                     }
+                    priority={true}
                   />
-                  {/* </div> */}
 
                   <Image
                     src={ccLogo}
@@ -1140,6 +990,7 @@ function MainProfile() {
                       marginTop: "10px",
                       marginRight: "10px",
                     }}
+                    priority={true}
                   />
                 </div>
               </div>
@@ -1175,10 +1026,8 @@ function MainProfile() {
                     </Link>
                     <Link
                       href={
-                        daoName === "optimism"
-                          ? `https://gov.optimism.io/u/${userData.discourse}`
-                          : daoName == "arbitrum"
-                          ? `https://forum.arbitrum.foundation/u/${userData.discourse}`
+                        daoName
+                          ? `${daoConfigs[daoName].discourseUrl}/${userData.discourse}`
                           : ""
                       }
                       className={`border-[0.5px] border-[#8E8E8E] rounded-full h-fit p-1  ${
@@ -1237,7 +1086,6 @@ function MainProfile() {
                       uploadImage={uploadImage}
                       fileInputRef={fileInputRef}
                       isLoading={isLoading}
-                      // displayImage={userData.displayImage}
                       handleSave={handleSave}
                       handleToggle={handleToggle}
                       isToggled={isToggled}
@@ -1279,7 +1127,7 @@ function MainProfile() {
                     >
                       <Button
                         className="bg-gray-200 hover:bg-gray-300 text-xs sm:text-sm "
-                        onClick={() => {
+                        onPress={() => {
                           if (typeof window === "undefined") return;
                           navigator.clipboard.writeText(
                             `${BASE_URL}/${getDaoName(
@@ -1313,73 +1161,70 @@ function MainProfile() {
 
                 {selfDelegate === false ? (
                   <div className="pt-2 flex flex-col 2.3sm:flex-row gap-2 w-full items-center">
-                  <div className=" flex flex-col xs:flex-row gap-2 w-full xs:w-auto items-center">
-                    {/* pass address of whom you want to delegate the voting power to */}
-                    <button
-                      className="bg-blue-shade-200 font-bold text-white rounded-full py-[10px] px-4 xs:py-[9px] md:py-2.5 xs:px-4 sm:px-6 xs:text-xs sm:text-sm md:text-base lg:px-8 lg:py-[10px] w-full xs:w-auto h-fit"
-                      onClick={() => handleDelegateVotes(`${walletAddress}`)}
-                      disabled={isspin}
-                    >
-                      {isspin ? (
-                        <div className="flex justify-center items-center">
-                          <Oval color="#fff" height={20} width={20} />
-                          {/* <InfinitySpin width="" color="#fff" /> */}
-                        </div>
-                      ) : (
-                        "Become Delegate"
-                      )}
-                    </button>
+                    <div className=" flex flex-col xs:flex-row gap-2 w-full xs:w-auto items-center">
+                      <button
+                        className="bg-blue-shade-200 font-bold text-white rounded-full py-[10px] px-4 xs:py-[9px] md:py-2.5 xs:px-4 sm:px-6 xs:text-xs sm:text-sm md:text-base lg:px-8 lg:py-[10px] w-full xs:w-auto h-fit"
+                        onClick={() => handleDelegateVotes(`${walletAddress}`)}
+                        disabled={isspin}
+                      >
+                        {isspin ? (
+                          <div className="flex justify-center items-center">
+                            <Oval color="#fff" height={20} width={20} />
+                          </div>
+                        ) : (
+                          "Become Delegate"
+                        )}
+                      </button>
 
-                    <button
-                      className="bg-blue-shade-200 font-bold text-white rounded-full px-6 py-[10px] xs:py-2 md:py-2.5 md:text-base xs:text-xs sm:text-sm lg:px-8 lg:py-[10px] w-full xs:w-[160px] lg:w-[185px] flex items-center justify-center h-fit"
-                      onClick={() =>
-                        followings
-                          ? handleUpdateFollowings(daoName, 1, 0)
-                          : toast.error(
-                              "You're not following anyone yet. Start exploring delegate profiles now!"
-                            )
-                      }
-                    >
-                      {isModalLoading ? (
-                        <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white"></div>
-                      ) : (
-                        `${followings} Following`
-                      )}
-                    </button>
+                      <button
+                        className="bg-blue-shade-200 font-bold text-white rounded-full px-6 py-[10px] xs:py-2 md:py-2.5 md:text-base xs:text-xs sm:text-sm lg:px-8 lg:py-[10px] w-full xs:w-[160px] lg:w-[185px] flex items-center justify-center h-fit"
+                        onClick={() =>
+                          followings
+                            ? handleUpdateFollowings(daoName, 1, 0)
+                            : toast.error(
+                                "You're not following anyone yet. Start exploring delegate profiles now!"
+                              )
+                        }
+                      >
+                        {isModalLoading ? (
+                          <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white"></div>
+                        ) : (
+                          `${followings} Following`
+                        )}
+                      </button>
                     </div>
-                    <SelectDaoButton daoName={daoName}/>
+                    <SelectDaoButton daoName={daoName} />
                   </div>
                 ) : (
                   <div className="pt-2 flex flex-col 2.3sm:flex-row gap-2 w-full items-center">
-                  <div className=" flex flex-col xs:flex-row gap-2 w-full xs:w-auto items-center">
-                    <button className="bg-blue-shade-200 font-bold text-white rounded-full py-[10px] px-4 xs:py-[9px] md:py-2.5 xs:px-8 sm:px-6 xs:text-xs sm:text-sm md:text-base lg:px-8 lg:py-[10px] w-full xs:w-auto h-fit">
-                      {followers}{" "}
-                      {followers === 0 || followers === 1
-                        ? "Follower"
-                        : "Followers"}
-                    </button>
+                    <div className=" flex flex-col xs:flex-row gap-2 w-full xs:w-auto items-center">
+                      <button className="bg-blue-shade-200 font-bold text-white rounded-full py-[10px] px-4 xs:py-[9px] md:py-2.5 xs:px-8 sm:px-6 xs:text-xs sm:text-sm md:text-base lg:px-8 lg:py-[10px] w-full xs:w-auto h-fit">
+                        {followers}{" "}
+                        {followers === 0 || followers === 1
+                          ? "Follower"
+                          : "Followers"}
+                      </button>
 
-                    <button
-                      className="bg-blue-shade-200 font-bold text-white rounded-full px-6 py-[10px] xs:py-2 md:py-2.5 md:text-base xs:text-xs sm:text-sm lg:px-8 lg:py-[10px] w-full xs:w-[168px] lg:w-[185px] flex items-center justify-center h-fit"
-                      onClick={() =>
-                        followings
-                          ? handleUpdateFollowings(daoName, 1, 0)
-                          : toast.error(
-                              "You're not following anyone yet. Start exploring delegate profiles now!"
-                            )
-                      }
-                    >
-                      {followings} Followings
-                    </button>
+                      <button
+                        className="bg-blue-shade-200 font-bold text-white rounded-full px-6 py-[10px] xs:py-2 md:py-2.5 md:text-base xs:text-xs sm:text-sm lg:px-8 lg:py-[10px] w-full xs:w-[168px] lg:w-[185px] flex items-center justify-center h-fit"
+                        onClick={() =>
+                          followings
+                            ? handleUpdateFollowings(daoName, 1, 0)
+                            : toast.error(
+                                "You're not following anyone yet. Start exploring delegate profiles now!"
+                              )
+                        }
+                      >
+                        {followings} Followings
+                      </button>
                     </div>
-                    <SelectDaoButton daoName={daoName}/>
+                    <SelectDaoButton daoName={daoName} />
                   </div>
                 )}
               </div>
             </div>
             <div className="absolute right-4 md:right-6 lg:right-14 hidden lg:flex gap-1 xs:gap-2 items-center">
               <RewardButton />
-              {/* <ConnectWalletWithENS /> */}
             </div>
           </div>
 
@@ -1501,7 +1346,6 @@ function MainProfile() {
                     description={description}
                     isDelegate={isDelegate}
                     isSelfDelegate={selfDelegate}
-                    // descAvailable={descAvailable}
                     onSaveButtonClick={(newDescription?: string) =>
                       handleSave(newDescription)
                     }
@@ -1523,14 +1367,12 @@ function MainProfile() {
               )}
 
               {searchParams.get("active") === "sessions" ? (
-                // <div className="pt-2 xs:pt-4 sm:pt-6 px-4 md:px-6 lg:px-14">
                 <UserSessions
                   isDelegate={isDelegate}
                   selfDelegate={selfDelegate}
                   daoName={daoName}
                 />
               ) : (
-                // </div>
                 ""
               )}
 
@@ -1566,7 +1408,6 @@ function MainProfile() {
           <MainProfileSkeletonLoader />
         </>
       )}
-      {/* </div> */}
     </>
   );
 }

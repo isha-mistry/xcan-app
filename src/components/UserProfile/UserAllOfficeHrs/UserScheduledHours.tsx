@@ -31,6 +31,7 @@ import Image from "next/image";
 import { useAccount, useSwitchChain } from "wagmi";
 import OPLogo from "@/assets/images/daos/op.png";
 import ArbLogo from "@/assets/images/daos/arb.png";
+import { daoConfigs } from "@/config/daos";
 
 const UserScheduledHours: React.FC<{
   daoName: string;
@@ -52,6 +53,8 @@ const UserScheduledHours: React.FC<{
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const hoverDelay = 300;
 
+  let currentDAO=daoConfigs[daoName];
+
   const handleMouseLeave = () => {
     timeoutRef.current = setTimeout(() => {
       setIsOpen(false);
@@ -66,12 +69,23 @@ const UserScheduledHours: React.FC<{
     };
   }, []);
 
+  // Check if it's too late to book slots for today
+  const isTooLateForToday = useCallback(() => {
+    const now = new Date();
+    return now.getHours() >= 23;
+  }, []);
+
   const generateTimeOptions = useCallback(
     (selectedDate: Date, isStartTime: boolean, startTime?: string) => {
       const options: string[] = [];
       const now = new Date();
       const isCurrentDate = isToday(selectedDate);
       let startHour = isCurrentDate ? now.getHours() : 0;
+
+      // Check if it's too late for today
+      if (isCurrentDate && isTooLateForToday()) {
+        return options; // Return empty array if it's too late
+      }
 
       if (startTime && !isStartTime) {
         const [hours, minutes] = startTime.split(":").map(Number);
@@ -95,7 +109,7 @@ const UserScheduledHours: React.FC<{
 
       return options;
     },
-    []
+    [isTooLateForToday]
   );
 
   const generateRecurringDates = useCallback((baseDate: Date): Date[] => {
@@ -116,7 +130,12 @@ const UserScheduledHours: React.FC<{
   );
 
   const createTimeSlot = useCallback(
-    (date: Date, startTime: string): TimeSlot => {
+    (date: Date, startTime: string): TimeSlot | null => {
+      // Check if startTime is undefined or if it's too late for today
+      if (!startTime || (isToday(date) && isTooLateForToday())) {
+        return null;
+      }
+
       const [hours, minutes] = startTime.split(":").map(Number);
       let endHours = hours + 1;
       let endMinutes = minutes;
@@ -136,12 +155,18 @@ const UserScheduledHours: React.FC<{
         id: Math.random().toString(36).substr(2, 9),
       };
     },
-    []
+    [isTooLateForToday]
   );
 
   const toggleDateSelection = useCallback(
     (date: Date) => {
       if (isDateDisabled(date)) return;
+
+      // Check if it's too late to book for today
+      if (isToday(date) && isTooLateForToday()) {
+        toast.error("You cannot add slots for today, today's time is up. Please book slots for future dates.");
+        return;
+      }
 
       setSelectedDates((prevDates) => {
         // If date is already selected, remove it
@@ -152,14 +177,16 @@ const UserScheduledHours: React.FC<{
         }
 
         // Get existing schedules for the selected date
-        const dateString = format(date, "yyyy-MM-dd");
+        const dateString = format(date, "YYYY-MM-DD");
         const existingTimeSlotsForDate = existingSchedules
           .filter((schedule) => {
             const scheduleDate = format(
               new Date(schedule.startTime),
-              "yyyy-MM-dd"
+              "YYYY-MM-DD"
             );
-            return scheduleDate === dateString;
+            // return scheduleDate === dateString;
+            const isMatchingDate = scheduleDate === dateString;
+         return isMatchingDate;
           })
           .map((schedule) => ({
             startTime: format(new Date(schedule.startTime), "HH:mm"),
@@ -172,7 +199,7 @@ const UserScheduledHours: React.FC<{
           .sort((a, b) => a.startTime.localeCompare(b.startTime)); // Sort by start time
 
         // Determine initial time slots
-        let initialTimeSlots: TimeSlot[];
+        let initialTimeSlots: TimeSlot[] = [];
 
         if (existingTimeSlotsForDate.length > 0) {
           // If there are booked slots, only use those
@@ -182,7 +209,22 @@ const UserScheduledHours: React.FC<{
           const defaultStartTime = isToday(date)
             ? generateTimeOptions(date, true)[0]
             : "09:00";
-          initialTimeSlots = [createTimeSlot(date, defaultStartTime)];
+          
+          // Only create a time slot if we have a valid start time
+          if (defaultStartTime) {
+            const timeSlot = createTimeSlot(date, defaultStartTime);
+            if (timeSlot) {
+              initialTimeSlots = [timeSlot];
+            }
+          }
+        }
+
+        // Only create a schedule if we have valid time slots
+        if (initialTimeSlots.length === 0) {
+          if (isToday(date)) {
+            toast.error("You cannot add slots for today, today's time is up. Please book slots for future dates.");
+          }
+          return prevDates;
         }
 
         // Create new schedule
@@ -205,6 +247,7 @@ const UserScheduledHours: React.FC<{
       existingSchedules,
       title,
       description,
+      isTooLateForToday,
     ]
   );
 
@@ -257,12 +300,25 @@ const UserScheduledHours: React.FC<{
       setSelectedDates((prevDates) => {
         const newSchedules = [...prevDates];
         const schedule = newSchedules[dateIndex];
+        
+        // Check if it's too late to add slots for today
+        if (isToday(schedule.date) && isTooLateForToday()) {
+          toast.error("You cannot add slots for today, today's time is up. Please book slots for future dates.");
+          return newSchedules;
+        }
+        
         const lastSlot = schedule.timeSlots[schedule.timeSlots.length - 1];
 
+        // Check if we can create a new time slot
         const newTimeSlot = createTimeSlot(schedule.date, lastSlot.endTime);
+        
+        if (!newTimeSlot) {
+          toast.error("Cannot add more time slots for this date.");
+          return newSchedules;
+        }
 
         const conflictingSlot = existingSchedules.find((existingSlot) => {
-          const dateString = format(schedule.date, "yyyy-MM-dd");
+          const dateString = format(schedule.date, "YYYY-MM-DD");
           const newSlotStart = new Date(
             `${dateString}T${newTimeSlot.startTime}:00`
           );
@@ -283,7 +339,7 @@ const UserScheduledHours: React.FC<{
         return newSchedules;
       });
     },
-    [createTimeSlot, existingSchedules]
+    [createTimeSlot, existingSchedules, isTooLateForToday]
   );
 
   const removeTimeSlot = useCallback((dateIndex: number, slotIndex: number) => {
@@ -308,6 +364,12 @@ const UserScheduledHours: React.FC<{
         const newSchedules = [...prevDates];
         const slot = newSchedules[dateIndex].timeSlots[slotIndex];
         const schedule = newSchedules[dateIndex];
+
+        // Check if it's too late for today
+        if (isToday(schedule.date) && isTooLateForToday()) {
+          toast.error("You cannot modify slots for today, today's time is up. Please book slots for future dates.");
+          return prevDates;
+        }
 
         if (isToday(schedule.date)) {
           const now = new Date();
@@ -362,15 +424,13 @@ const UserScheduledHours: React.FC<{
         return newSchedules;
       });
     },
-    [existingSchedules]
+    [existingSchedules, isTooLateForToday]
   );
 
   const updateBookedSlot = useCallback(
     (dateIndex: number, slotIndex: number, updatedSlot: TimeSlot) => {
       setSelectedDates((prevDates) => {
-        // console.log("prevDates", prevDates);
         const newSchedules = [...prevDates];
-        // console.log("newSchedules", newSchedules);
         newSchedules[dateIndex].timeSlots[slotIndex] = updatedSlot;
         return newSchedules;
       });
@@ -483,7 +543,6 @@ const UserScheduledHours: React.FC<{
     try {
       const response = await fetchApi("/office-hours", requestOptions);
       const result = await response.json();
-      console.log("API Response:", result);
 
       toast.success("Schedule saved successfully!");
       resetState();
@@ -547,7 +606,7 @@ const UserScheduledHours: React.FC<{
       isDateSelected,
     ]
   );
-
+{console.log(selectedDates, "selected dates in user schedule")}
   const memoizedTimeSlotSection = useMemo(
     () => (
       <TimeSlotSection
@@ -593,7 +652,7 @@ const UserScheduledHours: React.FC<{
         <div className="mb-8">
           <div className="mr-2 sm:mr-3 md:mr-4 lg:mr-5 flex items-center truncate mb-6">
             <Image
-              src={daoName === "optimism" ? OPLogo : ArbLogo}
+              src={currentDAO.logo}
               alt="Current Chain"
               width={48}
               height={48}
@@ -602,7 +661,8 @@ const UserScheduledHours: React.FC<{
             {/* {daoName.charAt(0).toUpperCase() + daoName.slice(1)} */}
             <div>
               <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
-                {daoName.charAt(0).toUpperCase() + daoName.slice(1)}
+                {/* {daoName.charAt(0).toUpperCase() + daoName.slice(1)} */}
+                {currentDAO.name}
               </h1>
               <p className="text-sm text-gray-500 mt-1">
                 Schedule your Office Hours

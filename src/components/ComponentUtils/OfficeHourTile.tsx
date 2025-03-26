@@ -30,6 +30,8 @@ import { Oval } from "react-loader-spinner";
 import oplogo from "@/assets/images/daos/op.png";
 import arblogo from "@/assets/images/daos/arbitrum.jpg";
 import OffchainAttestationButton from "./OffchainAttestationButton";
+import { DAOLogo } from "../DAOs/DAOlogos";
+import { daoConfigs } from "@/config/daos";
 interface CopyStates {
   [key: number]: boolean;
 }
@@ -155,6 +157,9 @@ const OfficeHourTile = ({
             description: updatedData.bookedDescription
               ? updatedData.bookedDescription
               : item.description,
+              thumbnail_image:updatedData.thumbnail_image
+              ? updatedData.thumbnail_image
+              : item.thumbnail_image,
           };
         }
         return item;
@@ -207,17 +212,17 @@ const OfficeHourTile = ({
     return attendee?.attendee_uid;
   };
 
-  const getAttestationUrl = (daoName: string, uid?: string | null): string => {
-    if (!uid) return "#";
-    const baseUrl =
-      daoName.toLowerCase() === "optimism"
-        ? "https://optimism.easscan.org/offchain/attestation/view/"
-        : daoName.toLowerCase() === "arbitrum"
-        ? "https://arbitrum.easscan.org/offchain/attestation/view/"
-        : "#";
+  // const getAttestationUrl = (daoName: string, uid?: string | null): string => {
+  //   if (!uid) return "#";
+  //   const baseUrl =
+  //     daoName.toLowerCase() === "optimism"
+  //       ? "https://optimism.easscan.org/offchain/attestation/view/"
+  //       : daoName.toLowerCase() === "arbitrum"
+  //       ? "https://arbitrum.easscan.org/offchain/attestation/view/"
+  //       : "#";
 
-    return `${baseUrl}${uid}`;
-  };
+  //   return `${baseUrl}${uid}`;
+  // };
 
   const handleAttestationSuccess = (
     uid: string,
@@ -248,6 +253,8 @@ const OfficeHourTile = ({
       })
     );
   };
+
+  console.log(data,"data in officehours")
 
   return (
     <div
@@ -284,12 +291,18 @@ const OfficeHourTile = ({
             </div>
             <div className={`absolute top-2 left-2 bg-black rounded-full`}>
               <Image
-                src={getDaoLogo(data.dao_name)}
+                src={daoConfigs[data.dao_name.toLowerCase()].logo}
                 alt="image"
                 width={100}
                 height={100}
                 className="size-4 sm:size-6 rounded-full"
               />
+              {/* <DAOLogo
+                daoName={data.dao_name}
+                width={100}
+                height={100}
+                className="size-4 sm:size-6 rounded-full"
+              /> */}
             </div>
           </div>
           <div className="px-5 py-4 space-y-2">
@@ -310,12 +323,18 @@ const OfficeHourTile = ({
                 <div className=" flex items-center ">
                   <div>
                     <Image
-                      src={getDaoLogo(data.dao_name)}
+                      src={daoConfigs[data.dao_name.toLowerCase()].logo}
                       alt="image"
                       width={100}
                       height={100}
                       className="rounded-full size-4 sm:size-6"
                     />
+                    {/* <DAOLogo
+                      daoName={data.dao_name}
+                      width={100}
+                      height={100}
+                      className="rounded-full size-4 sm:size-6"
+                    /> */}
                   </div>
                 </div>
                 <LuDot />
@@ -529,7 +548,7 @@ const OfficeHourTile = ({
                       </button>
                       <button
                         onClick={() => handleDeleteModalOpen(data)}
-                        className="flex items-center justify-center gap-2 w-full px-4 py-2 text-sm font-medium text-red-600 bg-red-50 rounded-full hover:bg-red-100 transition-colors"
+                        className="flex items-center justify-center gap-2 w-full px-4 py-2 text-sm font-medium text-red-600 bg-red-50 rounded-full hover:bg-red-100 transition-all duration-300 transform hover:scale-[1.02]"
                       >
                         <Trash2 className="w-4 h-4" />
                         <span>Delete</span>
@@ -603,6 +622,7 @@ const OfficeHourTile = ({
             endTime: new Date(
               editModalData.itemData.endTime
             ).toLocaleTimeString(),
+            thumbnail_image:editModalData.itemData.thumbnail_image
           }}
           date={new Date(editModalData.itemData.startTime)}
           onClose={handleEditModalClose}

@@ -1,22 +1,26 @@
-import { useRouter } from "next-nprogress-bar";
-import React, { ChangeEvent, useState, useEffect } from "react";
-import { Oval, RotatingLines } from "react-loader-spinner";
-import { useAccount } from "wagmi";
-// import 'react-quill/dist/quill.snow.css';
-// import './quillCustomStyles.css';
+"use client";
 
+import React, { useState, useEffect } from "react";
+import StatsGrid from "../ComponentUtils/StatesGrid";
 import dynamic from "next/dynamic";
 import styled from "styled-components";
 import rehypeSanitize from "rehype-sanitize";
-import { getDaoName } from "@/utils/chainUtils";
-import { ICommand, commands } from "@uiw/react-md-editor";
-import { getAccessToken, usePrivy } from "@privy-io/react-auth";
+import { useRouter } from "next-nprogress-bar";
+import { useAccount } from "wagmi";
 import { useWalletAddress } from "@/app/hooks/useWalletAddress";
-import { fetchApi } from "@/utils/api";
-import { BASE_URL } from "@/config/constants";
 import { MeetingRecords } from "@/types/UserProfileTypes";
 import { Cloud, Link } from "lucide-react";
-import StatsGrid from "../ComponentUtils/StatesGrid";
+import { daoConfigs } from "@/config/daos";
+
+interface userInfoProps {
+  karmaDesc: string;
+  description: string;
+  isDelegate: boolean;
+  isSelfDelegate: boolean;
+  onSaveButtonClick: (description?: string) => Promise<void>;
+  daoName: string;
+  attestationCounts: MeetingRecords | null;
+}
 
 const StyledMDEditorWrapper = styled.div`
   .w-md-editor {
@@ -117,112 +121,58 @@ const MDEditor = dynamic(
   { ssr: false }
 );
 
-interface userInfoProps {
-  karmaDesc: string;
-  description: string;
-  isDelegate: boolean;
-  isSelfDelegate: boolean;
-  onSaveButtonClick: (description?: string) => Promise<void>;
-  // descAvailable: boolean;
-  daoName: string;
-  attestationCounts: MeetingRecords | null;
-}
-
 function UserInfo({
   karmaDesc,
   description,
   isDelegate,
   isSelfDelegate,
   onSaveButtonClick,
-  // descAvailable,
-  daoName,
   attestationCounts,
 }: userInfoProps) {
-  const { address, isConnected } = useAccount();
-  // const address = "0x5e349eca2dc61abcd9dd99ce94d04136151a09ee";
+  const { address } = useAccount();
   const { chain } = useAccount();
-  // const [description, setDescription] = useState(
-  //   "Type your description here..."
-  // );
+  const { walletAddress } = useWalletAddress();
   const [isEditing, setEditing] = useState(false);
   const [tempDesc, setTempDesc] = useState("");
-  const [desc, setDesc] = useState<string>();
   const [loading, setLoading] = useState(false);
-  const router = useRouter();
   const [isSessionHostedLoading, setSessionHostedLoading] = useState(true);
   const [isSessionAttendedLoading, setSessionAttendedLoading] = useState(true);
-  const [isOfficeHoursHostedLoading, setOfficeHoursHostedLoading] =
-    useState(true);
-  const [isOfficeHoursAttendedLoading, setOfficeHoursAttendedLoading] =
-    useState(true);
+  const [isOfficeHoursHostedLoading, setOfficeHoursHostedLoading]=useState(true);
+  const [isOfficeHoursAttendedLoading, setOfficeHoursAttendedLoading]=useState(true);
   const [sessionHostCount, setSessionHostCount] = useState(0);
   const [sessionAttendCount, setSessionAttendCount] = useState(0);
   const [officehoursHostCount, setOfficehoursHostCount] = useState(0);
   const [officehoursAttendCount, setOfficehoursAttendCount] = useState(0);
   const [activeButton, setActiveButton] = useState("onchain");
-
   const [originalDesc, setOriginalDesc] = useState(description || karmaDesc);
   const [isMobile, setIsMobile] = useState(false);
-  const { walletAddress } = useWalletAddress();
-  const { ready, authenticated, login, logout, user } = usePrivy();
 
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth <= 900);
-    };
-
-    checkMobile();
-    window.addEventListener("resize", checkMobile);
-
-    return () => window.removeEventListener("resize", checkMobile);
-  }, []);
-
-  const getCustomCommands = (isMobile: boolean): ICommand[] => {
-    const mobileCommands = [
-      commands.bold,
-      commands.italic,
-      commands.link,
-      commands.image,
-      commands.unorderedListCommand,
-      commands.orderedListCommand,
-    ];
-
-    const desktopCommands = [
-      commands.bold,
-      commands.italic,
-      commands.strikethrough,
-      commands.link,
-      commands.image,
-      commands.quote,
-      commands.unorderedListCommand,
-      commands.orderedListCommand,
-      commands.checkedListCommand,
-    ];
-
-    return isMobile ? mobileCommands : desktopCommands;
+  const router = useRouter();
+  const blocks = [
+    {
+      number: sessionAttendCount,
+      desc: "Sessions attended",
+      ref: `/profile/${walletAddress}}?active=sessions&session=attended`,
+    },
+    {
+      number: officehoursAttendCount,
+      desc: "Office Hours attended",
+      ref: `/profile/${walletAddress}}?active=officeHours&hours=attended`,
+    },
+  ];
+  const getDaoNameByChain = (chainName: string): string | undefined => {
+    for (const key in daoConfigs) {
+      if (daoConfigs[key].chainName === chainName) {
+        return daoConfigs[key].name.toLowerCase();
+      }
+    }
+    return ""; // Return undefined if no match is found
   };
-
-  // const toolbarOptions = [
-  //   ["bold", "italic", "underline", "strike"],
-  //   ["blockquote", "code-block"],
-
-  //   [{ header: 1 }, { header: 2 }],
-  //   [{ list: "ordered" }, { list: "bullet" }],
-  //   [{ script: "sub" }, { script: "super" }],
-  //   [{ indent: "-1" }, { indent: "+1" }],
-  //   [{ direction: "rtl" }],
-
-  //   [{ size: ["small", false, "large", "huge"] }],
-  //   [{ header: [1, 2, 3, 4, 5, 6, false] }],
-
-  //   [{ color: [] }, { background: [] }],
-  //   [{ font: [] }],
-  //   [{ align: [] }],
-
-  //   ["clean"],
-
-  //   ["link", "image", "video"],
-  // ];
+  const isLoading =
+    isSessionHostedLoading ||
+    isSessionAttendedLoading ||
+    isOfficeHoursHostedLoading ||
+    isOfficeHoursAttendedLoading;
 
   const fetchAttestation = async (buttonType: string) => {
     setActiveButton(buttonType);
@@ -230,8 +180,7 @@ function UserInfo({
     setSessionAttendedLoading(true);
     setOfficeHoursHostedLoading(true);
     setOfficeHoursAttendedLoading(true);
-
-    const dao_name = getDaoName(chain?.name);
+    const dao_name = getDaoNameByChain(chain?.name as string);
     try {
       if (attestationCounts) {
         const currentDaoRecords =
@@ -274,42 +223,6 @@ function UserInfo({
     }
   };
 
-  useEffect(() => {
-    if (activeButton === "onchain") {
-      fetchAttestation("onchain");
-    } else if (activeButton === "offchain") {
-      fetchAttestation("offchain");
-    }
-  }, [activeButton, walletAddress, address, chain]);
-
-  const blocks = [
-    {
-      number: sessionAttendCount,
-      desc: "Sessions attended",
-      ref: `/profile/${walletAddress}}?active=sessions&session=attended`,
-    },
-    {
-      number: officehoursAttendCount,
-      desc: "Office Hours attended",
-      ref: `/profile/${walletAddress}}?active=officeHours&hours=attended`,
-    },
-  ];
-
-  if (isDelegate === true || isSelfDelegate === true) {
-    blocks.unshift(
-      {
-        number: sessionHostCount,
-        desc: "Sessions hosted",
-        ref: `/profile/${walletAddress}}?active=sessions&session=hosted`,
-      },
-      {
-        number: officehoursHostCount,
-        desc: "Office Hours hosted",
-        ref: `/profile/${walletAddress}}?active=officeHours&hours=attended`,
-      }
-    );
-  }
-
   const handleDescChange = (value?: string) => {
     setTempDesc(value || "");
   };
@@ -327,16 +240,43 @@ function UserInfo({
   };
 
   useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 900);
+    };
+
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
+  useEffect(() => {
     setOriginalDesc(description || karmaDesc);
     setTempDesc(description || karmaDesc);
   }, [description, karmaDesc]);
 
-  const isLoading =
-    isSessionHostedLoading ||
-    isSessionAttendedLoading ||
-    isOfficeHoursHostedLoading ||
-    isOfficeHoursAttendedLoading;
+  useEffect(() => {
+    if (activeButton === "onchain") {
+      fetchAttestation("onchain");
+    } else if (activeButton === "offchain") {
+      fetchAttestation("offchain");
+    }
+  }, [activeButton, walletAddress, address, chain]);
 
+  if (isDelegate === true || isSelfDelegate === true) {
+    blocks.unshift(
+      {
+        number: sessionHostCount,
+        desc: "Sessions hosted",
+        ref: `/profile/${walletAddress}}?active=sessions&session=hosted`,
+      },
+      {
+        number: officehoursHostCount,
+        desc: "Office Hours hosted",
+        ref: `/profile/${walletAddress}}?active=officeHours&hours=attended`,
+      }
+    );
+  }
   return (
     <div className="pt-4">
       <div className="flex gap-2 0.5xs:gap-4 rounded-xl text-sm flex-wrap">
@@ -375,22 +315,10 @@ function UserInfo({
           className={`flex flex-col justify-between min-h-48 rounded-xl my-7 mx-4 xs:mx-0 sm:mx-4 md:mx-16 lg:mx-0 p-6
         ${isEditing ? "outline" : ""}`}
         >
-          {/* <ReactQuill
-            readOnly={!isEditing}
-            value={isEditing ? tempDesc :( description || karmaDesc)}
-            onChange={handleDescChange}
-            modules={{
-              toolbar: toolbarOptions,
-            }}
-            placeholder={"Type your description here ..."}
-          /> */}
-
           <StyledMDEditorWrapper className="w-full">
             <MDEditor
               value={isEditing ? tempDesc : description || karmaDesc}
               onChange={handleDescChange}
-              // preview={isEditing ? "live" : "preview"}
-              // height={300}
               preview={isMobile ? (isEditing ? "edit" : "preview") : "live"}
               height={isMobile ? 400 : 300}
               hideToolbar={!isEditing}
@@ -400,9 +328,7 @@ function UserInfo({
               }}
               textareaProps={{
                 placeholder: "Type your description here...",
-                // style: {maxHeight: "50vh", overflowY: "auto" }
               }}
-              // commands={getCustomCommands(isMobile)}
             />
           </StyledMDEditorWrapper>
 

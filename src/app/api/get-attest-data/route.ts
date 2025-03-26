@@ -1,11 +1,11 @@
 import { connectDB } from "@/config/connectDB";
 import { BASE_URL } from "@/config/constants";
+import { daoConfigs } from "@/config/daos";
 import { fetchApi } from "@/utils/api";
 import { NextRequest, NextResponse } from "next/server";
 
 async function delegateAttestationOffchain(data: any) {
 
-  console.log("Line 8:",data);
 
   const myHeaders = new Headers();
   myHeaders.append("Content-Type", "application/json");
@@ -34,7 +34,7 @@ async function delegateAttestationOffchain(data: any) {
 export async function POST(req: NextRequest, res: NextResponse) {
   const { roomId, connectedAddress, meetingData } = await req.json();
 
-  console.log("Line 34:",roomId,connectedAddress,meetingData);
+
 
   try {
     const client = await connectDB();
@@ -43,7 +43,8 @@ export async function POST(req: NextRequest, res: NextResponse) {
 
     const data = await collection.findOne({ roomId });
 
-    console.log("Line 41 get-attest-data:",data);
+
+    const currentDAO=data?daoConfigs[data.dao_name]:"";
 
     await client.close();
 
@@ -55,13 +56,15 @@ export async function POST(req: NextRequest, res: NextResponse) {
     }
 
     let token = "";
-    if (data.dao_name === "optimism") {
-      token = "OP";
-    } else if (data.dao_name === "arbitrum") {
-      token = "ARB";
+    if(currentDAO){
+      token=currentDAO.tokenSymbol;
     }
+    // if (data.dao_name === "optimism") {
+    //   token = "OP";
+    // } else if (data.dao_name === "arbitrum") {
+    //   token = "ARB";
+    // }
 
-    console.log("Line 61:",token);
 
     const attestationPromises: any = [];
     const processedAddresses = new Set<string>();
