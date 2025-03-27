@@ -18,7 +18,7 @@ function IndividualDaoHeader() {
   Object.keys(dao_details).forEach((key) => {
     const dao = dao_details[key];
     logoMapping[key] = dao.logo;
-    options.push({ value: key, label: dao.dao_name, image: dao.logo });
+    options.push({ value: key, label: dao.title, image: dao.logo });
   });
 
   const selectedLogo = logoMapping[dao_name] || logoMapping.optimism;

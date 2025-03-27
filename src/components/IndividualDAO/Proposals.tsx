@@ -13,6 +13,7 @@ import ProposalStatus from "./ProposalStatus";
 import Alert from "../Alert/Alert";
 import { daoConfigs } from "@/config/daos";
 import { ProposalStatusBadge } from "./ProposalStatusBadge";
+import { usePathname } from "next/navigation";
 
 interface Proposal {
   proposalId: string;
@@ -79,6 +80,22 @@ function Proposals({ props }: { props: string }) {
   const [page, setPage] = useState(1); // Track the number of times "View More" is clicked
   const [showAlert, setShowAlert] = useState(true)
   const [loadingMore, setLoadingMore] = useState(false);
+  const path = usePathname();
+  const dao_name = path.split("/").filter(Boolean)[0] || "";
+
+  function getTitleFromDescription(description:string) {
+    if (!description) {
+      return ""; // Or a default like "No Description"
+    }
+  
+    try {
+      const parsedDescription = JSON.parse(description);
+      return parsedDescription.title || ""; // Return title if it exists, otherwise empty string
+    } catch (error) {
+      console.error("Error parsing JSON:", error);
+      return description; // If parsing fails, return the original string as is
+    }
+  }
   const handleCloseAlert = () => {
     setShowAlert(false);
   };
@@ -769,6 +786,7 @@ function Proposals({ props }: { props: string }) {
                 />
 
                 <div>
+                  {dao_name !== "letsgrowdao" ? (
                   <p className="text-base font-medium group-hover:text-blue-500 transition-colors duration-300">
                     {proposal.proposalId ===
                       "109425185690543736048728494223916696230797128756558452562790432121529327921478"
@@ -778,6 +796,11 @@ function Proposals({ props }: { props: string }) {
                       )}`
                       : truncateText(proposal.description || "", 65)}
                   </p>
+                  ):(
+                    <p className="text-base font-medium group-hover:text-blue-500 transition-colors duration-300">
+                     {truncateText(getTitleFromDescription(proposal.description || "") || "",65)}
+                  </p>
+                  )}
                   <div className="flex gap-1">
                     {/* <Image src={user} alt="" className="size-4" /> */}
                     <p className="flex text-[9px] xs:text-[11px] font-normal items-center">
