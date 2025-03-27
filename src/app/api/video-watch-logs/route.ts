@@ -2,8 +2,8 @@ import { connectDB } from "@/config/connectDB";
 import { NextRequest, NextResponse } from "next/server";
 
 type WatchSession = {
-  start_time: string; 
-  end_time: string; 
+  start_time: number; 
+  end_time: number; 
   duration: number; 
 };
 
