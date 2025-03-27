@@ -124,18 +124,19 @@ function DelegatesList({ props }: { props: string }) {
       if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
 
       const data = await res.json();
+      console.log("Delegate data:", data);
       const formattedDelegates = await Promise.all(
         data.delegates.map(async (delegate: any) => {
           return {
             ...delegate,
-            adjustedBalance: delegate.latestBalance / 10 ** 18,
+            adjustedBalance: delegate.balance / 10 ** 18,
             // profilePicture: props === "optimism" ? OPLogo : ARBLogo,
             profilePicture:daoConfigs[props].logo,
             ensName: truncateAddress(delegate.delegate),
           };
         })
       );
-
+console.log("formattedDelegates",formattedDelegates);
       setDelegateData((prev) => [...prev, ...formattedDelegates]);
       setSkip(data.nextSkip);
       setHasMore(data.hasMore);
@@ -188,6 +189,8 @@ function DelegatesList({ props }: { props: string }) {
             `/api/search-delegate?address=${query}&dao=${props}`
           );
           const filtered = await res.json();
+
+          console.log("Filtered results:", filtered);
           if (filtered.length > 0) {
             const formattedDelegate = {
               delegate: filtered[0].id,

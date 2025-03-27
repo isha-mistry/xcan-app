@@ -187,8 +187,8 @@ result = result.slice(0, UNIQUE_DELEGATES_COUNT);
     console.log("Line 516:", result);
 if (dao === "letsgrowdao" && result.length > 0) {
   const letsgrowdaoResult = result.map(delegate => ({
-    delegate: delegate.id,
-    latestBalance: delegate.balance,
+    delegate: delegate.delegate,
+    balance: delegate.balance,
     delegatedFromCount: delegate.delegatedFromCount,
 
   }));

@@ -2,7 +2,7 @@ import letsGrow_logo from "@/assets/images/daos/letsGrow.jpg";
 
 export const letsgrowdao = {
   title: "Let's Grow DAO",
-  dao_name: "Let's Grow DAO",
+  dao_name: "letsgrowdao",
   chain_name: "Optimism",
   description:
     "Let's Grow DAO is a decentralized autonomous organization (DAO) dedicated to fostering the growth and unity of the Regen Movement through the development and support of public goods. It aims to connect individuals, projects, and resources within the regenerative ecosystem, leveraging Web3 principles to create accessible tools, knowledge, and funding mechanisms that empower the adoption of regenerative practices and contribute to a more sustainable and equitable future for all.",

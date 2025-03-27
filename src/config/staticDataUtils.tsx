@@ -31,7 +31,14 @@ export const DELEGATE_CHANGED_QUERY = gql`
     }
   }
 `;
-
+export const DELEGATE_QUERY = gql`
+   query MyQuery($id: String!) {
+    delegates(
+      where:{ id: $id }
+    ) {
+      delegatedBalance
+    }
+  }`
 export const GET_LATEST_DELEGATE_VOTES_CHANGED = gql`
   query MyQuery($delegate: String!) {
     delegates(
