@@ -8,6 +8,7 @@ import RecordedSessions from "./RecordedSessions";
 import ProposalVote from "./ProposalVote";
 import Followers from "./Followers";
 import Attestation from "./Attestation";
+import OfficeHours from "./OfficeHours";
 import ConnectWalletWithENS from "../ConnectWallet/ConnectWalletWithENS";
 import { Notification } from "./NotificationTypeUtils";
 import { useAccount } from "wagmi";
@@ -71,6 +72,8 @@ function NotificationMain() {
     { name: "Followers", value: "followers" },
     { name: "Attestations", value: "attestations" },
     // { name: "Instant Meet", value: "instant-meet" }
+    { name: "Proposal Vote", value: "proposalVote" },
+    { name: "Office Hours", value: "officeHours" }
   ];
 
   const isValidAuthentication = () => {
@@ -104,6 +107,8 @@ function NotificationMain() {
       } else if (tabValue === "attestations") {
         router.push(path + `?active=${tabValue}`);
       } else if (tabValue === "officeHours") {
+        router.push(path + `?active=${tabValue}`);
+      } else if (tabValue === "proposalVote") {
         router.push(path + `?active=${tabValue}`);
       } else {
         router.push(path + `?active=${tabValue}`);
@@ -324,17 +329,17 @@ function NotificationMain() {
     }
   };
 
-  const handleTabClick = (tab: string) => {
-    if (
-      tab === "recordedSessions" ||
-      tab === "followers" ||
-      tab === "attestations"
-    ) {
-      toast("Coming Soon 🚀");
-    } else {
-      router.push(`${path}?active=${tab}`);
-    }
-  };
+  // const handleTabClick = (tab: string) => {
+  //   if (
+  //     tab === "recordedSessions" ||
+  //     tab === "followers" ||
+  //     tab === "attestations"
+  //   ) {
+  //     toast("Coming Soon 🚀");
+  //   } else {
+  //     router.push(`${path}?active=${tab}`);
+  //   }
+  // };
 
   const renderContent = () => {
     if (isPageLoading) {
@@ -451,6 +456,8 @@ function NotificationMain() {
       recordedSessions: RecordedSessions,
       followers: Followers,
       attestations: Attestation,
+      proposalVote: ProposalVote,
+      officeHours: OfficeHours,
     };
     const Component =
       components[activeTab as keyof typeof components] || NotificationAll;
@@ -487,15 +494,13 @@ function NotificationMain() {
           >
             <span>{selectedTab}</span>
             <ChevronDownIcon
-              className={`w-4 h-4 transition-transform duration-700 ${
-                isDropdownOpen ? "rotate-180" : ""
-              }`}
+              className={`w-4 h-4 transition-transform duration-700 ${isDropdownOpen ? "rotate-180" : ""
+                }`}
             />
           </div>
           <div
-            className={`w-[calc(100vw-3rem)] mt-1 overflow-hidden transition-all duration-700 ease-in-out ${
-              isDropdownOpen ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"
-            }`}
+            className={`w-[calc(100vw-3rem)] mt-1 overflow-hidden transition-all duration-700 ease-in-out ${isDropdownOpen ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"
+              }`}
           >
             <div className="p-2 border border-white-shade-100 rounded-xl bg-white shadow-md">
               {tabs.map((tab, index) => (
@@ -515,73 +520,66 @@ function NotificationMain() {
         <div className="hidden md:flex bg-[#D9D9D945]">
           <div className="flex gap-8 1.5lg:gap-12 lg:pl-16 pl-8">
             <button
-              className={`py-4 px-2 outline-none ${
-                searchParams.get("active") === "all"
-                  ? "text-blue-shade-200 font-semibold border-b-2 border-blue-shade-200"
-                  : "border-transparent"
-              }`}
+              className={`py-4 px-2 outline-none ${searchParams.get("active") === "all"
+                ? "text-blue-shade-200 font-semibold border-b-2 border-blue-shade-200"
+                : "border-transparent"
+                }`}
               onClick={() => router.push(path + "?active=all")}
             >
               All
             </button>
             <button
-              className={`py-4 px-2 outline-none ${
-                searchParams.get("active") === "sessionBookings"
-                  ? "text-blue-shade-200 font-semibold border-b-2 border-blue-shade-200"
-                  : "border-transparent"
-              }`}
+              className={`py-4 px-2 outline-none ${searchParams.get("active") === "sessionBookings"
+                ? "text-blue-shade-200 font-semibold border-b-2 border-blue-shade-200"
+                : "border-transparent"
+                }`}
               onClick={() => router.push(path + "?active=sessionBookings")}
             >
               Meetings
             </button>
             <button
-              className={`py-4 px-2 outline-none ${
-                searchParams.get("active") === "recordedSessions"
-                  ? "text-blue-shade-200 font-semibold border-b-2 border-blue-shade-200"
-                  : "border-transparent"
-              }`}
+              className={`py-4 px-2 outline-none ${searchParams.get("active") === "recordedSessions"
+                ? "text-blue-shade-200 font-semibold border-b-2 border-blue-shade-200"
+                : "border-transparent"
+                }`}
               // onClick={() => router.push(path + "?active=recordedSessions")}
               onClick={() => toast("Coming Soon 🚀")}
             >
               Recorded Sessions
             </button>
             <button
-              className={`py-4 px-2 outline-none ${
-                searchParams.get("active") === "followers"
-                  ? "text-blue-shade-200 font-semibold border-b-2 border-blue-shade-200"
-                  : "border-transparent"
-              }`}
+              className={`py-4 px-2 outline-none ${searchParams.get("active") === "followers"
+                ? "text-blue-shade-200 font-semibold border-b-2 border-blue-shade-200"
+                : "border-transparent"
+                }`}
               // onClick={() => router.push(path + "?active=followers")}
               onClick={() => toast("Coming Soon 🚀")}
             >
               Followers
             </button>
             <button
-              className={`py-4 px-2 outline-none ${
-                searchParams.get("active") === "attestations"
-                  ? "text-blue-shade-200 font-semibold border-b-2 border-blue-shade-200"
-                  : "border-transparent"
-              }`}
+              className={`py-4 px-2 outline-none ${searchParams.get("active") === "attestations"
+                ? "text-blue-shade-200 font-semibold border-b-2 border-blue-shade-200"
+                : "border-transparent"
+                }`}
               onClick={() => router.push(path + "?active=attestations")}
             >
               Attestations
             </button>
             <button
-              className={`py-4 px-2 outline-none ${
-                searchParams.get("active") === "proposalVote"
-                  ? "text-blue-shade-200 font-semibold border-b-2 border-blue-shade-200"
-                  : "border-transparent"
-              }`}
+              className={`py-4 px-2 outline-none ${searchParams.get("active") === "proposalVote"
+                ? "text-blue-shade-200 font-semibold border-b-2 border-blue-shade-200"
+                : "border-transparent"
+                }`}
               onClick={() => router.push(path + "?active=proposalVote")}
             >
-              ProposalVote
+              Proposal Vote
             </button>
             <button
-              className={`py-4 px-2 outline-none ${
-                searchParams.get("active") === "officeHours"
-                  ? "text-blue-shade-200 font-semibold border-b-2 border-blue-shade-200"
-                  : "border-transparent"
-              }`}
+              className={`py-4 px-2 outline-none ${searchParams.get("active") === "officeHours"
+                ? "text-blue-shade-200 font-semibold border-b-2 border-blue-shade-200"
+                : "border-transparent"
+                }`}
               onClick={() => router.push(path + "?active=officeHours")}
             >
               Office Hours
