@@ -44,6 +44,7 @@ import {
   DELEGATE_CHANGED_QUERY,
   GET_LATEST_DELEGATE_VOTES_CHANGED,
   op_client,
+  DELEGATE_QUERY,
   letsgrow_client,
 } from "@/config/staticDataUtils";
 // import { getEnsNameOfUser } from "../ConnectWallet/ENSResolver";
@@ -148,6 +149,7 @@ function SpecificDelegate({ props }: { props: Type }) {
   const [isFromDatabase, setFromDatabase] = useState(false);
   const [errorOccurred, setErrorOccurred] = useState(false);
   const [avatar, setAvatar] = useState("");
+    const dao_name = path.split("/").filter(Boolean)[0] || "";
   const client = createClient({
     url: daoConfigs[props.daoDelegates]?.subgraphUrl || "",
     exchanges: [cacheExchange, fetchExchange],
@@ -157,6 +159,13 @@ function SpecificDelegate({ props }: { props: Type }) {
       window.dataLayer.push(eventData);
     }
   };
+  const handlePastVoteClick =()=>{
+    if(dao_name !== 'letsgrowdao'){
+      router.push(path + "?active=pastVotes");
+    }else{
+      toast("Coming Soon! 🚀");
+    }
+  }
 
   const handleCopy = (addr: string) => {
     copy(addr);
@@ -190,8 +199,10 @@ function SpecificDelegate({ props }: { props: Type }) {
     if (selected) {
       setSelectedTab(selected.name);
       setIsDropdownOpen(false);
-      if (tabValue === "pastVotes") {
+      if (tabValue === "pastVotes" && dao_name !== "letsgrowdao") {
         router.push(path + "?active=pastVotes");
+      }else if(tabValue === "pastVotes" && dao_name === "letsgrowdao"){
+        toast("Coming Soon! 🚀");
       } else if (tabValue === "sessions") {
         router.push(path + "?active=delegatesSession&session=book");
       } else if (tabValue === "officeHours") {
@@ -398,13 +409,21 @@ function SpecificDelegate({ props }: { props: Type }) {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const data = await client
+        let data: any;
+        if(props.daoDelegates==="letsgrowdao"){
+          
+          data= await client.query(DELEGATE_QUERY,{id:props.individualDelegate.toString()}).toPromise();
+          console.log(client,data,DELEGATE_QUERY,props.individualDelegate.toString());
+          setVotingPower(data.data.delegates[0].delegatedBalance ? data.data.delegates[0].delegatedBalance : 0);
+        }else{
+         data = await client
           .query(GET_LATEST_DELEGATE_VOTES_CHANGED, {
             delegate: props.individualDelegate.toString(),
           })
           .toPromise();
-
-        setVotingPower(data.data.delegates[0].latestBalance ? data.data.delegates[0].latestBalance : 0);
+          console.log(data);
+          setVotingPower(data.data.delegates[0].latestBalance ? data.data.delegates[0].latestBalance : 0);
+        }
       } catch (error) {
         console.error("Error fetching data", error);
       }
@@ -1477,11 +1496,7 @@ function SpecificDelegate({ props }: { props: Type }) {
                       </div>
                       <div className="text-[#4F4F4F] border-[0.5px] border-[#D9D9D9] rounded-md px-3 lg:px-2 xl:px-3 py-1">
                         <span className="text-blue-shade-200 font-semibold">
-                          {props.daoDelegates === "arbitrum"
-                            ? votesCount
-                              ? formatNumber(votesCount / 10 ** 18)
-                              : 0
-                            : votingPower
+                          {votingPower
                             ? formatNumber(votingPower / 10 ** 18)
                             : 0}
                           &nbsp;
@@ -1681,7 +1696,7 @@ function SpecificDelegate({ props }: { props: Type }) {
                       ? "text-blue-shade-200 font-semibold border-blue-shade-200"
                       : "border-transparent"
                   }`}
-                  onClick={() => router.push(path + "?active=pastVotes")}
+                  onClick={handlePastVoteClick}
                 >
                   Past Votes
                 </button>

@@ -214,6 +214,7 @@ function DelegateInfo({
           }
 
           const data = await res.json();
+          console.log("statement data", data);
           const statement = data.statement.payload.delegateStatement;
           // setOpAgoraDescription(statement);
           // setConvertedDescription(convertMarkdownToHtml(statement));
