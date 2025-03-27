@@ -16,6 +16,7 @@ import RecordedSessionsSkeletonLoader from "@/components/SkeletonLoader/Recorded
 import { usePrivy } from "@privy-io/react-auth";
 import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 import { fetchApi } from "@/utils/api";
+import NoResultsFound from "@/utils/Noresult";
 
 function AttendingUserSessions({ daoName }: { daoName: string }) {
   const router = useRouter();
@@ -97,10 +98,11 @@ function AttendingUserSessions({ daoName }: { daoName: string }) {
         </div>
       ) : (
         <div className="flex flex-col justify-center items-center">
-          <div className="text-5xl">☹️</div>{" "}
+          {/* <div className="text-5xl">☹️</div>{" "}
           <div className="pt-4 font-semibold text-lg">
             Oops, no such result available!
-          </div>
+          </div> */}
+          <NoResultsFound/>
         </div>
       )}
     </div>

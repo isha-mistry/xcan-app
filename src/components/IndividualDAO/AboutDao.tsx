@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import {
@@ -15,7 +15,8 @@ import { SiHiveBlockchain } from "react-icons/si";
 import about from "../../utils/about_dao.json";
 
 const AboutDao = ({ props }: any) => {
-  const text = props === "arbitrum" ? about.arbitrum : about.optimism;
+  // const text = props === "arbitrum" ? about.arbitrum : about.optimism;
+  const text = about[props as keyof typeof about];
   const links = [
     {
       name: "Website",
@@ -38,7 +39,7 @@ const AboutDao = ({ props }: any) => {
     {
       name: "Bridge",
       icon: FaBridge,
-      href: text.community_and_resources.bridge,
+      href: text.community_and_resources?.bridge,
       color: "text-[#000]",
     },
     {
@@ -129,7 +130,8 @@ const AboutDao = ({ props }: any) => {
         className="text-4xl font-bold mb-8 text-center text-blue-shade-200"
         {...fadeInUp}
       >
-        About {props === "arbitrum" ? "Arbitrum DAO" : "Optimism Collective"} 
+        {/* About {props === "arbitrum" ? "Arbitrum DAO" : "Optimism Collective"} */}
+        About {text.display_text}
       </motion.h1>
 
       <motion.section className="mb-16" {...fadeInUp}>
@@ -195,8 +197,8 @@ const AboutDao = ({ props }: any) => {
           <p className="text-gray-700 mb-4">
             {text.governance_and_dao_structure.description}
           </p>
-          <ul className="space-y-4">
-            {props === "arbitrum"
+          {/* <ul className="space-y-4">
+            {props
               ? (
                   text.governance_and_dao_structure as {
                     elements: { name: string; details: string }[];
@@ -221,6 +223,30 @@ const AboutDao = ({ props }: any) => {
                     <p className="text-gray-700">{house.details}</p>
                   </li>
                 ))}
+          </ul> */}
+          <ul className="space-y-4">
+            {(
+              text.governance_and_dao_structure as {
+                elements?: { name: string; details: string }[];
+                houses?: { name: string; details: string }[];
+              }
+            )?.elements?.map((item, index) => (
+              <li key={index} className="border-l-4 border-purple-500 pl-4">
+                <h4 className="font-semibold text-purple-600">{item.name}</h4>
+                <p className="text-gray-700">{item.details}</p>
+              </li>
+            )) ||
+              (
+                text.governance_and_dao_structure as {
+                  elements?: { name: string; details: string }[];
+                  houses?: { name: string; details: string }[];
+                }
+              )?.houses?.map((item, index) => (
+                <li key={index} className="border-l-4 border-purple-500 pl-4">
+                  <h4 className="font-semibold text-purple-600">{item.name}</h4>
+                  <p className="text-gray-700">{item.details}</p>
+                </li>
+              ))}
           </ul>
         </div>
       </motion.section>

@@ -122,9 +122,10 @@
 
 
 
-import { Client, fetchExchange, gql } from "urql";
+import { cacheExchange, Client, createClient, fetchExchange, gql } from "urql";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
+import { daoConfigs } from "@/config/daos";
 
 export const runtime = "nodejs";
 
@@ -176,6 +177,13 @@ const COMBINED_VOTE_QUERY = gql`
   const first = parseInt(searchParams.get("first") || "1000", 10);
   const dao = searchParams.get("dao");
 
+  const currentDAO=dao?daoConfigs[dao]:"";
+
+  const client = createClient({
+    url: currentDAO?currentDAO.proposalUrl:"",
+    exchanges: [fetchExchange],
+  });
+
   if (!proposalId) {
     return NextResponse.json(
       { error: "Missing proposalId parameter" },
@@ -190,15 +198,22 @@ const COMBINED_VOTE_QUERY = gql`
 
   try {
     let result;
-    if (dao === "optimism") {
-      result = await client
-        .query(COMBINED_VOTE_QUERY, { proposalId, blockTimestamp, first })
-        .toPromise();
-    } else {
-      result = await arb_client
-        .query(COMBINED_VOTE_QUERY, { proposalId, blockTimestamp, first })
-        .toPromise();
-    }
+
+    
+
+    // if (dao === "optimism") {
+      
+    // result=await client.query(COMBINED_VOTE_QUERY,{proposalId,blockTimestamp,first}).toPromise();  
+    //   result = await client
+    //     .query(COMBINED_VOTE_QUERY, { proposalId, blockTimestamp, first })
+    //     .toPromise();
+    // } else {
+    //   result = await arb_client
+    //     .query(COMBINED_VOTE_QUERY, { proposalId, blockTimestamp, first })
+    //     .toPromise();
+    // }
+
+    result=await client.query(COMBINED_VOTE_QUERY,{proposalId,blockTimestamp,first}).toPromise();  
 
     if (result.error) {
       console.error("GraphQL query error:", result.error);
