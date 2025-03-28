@@ -32,7 +32,7 @@ export const daoConfigs: { [key: string]: DAOConfig } = {
     attestationUrl: "https://optimism.easscan.org/offchain/attestation/view",
     eascontracAddress: "0x4200000000000000000000000000000000000021",
     delegateChangedsUrl:
-      "https://api.studio.thegraph.com/query/68573/op/v0.0.1",
+      "https://api.studio.thegraph.com/query/68573/op/v0.0.9",
     descriptionQuery: gql`
       query OptimismDescription($proposalId: String!) {
         proposalCreated1S(where: { proposalId: $proposalId }) {
@@ -76,7 +76,7 @@ export const daoConfigs: { [key: string]: DAOConfig } = {
     attestationUrl: "https://arbitrum.easscan.org/offchain/attestation/view",
     eascontracAddress: "0xbD75f629A22Dc1ceD33dDA0b68c546A1c035c458",
     delegateChangedsUrl:
-      "https://api.studio.thegraph.com/query/477/arbitrum/v0.0.2",
+      "https://api.studio.thegraph.com/query/68573/arb_token/v0.0.3",
     descriptionQuery: gql`
       query MyQuery($proposalId: String!) {
         proposalCreateds(
@@ -144,7 +144,7 @@ export const daoConfigs: { [key: string]: DAOConfig } = {
     governanceUrl: "https://vote.optimism.io",
     tokenSymbol: "OP",
     dataSource:{},
-    subgraphUrl: "https://api.studio.thegraph.com/query/68573/lets_grow_dao_votingtoken/version/latest",
+    subgraphUrl: "https://api.studio.thegraph.com/query/68573/lets_grow_dao_votingtoken/v0.0.3",
     proposalAPIendpoint:{ProposalEndpoint:"/api/get-letsgrowdao-proposals",ProposalQueueEndpoint:"/api/get-arbitrum-queue-info"},
     alchemyAttestationUrl: process.env.NEXT_PUBLIC_OP_ATTESTATION_URL || "",
     offchainAttestationUrl: "https://optimism.easscan.org",
@@ -153,7 +153,7 @@ export const daoConfigs: { [key: string]: DAOConfig } = {
     attestationUrl: "https://optimism.easscan.org/offchain/attestation/view",
     eascontracAddress: "0x4200000000000000000000000000000000000021",
     delegateChangedsUrl:
-      "https://api.studio.thegraph.com/query/68573/lets_grow_dao_votingtoken/version/latest",
+      "https://api.studio.thegraph.com/query/68573/lets_grow_dao_votingtoken/v0.0.2",
     descriptionQuery: gql`
       query OptimismDescription($proposalId: String!) {
         proposalCreated1S(where: { proposalId: $proposalId }) {

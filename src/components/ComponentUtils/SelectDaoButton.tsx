@@ -79,8 +79,8 @@ const SelectDaoButton: React.FC<{ daoName: string }> = ({ daoName }) => {
                 />
                 <div>
                   <h1 className="text-sm md:text-lg font-medium text-gray-900">
-                    {currentDaoConfig.name.charAt(0).toUpperCase() +
-                      currentDaoConfig.name.slice(1)}
+                    {currentDaoConfig?.name.charAt(0).toUpperCase() +
+                      currentDaoConfig?.name.slice(1)}
                   </h1>
                 </div>
               </div>
@@ -132,7 +132,7 @@ const SelectDaoButton: React.FC<{ daoName: string }> = ({ daoName }) => {
                           className="mr-2 w-5 h-5 rounded-full"
                           priority={true}
                         />
-                        {dao.name}
+                        {dao.name}1
                       </div>
 
                       {isLoading && dao.chainId === currentChain?.id && (

@@ -179,7 +179,7 @@ console.log("delegate",delegate)
         <div className="bg-blue-100 mx-auto w-fit text-blue-800 text-sm font-medium px-2.5 py-1 rounded-full text-center">
           {formatNumber(delegate.adjustedBalance)} delegated tokens
         </div>
-
+{ daoName !== "letsgrowdao" && (
         <motion.button
           className="w-full bg-gradient-to-r from-[#3b82f6] to-[#31316d] text-white font-medium py-2 px-4 rounded-3xl overflow-hidden relative"
           whileHover={{ scale: 1.05 }}
@@ -208,7 +208,7 @@ console.log("delegate",delegate)
           >
             <IoArrowForward size={24} />
           </motion.div>
-        </motion.button>
+        </motion.button>)}
       </div>
     </motion.div>
   );

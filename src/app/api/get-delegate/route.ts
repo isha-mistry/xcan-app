@@ -1,5 +1,4 @@
 import { daoConfigs } from "@/config/daos";
-import { letsgrowdao } from "@/config/daos/letsGrowDAO";
 import { NextRequest, NextResponse } from "next/server";
 import { Client, cacheExchange, fetchExchange, gql } from "urql";
 
@@ -28,17 +27,6 @@ const DELEGATE_QUERIES = {
       delegates(first: $first, skip: $skip) {
         latestBalance
         id
-      }
-    }
-  `,
-  letsgrowdao: gql`
-    query MyQuery($first: Int!, $skip: Int!) {
-      delegates(first: $first, skip: $skip) {
-        delegatedBalance
-        delegatorCount
-        delegators
-        id
-        lastUpdated
       }
     }
   `,
@@ -120,10 +108,7 @@ export const GET = async (req: NextRequest) => {
     }
 
     // Handle Subgraph-based DAOs
-    const query =
-      dao === "letsgrowdao"
-        ? DELEGATE_QUERIES.letsgrowdao
-        : DELEGATE_QUERIES[sort || "default"];
+    const query = DELEGATE_QUERIES[sort || "default"];
     if (!query) {
       return NextResponse.json(
         { error: "Invalid sort option", available: Object.keys(DELEGATE_QUERIES) },
@@ -148,13 +133,13 @@ export const GET = async (req: NextRequest) => {
       if (delegateChangeds.length < FETCH_SIZE) hasMore = false;
 
       for (const change of delegateChangeds) {
-        const { id, latestBalance, delegatedFromCount, delegatedBalance } = change;
-    
-        // Select the correct balance field
-        const balanceField = dao === "letsgrowdao" ? delegatedBalance : latestBalance;
+        const { id, latestBalance, delegatedFromCount } = change;
     
         if (!uniqueDelegates.has(id)) {
-          uniqueDelegates.set(id, { balance: balanceField, delegatedFromCount });
+          uniqueDelegates.set(id, { 
+            balance: latestBalance, 
+            ...(delegatedFromCount !== undefined && { delegatedFromCount }) 
+          });
         }
     
         if (uniqueDelegates.size >= UNIQUE_DELEGATES_COUNT) break;
@@ -162,21 +147,21 @@ export const GET = async (req: NextRequest) => {
 
       newSkip += delegateChangeds.length;
     }
-console.log("before result", uniqueDelegates);  
-let result = Array.from(uniqueDelegates.entries()).map(([delegate, data]) => ({
-  delegate,
-  ...data,
-}));
 
-// Ensure result is always an array before calling .slice()
-if (!Array.isArray(result)) {
-  console.error("Error: result is not an array!", result);
-  result = [];
-}
+    let result = Array.from(uniqueDelegates.entries()).map(([delegate, data]) => ({
+      delegate,
+      ...data,
+    }));
 
-result = result.slice(0, UNIQUE_DELEGATES_COUNT);
+    // Ensure result is always an array
+    if (!Array.isArray(result)) {
+      console.error("Error: result is not an array!", result);
+      result = [];
+    }
 
+    result = result.slice(0, UNIQUE_DELEGATES_COUNT);
 
+    // Random sorting if requested
     if (sort === "random") {
       result = result
         .map(value => ({ value, sort: Math.random() }))
@@ -184,20 +169,6 @@ result = result.slice(0, UNIQUE_DELEGATES_COUNT);
         .map(({ value }) => value);
     }
 
-    console.log("Line 516:", result);
-if (dao === "letsgrowdao" && result.length > 0) {
-  const letsgrowdaoResult = result.map(delegate => ({
-    delegate: delegate.delegate,
-    balance: delegate.balance,
-    delegatedFromCount: delegate.delegatedFromCount,
-
-  }));
-  return NextResponse.json({
-    delegates: letsgrowdaoResult,
-    nextSkip: newSkip,
-    hasMore,
-  });
-}
     return NextResponse.json({
       delegates: result,
       nextSkip: newSkip,

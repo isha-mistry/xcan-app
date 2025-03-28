@@ -11,7 +11,7 @@ const arb_client = new Client({
     exchanges: [cacheExchange, fetchExchange],
 });
 const letsgrow_client = new Client({
-    url: "https://api.studio.thegraph.com/query/68573/lets_grow_dao_votingtoken/version/latest",
+    url: "https://api.studio.thegraph.com/query/68573/lets_grow_dao_votingtoken/v0.0.2",
     exchanges: [cacheExchange, fetchExchange],
 });
   
@@ -36,7 +36,7 @@ export const GET = async (req: NextRequest) => {
     try {
         console.log("search delegate")
         const { searchParams } = new URL(req.url);
-        const address = searchParams.get('address')?.toLocaleLowerCase();
+        const address = searchParams.get('address')?.toLowerCase();
         const dao = searchParams.get('dao');
         if (!address || !dao) {
             return NextResponse.json({ error: 'Address and DAO parameters are required.' }, { status: 400 });

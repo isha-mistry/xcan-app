@@ -151,7 +151,7 @@ function SpecificDelegate({ props }: { props: Type }) {
   const [avatar, setAvatar] = useState("");
     const dao_name = path.split("/").filter(Boolean)[0] || "";
   const client = createClient({
-    url: daoConfigs[props.daoDelegates]?.subgraphUrl || "",
+    url: daoConfigs[props.daoDelegates]?.delegateChangedsUrl || "",
     exchanges: [cacheExchange, fetchExchange],
   });
   const pushToGTM = (eventData: GTMEvent) => {
@@ -588,7 +588,7 @@ function SpecificDelegate({ props }: { props: Type }) {
     } else if (number >= 1000) {
       return (number / 1000).toFixed(2) + "k";
     } else {
-      return number;
+      return number.toFixed(2);
     }
   };
 
@@ -1515,7 +1515,7 @@ function SpecificDelegate({ props }: { props: Type }) {
                     </div>
 
                     <div className="pt-2 flex flex-col xs:flex-row gap-2 w-full">
-                      <button
+                     {props.daoDelegates !== "letsgrowdao"&&( <button
                         className="bg-blue-shade-200 font-bold text-white rounded-full py-[10px] px-6 xs:py-2 xs:px-4 sm:px-6 xs:text-xs sm:text-sm text-sm lg:px-8 lg:py-[10px] w-full xs:w-[112px] md:w-auto"
                         // onClick={() =>
                         //   handleDelegateVotes(`${props.individualDelegate}`)
@@ -1525,7 +1525,7 @@ function SpecificDelegate({ props }: { props: Type }) {
                       >
                         Delegate
                       </button>
-
+)}
                       <div className="flex gap-2 w-full">
                         <button
                           className={`font-bold xs:text-xs sm:text-sm text-sm text-white rounded-full w-full xs:w-[112px] md:w-[128px] h-[40px] lg:py-[10px] py-[10px] xs:py-2 flex justify-center items-center ${

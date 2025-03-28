@@ -1027,7 +1027,7 @@ function MainProfile() {
                     <Link
                       href={
                         daoName
-                          ? `${daoConfigs[daoName].discourseUrl}/${userData.discourse}`
+                          ? `${daoConfigs[daoName]?.discourseUrl}/${userData.discourse}`
                           : ""
                       }
                       className={`border-[0.5px] border-[#8E8E8E] rounded-full h-fit p-1  ${

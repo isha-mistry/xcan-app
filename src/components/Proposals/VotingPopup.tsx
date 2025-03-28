@@ -178,7 +178,7 @@ const options = (!customOptions || customOptions.length < 1) ? defaultOptions : 
     } else if (number >= 1000) {
       return (number / 1000).toFixed(2) + "k";
     } else {
-      return number.toString();
+      return number.toFixed(2);
     }
   };
 

@@ -10,7 +10,7 @@ export const op_client = createClient({
   exchanges: [cacheExchange, fetchExchange],
 });
 export const letsgrow_client = createClient({
-  url: "https://api.studio.thegraph.com/query/68573/lets_grow_dao_votingtoken/version/latest",
+  url: "https://api.studio.thegraph.com/query/68573/lets_grow_dao_votingtoken/v0.0.2",
   exchanges: [cacheExchange, fetchExchange],
 });
 
