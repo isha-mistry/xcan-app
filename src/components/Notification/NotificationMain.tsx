@@ -27,6 +27,7 @@ import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 
 import { fetchApi } from "@/utils/api";
 import { BellOff, ChevronDownIcon, Wallet } from "lucide-react";
+import { PushNotificationService } from "@/services/pushNotificationService";
 
 function NotificationMain() {
   const { isConnected } = useConnection();
@@ -63,6 +64,8 @@ function NotificationMain() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [selectedTab, setSelectedTab] = useState("Info");
   const dropdownRef = useRef<HTMLDivElement | null>(null);
+  const pushNotificationService = PushNotificationService.getInstance();
+
   const tabs = [
     { name: "All", value: "all" },
     // { name: "Past Votes", value: "votes" },
@@ -216,30 +219,57 @@ function NotificationMain() {
   }, [fetchNotifications, canFetch]);
 
   useEffect(() => {
+    // Function to handle new notifications
+    const handleNewNotification = async (message: Notification) => {
+      console.log("New notification received:", message);
+      
+      // Create notification data
+      const notificationData: Notification = {
+        _id: message?._id,
+        receiver_address: message.receiver_address,
+        content: message.content,
+        createdAt: Date.now(),
+        read_status: false,
+        notification_name: message.notification_name,
+        notification_type: message.notification_type,
+        notification_title: message.notification_title,
+        additionalData: message?.additionalData,
+      };
+
+      // Add to local state
+      addNotification(notificationData);
+      updateCombinedNotifications();
+
+      // Send web push notification
+      try {
+        // Check if notifications are supported and permission is granted
+        const isReady = await pushNotificationService.ensureNotificationReady();
+        
+        if (isReady) {
+          await pushNotificationService.sendPushNotification({
+            title: message.notification_title || 'New Notification',
+            body: message.content || 'You have a new notification',
+            data: notificationData
+          });
+        }
+      } catch (error) {
+        console.error('Error handling push notification:', error);
+      }
+    };
+
+    // Socket connection and event binding
     if (socket && walletAddress && socketId) {
+      // Register host
       socket.emit("register_host", { hostAddress: walletAddress, socketId });
 
-      socket.on("new_notification", (message: Notification) => {
-        console.log("New notification received:", message);
-        const notificationData: Notification = {
-          _id: message?._id,
-          receiver_address: message.receiver_address,
-          content: message.content,
-          createdAt: Date.now(),
-          read_status: false,
-          notification_name: message.notification_name,
-          notification_type: message.notification_type,
-          notification_title: message.notification_title,
-          additionalData: message?.additionalData,
-        };
-        addNotification(notificationData);
-        updateCombinedNotifications();
-      });
+      // Listen for new notifications
+      socket.on("new_notification", handleNewNotification);
     }
 
+    // Cleanup function
     return () => {
       if (socket) {
-        socket.off("new_notification");
+        socket.off("new_notification", handleNewNotification);
       }
     };
   }, [
@@ -487,15 +517,13 @@ function NotificationMain() {
           >
             <span>{selectedTab}</span>
             <ChevronDownIcon
-              className={`w-4 h-4 transition-transform duration-700 ${
-                isDropdownOpen ? "rotate-180" : ""
-              }`}
+              className={`w-4 h-4 transition-transform duration-700 ${isDropdownOpen ? "rotate-180" : ""
+                }`}
             />
           </div>
           <div
-            className={`w-[calc(100vw-3rem)] mt-1 overflow-hidden transition-all duration-700 ease-in-out ${
-              isDropdownOpen ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"
-            }`}
+            className={`w-[calc(100vw-3rem)] mt-1 overflow-hidden transition-all duration-700 ease-in-out ${isDropdownOpen ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"
+              }`}
           >
             <div className="p-2 border border-white-shade-100 rounded-xl bg-white shadow-md">
               {tabs.map((tab, index) => (
@@ -515,73 +543,66 @@ function NotificationMain() {
         <div className="hidden md:flex bg-[#D9D9D945]">
           <div className="flex gap-8 1.5lg:gap-12 lg:pl-16 pl-8">
             <button
-              className={`py-4 px-2 outline-none ${
-                searchParams.get("active") === "all"
-                  ? "text-blue-shade-200 font-semibold border-b-2 border-blue-shade-200"
-                  : "border-transparent"
-              }`}
+              className={`py-4 px-2 outline-none ${searchParams.get("active") === "all"
+                ? "text-blue-shade-200 font-semibold border-b-2 border-blue-shade-200"
+                : "border-transparent"
+                }`}
               onClick={() => router.push(path + "?active=all")}
             >
               All
             </button>
             <button
-              className={`py-4 px-2 outline-none ${
-                searchParams.get("active") === "sessionBookings"
-                  ? "text-blue-shade-200 font-semibold border-b-2 border-blue-shade-200"
-                  : "border-transparent"
-              }`}
+              className={`py-4 px-2 outline-none ${searchParams.get("active") === "sessionBookings"
+                ? "text-blue-shade-200 font-semibold border-b-2 border-blue-shade-200"
+                : "border-transparent"
+                }`}
               onClick={() => router.push(path + "?active=sessionBookings")}
             >
               Meetings
             </button>
             <button
-              className={`py-4 px-2 outline-none ${
-                searchParams.get("active") === "recordedSessions"
-                  ? "text-blue-shade-200 font-semibold border-b-2 border-blue-shade-200"
-                  : "border-transparent"
-              }`}
+              className={`py-4 px-2 outline-none ${searchParams.get("active") === "recordedSessions"
+                ? "text-blue-shade-200 font-semibold border-b-2 border-blue-shade-200"
+                : "border-transparent"
+                }`}
               // onClick={() => router.push(path + "?active=recordedSessions")}
               onClick={() => toast("Coming Soon 🚀")}
             >
               Recorded Sessions
             </button>
             <button
-              className={`py-4 px-2 outline-none ${
-                searchParams.get("active") === "followers"
-                  ? "text-blue-shade-200 font-semibold border-b-2 border-blue-shade-200"
-                  : "border-transparent"
-              }`}
+              className={`py-4 px-2 outline-none ${searchParams.get("active") === "followers"
+                ? "text-blue-shade-200 font-semibold border-b-2 border-blue-shade-200"
+                : "border-transparent"
+                }`}
               // onClick={() => router.push(path + "?active=followers")}
               onClick={() => toast("Coming Soon 🚀")}
             >
               Followers
             </button>
             <button
-              className={`py-4 px-2 outline-none ${
-                searchParams.get("active") === "attestations"
-                  ? "text-blue-shade-200 font-semibold border-b-2 border-blue-shade-200"
-                  : "border-transparent"
-              }`}
+              className={`py-4 px-2 outline-none ${searchParams.get("active") === "attestations"
+                ? "text-blue-shade-200 font-semibold border-b-2 border-blue-shade-200"
+                : "border-transparent"
+                }`}
               onClick={() => router.push(path + "?active=attestations")}
             >
               Attestations
             </button>
             <button
-              className={`py-4 px-2 outline-none ${
-                searchParams.get("active") === "proposalVote"
-                  ? "text-blue-shade-200 font-semibold border-b-2 border-blue-shade-200"
-                  : "border-transparent"
-              }`}
+              className={`py-4 px-2 outline-none ${searchParams.get("active") === "proposalVote"
+                ? "text-blue-shade-200 font-semibold border-b-2 border-blue-shade-200"
+                : "border-transparent"
+                }`}
               onClick={() => router.push(path + "?active=proposalVote")}
             >
               ProposalVote
             </button>
             <button
-              className={`py-4 px-2 outline-none ${
-                searchParams.get("active") === "officeHours"
-                  ? "text-blue-shade-200 font-semibold border-b-2 border-blue-shade-200"
-                  : "border-transparent"
-              }`}
+              className={`py-4 px-2 outline-none ${searchParams.get("active") === "officeHours"
+                ? "text-blue-shade-200 font-semibold border-b-2 border-blue-shade-200"
+                : "border-transparent"
+                }`}
               onClick={() => router.push(path + "?active=officeHours")}
             >
               Office Hours
