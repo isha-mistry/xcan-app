@@ -1,6 +1,7 @@
 {
   "optimism": {
     "introduction": "Optimism is a leading Layer 2 (L2) scaling solution for Ethereum, designed to increase the network's transaction speed and reduce costs while maintaining Ethereum's robust security. Founded in 2019 by Jinglan Wang, Karl Floersch, and Ben Jones, Optimism launched its mainnet in 2021, marking a significant milestone in Ethereum scalability.",
+    "display_text":"Optimism Collective",
     "mission_and_vision": {
       "mission": "Scale Ethereum and make it accessible to all users by reducing transaction costs and increasing throughput.",
       "vision": [
@@ -48,6 +49,7 @@
   },
   "arbitrum": {
     "introduction": "Arbitrum is a leading Layer 2 (L2) scaling solution for Ethereum, designed to increase transaction throughput and reduce costs while maintaining Ethereum's security. Developed by Offchain Labs, Arbitrum launched its mainnet in August 2021, marking a significant milestone in Ethereum scalability efforts.",
+    "display_text":"Arbitrum DAO",
     "mission_and_vision": {
       "mission": "Scale Ethereum and make it accessible to all users by reducing transaction costs and increasing speed.",
       "vision": [
@@ -110,6 +112,53 @@
       "twitter": {
         "arbitrum": "https://twitter.com/arbitrum",
         "dao": "https://twitter.com/DAO_Arbitrum"
+      }
+    }
+  },
+  "mantle": {
+    "introduction": "Mantle is a modular Ethereum Layer 2 network designed to provide high-performance and low-cost transactions while ensuring security and decentralization.",
+    "display_text":"Mantle DAO",
+    "mission_and_vision": {
+      "mission": "Accelerate Ethereum’s scalability with modular blockchain architecture.",
+      "vision": [
+        "Enhanced scalability using a modular approach",
+        "Decentralized governance through Mantle DAO",
+        "Cost-effective and developer-friendly infrastructure"
+      ]
+    },
+    "technology": {
+      "description": "Mantle utilizes a modular Layer 2 design that optimizes performance and cost-efficiency while leveraging Ethereum's security.",
+      "features": [
+        "Modular execution layers for scalability",
+        "Optimistic rollup architecture",
+        "Decentralized sequencers and governance"
+      ]
+    },
+    "governance_and_dao_structure": {
+      "description": "Mantle DAO governs the Mantle network, with decisions made by token holders.",
+      "elements": [
+        {
+          "name": "MNT token",
+          "details": "Used for governance and network participation"
+        },
+        {
+          "name": "Decentralized decision-making",
+          "details": "Token holders can vote on network upgrades and treasury management"
+        }
+      ]
+    },
+    "community_and_resources": {
+      "website": "https://www.mantlenetwork.io/",
+      "governance": "https://mantlenetwork.io/governance",
+      "forum": "https://forum.mantlenetwork.io/",
+      "bridge":"https://app.mantle.io/bridge",
+      "docs": "https://docs.mantlenetwork.io/",
+      "github": "https://github.com/mantlenetworkio",
+      "discord": "https://discord.gg/mantlenetwork",
+      "block_explorer": "https://explorer.mantlenetwork.io/",
+      "twitter": {
+        "mantle": "https://mantle.com/mantle",
+        "gov": "https://mantle.com/mantle"
       }
     }
   }

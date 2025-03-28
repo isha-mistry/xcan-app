@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/config/connectDB";
 import { cacheWrapper } from "@/utils/cacheWrapper";
 
+
 type network_details = {
   dao_name: string;
   network: string;

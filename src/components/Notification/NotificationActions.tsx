@@ -1,11 +1,11 @@
 "use client";
 
 import React from "react";
-import { FaClock, FaPlay, FaUserCheck, FaBell } from "react-icons/fa";
+import { FaClock, FaPlay, FaUserCheck, FaBell ,FaVoteYea} from "react-icons/fa";
 import { IoCheckmarkCircle } from "react-icons/io5";
 import {
   BsDatabaseFillCheck,
-  BsFillExclamationCircleFill,
+  BsFillExclamationCircleFill
 } from "react-icons/bs";
 import { RiCalendarScheduleFill } from "react-icons/ri";
 import { PiVideoFill } from "react-icons/pi";
@@ -88,6 +88,8 @@ export const getIcon = (data: any) => {
     } else if (data?.notification_name === "officeHoursReminder") {
       return <FaBell color="#d13f3f" size={18} />;
     }
+  }else if(data?.notification_type === "proposalVote"){
+    return <FaVoteYea color="#0057FF" size={18} />;
   }
   return null;
 };

@@ -30,6 +30,7 @@ import { LIGHTHOUSE_BASE_API_KEY } from "@/config/constants";
 import { usePrivy } from "@privy-io/react-auth";
 import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 import { fetchApi } from "@/utils/api";
+import NoResultsFound from "@/utils/Noresult";
 
 type Attendee = {
   attendee_address: string;
@@ -704,10 +705,11 @@ SessionTileProps) {
           ))
         ) : (
           <div className="flex flex-col justify-center items-center">
-            <div className="text-5xl">☹️</div>{" "}
+            {/* <div className="text-5xl">☹️</div>{" "}
             <div className="pt-4 font-semibold text-lg">
               Oops, no such result available!
-            </div>
+            </div> */}
+            <NoResultsFound/>
           </div>
         )}
       </div>

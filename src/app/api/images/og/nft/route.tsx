@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { ImageResponse } from "next/og";
 import React from "react";
 import sharp from "sharp";
+import { daoConfigs } from "@/config/daos";
 
 export const revalidate = false;
 
@@ -26,8 +27,9 @@ export async function GET(req: NextRequest) {
     new URL("../assets/arb.png", import.meta.url)
   ).then((res) => res.arrayBuffer());
 
-  console.log("daoName: ", daoName);
-  console.log("meetingId: ", meetingId);
+
+
+  const currentDAO=daoName?daoConfigs[daoName]:"";
 
   const main = await fetch(new URL("../assets/nft.png", import.meta.url)).then(
     (res) => res.arrayBuffer()
@@ -35,13 +37,20 @@ export async function GET(req: NextRequest) {
 
   let nftTitle = "";
   let nftLogo: any;
-  if (daoName === "optimism") {
-    nftTitle = `${meetingId}/OP`;
-    nftLogo = opLogo;
-  } else if (daoName === "arbitrum") {
-    nftTitle = `${meetingId}/ARB`;
-    nftLogo = arbLogo;
+
+  if(currentDAO){
+    nftLogo=`${meetingId}/${currentDAO.tokenSymbol}`;
+    nftLogo=currentDAO.logo;
   }
+
+
+  // if (daoName === "optimism") {
+  //   nftTitle = `${meetingId}/OP`;
+  //   nftLogo = opLogo;
+  // } else if (daoName === "arbitrum") {
+  //   nftTitle = `${meetingId}/ARB`;
+  //   nftLogo = arbLogo;
+  // }
 
   const imageResponse = new ImageResponse(
     (
