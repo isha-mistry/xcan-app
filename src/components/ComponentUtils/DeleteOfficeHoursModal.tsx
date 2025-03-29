@@ -1,8 +1,8 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { X, Loader2, ChevronDown } from "lucide-react";
 import { fetchApi } from "@/utils/api";
 import toast from "react-hot-toast";
-import { getAccessToken } from "@privy-io/react-auth";
+import { getAccessToken, usePrivy } from "@privy-io/react-auth";
 import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 
 interface DeleteOfficeHoursModalProps {
@@ -37,6 +37,23 @@ const DeleteOfficeHoursModal: React.FC<DeleteOfficeHoursModalProps> = ({
   );
   const [otherReason, setOtherReason] = React.useState("");
   const { walletAddress } = useWalletAddress();
+  const [isAuthorized, setIsAuthorized] = useState(true);
+  const { authenticated } = usePrivy();
+
+   useEffect(() => {
+      if (walletAddress && hostAddress) {
+        const authorized = walletAddress.toLowerCase() === hostAddress.toLowerCase();
+        setIsAuthorized(authorized);
+        
+        if (!authorized) {
+          toast.error("You are not authorized to delete this office hours slot");
+        }
+        
+        if (!authenticated || !walletAddress) {
+          toast.error("Please connect your wallet to delete this meeting");
+        }
+      }
+    }, [walletAddress, hostAddress, authenticated]);
 
   const handleDelete = async () => {
     const finalReason =
@@ -44,6 +61,16 @@ const DeleteOfficeHoursModal: React.FC<DeleteOfficeHoursModalProps> = ({
 
     setIsDeleting(true);
     try {
+      if (!authenticated || !walletAddress) {
+        toast.error("Please connect your wallet to delete this meeting");
+        return null;
+      }
+
+      // Check if the current user is the host
+      if (walletAddress.toLowerCase() !== hostAddress.toLowerCase()) {
+        toast.error("You are not authorized to delete this office hours slot");
+        return null;
+      }
       const token = await getAccessToken();
       const myHeaders: HeadersInit = {
         "Content-Type": "application/json",
@@ -64,6 +91,18 @@ const DeleteOfficeHoursModal: React.FC<DeleteOfficeHoursModalProps> = ({
       };
 
       const result = await fetchApi(`/delete-office-hours`, requestOptions);
+
+      if (!result.ok) {
+        if (result.status === 401) {
+          toast.error("Authentication required. Please connect your wallet.");
+          return null;
+        } else if (result.status === 403) {
+          toast.error("You are not authorized to delete this office hours slot");
+          return null;
+        } else {
+          throw new Error("Failed to delete meeting");
+        }
+      }
 
       if (result.ok) {
         toast.success("Time slot deleted successfully");

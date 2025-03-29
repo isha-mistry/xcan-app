@@ -135,8 +135,28 @@ async function sendMeetingDeletionNotification({
 // Rename the function to PATCH since we're updating, not deleting
 export async function PUT(req: Request) {
   try {
+    const walletAddress = req.headers.get("x-wallet-address");
     const updateData: UpdateMeetingRequestBody = await req.json();
     const { host_address, dao_name, reference_id, delete_reason } = updateData;
+
+    if (!walletAddress) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Authentication required",
+        },
+        { status: 401 }
+      );
+    }
+    if (walletAddress.toLowerCase() !== host_address.toLowerCase()) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "You are not authorized to delete this office hours slot",
+        },
+        { status: 403 }
+      );
+    }
 
     // Validate required fields
     if (!host_address || !dao_name || !reference_id) {
@@ -150,10 +170,10 @@ export async function PUT(req: Request) {
       );
     }
 
-    // if (cacheWrapper.isAvailable) {
-    //   const cacheKey = `office-hours-all`;
-    //   await cacheWrapper.delete(cacheKey);
-    // }
+    if (cacheWrapper.isAvailable) {
+      const cacheKey = `office-hours-all`;
+      await cacheWrapper.delete(cacheKey);
+    }
 
     const client = await connectDB();
     const db = client.db();
@@ -183,10 +203,10 @@ export async function PUT(req: Request) {
     );
 
     try {
-      // if (cacheWrapper.isAvailable) {
-      //   const cacheKey = `office-hours-all`;
-      //   await cacheWrapper.delete(cacheKey);
-      // }
+      if (cacheWrapper.isAvailable) {
+        const cacheKey = `office-hours-all`;
+        await cacheWrapper.delete(cacheKey);
+      }
       await sendMeetingDeletionNotification({
         db,
         title: existingMeeting.title,

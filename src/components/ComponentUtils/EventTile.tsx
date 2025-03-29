@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Image, { StaticImageData } from "next/image";
-import { FaCircleCheck, FaCircleXmark, FaCirclePlay } from "react-icons/fa6";
+import { FaCircleCheck, FaCircleXmark, FaCirclePlay, FaPlay, FaXmark } from "react-icons/fa6";
 import { Tooltip } from "@nextui-org/react";
 import { Oval } from "react-loader-spinner";
 // import { useRouter } from "next/navigation";
@@ -25,6 +25,9 @@ import { MEETING_BASE_URL } from "@/config/constants";
 import { fetchApi } from "@/utils/api";
 import { usePrivy } from "@privy-io/react-auth";
 import { useWalletAddress } from "@/app/hooks/useWalletAddress";
+import { DAOLogo } from "../DAOs/DAOlogos";
+import { daoConfigs } from "@/config/daos";
+import { Play, Trash2 } from "lucide-react";
 
 type Attendee = {
   attendee_address: string;
@@ -122,7 +125,7 @@ function EventTile({ tileIndex, data: initialData, isEvent }: TileProps) {
     if (walletAddress != null) {
       fetchEnsData();
     }
-  }, [data.host_address, data.attendees[0].attendee_address]);
+  }, [data.host_address, data.attendees[0]?.attendee_address]);
 
   useEffect(() => {
     setIsPageLoading(false);
@@ -156,7 +159,7 @@ function EventTile({ tileIndex, data: initialData, isEvent }: TileProps) {
         attendee_joined_status = "Not Joined";
       }
 
-      const token=await getAccessToken();
+      const token = await getAccessToken();
       const myHeaders: HeadersInit = {
         "Content-Type": "application/json",
         ...(walletAddress && {
@@ -231,6 +234,28 @@ function EventTile({ tileIndex, data: initialData, isEvent }: TileProps) {
     }
   };
 
+  const handleOpenInNewTab = () => {
+    setStartLoading(true); // Start loading
+
+    const currentTime = new Date();
+    const slotTime = new Date(data.slot_time);
+    const currentTimestamp = currentTime.getTime();
+    const slotTimestamp = slotTime.getTime();
+    const timeDifference = slotTimestamp - currentTimestamp;
+
+    if (timeDifference <= 300000) {
+      window.open(
+        `${MEETING_BASE_URL}/meeting/session/${data.meetingId}/lobby`,
+        "_blank"
+      );
+    } else {
+      toast.error(
+        "The meeting can only be started 5 minutes before the meeting time."
+      );
+    }
+    setStartLoading(false); // Stop loading
+  };
+
   return (
     <>
       <div key={tileIndex} className="border border-[#D9D9D9] sm:rounded-3xl">
@@ -283,12 +308,18 @@ function EventTile({ tileIndex, data: initialData, isEvent }: TileProps) {
 
           <div className="flex items-center text-sm gap-3 py-1">
             <Image
-              src={getDaoLogo(data.dao_name)}
+              src={daoConfigs[data.dao_name.toLowerCase()].logo}
               alt="image"
               width={24}
               height={24}
               className="size-4 sm:size-6 rounded-full"
             />
+            {/* <DAOLogo
+              daoName={data.dao_name}
+              width={24}
+              height={24}
+              className="size-4 sm:size-6 rounded-full"
+            /> */}
             <div className="bg-[#F5F5F5] text-sm sm:text-base py-0.5 sm:py-1 px-3 rounded-md flex items-center w-fit">
               {formatSlotTimeToLocal(data.slot_time)}
             </div>
@@ -400,7 +431,7 @@ function EventTile({ tileIndex, data: initialData, isEvent }: TileProps) {
         >
           {isEvent === "Book" ? (
             data.booking_status === "Approved" ? (
-              <div className="flex justify-end items-center gap-2 ">
+              <div className="flex gap-1 w-full mt-2">
                 {startLoading || isConfirmSlotLoading ? (
                   <div className="flex items-center justify-center">
                     <Oval
@@ -419,19 +450,16 @@ function EventTile({ tileIndex, data: initialData, isEvent }: TileProps) {
                     closeDelay={1}
                     showArrow
                   >
-                    <span className="cursor-pointer">
-                      <FaCirclePlay
-                        size={32}
-                        color="#004DFF"
-                        onClick={() => {
-                          setStartLoading(true);
-                          router.push(
-                            `${MEETING_BASE_URL}/meeting/session/${data.meetingId}/lobby`
-                          );
-                          // handleJoinClick();
-                        }}
-                      />
-                    </span>
+                    <div  className={`flex items-center justify-center gap-2 w-full px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-indigo-500 to-blue-500 rounded-full hover:from-indigo-600 hover:to-blue-600 transition-all duration-300 transform hover:scale-[1.02]`} onClick={() => {
+                          setStartLoading(true); 
+                          const meetingUrl = `${MEETING_BASE_URL}/meeting/session/${data.meetingId}/lobby`;
+                          window.open(meetingUrl, "_blank"); 
+                          setStartLoading(false); 
+                        }}>
+                      <Play className="w-4 h-4"/>
+                        <span >Start</span>
+                       
+                    </div>
                   </Tooltip>
                 )}
                 <Tooltip
@@ -440,9 +468,10 @@ function EventTile({ tileIndex, data: initialData, isEvent }: TileProps) {
                   closeDelay={1}
                   showArrow
                 >
-                  <span className="cursor-pointer">
-                    <FaCircleXmark onClick={onOpen} size={32} color="#b91c1c" />
-                  </span>
+                 <div className={`flex items-center justify-center gap-2 w-full px-4 py-2 text-sm font-medium text-red-600 bg-red-50 rounded-full hover:bg-red-100  transition-all  transform hover:scale-[1.02] cursor-pointer`} onClick={onOpen}>
+                 <span>Reject</span>
+                      <Trash2 className="w-4 h-4" />
+                  </div>
                 </Tooltip>
                 {isOpen && (
                   <div className="font-poppins z-[70] fixed inset-0 flex items-center justify-center backdrop-blur-md">
@@ -504,13 +533,7 @@ function EventTile({ tileIndex, data: initialData, isEvent }: TileProps) {
           ) : isEvent === "Attending" ? (
             data.booking_status === "Approved" && (
               <div
-                onClick={() => {
-                  setStartLoading(true);
-                  router.push(
-                    `${MEETING_BASE_URL}/meeting/session/${data.meetingId}/lobby`
-                  );
-                  handleJoinClick();
-                }}
+                onClick={handleOpenInNewTab}
                 className="text-center rounded-full font-bold text-white mt-2 text-xs cursor-pointer"
               >
                 {startLoading ? (
@@ -531,12 +554,12 @@ function EventTile({ tileIndex, data: initialData, isEvent }: TileProps) {
                   </div>
                 ) : (
                   <div
-                    className={`${styles.button} flex items-center justify-center gap-2 text-sm w-full`}
-                  >
-                    <span className={styles.buttonText}>Join</span>
-                    <span className={styles.iconWrapper}>
-                      <BsPersonVideo3 className={styles.icon} />
-                    </span>
+                    className={`flex items-center justify-center gap-2 w-full px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-indigo-500 to-blue-500 rounded-full hover:from-indigo-600 hover:to-blue-600 transition-all duration-300 transform hover:scale-[1.02]`}
+                    >
+                    <BsPersonVideo3 className="w-4 h-4" />
+                    <span >Join Session</span>
+                    {/* <span className={styles.iconWrapper}> */}
+                    {/* </span>/ */}
                   </div>
                 )}
               </div>

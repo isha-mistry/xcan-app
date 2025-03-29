@@ -4,7 +4,6 @@ import { Doughnut } from "react-chartjs-2";
 import { Chart, ArcElement, Tooltip, Legend } from "chart.js";
 import { Pagination } from "@nextui-org/react";
 import styles from "../IndividualDelegate/DelegateVotes.module.css";
-import { Oval } from "react-loader-spinner";
 import Image from "next/image";
 import VotedOnOptions from "@/assets/images/votedOnOption.png";
 import { Tooltip as NextUITooltip } from "@nextui-org/react";
@@ -13,35 +12,9 @@ import ProposalVotedRightSkeletonLoader from "../SkeletonLoader/ProposalVotedRig
 import { useRouter } from "next-nprogress-bar";
 import { RiExternalLinkLine } from "react-icons/ri";
 import Link from "next/link";
+import { daoConfigs } from "@/config/daos";
 
 Chart.register(ArcElement, Tooltip, Legend);
-
-interface Type {
-  daoDelegates: string;
-  individualDelegate: string;
-}
-
-const op_client = createClient({
-  url:process.env.NEXT_PUBLIC_OPTIMISM_PROPOSALS_GRAPH_URL || "https://api.studio.thegraph.com/query/68573/v6_proxy/version/latest",
-  exchanges: [cacheExchange, fetchExchange],
-});
-
-const arb_client = createClient({
-  url:process.env.NEXT_PUBLIC_ARBITRUM_PROPOSALS_GRAPH_URL || "https://api.studio.thegraph.com/query/68573/arbitrum_proposals/v0.0.4",
-  exchanges: [cacheExchange, fetchExchange],
-});
-
-const arbDescription = gql`
-  query MyQuery($proposalId: String!) {
-    proposalCreateds(
-      where: { proposalId: $proposalId }
-      orderBy: blockTimestamp
-      orderDirection: desc
-    ) {
-      description
-    }
-  }
-`;
 
 const VoterQuery = (first: any, skip: any) => gql`
   query MyQuery($address: String!) {
@@ -75,45 +48,6 @@ const VoterQuery = (first: any, skip: any) => gql`
     }
   }
   `;
-const opDescription = gql`
-  query MyDescriptionQuery($proposalId: String!) {
-    proposalCreated1S(where: { proposalId: $proposalId }) {
-      description
-    }
-    proposalCreated2S(where: { proposalId: $proposalId }) {
-      description
-    }
-    proposalCreated3S(where: { proposalId: $proposalId }) {
-      description
-    }
-    proposalCreateds(where: { proposalId: $proposalId }) {
-      description
-    }
-  }
-`;
-
-const arbQuery = gql`
-  query Votes($address: String!) {
-    votes(
-      orderBy: timestamp
-      orderDirection: desc
-      where: { user: $address, organization: "arbitrum.eth" }
-    ) {
-      id
-      proposal {
-        id
-        description
-        timestamp
-      }
-      organization {
-        id
-      }
-      solution
-      timestamp
-      support
-    }
-  }
-`;
 
 export const fetchProposalDescriptions = async (
   first: any,
@@ -122,16 +56,18 @@ export const fetchProposalDescriptions = async (
   address: any
 ) => {
   let proposalIdsResult: any;
-  if (daoName === "optimism") {
-    proposalIdsResult = await op_client.query(VoterQuery(first, skip), {
-      address: address,
-    });
-  } else if (daoName === "arbitrum") {
-    proposalIdsResult = await arb_client.query(VoterQuery(first, skip), {
-      address: address,
-    });
-  }
+  let descriptionsPromises;
+  let descriptionsResults: any;
+  const currentDAO = daoConfigs[daoName];
 
+  const client = createClient({
+    url: currentDAO.proposalUrl,
+    exchanges: [cacheExchange, fetchExchange],
+  });
+
+  proposalIdsResult = await client.query(VoterQuery(first, skip), {
+    address: address,
+  });
   const voteCasts = proposalIdsResult.data.voteCasts || [];
   const voteCastWithParamsCollection =
     proposalIdsResult.data.voteCastWithParams_collection || [];
@@ -143,24 +79,28 @@ export const fetchProposalDescriptions = async (
   combinedData.sort((a: any, b: any) => b.blockTimestamp - a.blockTimestamp);
 
   const proposalIds = combinedData.map((voteCast: any) => voteCast);
+  descriptionsPromises = proposalIds.map((proposalId: any) => {
+    return client
+      .query(currentDAO.descriptionQuery, {
+        proposalId: proposalId.proposalId.toString(),
+      })
+      .toPromise();
+  });
+  descriptionsResults = (await Promise.all(descriptionsPromises)) || [];
 
-  let descriptionsPromises;
-  let descriptionsResults: any;
-  if (daoName === "optimism") {
-    descriptionsPromises = proposalIds.map((proposalId: any) => {
-      return op_client
-        .query(opDescription, { proposalId: proposalId.proposalId.toString() })
-        .toPromise();
-    });
-    descriptionsResults = (await Promise.all(descriptionsPromises)) || [];
-  } else if (daoName === "arbitrum") {
-    descriptionsPromises = proposalIds.map((proposalId: any) => {
-      return arb_client
-        .query(arbDescription, { proposalId: proposalId.proposalId.toString() })
-        .toPromise();
-    });
-    descriptionsResults = (await Promise.all(descriptionsPromises)) || [];
-  }
+  // if (daoName === "optimism") {
+  //   descriptionsPromises = proposalIds.map((proposalId: any) => {
+  //     return op_client
+  //       .query(opDescription, { proposalId: proposalId.proposalId.toString() })
+  //       .toPromise();
+  //   });
+  //   descriptionsResults = (await Promise.all(descriptionsPromises)) || [];
+  // } else if (daoName === "arbitrum") {
+  //   descriptionsPromises = proposalIds.map((proposalId: any) => {
+  //     return arb_client
+  //       .query(arbDescription, { proposalId: proposalId.proposalId.toString() })
+  //       .toPromise();
+  //   });
 
   const FinalResult = descriptionsResults
     .flatMap((result: any, index: any) =>
@@ -209,6 +149,7 @@ export const fetchGraphData = async (daoName: any, pageData: any) => {
     return { 0: 0, 1: 0, 2: 0 };
   }
 };
+
 export function formatNumber(num: any) {
   if (num >= 1e9) {
     return (num / 1e9).toFixed(2) + "B"; // Billion
@@ -229,8 +170,36 @@ function ProposalVoted({ daoName, address }: any) {
   const [pageData, setPageData] = useState<any>([]);
   const [isPageLoading, setIsPageLoading] = useState(true);
   const [openDesc, setOpenDesc] = useState<boolean[]>([]);
+  const [isMobile, setIsMobile] = useState(false);
   const [supportCounts, setSupportCounts] = useState({ 0: 0, 1: 0, 2: 0 });
+
   const router = useRouter();
+  const totalData: number = graphData.length;
+  const dataPerPage: number = 5;
+  const totalPages: number = Math.ceil(totalData / dataPerPage);
+  const chartData = {
+    labels: [
+      `For: ${supportCounts[1]} votes`,
+      `Against: ${supportCounts[0]} votes`,
+      `Abstain: ${supportCounts[2]} votes`,
+    ],
+    datasets: [
+      {
+        label: "# of Votes",
+        data: [supportCounts[1], supportCounts[0], supportCounts[2]],
+        backgroundColor: ["#0033A8", "#6B98FF", "#004DFF"],
+        borderWidth: 1,
+      },
+    ],
+  };
+
+
+  const filterDescription = (description: any) => {
+    return description.replace(/#/g, "").trim();
+  };
+
+
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -252,6 +221,7 @@ function ProposalVoted({ daoName, address }: any) {
 
     fetchData();
   }, [daoName]);
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -264,11 +234,7 @@ function ProposalVoted({ daoName, address }: any) {
 
     fetchData();
   }, [pageData]);
-
-  const totalData: number = graphData.length;
-  const dataPerPage: number = 5;
-  const totalPages: number = Math.ceil(totalData / dataPerPage);
-
+ 
   useEffect(() => {
     const fetchPageData = async () => {
       const offset = (currentPage - 1) * dataPerPage;
@@ -282,29 +248,7 @@ function ProposalVoted({ daoName, address }: any) {
     }
     setOpenDesc(new Array(pageData.length).fill(false));
   }, [currentPage, graphData]);
-
-  const chartData = {
-    labels: [
-      `For: ${supportCounts[1]} votes`,
-      `Against: ${supportCounts[0]} votes`,
-      `Abstain: ${supportCounts[2]} votes`,
-    ],
-    datasets: [
-      {
-        label: "# of Votes",
-        data: [supportCounts[1], supportCounts[0], supportCounts[2]],
-        backgroundColor: ["#0033A8", "#6B98FF", "#004DFF"],
-        borderWidth: 1,
-      },
-    ],
-  };
-
-  const filterDescription = (description: any) => {
-    return description.replace(/#/g, "").trim();
-  };
-
-  const [isMobile, setIsMobile] = useState(false);
-
+  
   useEffect(() => {
     const checkIfMobile = () => {
       if (typeof window !== "undefined") {
@@ -407,6 +351,7 @@ function ProposalVoted({ daoName, address }: any) {
                             className="flex justify-center items-center size-6 xs:size-8"
                             src={VotedOnOptions}
                             alt="Voted on options"
+                            priority={true}
                           />
                         ) : proposal.support === 1 ? (
                           "For"

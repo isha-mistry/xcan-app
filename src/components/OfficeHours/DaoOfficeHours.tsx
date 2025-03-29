@@ -28,8 +28,11 @@ import { OfficeHoursProps } from "@/types/OfficeHoursTypes";
 import OfficeHourTile from "../ComponentUtils/OfficeHourTile";
 import RecordedSessionsSkeletonLoader from "../SkeletonLoader/RecordedSessionsSkeletonLoader";
 import { BookOpen, Calendar, Clock } from "lucide-react";
+import NoResultsFound from "@/utils/Noresult";
 import oplogo from "@/assets/images/daos/op.png";
 import arbcir from "@/assets/images/daos/arb.png";
+import { daoConfigs } from "@/config/daos";
+import useSWR from 'swr'
 interface Type {
   img: StaticImageData;
   title: string;
@@ -57,6 +60,7 @@ function DaoOfficeHours() {
   const { walletAddress } = useWalletAddress();
   const [dataLoading, setDataLoading] = useState(true);
   const [activeButton, setActiveButton] = useState("all");
+  const excludedDaos = ["arbitrumSepolia"]
 
   // Original data from API
   const [originalData, setOriginalData] = useState({
@@ -73,37 +77,70 @@ function DaoOfficeHours() {
   });
 
   // Fetch data from API
-  useEffect(() => {
-    const fetchOfficeHours = async () => {
-      try {
-        setDataLoading(true);
-        const response = await fetchApi(`/get-office-hours`, {
-          headers: {
-            Authorization: `Bearer ${await getAccessToken()}`,
-          },
-        });
+  // useEffect(() => {
+  //   const fetchOfficeHours = async () => {
+  //     try {
+  //       setDataLoading(true);
+  //       const response = await fetchApi(`/get-office-hours`, {
+  //         headers: {
+  //           Authorization: `Bearer ${await getAccessToken()}`,
+  //         },
+  //       });
 
-        const result = await response.json();
+  //       const result = await response.json();
 
-        const data = {
-          ongoing: result.data.ongoing,
-          upcoming: result.data.upcoming,
-          recorded: result.data.recorded,
-        };
+  //       const data = {
+  //         ongoing: result.data.ongoing,
+  //         upcoming: result.data.upcoming,
+  //         recorded: result.data.recorded,
+  //       };
 
-        setOriginalData(data);
-        setFilteredData(data); // Initially, filtered data is same as original
-      } catch (error) {
-        console.error("Error fetching office hours:", error);
-      } finally {
-        setDataLoading(false);
-      }
+  //       setOriginalData(data);
+  //       setFilteredData(data); // Initially, filtered data is same as original
+  //     } catch (error) {
+  //       console.error("Error fetching office hours:", error);
+  //     } finally {
+  //       setDataLoading(false);
+  //     }
+  //   };
+
+  //   if (walletAddress) {
+  //     fetchOfficeHours();
+  //   }
+  // }, [walletAddress]);
+
+// In your DaoOfficeHours component
+const { data, error, mutate } = useSWR(
+  walletAddress ? '/get-office-hours' : null,
+  async () => {
+    const response = await fetchApi(`/get-office-hours`, {
+      headers: {
+        Authorization: `Bearer ${await getAccessToken()}`,
+      },
+    });
+    return response.json();
+  },
+  {
+    revalidateOnFocus: true,  // Revalidate when user comes back to the tab
+    revalidateOnMount: true,  // Revalidate when component mounts
+    dedupingInterval: 10000,  // Don't make duplicate requests within 10 seconds
+  }
+);
+
+// Process data when it arrives
+useEffect(() => {
+  if (data) {
+    const processedData = {
+      ongoing: data.data.ongoing,
+      upcoming: data.data.upcoming,
+      recorded: data.data.recorded,
     };
-
-    if (walletAddress) {
-      fetchOfficeHours();
-    }
-  }, [walletAddress]);
+    
+    setOriginalData(processedData);
+    setFilteredData(processedData);
+    setDataLoading(false);
+  }
+}, [data]);
 
   // Search function
   const handleSearch = (searchTerm: string) => {
@@ -195,6 +232,21 @@ function DaoOfficeHours() {
     router.push(url);
   };
 
+  const handleTabChange = (tab:string,  category: string, action: string, label: string) => {
+    router.push(path + "?hours=" + tab);
+    pushToGTM({
+      event: 'tab_selection',
+      category: category,
+      action: action,
+      label: label,
+    });
+    
+    // Force revalidate data when switching to certain tabs
+    if (tab === 'ongoing' || tab === 'upcoming') {
+      mutate(); // This will re-fetch fresh data from the API
+    }
+  };
+
   return (
     <>
       {/* For Mobile Screen */}
@@ -213,8 +265,7 @@ function DaoOfficeHours() {
                   ? "text-[#0500FF] font-semibold bg-[#f5f5f5]"
                   : "text-[#3E3D3D] bg-white"
               }`}
-              // onClick={() => router.push(path + "?hours=ongoing")}
-              onClick={() => handleNavigation(path + "?hours=ongoing", 'Office Hours Navigation', 'Live Tab Clicked', 'Live')}
+              onClick={() => handleTabChange('ongoing', 'Office Hours Navigation', 'Live Tab Clicked', 'Live')}
             >
               <Clock size={16} className="drop-shadow-lg" />
               Live
@@ -267,32 +318,28 @@ function DaoOfficeHours() {
               >
                 All
               </button>
-              <button
-                className={`flex items-center justify-center size-[26px] sm:size-[29px] md:size-[29px]`}
-                onClick={() => handleFilters("optimism")}
-              >
-                <Image
-                  src={oplogo}
-                  alt="optimism"
-                  className={`size-full ${
-                    activeButton === "optimism" ? "opacity-100" : "opacity-50"
-                  }`}
-                />
-                {/* <span className="hidden md:inline ml-1.5">Optimism</span> */}
-              </button>
-              <button
-                className={`flex items-center justify-center size-[26px] sm:size-[29px] md:size-[29px]`}
-                onClick={() => handleFilters("arbitrum")}
-              >
-                <Image
-                  src={arbcir}
-                  alt="arbitrum"
-                  className={`size-full ${
-                    activeButton === "arbitrum" ? "opacity-100" : "opacity-50"
-                  }`}
-                />
-                {/* <span className="hidden md:inline ml-1.5">Arbitrum</span> */}
-              </button>
+
+              {Object.entries(daoConfigs)
+                .filter(([key]) => !excludedDaos.includes(key)) // Exclude unwanted DAOs
+                .map(([key, dao]) => (
+                  <button
+                    key={key}
+                    className="flex items-center justify-center size-[26px] sm:size-[29px] md:size-[29px]"
+                    onClick={() => handleFilters(dao.name.toLocaleLowerCase())}
+                  >
+                    <Image
+                      src={dao.logo}
+                      width={100}
+                      height={100}
+                      alt={`${dao.name} logo`}
+                      className={`size-full rounded-full ${
+                        activeButton === dao.name.toLocaleLowerCase()
+                          ? "opacity-100"
+                          : "opacity-50"
+                      }`}
+                    />
+                  </button>
+                ))}
             </div>
           </div>
 
@@ -301,11 +348,12 @@ function DaoOfficeHours() {
             {dataLoading ? (
               <RecordedSessionsSkeletonLoader />
             ) : getCurrentData().length === 0 ? (
-              <div className="flex flex-col justify-center items-center pt-10">
-                <div className="text-5xl">☹️</div>
+              <div className="flex flex-col justify-center items-center">
+                {/* <div className="text-5xl">☹️</div>
                 <div className="pt-4 font-semibold text-lg">
                   Oops, no such result available!
-                </div>
+                </div> */}
+                <NoResultsFound />
               </div>
             ) : (
               <OfficeHourTile

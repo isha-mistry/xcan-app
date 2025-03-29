@@ -1,19 +1,5 @@
-import {
-  Button,
-  Modal,
-  ModalBody,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-  useDisclosure,
-} from "@nextui-org/react";
-// import { useRouter } from "next/navigation";
-import { useRouter } from "next-nprogress-bar";
-import React, { useEffect, useState } from "react";
-import { Oval } from "react-loader-spinner";
-import { useAccount } from "wagmi";
+import React, { useState } from "react";
 import Image from "next/image";
-import { Tooltip } from "@nextui-org/react";
 import connectImg from "@/assets/images/instant-meet/connect.png";
 import connectImghover from "@/assets/images/instant-meet/connectHover.svg";
 import accessImg from "@/assets/images/instant-meet/quick-access.png";
@@ -27,10 +13,12 @@ import screenImghover from "@/assets/images/instant-meet/screenImghover.svg";
 import chatImg from "@/assets/images/instant-meet/chat.png";
 import chatImghover from "@/assets/images/instant-meet/chatImghover.svg";
 import heroImg from "@/assets/images/instant-meet/instant-meet-hero.svg";
+import {Button,Modal,ModalBody,ModalContent,ModalFooter,ModalHeader,useDisclosure,} from "@nextui-org/react";
+import { Oval } from "react-loader-spinner";
+import { Tooltip } from "@nextui-org/react";
 import { usePrivy } from "@privy-io/react-auth";
 import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 import { MEETING_BASE_URL } from "@/config/constants";
-import { redirectionInNewTab } from "@/utils/meetingUtils";
 import { fetchApi } from "@/utils/api";
 
 interface instantMeetProps {
@@ -40,18 +28,17 @@ interface instantMeetProps {
 }
 
 function InstantMeet({ isDelegate, selfDelegate, daoName }: instantMeetProps) {
+
+ 
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const { walletAddress } = useWalletAddress();
+  const { getAccessToken} = usePrivy();
+  const [confirmSave, setConfirmSave] = useState(false);
   const [modalData, setModalData] = useState({
     title: "",
     description: "",
   });
-  const { isOpen, onOpen, onClose } = useDisclosure();
-  const [confirmSave, setConfirmSave] = useState(false);
-  const { address, isConnected } = useAccount();
-  const { walletAddress } = useWalletAddress();
-  const { chain } = useAccount();
-  const [isScheduling, setIsScheduling] = useState(false);
-  const { user, ready, getAccessToken, authenticated } = usePrivy();
-  const router = useRouter();
+
 
   const handleModalInputChange = (
     e:
@@ -122,14 +109,7 @@ function InstantMeet({ isDelegate, selfDelegate, daoName }: instantMeetProps) {
       const response = await fetchApi("/book-slot", requestOptions);
       const result = await response.json();
       if (result.success) {
-        // setIsScheduled(true);
         setConfirmSave(false);
-
-        // if (roomId) {
-        //   redirectionInNewTab(
-        //     `${MEETING_BASE_URL}/meeting/session/${roomId}/lobby`
-        //   );
-        // }
           openMeetingInNewTab(roomId); // Open in new tab
         
 
@@ -141,7 +121,6 @@ function InstantMeet({ isDelegate, selfDelegate, daoName }: instantMeetProps) {
       }
     } catch (error) {
       setConfirmSave(false);
-      // setIsScheduled(false);
       console.error("Error:", error);
     }
     setModalData({
@@ -247,7 +226,7 @@ function InstantMeet({ isDelegate, selfDelegate, daoName }: instantMeetProps) {
                             src={data.image}
                             className="transition duration-300 ease-in-out transform group-hover:hidden"
                             quality={100}
-                            priority
+                            priority={true}
                           />
                           <Image
                             alt="{hoverImage}"
@@ -256,7 +235,7 @@ function InstantMeet({ isDelegate, selfDelegate, daoName }: instantMeetProps) {
                             src={data.hoverImage}
                             className="hidden transition duration-300 ease-in-out transform group-hover:block group-hover:scale-105"
                             quality={100}
-                            priority
+                            priority={true}
                           />
                         </div>
                         <div className="p-2">
@@ -270,7 +249,7 @@ function InstantMeet({ isDelegate, selfDelegate, daoName }: instantMeetProps) {
             </div>
             <div className="col-span-3 flex flex-col p-10 md:p-16 2md:p-3 items-center justify-center -mt-[25%]">
               <div className="h-auto w-auto bg-cover mb-[-20%]">
-                <Image alt="img7" src={heroImg} quality={100} priority />
+                <Image alt="img7" src={heroImg} quality={100} priority={true} />
               </div>
               <div className="text-center transition-transform transform hover:scale-105 duration-300">
                 <button
@@ -289,7 +268,6 @@ function InstantMeet({ isDelegate, selfDelegate, daoName }: instantMeetProps) {
         isOpen={isOpen}
         onClose={() => {
           onClose();
-          // setIsScheduling(false);
         }}
         className="font-poppins"
       >
@@ -328,7 +306,7 @@ function InstantMeet({ isDelegate, selfDelegate, daoName }: instantMeetProps) {
             <ModalFooter>
               <Button
                 color="default"
-                onClick={() => {
+                onPress={() => {
                   onClose();
                   // setIsScheduling(false);
                 }}
@@ -337,7 +315,7 @@ function InstantMeet({ isDelegate, selfDelegate, daoName }: instantMeetProps) {
               </Button>
               <Button
                 color="primary"
-                onClick={startInstantMeet}
+                onPress={startInstantMeet}
                 isDisabled={confirmSave}
               >
                 {confirmSave ? (

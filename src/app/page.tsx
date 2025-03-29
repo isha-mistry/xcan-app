@@ -1,10 +1,9 @@
-import Homepage from "@/components/HomePage/Homepage";
-
+import ExploreDAOs from "@/components/DAOs/ExploreDAOs";
 
 export default function Home() {
   return (
     <main>
-      <Homepage/>
+      <ExploreDAOs />
     </main>
   );
 }

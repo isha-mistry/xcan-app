@@ -1,6 +1,8 @@
 import { optimism } from "@/config/daos/optimismDAO";
 import { arbitrum } from "./daos/arbitrumDAO";
 
+
+
 export const dao_details: Record<string, any> = {
   optimism,
   arbitrum,

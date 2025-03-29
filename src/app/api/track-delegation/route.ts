@@ -8,8 +8,7 @@ interface DelegateSchema {
 }
 
 interface Delegation {
-  optimism?: DelegationDetails[];
-  arbitrum?: DelegationDetails[];
+  [key: string]: DelegationDetails[] | undefined; // Allow dynamic keys
 }
 
 interface DelegationDetails {
@@ -21,7 +20,19 @@ interface DelegationDetails {
   timestamp: Date;
 }
 
-export async function POST(req: NextRequest, res: NextResponse) {
+function validateDelegationDetails(detail: any): boolean {
+  return (
+    detail &&
+    typeof detail.delegator === "string" &&
+    typeof detail.to_delegator === "string" &&
+    typeof detail.from_delegate === "string" &&
+    typeof detail.token === "string" &&
+    typeof detail.page === "string" &&
+    detail.timestamp!=undefined
+  );
+}
+
+export async function POST(req: NextRequest) {
   try {
     const client = await connectDB();
     const db = client.db();
@@ -33,7 +44,6 @@ export async function POST(req: NextRequest, res: NextResponse) {
 
     if (collections.length === 0) {
       await db.createCollection(collectionName);
-      console.log(`${collectionName} collection created.`);
     }
 
     const collection: Collection<DelegateSchema> =
@@ -42,7 +52,6 @@ export async function POST(req: NextRequest, res: NextResponse) {
     // Parse and validate request body
     const body = await req.json();
     const { address, delegation } = body as DelegateSchema;
-
 
     if (!address) {
       return NextResponse.json(
@@ -53,20 +62,9 @@ export async function POST(req: NextRequest, res: NextResponse) {
 
     // Validate delegation data structure
     if (delegation && typeof delegation === "object") {
-      for (const network of ["optimism", "arbitrum"] as const) {
-        if (delegation[network]) {
-          if (!Array.isArray(delegation[network])) {
-            return NextResponse.json(
-              {
-                success: false,
-                message: `Invalid ${network} delegation format`,
-              },
-              { status: 400 }
-            );
-          }
-
-          // Validate each delegation detail
-          for (const detail of delegation[network]!) {
+      for (const [network, details] of Object.entries(delegation)) {
+        if (details && Array.isArray(details)) {
+          for (const detail of details) {
             if (!validateDelegationDetails(detail)) {
               return NextResponse.json(
                 {
@@ -77,6 +75,11 @@ export async function POST(req: NextRequest, res: NextResponse) {
               );
             }
           }
+        } else {
+          return NextResponse.json(
+            { success: false, message: `Invalid ${network} delegation format` },
+            { status: 400 }
+          );
         }
       }
     }
@@ -86,7 +89,6 @@ export async function POST(req: NextRequest, res: NextResponse) {
     if (existingDocument) {
       const updateData: { $push?: Record<string, any> } = {};
 
-      // Merge delegation if provided
       if (delegation) {
         for (const [network, details] of Object.entries(delegation)) {
           if (details && Array.isArray(details)) {
@@ -94,7 +96,7 @@ export async function POST(req: NextRequest, res: NextResponse) {
             updateData.$push[`delegation.${network}`] = {
               $each: details.map((detail) => ({
                 ...detail,
-                timestamp: detail.timestamp
+                timestamp: new Date(detail.timestamp), // Ensure Date type
               })),
             };
           }
@@ -110,18 +112,12 @@ export async function POST(req: NextRequest, res: NextResponse) {
         { status: 200 }
       );
     } else {
-      // Create a new document
       const newDelegation: DelegateSchema = {
         address,
         delegation: delegation || {},
       };
 
-      // Add timestamp to the document
-      const documentToInsert = {
-        ...newDelegation, 
-      };
-
-      await collection.insertOne(documentToInsert);
+      await collection.insertOne(newDelegation);
 
       return NextResponse.json(
         { success: true, message: "New document created!" },
@@ -135,17 +131,4 @@ export async function POST(req: NextRequest, res: NextResponse) {
       { status: 500 }
     );
   }
-}
-
-// Helper function to validate delegation details
-function validateDelegationDetails(detail: any): detail is DelegationDetails {
-  return (
-    typeof detail === "object" &&
-    typeof detail.delegator === "string" &&
-    typeof detail.to_delegator === "string" &&
-    typeof detail.from_delegate === "string" &&
-    typeof detail.token === "string" &&
-    typeof detail.page==="string" &&
-    detail.timestamp !== undefined
-  );
 }

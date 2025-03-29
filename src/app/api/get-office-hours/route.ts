@@ -10,61 +10,116 @@ export async function GET(req: NextRequest) {
     const url = new URL(req.url);
     const host_address = url.searchParams.get("host_address");
     const dao_name = url.searchParams.get("dao_name");
+    const type = url.searchParams.get("type");
 
     let query: any = {
       "dao.meetings.status": "active", // Base condition for active meetings
     };
 
+    // Case-insensitive regex for host_address
+    const hostAddressRegex = host_address
+      ? new RegExp(`^${host_address}$`, "i")
+      : null;
+
     // Modified query to fetch both hosted meetings and meetings where user is an attendee
     if (host_address && dao_name) {
-      query = {
-        $and: [
-          { "dao.name": dao_name },
-          { "dao.meetings.status": "active" },
-          {
-            $or: [
-              { host_address: host_address },
-              { "dao.meetings.attendees.attendee_address": host_address },
-            ],
-          },
-        ],
-      };
+      // query = {
+      //   $and: [
+      //     { "dao.name": dao_name },
+      //     { "dao.meetings.status": "active" },
+      // {
+      //   $or: [
+      //     { host_address: { $regex: hostAddressRegex } }, // Case-insensitive host check
+      //     { "dao.meetings.attendees.attendee_address": { $regex: hostAddressRegex } },
+      //   ],
+      // },
+      //   ],
+      // };
+      if (type === "attended") {
+        query = {
+          $and: [
+            { "dao.name": dao_name },
+            { "dao.meetings.status": "active" },
+            {
+              $or: [
+                { host_address: { $regex: hostAddressRegex } }, 
+                {
+                  "dao.meetings.attendees.attendee_address": {
+                    $regex: hostAddressRegex,
+                  },
+                },
+              ],
+            },
+          ],
+        };
+      } else {
+        query = {
+          $and: [
+            { "dao.name": dao_name },
+            { "dao.meetings.status": "active" },
+            {
+              $or: [
+                { host_address: { $regex: hostAddressRegex } }, 
+              ],
+            },
+          ],
+        };
+      }
     } else if (dao_name) {
       query = {
         $and: [{ "dao.name": dao_name }, { "dao.meetings.status": "active" }],
       };
     } else if (host_address) {
-      query = {
-        $and: [
-          { "dao.meetings.status": "active" },
-          {
-            $or: [
-              { host_address: host_address },
-              { "dao.meetings.attendees.attendee_address": host_address },
-            ],
-          },
-        ],
-      };
+      if (type === "attended") {
+        query = {
+          $and: [
+            { "dao.name": dao_name },
+            { "dao.meetings.status": "active" },
+            {
+              $or: [
+                { host_address: { $regex: hostAddressRegex } },
+                {
+                  "dao.meetings.attendees.attendee_address": {
+                    $regex: hostAddressRegex,
+                  },
+                },
+              ],
+            },
+          ],
+        };
+      } else {
+        query = {
+          $and: [
+            { "dao.name": dao_name },
+            { "dao.meetings.status": "active" },
+            {
+              $or: [
+                { host_address: { $regex: hostAddressRegex } }, 
+              ],
+            },
+          ],
+        };
+      }
     }
 
     // Check if query is empty (only has status filter)
     const isEmptyQuery =
       Object.keys(query).length === 1 && query["dao.meetings.status"];
 
-    // if (isEmptyQuery) {
-    //   const cacheKey = `office-hours-all`;
+    if (isEmptyQuery) {
+      const cacheKey = `office-hours-all`;
 
-    //   if (cacheWrapper.isAvailable) {
-    //     const cacheValue = await cacheWrapper.get(cacheKey);
-    //     if (cacheValue) {
-    //       console.log(`Serving from cache: office-hours-all`);
-    //       return NextResponse.json(
-    //         { success: true, data: JSON.parse(cacheValue) },
-    //         { status: 200 }
-    //       );
-    //     }
-    //   }
-    // }
+      if (cacheWrapper.isAvailable) {
+        const cacheValue = await cacheWrapper.get(cacheKey);
+        if (cacheValue) {
+          console.log(`Serving from cache: office-hours-all`);
+          return NextResponse.json(
+            { success: true, data: JSON.parse(cacheValue) },
+            { status: 200 }
+          );
+        }
+      }
+    }
 
     client = await connectDB();
     const db = client.db();
@@ -266,10 +321,10 @@ export async function GET(req: NextRequest) {
     };
 
     // Cache the response if it's an empty query
-    // if (isEmptyQuery && cacheWrapper.isAvailable) {
-    //   const cacheKey = `office-hours-all`;
-    //   await cacheWrapper.set(cacheKey, JSON.stringify(response), 600); // Cache for 10 minutes
-    // }
+    if (isEmptyQuery && cacheWrapper.isAvailable) {
+      const cacheKey = `office-hours-all`;
+      await cacheWrapper.set(cacheKey, JSON.stringify(response), 600); // Cache for 10 minutes
+    }
 
     return NextResponse.json(
       {

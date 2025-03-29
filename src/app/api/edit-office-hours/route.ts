@@ -5,14 +5,15 @@ import { cacheWrapper } from "@/utils/cacheWrapper";
 
 export async function PUT(req: Request) {
   try {
+    const walletAddress = req.headers.get("x-wallet-address");
     const updateData: OfficeHoursProps = await req.json();
     const { host_address, dao_name, reference_id, attendees, ...updateFields } =
       updateData;
 
-    // if(cacheWrapper.isAvailable){
-    //   const cacheKey = `office-hours-all`;
-    //   await cacheWrapper.delete(cacheKey);
-    // }
+    if(cacheWrapper.isAvailable){
+      const cacheKey = `office-hours-all`;
+      await cacheWrapper.delete(cacheKey);
+    }
 
     if (!host_address || !dao_name || !reference_id) {
       return NextResponse.json(
@@ -24,6 +25,26 @@ export async function PUT(req: Request) {
         { status: 400 }
       );
     }
+
+    if (!walletAddress) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Authentication required",
+        },
+        { status: 401 }
+      );
+    }
+    if (walletAddress.toLowerCase() !== host_address.toLowerCase()) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "You are not authorized to edit this office hours slot",
+        },
+        { status: 403 }
+      );
+    }
+
 
     const client = await connectDB();
     const db = client.db();
