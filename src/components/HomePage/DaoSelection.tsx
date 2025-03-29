@@ -2,8 +2,6 @@
 import React, { useEffect, useState } from "react";
 import { IoClose } from "react-icons/io5";
 import Image from "next/image";
-import op from "@/assets/images/daos/op.png";
-import arb from "@/assets/images/daos/arb.png";
 import { createPublicClient, http } from "viem";
 import { optimism, arbitrum } from "viem/chains";
 import dao_abi from "../../artifacts/Dao.sol/GovernanceToken.json";
@@ -12,7 +10,7 @@ import { usePathname, useRouter } from "next/navigation";
 import PopupGenerateLink from "./PopupGenerateLink";
 import { usePrivy } from "@privy-io/react-auth";
 import ConnectWalletHomePage from "./ConnectwalletHomePage";
-import letsgrowdao from "@/assets/images/daos/letsGrow.jpg";
+import { dao_details } from "@/config/daoDetails";
 
 interface DaoSelectionProps {
   onClose: () => void;
@@ -45,7 +43,7 @@ function DaoSelection({
   const [isNavigating, setIsNavigating] = useState(false);
   const { authenticated } = usePrivy();
   const [showWalletPopup, setShowWalletPopup] = useState(false);
-  const [selectedDao, setSelectedDao] = useState<"optimism" | "arbitrum" | "letsgrow" | "">("");
+  const [selectedDao, setSelectedDao] = useState<string>("");
 
     useEffect(() => {
       if (authenticated && selectedDao && showWalletPopup) {
@@ -66,32 +64,20 @@ function DaoSelection({
     router.push(url);
   };
 
-  const handleOptimism = () => {
+
+   // Generic handler for all DAOs
+   const handleDaoClick = (daoName: string) => {
     pushToGTM({
       event: 'dao_selection',
       category: 'DAO Selection',
-      action: 'Optimism DAO Selected',
-      label: 'optimism',
+      action: `${daoName} DAO Selected`,
+      label: daoName,
       value: joinAsDelegate ? 1 : feature ? 2 : 3
     });
-    handleDaoSelection("optimism");
-  };
-  const handleLetsGrow = () => {
-    handleDaoSelection("letsgrow");
-  };
-  
-  const handleArbitrum = () => {
-    pushToGTM({
-      event: 'dao_selection',
-      category: 'DAO Selection',
-      action: 'Arbitrum DAO Selected',
-      label: 'arbitrum',
-      value: joinAsDelegate ? 1 : feature ? 2 : 3
-    });
-    handleDaoSelection("arbitrum");
+    handleDaoSelection(daoName);
   };
 
-  const handleDaoSelection = (network: "optimism" | "arbitrum" | "letsgrow") => {
+  const handleDaoSelection = (network: string) => {
     setDao(network);
     setSelectedDao(network);
     
@@ -104,7 +90,7 @@ function DaoSelection({
   };
 
 
-  const checkDelegateStatus = async (network: "optimism" | "arbitrum" | "letsgrow") => {
+  const checkDelegateStatus = async (network: string) => {
     setShowError(false);
     setIsLoading(true);
     try {
@@ -232,10 +218,10 @@ function DaoSelection({
           onClick={onClose}
         ></div>
         <div className="flex flex-col items-center justify-center h-screen bg-gradient-to-r from-blue-50 via-blue-100 to-blue-50">
-          <div className="p-6 bg-white rounded-3xl shadow-2xl text-center max-w-2xl w-full transform transition duration-300 hover:scale-105 mx-2">
-            <div className="bg-black rounded-full size-8 p-1 flex justify-center items-center absolute top-6 right-6">
+          <div className="p-4 xs:p-6 bg-white rounded-3xl shadow-2xl text-center max-w-2xl w-full transform transition duration-300 hover:scale-105 mx-2">
+            <div className="bg-black rounded-full size-4 xs:size-8 p-1 flex justify-center items-center absolute top-6 right-6">
               <IoClose
-                className="cursor-pointer w-6 h-6 text-white"
+                className="cursor-pointer size-3 xs:w-6 xs:h-6 text-white"
                 onClick={onClose}
               />
             </div>
@@ -244,7 +230,7 @@ function DaoSelection({
                 <h2 className="font-bold text-3xl text-gray-900 my-6">
                   Start Your Journey!
                 </h2>
-                <p className="text-gray-700 mb-10 text-base">
+                <p className="text-gray-700 mb-6 xs:mb-10 text-base">
                   To kick things off, let us know which DAO you are a delegate
                   for.
                 </p>
@@ -254,7 +240,7 @@ function DaoSelection({
                 <h2 className="font-bold text-3xl text-gray-900 my-6">
                   Select the DAO you represent!
                 </h2>
-                <p className="text-gray-700 mb-10 text-base">
+                <p className="text-gray-700 mb-6 xs:mb-10 text-base">
                   Choose your DAO to set your availability and start hosting
                   sessions.
                 </p>
@@ -284,53 +270,28 @@ function DaoSelection({
                 <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-500"></div>
               </div>
             ) : (
-              <div className="flex gap-6 justify-center">
-                <button
-                  className="flex-1 p-4 rounded-2xl border-2 border-transparent hover:border-blue-500 bg-gradient-to-br from-red-50 to-red-100 transition-all duration-300 group"
-                  onClick={handleOptimism}
-                >
-                  <div className="flex flex-col items-center gap-4">
-                    <Image 
-                      src={op} 
-                      alt="" 
-                      className="w-20 h-20 rounded-full" 
-                    />
-                    <span className="font-semibold text-lg text-gray-800">
-                      Optimism
-                    </span>
-                  </div>
-                </button>
-
-                <button
-                  className="flex-1 p-4 rounded-2xl border-2 border-transparent hover:border-blue-500 bg-gradient-to-br from-blue-50 to-blue-100 transition-all duration-300 group"
-                  onClick={handleArbitrum}
-                >
-                  <div className="flex flex-col items-center gap-4">
-                    <Image 
-                      src={arb} 
-                      alt="" 
-                      className="w-20 h-20 rounded-full" 
-                    />
-                    <span className="font-semibold text-lg text-gray-800">
-                      Arbitrum
-                    </span>
-                  </div>
-                </button>
-                <button
-                  className="flex-1 p-4 rounded-2xl border-2 border-transparent hover:border-blue-500 bg-gradient-to-br from-blue-50 to-blue-100 transition-all duration-300 group"
-                  onClick={handleLetsGrow}
-                >
-                  <div className="flex flex-col items-center gap-4">
-                    <Image 
-                      src={letsgrowdao} 
-                      alt="" 
-                      className="w-20 h-20 rounded-full" 
-                    />
-                    <span className="font-semibold text-lg text-gray-800">
-                      Let&apos;s Grow DAO
-                    </span>
-                  </div>
-                </button>
+              <div className="flex gap-1 xs:gap-3 sm:gap-6 justify-center">
+                {Object.keys(dao_details).map((daoName) => {
+                  const dao = dao_details[daoName];
+                  return (
+                    <button
+                      key={daoName}
+                      className="flex-1 p-2 xs:p-3 xs:py-4 sm:p-4 rounded-2xl border-2 border-transparent hover:border-blue-500 bg-gradient-to-br from-blue-50 to-blue-100 transition-all duration-300 group"
+                      onClick={() => handleDaoClick(daoName)}
+                    >
+                      <div className="flex flex-col items-center gap-4">
+                        <Image
+                          src={dao.logo}
+                          alt={dao.title}
+                          className="size-12 sm:size-20 rounded-full"
+                        />
+                        <span className="font-semibold text-xs sm:text-lg text-gray-800">
+                          {dao.title}
+                        </span>
+                      </div>
+                    </button>
+                  );
+                })}
               </div>
             )}
           </div>
