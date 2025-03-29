@@ -9,6 +9,7 @@ import { getAccessToken } from "@privy-io/react-auth";
 import { fetchApi } from "@/utils/api";
 import toast from "react-hot-toast";
 import styles from "./Button.module.css";
+import { daoConfigs } from "@/config/daos";
 
 interface AttestationButtonProps {
   meetingId: string | undefined;
@@ -46,14 +47,17 @@ function OffchainAttestationButton({
   }, [uid]);
 
   const getAttestationUrl = (daoName: string, uid: string): string => {
-    const baseUrl =
-      daoName.toLowerCase() === "optimism"
-        ? "https://optimism.easscan.org/offchain/attestation/view/"
-        : daoName.toLowerCase() === "arbitrum"
-        ? "https://arbitrum.easscan.org/offchain/attestation/view/"
-        : "#";
+    let currentDAO=daoConfigs[daoName.toLowerCase()];
+    const baseUrl=currentDAO?`${currentDAO.attestationUrl}`:"#";
+     
+    // const baseUrl =
+    //   daoName.toLowerCase() === "optimism"
+    //     ? "https://optimism.easscan.org/offchain/attestation/view/"
+    //     : daoName.toLowerCase() === "arbitrum"
+    //     ? "https://arbitrum.easscan.org/offchain/attestation/view/"
+    //     : "#";
 
-    return `${baseUrl}${uid}`;
+    return `${baseUrl}/${uid}`;
   };
 
   const handleClaimOffchain = async () => {
@@ -70,8 +74,12 @@ function OffchainAttestationButton({
       setIsLoading(true);
       const token = await getAccessToken();
 
-      const tokenforAttestation =
-        daoName.toLowerCase() === "optimism" ? "OP" : "ARB";
+      let currentDAO=daoConfigs[daoName.toLowerCase()]
+
+      // const tokenforAttestation =
+      //   daoName.toLowerCase() === "optimism" ? "OP" : "ARB";
+
+      const tokenforAttestation=currentDAO.tokenSymbol;
 
       const requestBody = {
         recipient: isHost ? walletAddress : attendeeAddress,

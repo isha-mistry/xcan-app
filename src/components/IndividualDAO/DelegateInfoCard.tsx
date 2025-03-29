@@ -8,6 +8,7 @@ import ccLogo from "@/assets/images/daos/CCLogo2.png";
 import { fetchEnsNameAndAvatar, getENSName } from "@/utils/ENSUtils";
 import { truncateAddress } from "@/utils/text";
 import { motion } from "framer-motion";
+import { daoConfigs } from "@/config/daos";
 interface DelegateInfoCardProps {
   delegate: any;
   daoName: string;
@@ -42,6 +43,8 @@ const DelegateInfoCard: React.FC<DelegateInfoCardProps> = ({
   const [tooltipContent, setTooltipContent] = useState("Copy");
   const [isAnimating, setIsAnimating] = useState(false);
 
+
+
   const pushToGTM = (eventData: GTMEvent) => {
     if (typeof window !== "undefined" && window.dataLayer) {
       window.dataLayer.push(eventData);
@@ -69,8 +72,9 @@ const DelegateInfoCard: React.FC<DelegateInfoCardProps> = ({
   function getDaoNameFromUrl() {
     if (typeof window !== "undefined") {
       const url = window.location.href;
-      if (url.includes("optimism")) return "optimism";
-      if (url.includes("arbitrum")) return "arbitrum";
+      const currentDAO=daoConfigs[daoName];
+      if (url.includes(currentDAO.name)) return currentDAO.name.toLowerCase();
+      // if (url.includes("arbitrum")) return "arbitrum";
     }
     return "";
   }
@@ -125,7 +129,7 @@ const DelegateInfoCard: React.FC<DelegateInfoCardProps> = ({
               src={
                 avatar ||
                 delegate.profilePicture ||
-                (daoName === "optimism" ? OPLogo : ARBLogo)
+                daoConfigs[daoName].logo
               }
               alt="Delegate"
               width={200}

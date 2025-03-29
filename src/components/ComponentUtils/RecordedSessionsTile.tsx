@@ -23,6 +23,8 @@ import buttonStyles from "./Button.module.css";
 import { formatTimeAgo } from "@/utils/getRelativeTime";
 import { usePrivy } from "@privy-io/react-auth";
 import { useWalletAddress } from "@/app/hooks/useWalletAddress";
+import { DAOLogo } from "../DAOs/DAOlogos";
+import { daoConfigs } from "@/config/daos";
 
 interface meeting {
   meetingData: any;
@@ -71,21 +73,23 @@ function RecordedSessionsTile({
   const [claimInProgress, setClaimInProgress] = useState(false);
   const [claimingMeetingId, setClaimingMeetingId] = useState(null);
   const [copiedStates, setCopiedStates] = useState<Record<string, boolean>>({});
-    const renderStartTime = useRef<number | null>(null);
+  const renderStartTime = useRef<number | null>(null);
 
-    useEffect(() => {
-      // Capture the start time
-      renderStartTime.current = performance.now();
-    }, []);
   
-    useEffect(() => {
-      if (meetingData) {
-        // Capture the end time and calculate render duration
-        const renderEndTime = performance.now();
-        const renderDuration = renderEndTime - (renderStartTime.current || 0);
-        //console.log(`RecordedSessionsTile component rendered in ${renderDuration.toFixed(2)} ms`);
-      }
-    }, [meetingData]);
+
+  useEffect(() => {
+    // Capture the start time
+    renderStartTime.current = performance.now();
+  }, []);
+
+  useEffect(() => {
+    if (meetingData) {
+      // Capture the end time and calculate render duration
+      const renderEndTime = performance.now();
+      const renderDuration = renderEndTime - (renderStartTime.current || 0);
+      //console.log(`RecordedSessionsTile component rendered in ${renderDuration.toFixed(2)} ms`);
+    }
+  }, [meetingData]);
 
   const pushToGTM = (eventData: GTMEvent) => {
     if (typeof window !== "undefined" && window.dataLayer) {
@@ -138,10 +142,10 @@ function RecordedSessionsTile({
     return Math.floor(views).toString();
   }
 
-  const daoLogos = {
-    optimism: oplogo,
-    arbitrum: arblogo,
-  };
+  // const daoLogos = {
+  //   optimism: oplogo,
+  //   arbitrum: arblogo,
+  // };
 
   useEffect(() => {
     if (hoveredVideo !== null && videoRefs.current[hoveredVideo]) {
@@ -333,12 +337,19 @@ function RecordedSessionsTile({
                   <div className=" flex items-center ">
                     <div>
                       <Image
-                        src={getDaoLogo(data.dao_name)}
+                        src={daoConfigs[data.dao_name.toLowerCase()].logo}
                         alt="image"
                         width={100}
                         height={100}
                         className="rounded-full size-4 sm:size-6"
                       />
+                      {/* <DAOLogo
+                        daoName={data.dao_name}
+                        width={100}
+                        height={100}
+                        className="rounded-full size-4 sm:size-6"
+                      />
+                       */}
                     </div>
                     {/* <div className="capitalize">
                       
@@ -486,13 +497,7 @@ function RecordedSessionsTile({
                   <div className="flex gap-2 w-full">
                     <Link
                       href={
-                        data.uid_host
-                          ? data.dao_name.toLowerCase() === "optimism"
-                            ? `https://optimism.easscan.org/offchain/attestation/view/${data.uid_host}`
-                            : data.dao_name.toLowerCase() === "arbitrum"
-                            ? `https://arbitrum.easscan.org/offchain/attestation/view/${data.uid_host}`
-                            : ""
-                          : "#"
+                        data.uid_host?`${daoConfigs[data.dao_name.toLowerCase()].attestationUrl}/${data.uid_host}`:"#"
                       }
                       target="_blank"
                       rel="noopener noreferrer"
@@ -543,13 +548,14 @@ function RecordedSessionsTile({
 
                         let href = "#";
                         if (attendeeUid) {
-                          if (data.dao_name.toLowerCase() === "optimism") {
-                            href = `https://optimism.easscan.org/offchain/attestation/view/${attendeeUid}`;
-                          } else if (
-                            data.dao_name.toLowerCase() === "arbitrum"
-                          ) {
-                            href = `https://arbitrum.easscan.org/offchain/attestation/view/${attendeeUid}`;
-                          }
+                          href=`${daoConfigs[data.dao_name.toLowerCase()].attestationUrl}/${attendeeUid}`;
+                          // if (data.dao_name.toLowerCase() === "optimism") {
+                          //   href = `https://optimism.easscan.org/offchain/attestation/view/${attendeeUid}`;
+                          // } else if (
+                          //   data.dao_name.toLowerCase() === "arbitrum"
+                          // ) {
+                          //   href = `https://arbitrum.easscan.org/offchain/attestation/view/${attendeeUid}`;
+                          // }
                         }
 
                         return (
