@@ -230,22 +230,28 @@ useEffect(() => {
       label: label,
     });
     router.push(url);
+   const tab = url.includes('?hours=') ? url.split('?hours=')[1] : '';
+  
+  // Force revalidate data when switching to certain tabs
+  if (tab === 'ongoing' || tab === 'upcoming' || tab==='recorded') {
+    mutate(); // This will re-fetch fresh data from the API
+   }
   };
 
-  const handleTabChange = (tab:string,  category: string, action: string, label: string) => {
-    router.push(path + "?hours=" + tab);
-    pushToGTM({
-      event: 'tab_selection',
-      category: category,
-      action: action,
-      label: label,
-    });
+  // const handleTabChange = (tab:string,  category: string, action: string, label: string) => {
+  //   router.push(path + "?hours=" + tab);
+  //   pushToGTM({
+  //     event: 'tab_selection',
+  //     category: category,
+  //     action: action,
+  //     label: label,
+  //   });
     
-    // Force revalidate data when switching to certain tabs
-    if (tab === 'ongoing' || tab === 'upcoming') {
-      mutate(); // This will re-fetch fresh data from the API
-    }
-  };
+  //   // Force revalidate data when switching to certain tabs
+  //   if (tab === 'ongoing' || tab === 'upcoming') {
+  //     mutate(); // This will re-fetch fresh data from the API
+  //   }
+  // };
 
   return (
     <>
@@ -265,7 +271,7 @@ useEffect(() => {
                   ? "text-[#0500FF] font-semibold bg-[#f5f5f5]"
                   : "text-[#3E3D3D] bg-white"
               }`}
-              onClick={() => handleTabChange('ongoing', 'Office Hours Navigation', 'Live Tab Clicked', 'Live')}
+              onClick={() => handleNavigation('ongoing', 'Office Hours Navigation', 'Live Tab Clicked', 'Live')}
             >
               <Clock size={16} className="drop-shadow-lg" />
               Live

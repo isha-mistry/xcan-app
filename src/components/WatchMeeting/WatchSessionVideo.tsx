@@ -76,14 +76,8 @@ function WatchSessionVideo({
 
       if (startTime === null) {
         startTime = player.currentTime();
-        console.log(
-          `Video started at: ${startTime} (Clock time: ${startRealTime / 1000})`
-        );
       } else {
         startTime = player.currentTime();
-        console.log(
-          `Video resumed at: ${startTime} (Clock time: ${startRealTime / 1000})`
-        );
       }
     });
 
@@ -91,22 +85,20 @@ function WatchSessionVideo({
       isPlaying = false;
       stopTime = player.currentTime();
       stopRealTime = Date.now();
-      console.log(
-        `Video paused at: ${stopTime} (Clock time: ${stopRealTime / 1000})`
-      );
 
       // Calculate video watch duration
       let diffTime = (stopTime ?? 0) - (startTime ?? 0);
-      console.log(`Video watched for: ${diffTime} seconds`);
 
       // Calculate real-world duration
       let realTimeDiff =
         ((stopRealTime ?? Date.now()) - (startRealTime ?? Date.now())) / 1000;
-      console.log(`Real-world time difference: ${realTimeDiff} seconds`);
+
+      //Determine which time to send
+     let watchTime = diffTime <= realTimeDiff ? diffTime : realTimeDiff;
 
        //Call the watch log api here
        if (startTime !== null && stopTime !== null && realTimeDiff > 0) {
-        sendWatchLog(startTime, stopTime, realTimeDiff);
+        sendWatchLog(startTime, stopTime, watchTime);
       }
     });
 
@@ -132,21 +124,6 @@ function WatchSessionVideo({
         }
       }
     });
-    //   player.on("seeking", function () {
-    //     const newTime = player.currentTime();
-    //     const seekDifference = Math.abs(newTime - lastRecordedTime);
-
-    //     if (seekDifference > 2) { // Ignore very small jumps
-    //       skippedTime += seekDifference;
-    //       // console.log(`User skipped: ${seekDifference} seconds`);
-    //       // console.log(`Total skipped time: ${skippedTime} seconds`);
-    //     }
-
-    //     lastRecordedTime = newTime; // Update last recorded time
-    //   });
-    //   player.on("seeked", function () {
-    //     lastRecordedTime = player.currentTime(); // Update last known position
-    //   });
   };
 
 
@@ -162,7 +139,7 @@ function WatchSessionVideo({
         video_uri: data.video_uri,
         watch_logs: [
           {
-            user_address: address,
+            user_address: address || "",
             watch_session: [
               {
                 start_time: startTime,
