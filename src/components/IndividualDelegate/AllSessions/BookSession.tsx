@@ -64,6 +64,7 @@ function BookSession({ props }: { props: Type }) {
   const [confirmSave, setConfirmSave] = useState(false);
   const [slotTimes, setSlotTimes] = useState<any[]>([]);
   const [modalOpen, setModalOpen] = useState(false);
+  const [isemailModal, setMailModal] = useState(false);
 
   const [mailId, setMailId] = useState<string>();
   const [checkUserMail, setCheckUserMail] = useState(false);
@@ -363,9 +364,9 @@ function BookSession({ props }: { props: Type }) {
           }
         }
       } catch (error) {
-        console.log("Line 360:",error);
+        console.log("Line 360:", error);
         setConfirmSave(false);
-      };
+      }
     } else {
       toast.error("Please enter title and description!");
     }
@@ -380,70 +381,71 @@ function BookSession({ props }: { props: Type }) {
     });
     const result = await res.json();
     const roomId = await result.data;
-    console.log("Line 375:",roomId);
     return roomId;
   };
   const apiCall = async () => {
-      // Set flag to prevent multiple simultaneous API calls
-      if (isApiCallInProgress) {
-        return;
-      }
-      
-      setIsApiCallInProgress(true);
-      
-      try {
-    // const ChainName = chain?.name === "OP Mainnet" ? "optimism" : "arbitrum";
-    const ChainName=daoConfigs[props.daoDelegates].chainName;
-    // const CHAIN_ID = props.daoDelegates == "optimism" ? 10 : 42161;
-
-
-    const CHAIN_ID=daoConfigs[props.daoDelegates].chainId;
-
-    if (props.daoDelegates !== ChainName) {
-      await switchChain({ chainId: CHAIN_ID });
-      // setIsLoading(false);
-      // setConfirmSave(false);
-      // setIsScheduling(false);
-      // setContinueAPICalling(false);
-      // return;
+    // Set flag to prevent multiple simultaneous API calls
+    if (isApiCallInProgress) {
+      return;
     }
 
-    let roomId = await createRandomRoom();
+    setIsApiCallInProgress(true);
 
-    const requestData = {
-      dao_name: props.daoDelegates,
-      slot_time: dateInfo,
-      title: modalData.title,
-      description: modalData.description,
-      host_address: host_address,
-      attendees: [
-        { attendee_address: walletAddress, attendee_joined_status: "Pending" },
-      ],
-      meeting_status: "Upcoming",
-      booking_status: "Approved",
-      session_type: "session",
-      meetingId: roomId,
-      host_joined_status: "Pending",
-    };
+    try {
+      // const ChainName = chain?.name === "OP Mainnet" ? "optimism" : "arbitrum";
+      const ChainName = daoConfigs[props.daoDelegates].chainName;
+      // const CHAIN_ID = props.daoDelegates == "optimism" ? 10 : 42161;
 
-    const token = await getAccessToken();
-    const myHeaders: HeadersInit = {
-      "Content-Type": "application/json",
-      ...(walletAddress && {
-        "x-wallet-address": walletAddress,
-        Authorization: `Bearer ${token}`,
-      }),
-    };
+      const CHAIN_ID = daoConfigs[props.daoDelegates].chainId;
 
-    const requestOptions: any = {
-      method: "POST",
-      headers: myHeaders,
-      body: JSON.stringify(requestData),
-      redirect: "follow",
-    };
+      if (props.daoDelegates !== ChainName) {
+        await switchChain({ chainId: CHAIN_ID });
+        // setIsLoading(false);
+        // setConfirmSave(false);
+        // setIsScheduling(false);
+        // setContinueAPICalling(false);
+        // return;
+      }
 
-    // try {
-    //   setConfirmSave(true);
+      let roomId = await createRandomRoom();
+
+      const requestData = {
+        dao_name: props.daoDelegates,
+        slot_time: dateInfo,
+        title: modalData.title,
+        description: modalData.description,
+        host_address: host_address,
+        attendees: [
+          {
+            attendee_address: walletAddress,
+            attendee_joined_status: "Pending",
+          },
+        ],
+        meeting_status: "Upcoming",
+        booking_status: "Approved",
+        session_type: "session",
+        meetingId: roomId,
+        host_joined_status: "Pending",
+      };
+
+      const token = await getAccessToken();
+      const myHeaders: HeadersInit = {
+        "Content-Type": "application/json",
+        ...(walletAddress && {
+          "x-wallet-address": walletAddress,
+          Authorization: `Bearer ${token}`,
+        }),
+      };
+
+      const requestOptions: any = {
+        method: "POST",
+        headers: myHeaders,
+        body: JSON.stringify(requestData),
+        redirect: "follow",
+      };
+
+      // try {
+      //   setConfirmSave(true);
       const response = await fetchApi("/book-slot", requestOptions);
       const result = await response.json();
       if (result.success) {
@@ -455,15 +457,13 @@ function BookSession({ props }: { props: Type }) {
       // setConfirmSave(false);
       // setIsScheduled(false);
       console.error("Error:", error);
-    }
-
-    finally {
+    } finally {
       // Reset all the states
       setConfirmSave(false);
       setIsApiCallInProgress(false);
       setIsScheduling(false);
       setContinueAPICalling(false);
-      
+
       setModalData({
         dao_name: "",
         date: "",
@@ -754,66 +754,17 @@ function BookSession({ props }: { props: Type }) {
                     required
                   />
                 </div>
-
-                {showGetMailModal && (
-                  <div className="mt-4 border rounded-xl p-3 sm:p-4 relative">
-                    <button
-                      className="absolute top-2 right-2 sm:top-3 sm:right-3"
-                      onClick={handleGetMailModalClose}
-                      disabled={addingEmail || isApiCallInProgress}
-                    >
-                      <MdCancel className="w-5 h-5 sm:w-6 sm:h-6" />
-                    </button>
-                    <h2 className="text-blue-shade-200 font-semibold text-sm sm:text-base pr-8">
-                      Get Notified About Your Session Request
-                    </h2>
-                    <p className="text-gray-500 text-xs sm:text-sm mt-2">
-                      Add your email address to get notified when the delegate
-                      approves or rejects your session request.
-                    </p>
-                    <div className="mt-3 sm:mt-4 flex flex-col sm:flex-row gap-2">
-                      <input
-                        type="text"
-                        value={mailId || ""}
-                        placeholder="Enter email address"
-                        onChange={(e) => handleEmailChange(e.target.value)}
-                        className="flex-1 px-4 py-2 rounded-3xl bg-[#D9D9D945] text-sm sm:text-base"
-                      />
-                      <button
-                        onClick={handleSubmit}
-                        className="w-full sm:w-auto bg-black text-white px-6 sm:px-8 py-2 sm:py-3 rounded-3xl hover:bg-gray-900 text-sm sm:text-base"
-                        disabled={addingEmail || isApiCallInProgress}
-                      >
-                        {addingEmail ? (
-                          <div className="flex items-center justify-center ">
-                            <ThreeDots
-                              visible={true}
-                              height="20"
-                              width="50"
-                              color="#ffffff"
-                              radius="9"
-                              ariaLabel="three-dots-loading"
-                              wrapperStyle={{}}
-                              wrapperClass=""
-                            />
-                          </div>
-                        ) : (
-                          <>Notify Me</>
-                        )}
-                      </button>
-                    </div>
-                    <div className="text-blue-shade-100 text-xs italic mt-2 ps-3">
-                      You can also add your email address later from your
-                      profile. Cancel or submit email to continue booking.
-                    </div>
-                  </div>
-                )}
               </div>
               <div className="flex justify-center px-4 sm:px-8 py-4">
                 <button
                   className="bg-blue-shade-200 text-white px-6 sm:px-8 py-2 sm:py-3 font-semibold rounded-full text-sm sm:text-base w-full sm:w-auto disabled:bg-gray-400"
                   onClick={checkBeforeApiCall}
-                  disabled={confirmSave || isApiCallInProgress || !modalData.title || !modalData.description}
+                  disabled={
+                    confirmSave ||
+                    isApiCallInProgress ||
+                    !modalData.title ||
+                    !modalData.description
+                  }
                 >
                   {confirmSave || isApiCallInProgress ? (
                     <div className="flex items-center justify-center">
@@ -832,6 +783,128 @@ function BookSession({ props }: { props: Type }) {
                 </button>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* {showGetMailModal && (
+        <div
+        className="font-poppins z-[70] fixed inset-0 flex items-center justify-center backdrop-blur-md"
+        style={{ boxShadow: " 0px 0px 45px -17px rgba(0,0,0,0.75)" }}
+      >
+        <div className="bg-white rounded-[41px] overflow-hidden shadow-lg w-full max-w-lg mx-4">
+        <div className="mt-4 border rounded-xl p-3 sm:p-4 relative">
+          <button
+            className="absolute top-2 right-2 sm:top-3 sm:right-3"
+            onClick={handleGetMailModalClose}
+            disabled={addingEmail || isApiCallInProgress}
+          >
+            <MdCancel className="w-5 h-5 sm:w-6 sm:h-6" />
+          </button>
+          <h2 className="text-blue-shade-200 font-semibold text-sm sm:text-base pr-8">
+            Get Notified About Your Session Request
+          </h2>
+          <p className="text-gray-500 text-xs sm:text-sm mt-2">
+            Add your email address to get notified when the delegate approves or
+            rejects your session request.
+          </p>
+          <div className="mt-3 sm:mt-4 flex flex-col sm:flex-row gap-2">
+            <input
+              type="text"
+              value={mailId || ""}
+              placeholder="Enter email address"
+              onChange={(e) => handleEmailChange(e.target.value)}
+              className="flex-1 px-4 py-2 rounded-3xl bg-[#D9D9D945] text-sm sm:text-base"
+            />
+            <button
+              onClick={handleSubmit}
+              className="w-full sm:w-auto bg-black text-white px-6 sm:px-8 py-2 sm:py-3 rounded-3xl hover:bg-gray-900 text-sm sm:text-base"
+              disabled={addingEmail || isApiCallInProgress}
+            >
+              {addingEmail ? (
+                <div className="flex items-center justify-center ">
+                  <ThreeDots
+                    visible={true}
+                    height="20"
+                    width="50"
+                    color="#ffffff"
+                    radius="9"
+                    ariaLabel="three-dots-loading"
+                    wrapperStyle={{}}
+                    wrapperClass=""
+                  />
+                </div>
+              ) : (
+                <>Notify Me</>
+              )}
+            </button>
+          </div>
+          <div className="text-blue-shade-100 text-xs italic mt-2 ps-3">
+            You can also add your email address later from your profile. Cancel
+            or submit email to continue booking.
+          </div>
+        </div>
+       </div>
+       </div> 
+      )} */}
+
+      {showGetMailModal && (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/40 backdrop-blur-md transition-opacity duration-300">
+          <div className="bg-white rounded-[41px] shadow-lg w-full max-w-lg mx-4 p-6 relative animate-fadeIn">
+            {/* Close Button */}
+            <button
+              className="absolute top-4 right-4 p-2 text-gray-500 hover:text-gray-800 transition-all"
+              onClick={handleGetMailModalClose}
+              disabled={addingEmail || isApiCallInProgress}
+            >
+              <MdCancel className="w-6 h-6" />
+            </button>
+
+            {/* Title */}
+            <h2 className="text-blue-shade-200 font-semibold text-sm sm:text-base text-center">
+              Get Notified About Your Session Request
+            </h2>
+
+            {/* Subtitle */}
+            <p className="text-gray-500 text-xs sm:text-sm text-center mt-2">
+              Add your email address to get notified when the delegate approves
+              or rejects your session request.
+            </p>
+
+            {/* Email Input & Button */}
+            <div className="mt-4 flex flex-col sm:flex-row gap-3">
+              <input
+                type="email"
+                value={mailId || ""}
+                placeholder="Enter email address"
+                onChange={(e) => handleEmailChange(e.target.value)}
+                className="flex-1 px-4 py-2 rounded-3xl bg-[#D9D9D945] text-sm sm:text-base outline-none focus:ring-2 focus:ring-gray-400 transition-all"
+              />
+              <button
+                onClick={handleSubmit}
+                className="w-full sm:w-auto bg-black text-white px-6 sm:px-8 py-2 sm:py-3 rounded-3xl hover:bg-gray-900 text-sm sm:text-base flex items-center justify-center"
+                disabled={addingEmail || isApiCallInProgress}
+              >
+                {addingEmail ? (
+                  <ThreeDots
+                    visible={true}
+                    height="20"
+                    width="50"
+                    color="#ffffff"
+                    radius="9"
+                    ariaLabel="loading"
+                  />
+                ) : (
+                  <>Notify Me</>
+                )}
+              </button>
+            </div>
+
+            {/* Additional Info */}
+            <p className="text-blue-shade-100 text-xs italic text-center mt-3">
+              You can also add your email later from your profile. Cancel or
+              submit your email to continue booking.
+            </p>
           </div>
         </div>
       )}
