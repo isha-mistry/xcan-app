@@ -252,7 +252,9 @@ function WatchComponentMain({ props }: { props: { id: string } }) {
               />
 
               {/* /Video Recommendation */}
+              <div className="hidden 1.5lg:block">
               <WatchVideoRecommendation data={data} />
+              </div>
             </div>
 
             {/* Right side */}
@@ -273,6 +275,9 @@ function WatchComponentMain({ props }: { props: { id: string } }) {
 
               {/* SOCIAL LINKS */}
               <WatchSocialLinks data={data} collection={collection} />
+              </div>
+              <div className="1.5lg:hidden">
+                <WatchVideoRecommendation data={data}/>
               </div>
             </div>
           </div>
