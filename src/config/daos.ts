@@ -9,10 +9,11 @@ import { Abi } from "viem";
 export const daoConfigs: { [key: string]: DAOConfig } = {
   optimism: {
     name: "optimism",
+    uniqueIdentifier: "optimism-mainnet", 
     logo: "/images/op.png", // Move images to public folder for better maintainability
     chainId: 10,
     chainName: "OP Mainnet",
-    chainAddress: "0x4200000000000000000000000000000000000042",
+    tokenContractAddress: "0x4200000000000000000000000000000000000042",
     viemchain: optimism,
     lighthoueseIcon:
       "https://gateway.lighthouse.storage/ipfs/QmXaKNwUxvd4Ksc9R6hd36eBo97e7e7YPDCVuvHwqG4zgQ",
@@ -54,10 +55,11 @@ export const daoConfigs: { [key: string]: DAOConfig } = {
   },
   arbitrum: {
     name: "arbitrum",
+    uniqueIdentifier: "arbitrum-mainnet", 
     logo: "/images/arbitrum.jpg",
     chainId: 42161,
     chainName: "Arbitrum One",
-    chainAddress: "0x912CE59144191C1204E64559FE8253a0e49E6548",
+    tokenContractAddress: "0x912CE59144191C1204E64559FE8253a0e49E6548",
     viemchain: arbitrum,
     lighthoueseIcon:
       "https://gateway.lighthouse.storage/ipfs/QmdP6ZkLq4FF8dcvxBs48chqFiXu7Gr8SgPCqMtfr7VA4L",
@@ -92,10 +94,11 @@ export const daoConfigs: { [key: string]: DAOConfig } = {
   },
   arbitrumSepolia: {
     name: "Arbitrum Sepolia",
+    uniqueIdentifier: "arbitrumsepolia-mainnet", 
     logo: "/images/arbitrum.jpg", // Ensure you add this image to your public folder
     chainId: 421614,
     chainName: "Arbitrum Sepolia",
-    chainAddress: "0x0000000000000000000000000000000000000000", // Replace with actual address if available
+    tokenContractAddress: "0x0000000000000000000000000000000000000000", // Replace with actual address if available
     viemchain: arbitrumSepolia,
     lighthoueseIcon:
       "https://gateway.lighthouse.storage/ipfs/QmdP6ZkLq4FF8dcvxBs48chqFiXu7Gr8SgPCqMtfr7VA4L",
@@ -131,10 +134,11 @@ export const daoConfigs: { [key: string]: DAOConfig } = {
   },
   letsgrowdao: {
     name: "Let's Grow DAO",
+    uniqueIdentifier: "letsgrowdao-mainnet", 
     logo: "/images/letsGrow.jpg", // Move images to public folder for better maintainability
     chainId: 10,
     chainName: "OP Mainnet",
-    chainAddress: "0x6d95ad838d00427838d6e6fac043271a0ef2e484",
+    tokenContractAddress: "0x6d95ad838d00427838d6e6fac043271a0ef2e484",
     viemchain: optimism,
     lighthoueseIcon:
       "https://gateway.lighthouse.storage/ipfs/QmXaKNwUxvd4Ksc9R6hd36eBo97e7e7YPDCVuvHwqG4zgQ",
@@ -178,7 +182,7 @@ export const daoConfigs: { [key: string]: DAOConfig } = {
   //   logo: "/images/Mantledaologo.png",
   //   chainId: 5000,
   //   chainName: "Mantle",
-  //   chainAddress: "0xEd459209796D741F5B609131aBd927586fcCACC5", // Replace with actual address
+  //   tokenContractAddress: "0xEd459209796D741F5B609131aBd927586fcCACC5", // Replace with actual address
   //   viemchain: mantle,
   //   lighthoueseIcon:
   //     "https://gateway.lighthouse.storage/ipfs/QmdP6ZkLq4FF8dcvxBs48chqFiXu7Gr8SgPCqMtfr7VA4L",

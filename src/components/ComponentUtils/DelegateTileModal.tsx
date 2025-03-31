@@ -111,7 +111,7 @@ function DelegateTileModal({
   };
   const { data: accountBalance }: any = useReadContract({
     abi: dao_abi.abi,
-    address: daoConfigs[daoName].chainAddress as Address,
+    address: daoConfigs[daoName].tokenContractAddress as Address,
     functionName: "balanceOf",
     // args:['0x6eda5acaff7f5964e1ecc3fd61c62570c186ca0c' as Address]
     args: [address as Address],

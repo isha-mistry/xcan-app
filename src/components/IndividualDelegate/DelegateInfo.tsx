@@ -138,7 +138,7 @@ function DelegateInfo({
     {
       number: officehoursHostCount,
       desc: "Office Hours hosted",
-      ref: `/${props.daoDelegates}/${props.individualDelegate}?active=officeHours&hours=hosted`,
+      ref: `/${props.daoDelegates}/${props.individualDelegate}?active=officeHours&hours=hosted&dao=${props.daoDelegates}`,
     },
     {
       number: officehoursAttendCount,

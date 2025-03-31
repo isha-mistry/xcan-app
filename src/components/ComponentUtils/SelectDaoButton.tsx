@@ -12,7 +12,6 @@ const SelectDaoButton: React.FC<{ daoName: string }> = ({ daoName }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-
   const router = useRouter();
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const hoverDelay = 300;
@@ -37,12 +36,12 @@ const SelectDaoButton: React.FC<{ daoName: string }> = ({ daoName }) => {
     }, hoverDelay);
   };
 
-  const handleChainSwitch = async (chainId: number) => {
+  const handleChainSwitch = async (chainId: number, daoKey: string) => {
     setIsLoading(true);
     try {
       await switchChain?.({ chainId });
       if (address) {
-        router.push(`/profile/${address}?active=info`);
+        router.push(`/profile/${address}?active=info&dao=${daoKey}`);
       }
     } catch (error) {
       console.error("Error switching chain:", error);
@@ -121,7 +120,7 @@ const SelectDaoButton: React.FC<{ daoName: string }> = ({ daoName }) => {
                     <div
                       className="option flex items-center cursor-pointer px-2 sm:px-3 py-1.5 sm:py-2 
                    rounded-lg transition duration-300 ease-in-out transform hover:scale-105 capitalize"
-                      onClick={() => handleChainSwitch(dao.chainId)}
+                      onClick={() => handleChainSwitch(dao.chainId, key)}
                     >
                       <div className="flex items-center">
                         <Image
@@ -132,7 +131,7 @@ const SelectDaoButton: React.FC<{ daoName: string }> = ({ daoName }) => {
                           className="mr-2 w-5 h-5 rounded-full"
                           priority={true}
                         />
-                        {dao.name}1
+                        {dao.name}
                       </div>
 
                       {isLoading && dao.chainId === currentChain?.id && (

@@ -108,7 +108,7 @@ function DelegatesList({ props }: { props: string }) {
   };
   const { data: accountBalance }: any = useReadContract({
     abi: dao_abi.abi,
-    address: daoConfigs[props].chainAddress as `0x${string}`,
+    address: daoConfigs[props].tokenContractAddress as `0x${string}`,
     functionName: "balanceOf",
     // args:['0x6eda5acaff7f5964e1ecc3fd61c62570c186ca0c' as Address]
     args: [walletAddress as Address],
@@ -329,7 +329,7 @@ console.log("formattedDelegates",formattedDelegates);
   //     return;
   //   }
 
-  //   const chainAddress = getChainAddress(chain?.name);
+  //   const tokenContractAddress = getChainAddress(chain?.name);
   //   const network = props === "optimism" ? "OP Mainnet" : "Arbitrum One";
   //   alert(`189:${network}`);
   //   alert(`190:${walletClient?.chain.name}`);
@@ -343,7 +343,7 @@ console.log("formattedDelegates",formattedDelegates);
   //   try {
   //     setDelegatingToAddr(true);
   //     await walletClient.writeContract({
-  //       address: chainAddress,
+  //       address: tokenContractAddress,
   //       chain: props === "arbitrum" ? arbitrum : optimism,
   //       abi: dao_abi.abi,
   //       functionName: "delegate",
@@ -390,9 +390,9 @@ console.log("formattedDelegates",formattedDelegates);
       return;
     }
 
-    // const chainAddress = getChainAddress(chain?.name);
-    const chainAddress=daoConfigs[props.toLowerCase()].chainAddress;
-    if (!chainAddress) {
+    // const tokenContractAddress = getChainAddress(chain?.name);
+    const tokenContractAddress=daoConfigs[props.toLowerCase()].tokenContractAddress;
+    if (!tokenContractAddress) {
       toast.error("Invalid chain address,try again!");
       pushToGTM({
         event: "delegation_attempt",
@@ -472,9 +472,9 @@ console.log("formattedDelegates",formattedDelegates);
 
       // console.log('Getting signer...');
       const signer = await provider.getSigner();
-console.log("signer",signer,chainAddress);
+console.log("signer",signer,tokenContractAddress);
       // console.log('Creating contract instance...');
-      const contract = new Contract(chainAddress, dao_abi.abi, signer);
+      const contract = new Contract(tokenContractAddress, dao_abi.abi, signer);
 
       // console.log('Initiating delegation transaction...');
       const tx = await contract.delegate(to);

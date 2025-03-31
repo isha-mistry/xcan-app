@@ -186,9 +186,9 @@ function MainProfile() {
         (key) => daoConfigs[key].chainId == currentChainId
       );
 
-      // Ensure daoKey is not undefined before accessing chainAddress
+      // Ensure daoKey is not undefined before accessing tokenContractAddress
       const ContractAddress = daoKey
-        ? daoConfigs[daoKey].chainAddress
+        ? daoConfigs[daoKey].tokenContractAddress
         : undefined;
       if (!ContractAddress) {
         toast.error("Invalid ContractAddress address for current network");
@@ -722,14 +722,46 @@ function MainProfile() {
       setSelectedTab(tab?.name || "Info");
     }
   }, [searchParams, tabs]);
+useEffect(() => {
+  // Check the `dao` query parameter from the URL
+  const daoParam = searchParams.get("dao");
+  console.log("daoParam:", daoParam);
+  if (daoParam && Object.keys(daoConfigs).includes(daoParam.toLowerCase())) {
+    setDaoName(daoParam.toLowerCase());
+    return;
+  }
 
-  useEffect(() => {
-    const daoKey = Object.keys(daoConfigs).find(
-      (key) => daoConfigs[key].chainName === chain?.name
-    );
-    setDaoName(daoKey ? daoKey : "");
-  }, [chain, chain?.name]);
+  // If no DAO is found in the URL, determine it by chain
+  const daoKey = Object.keys(daoConfigs).find(
+    (key) => daoConfigs[key].chainName === chain?.name
+  );
 
+  console.log("Chain name:", chain?.name);
+  console.log("daoKey:", daoKey);
+  
+  setDaoName(daoKey || "");
+}, [chain, chain?.name, path, searchParams.toString()]);  // 👈 Added `router.asPath` to trigger updates
+
+  
+  // useEffect(() => {
+  //   if (!chain?.name) return;
+  
+  //   const matchingDaos = Object.entries(daoConfigs)
+  //     .filter(([_, dao]) => dao.chainName === chain.name);
+  
+  //   if (matchingDaos.length === 0) {
+  //     setDaoName("");
+  //     return;
+  //   }
+  // console.log("matchingDaos", matchingDaos);
+  //   // Pick the DAO with the lowest chainId (ensures consistency)
+  //   const selectedDao = matchingDaos.reduce((prev, current) =>
+  //     prev[1].chainId < current[1].chainId ? prev : current
+  //   );
+  
+  //   setDaoName(selectedDao[0]); // Set the key of the selected DAO
+  // }, [chain, chain?.name]);
+  
   useEffect(() => {
     if (isConnected && authenticated && path.includes("profile/undefined")) {
       const newPath = path.includes("profile/undefined")
@@ -763,7 +795,7 @@ function MainProfile() {
           (key) => daoConfigs[key].chainName === chain.name
         );
 
-        const contractAddress = daoKey ? daoConfigs[daoKey].chainAddress : null;
+        const contractAddress = daoKey ? daoConfigs[daoKey].tokenContractAddress : null;
         const network = daoKey;
 
         const predefinedChains: Record<string, any> = {
@@ -1278,7 +1310,7 @@ function MainProfile() {
                     ? "text-blue-shade-200 font-semibold border-b-2 border-blue-shade-200"
                     : "border-transparent"
                 }`}
-                onClick={() => router.push(path + "?active=info")}
+                onClick={() => router.push(path + "?active=info&dao=" + daoName)}
               >
                 Info
               </button>
@@ -1289,7 +1321,7 @@ function MainProfile() {
                       ? "text-blue-shade-200 font-semibold border-b-2 border-blue-shade-200"
                       : "border-transparent"
                   }`}
-                  onClick={() => router.push(path + "?active=votes")}
+                  onClick={() => router.push(path + "?active=votes&dao=" + daoName)}
                 >
                   Past Votes
                 </button>
@@ -1305,7 +1337,7 @@ function MainProfile() {
                     path +
                       `?active=sessions&session=${
                         selfDelegate ? "schedule" : "attending"
-                      }`
+                      }&dao=${daoName}`
                   )
                 }
               >
@@ -1318,7 +1350,7 @@ function MainProfile() {
                     : "border-transparent"
                 }`}
                 onClick={() =>
-                  router.push(path + "?active=officeHours&hours=schedule")
+                  router.push(path + "?active=officeHours&hours=schedule&dao=" + daoName)
                 }
               >
                 Office Hours
@@ -1331,7 +1363,7 @@ function MainProfile() {
                       ? "text-blue-shade-200 font-semibold border-b-2 border-blue-shade-200"
                       : "border-transparent"
                   }`}
-                  onClick={() => router.push(path + "?active=instant-meet")}
+                  onClick={() => router.push(path + "?active=instant-meet&dao=" + daoName)}
                 >
                   Instant Meet
                 </button>

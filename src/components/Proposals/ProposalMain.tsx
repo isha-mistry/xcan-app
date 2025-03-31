@@ -376,13 +376,13 @@ function ProposalMain({ props }: { props: Props }) {
       toast.error("Please connect your MetaMask wallet!");
       return;
     }
-    let chainAddress;
+    let tokenContractAddress;
     let currentChain;
     // if (chain?.name === "OP Mainnet") {
-    //   chainAddress = "0xcDF27F107725988f2261Ce2256bDfCdE8B382B10";
+    //   tokenContractAddress = "0xcDF27F107725988f2261Ce2256bDfCdE8B382B10";
     //   currentChain = "optimism";
     // } else if (chain?.name === "Arbitrum One") {
-    //   chainAddress = data.contractSource.contractAddress;
+    //   tokenContractAddress = data.contractSource.contractAddress;
     //   currentChain = "arbitrum";
     // } else {
     //   currentChain = "";
@@ -394,7 +394,7 @@ function ProposalMain({ props }: { props: Props }) {
         daoConfigs[props.daoDelegates.toLowerCase()].useContractSourceAddress
           ?.Address
       ) {
-        chainAddress =
+        tokenContractAddress =
           daoConfigs[props.daoDelegates.toLowerCase()].useContractSourceAddress
             ?.Address;
         currentChain =
@@ -405,7 +405,7 @@ function ProposalMain({ props }: { props: Props }) {
       ) {
         currentChain =
           daoConfigs[props.daoDelegates.toLowerCase()].name.toLowerCase();
-        chainAddress = data.contractSource.contractAddress;
+        tokenContractAddress = data.contractSource.contractAddress;
       } else {
         currentChain = "";
         return;
@@ -418,7 +418,7 @@ function ProposalMain({ props }: { props: Props }) {
       if (currentChain === props.daoDelegates) {
         try {
           const delegateTx = await walletClient.writeContract({
-            address: chainAddress,
+            address: tokenContractAddress,
             // chain: props.daoDelegates === "arbitrum" ? arbitrum : optimism,
             chain: daoConfigs[props.daoDelegates].viemchain,
             abi: daoConfigs[props.daoDelegates].proposalAbi,
@@ -450,7 +450,7 @@ function ProposalMain({ props }: { props: Props }) {
       if (currentChain === props.daoDelegates) {
         try {
           const delegateTx = await walletClient.writeContract({
-            address: chainAddress,
+            address: tokenContractAddress,
             // chain: props.daoDelegates === "arbitrum" ? arbitrum : optimism,
             chain: daoConfigs[props.daoDelegates].viemchain,
             abi: daoConfigs[props.daoDelegates].proposalAbi,

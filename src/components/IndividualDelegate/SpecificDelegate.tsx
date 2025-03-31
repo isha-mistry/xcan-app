@@ -178,7 +178,7 @@ function SpecificDelegate({ props }: { props: Type }) {
 
   const { data: accountBalance }: any = useReadContract({
     abi: dao_abi.abi,
-    address: daoConfigs[props.daoDelegates].chainAddress as `0x${string}`,
+    address: daoConfigs[props.daoDelegates].tokenContractAddress as `0x${string}`,
     functionName: "balanceOf",
     // args:['0x6eda5acaff7f5964e1ecc3fd61c62570c186ca0c' as Address]
     args: [walletAddress as Address],
@@ -543,7 +543,7 @@ function SpecificDelegate({ props }: { props: Type }) {
       //   const address1 = addr[0];
       let currentDAO=daoConfigs[props.daoDelegates];
       let delegateTxAddr = "";
-      const contractAddress = currentDAO?currentDAO.chainAddress:"";
+      const contractAddress = currentDAO?currentDAO.tokenContractAddress:"";
         // props.daoDelegates === "optimism"
         //   ? "0x4200000000000000000000000000000000000042"
         //   : props.daoDelegates === "arbitrum"
@@ -844,11 +844,11 @@ function SpecificDelegate({ props }: { props: Type }) {
   //     return;
   //   }
 
-  //   let chainAddress;
+  //   let tokenContractAddress;
   //   if (props.daoDelegates === "optimism") {
-  //     chainAddress = "0x4200000000000000000000000000000000000042";
+  //     tokenContractAddress = "0x4200000000000000000000000000000000000042";
   //   } else if (props.daoDelegates === "arbitrum") {
-  //     chainAddress = "0x912CE59144191C1204E64559FE8253a0e49E6548";
+  //     tokenContractAddress = "0x912CE59144191C1204E64559FE8253a0e49E6548";
   //   } else {
   //     return;
   //   }
@@ -867,7 +867,7 @@ function SpecificDelegate({ props }: { props: Type }) {
   //       try {
   //         setDelegatingToAddr(true);
   //         const delegateTx = await walletClient.writeContract({
-  //           address: chainAddress,
+  //           address: tokenContractAddress,
   //           chain: props.daoDelegates === "arbitrum" ? arbitrum : optimism,
   //           abi: dao_abi.abi,
   //           functionName: "delegate",
@@ -911,8 +911,8 @@ function SpecificDelegate({ props }: { props: Type }) {
       return;
     }
 
-    const chainAddress = getChainAddress(chain?.name);
-    if (!chainAddress) {
+    const tokenContractAddress = getChainAddress(chain?.name);
+    if (!tokenContractAddress) {
       toast.error("Invalid chain address,try again!");
       pushToGTM({
         event: "delegation_attempt",
@@ -992,7 +992,7 @@ function SpecificDelegate({ props }: { props: Type }) {
 
       const signer = await provider.getSigner();
 
-      const contract = new Contract(chainAddress, dao_abi.abi, signer);
+      const contract = new Contract(tokenContractAddress, dao_abi.abi, signer);
 
       const tx = await contract.delegate(to);
       await tx.wait();
