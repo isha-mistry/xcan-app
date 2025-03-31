@@ -43,6 +43,13 @@ interface Type {
   started: string;
   desc: string;
 }
+interface GTMEvent {
+  event: string;
+  category: string;
+  action: string;
+  label: string;
+  value?: number;
+}
 
 function DaoOfficeHours() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -208,14 +215,43 @@ useEffect(() => {
     return filteredData[currentTab] || [];
   };
 
-  const handleTabChange = (tab:string) => {
-    router.push(path + "?hours=" + tab);
-    
-    // Force revalidate data when switching to certain tabs
-    if (tab === 'ongoing' || tab === 'upcoming') {
-      mutate(); // This will re-fetch fresh data from the API
+  const pushToGTM = (eventData: GTMEvent) => {
+    if (typeof window !== 'undefined' && window.dataLayer) {
+      window.dataLayer.push(eventData);
     }
   };
+
+  const handleNavigation = (url: string, category: string, action: string, label: string) => {
+    //setIsNavigating(true); // If you still want to use this in your loading state
+    pushToGTM({
+      event: 'tab_selection',
+      category: category,
+      action: action,
+      label: label,
+    });
+    router.push(url);
+   const tab = url.includes('?hours=') ? url.split('?hours=')[1] : '';
+  
+  // Force revalidate data when switching to certain tabs
+  if (tab === 'ongoing' || tab === 'upcoming' || tab==='recorded') {
+    mutate(); // This will re-fetch fresh data from the API
+   }
+  };
+
+  // const handleTabChange = (tab:string,  category: string, action: string, label: string) => {
+  //   router.push(path + "?hours=" + tab);
+  //   pushToGTM({
+  //     event: 'tab_selection',
+  //     category: category,
+  //     action: action,
+  //     label: label,
+  //   });
+    
+  //   // Force revalidate data when switching to certain tabs
+  //   if (tab === 'ongoing' || tab === 'upcoming') {
+  //     mutate(); // This will re-fetch fresh data from the API
+  //   }
+  // };
 
   return (
     <>
@@ -235,7 +271,7 @@ useEffect(() => {
                   ? "text-[#0500FF] font-semibold bg-[#f5f5f5]"
                   : "text-[#3E3D3D] bg-white"
               }`}
-              onClick={() => handleTabChange('ongoing')}
+              onClick={() => handleNavigation('ongoing', 'Office Hours Navigation', 'Live Tab Clicked', 'Live')}
             >
               <Clock size={16} className="drop-shadow-lg" />
               Live
@@ -246,7 +282,8 @@ useEffect(() => {
                   ? "text-[#0500FF] font-semibold bg-[#f5f5f5]"
                   : "text-[#3E3D3D] bg-white"
               }`}
-              onClick={() => router.push(path + "?hours=upcoming")}
+              // onClick={() => router.push(path + "?hours=upcoming")}
+              onClick={() => handleNavigation(path + "?hours=upcoming", 'Office Hours Navigation', 'Scheduled Tab Clicked', 'Scheduled')}
             >
               <Calendar size={16} className="drop-shadow-lg" />
               Scheduled
@@ -257,7 +294,8 @@ useEffect(() => {
                   ? "text-[#0500FF] font-semibold bg-[#f5f5f5]"
                   : "text-[#3E3D3D] bg-white"
               }`}
-              onClick={() => router.push(path + "?hours=recorded")}
+              // onClick={() => router.push(path + "?hours=recorded")}
+              onClick={() => handleNavigation(path + "?hours=recorded", 'Office Hours Navigation', 'Library Tab Clicked', 'Library')}
             >
               <BookOpen size={16} className="drop-shadow-lg" />
               Library
