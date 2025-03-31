@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { FaClock, FaPlay, FaUserCheck, FaBell ,FaVoteYea} from "react-icons/fa";
+import { FaClock, FaPlay, FaUserCheck, FaBell, FaVoteYea } from "react-icons/fa";
 import { IoCheckmarkCircle } from "react-icons/io5";
 import {
   BsDatabaseFillCheck,
@@ -50,6 +50,8 @@ export const getBackgroundColor = (data: any) => {
     } else if (data?.notification_name === "officeHoursReminder") {
       return "#fcc7c7";
     }
+  } else if (data?.notification_type === "proposalVote") {
+    return "#cdf7e3";
   }
   return "#bed9f8";
 };
@@ -88,8 +90,8 @@ export const getIcon = (data: any) => {
     } else if (data?.notification_name === "officeHoursReminder") {
       return <FaBell color="#d13f3f" size={18} />;
     }
-  }else if(data?.notification_type === "proposalVote"){
-    return <FaVoteYea color="#0057FF" size={18} />;
+  } else if (data?.notification_type === "proposalVote") {
+    return <FaVoteYea color="#10693e" size={18} />;
   }
   return null;
 };
@@ -189,6 +191,10 @@ export const handleRedirection = async (
         `${MEETING_BASE_URL}/meeting/officehours/${data.additionalData.meetingId}/lobby`
       );
     }
+  } else if (data.notification_type === "proposalVote") {
+    router.push(
+      `${data.additionalData.proposalLink}`
+    );
   }
   if (!data.read_status) {
     await markAsReadFunction(data);
