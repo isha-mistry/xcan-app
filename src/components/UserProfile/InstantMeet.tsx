@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import Image from "next/image";
 import connectImg from "@/assets/images/instant-meet/connect.png";
 import connectImghover from "@/assets/images/instant-meet/connectHover.svg";
@@ -13,13 +13,22 @@ import screenImghover from "@/assets/images/instant-meet/screenImghover.svg";
 import chatImg from "@/assets/images/instant-meet/chat.png";
 import chatImghover from "@/assets/images/instant-meet/chatImghover.svg";
 import heroImg from "@/assets/images/instant-meet/instant-meet-hero.svg";
-import {Button,Modal,ModalBody,ModalContent,ModalFooter,ModalHeader,useDisclosure,} from "@nextui-org/react";
+import {
+  Button,
+  Modal,
+  ModalBody,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  useDisclosure,
+} from "@nextui-org/react";
 import { Oval } from "react-loader-spinner";
 import { Tooltip } from "@nextui-org/react";
 import { usePrivy } from "@privy-io/react-auth";
 import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 import { MEETING_BASE_URL } from "@/config/constants";
 import { fetchApi } from "@/utils/api";
+import InstantMeetForm from "./InstantMeetForm";
 
 interface instantMeetProps {
   isDelegate: boolean;
@@ -28,36 +37,35 @@ interface instantMeetProps {
 }
 
 function InstantMeet({ isDelegate, selfDelegate, daoName }: instantMeetProps) {
-
- 
   const { isOpen, onOpen, onClose } = useDisclosure();
   const { walletAddress } = useWalletAddress();
-  const { getAccessToken} = usePrivy();
+  const { getAccessToken } = usePrivy();
   const [confirmSave, setConfirmSave] = useState(false);
   const [modalData, setModalData] = useState({
     title: "",
     description: "",
   });
 
+  const [modalStep, setModalStep] = useState<1 | 2>(1);
+  const [createdRoomId, setCreatedRoomId] = useState<string | null>(null);
+  const [createdMeetingTitle, setCreatedMeetingTitle] = useState<string>("");
 
-  const handleModalInputChange = (
-    e:
-      | React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-      | React.ChangeEvent<HTMLSelectElement>
-  ) => {
-    const { name, value } = e.target;
-
-    setModalData((prevData) => ({
-      ...prevData,
-      [name]: value,
-    }));
-  };
-
-  const openMeetingInNewTab = (roomId: string) => {
-    window.open(`${MEETING_BASE_URL}/meeting/session/${roomId}/lobby`, '_blank');
+  const openMeetingInNewTab = (roomId: string | null) => {
+    if (!roomId) {
+      console.error("Cannot open meeting: Room ID is not available.");
+      return;
+    }
+    window.open(
+      `${MEETING_BASE_URL}/meeting/session/${roomId}/lobby`,
+      "_blank"
+    );
   };
 
   const startInstantMeet = async () => {
+    if (!modalData.title) {
+      alert("Please provide a title for the meeting.");
+      return;
+    }
     setConfirmSave(true);
 
     let getHeaders = new Headers();
@@ -66,67 +74,79 @@ function InstantMeet({ isDelegate, selfDelegate, daoName }: instantMeetProps) {
       getHeaders.append("x-wallet-address", walletAddress);
     }
 
-    const res = await fetch(`/api/create-room`, {
-      method: "GET",
-      headers: getHeaders,
-    });
-    const result = await res.json();
-    const roomId = await result.data;
-
-    let localDateTime = new Date();
-
-    // Convert the local date and time to the specified format (YYYY-MM-DDTHH:mm:ss.sssZ)
-    let dateInfo = localDateTime.toISOString();
-
-    const requestData = {
-      dao_name: daoName,
-      slot_time: dateInfo,
-      title: modalData.title,
-      description: modalData.description,
-      host_address: walletAddress,
-      session_type: "instant-meet",
-      meetingId: roomId,
-      meeting_status: "Ongoing",
-      attendees: [],
-    };
-    const token=await getAccessToken();
-    const myHeaders: HeadersInit = {
-      "Content-Type": "application/json",
-      ...(walletAddress && {
-        "x-wallet-address": walletAddress,
-        Authorization: `Bearer ${token}`,
-      }),
-    };
-
-    const requestOptions: any = {
-      method: "POST",
-      headers: myHeaders,
-      body: JSON.stringify(requestData),
-      redirect: "follow",
-    };
-
+    let roomId = null;
     try {
-      const response = await fetchApi("/book-slot", requestOptions);
-      const result = await response.json();
-      if (result.success) {
-        setConfirmSave(false);
-          openMeetingInNewTab(roomId); // Open in new tab
-        
-
-        // router.push(`${MEETING_BASE_URL}/meeting/session/${roomId}/lobby`);
-        onClose();
+      // --- Step 1: Create Room ID ---
+      const res = await fetch(`/api/create-room`, {
+        method: "GET",
+        headers: getHeaders,
+      });
+      if (!res.ok) {
+        throw new Error(`Failed to create room: ${res.statusText}`);
       }
-      if (result.error) {
-        setConfirmSave(false);
+      const result = await res.json();
+      roomId = result.data; // Get the room ID
+
+      if (!roomId) {
+        throw new Error("Failed to retrieve Room ID from API.");
+      }
+
+      // --- Step 2: Book Slot (Save Meeting Details) ---
+      let localDateTime = new Date();
+      let dateInfo = localDateTime.toISOString();
+
+      const requestData = {
+        dao_name: daoName,
+        slot_time: dateInfo,
+        title: modalData.title,
+        description: modalData.description,
+        host_address: walletAddress,
+        session_type: "instant-meet",
+        meetingId: roomId,
+        meeting_status: "Ongoing",
+        attendees: [],
+      };
+      const token = await getAccessToken();
+      const myHeaders: HeadersInit = {
+        "Content-Type": "application/json",
+        ...(walletAddress && {
+          "x-wallet-address": walletAddress,
+          Authorization: `Bearer ${token}`,
+        }),
+      };
+
+      const requestOptions: RequestInit = {
+        method: "POST",
+        headers: myHeaders,
+        body: JSON.stringify(requestData),
+        redirect: "follow",
+      };
+
+      const response = await fetchApi("/book-slot", requestOptions);
+      const bookingResult = await response.json();
+
+      if (bookingResult.success) {
+        setCreatedRoomId(roomId);
+        setCreatedMeetingTitle(modalData.title);
+        setModalStep(2);
+      } else {
+        console.error("Booking failed:", bookingResult.error);
+        alert(
+          `Failed to save meeting details: ${
+            bookingResult.error || "Unknown error"
+          }`
+        );
       }
     } catch (error) {
+      console.error("Error during instant meet creation:", error);
+      alert(
+        `An error occurred: ${
+          error instanceof Error ? error.message : String(error)
+        }`
+      );
+    } finally {
       setConfirmSave(false);
-      console.error("Error:", error);
     }
-    setModalData({
-      title: "",
-      description: "",
-    });
   };
 
   const block = [
@@ -174,6 +194,53 @@ function InstantMeet({ isDelegate, selfDelegate, daoName }: instantMeetProps) {
     },
   ];
 
+  const ModalConfirmationContent = () => (
+    <div className="flex flex-col items-center justify-center text-center pt-4 pb-4">
+      {" "}
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        className="h-12 w-12 text-green-500 mb-3"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+        strokeWidth={2}
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+        />
+      </svg>
+      <h2 className="text-xl font-semibold mb-2 text-[#3E3D3D]">
+        Instant Meet Ready!
+      </h2>
+      <p className="text-base text-gray-600 mb-4 max-w-md px-4">
+        Your instant meeting <strong>{createdMeetingTitle || "..."}</strong> for{" "}
+        <strong>{daoName.charAt(0).toUpperCase() + daoName.slice(1)}</strong>{" "}
+        DAO has been created.
+      </p>
+      <p className="text-xs text-gray-500 mt-2">
+        Click <strong>Start Meet</strong> below to join.
+      </p>
+    </div>
+  );
+
+  const handleCloseModal = () => {
+    setModalStep(1);
+    setModalData({ title: "", description: "" });
+    setCreatedRoomId(null);
+    setCreatedMeetingTitle("");
+    setConfirmSave(false);
+    onClose();
+  };
+
+  const handleFormChange = useCallback(
+    (newData: { title: string; description: string }) => {
+      setModalData(newData);
+    },
+    []
+  );
+
   return (
     <div>
       <div className="pb-28">
@@ -184,7 +251,6 @@ function InstantMeet({ isDelegate, selfDelegate, daoName }: instantMeetProps) {
                 <div className="text-[#3E3D3D] text-2xl xs:text-3xl font-semibold font-poppins text-center">
                   Start an Instant Meeting
                 </div>
-
                 <div className="grid grid-cols-2 xm:grid-cols-3 xm:grid-rows-2 text-xs xs:text-sm gap-6 xs:gap-11 font-semibold pt-8 text-[#3E3D3D] text-center">
                   {block.map((data, index) => (
                     <Tooltip
@@ -202,17 +268,11 @@ function InstantMeet({ isDelegate, selfDelegate, daoName }: instantMeetProps) {
                         variants: {
                           exit: {
                             opacity: 0,
-                            transition: {
-                              duration: 0.5,
-                              ease: "easeIn",
-                            },
+                            transition: { duration: 0.1, ease: "easeIn" },
                           },
                           enter: {
                             opacity: 1,
-                            transition: {
-                              duration: 0.25,
-                              ease: "easeOut",
-                            },
+                            transition: { duration: 0.15, ease: "easeOut" },
                           },
                         },
                       }}
@@ -220,7 +280,7 @@ function InstantMeet({ isDelegate, selfDelegate, daoName }: instantMeetProps) {
                       <div>
                         <div className="group border rounded-3xl bg-[#E5E5EA] flex items-center justify-center p-8 hover:bg-blue-shade-100 hover:shadow-[rgba(0,_0,_0,_0.24)_0px_3px_8px]">
                           <Image
-                            alt="{image}"
+                            alt={data.title}
                             height={60}
                             width={60}
                             src={data.image}
@@ -229,7 +289,7 @@ function InstantMeet({ isDelegate, selfDelegate, daoName }: instantMeetProps) {
                             priority={true}
                           />
                           <Image
-                            alt="{hoverImage}"
+                            alt={`${data.title} hover`}
                             height={60}
                             width={60}
                             src={data.hoverImage}
@@ -249,12 +309,24 @@ function InstantMeet({ isDelegate, selfDelegate, daoName }: instantMeetProps) {
             </div>
             <div className="col-span-3 flex flex-col p-10 md:p-16 2md:p-3 items-center justify-center -mt-[25%]">
               <div className="h-auto w-auto bg-cover mb-[-20%]">
-                <Image alt="img7" src={heroImg} quality={100} priority={true} />
+                <Image
+                  alt="Instant Meet Hero"
+                  src={heroImg}
+                  quality={100}
+                  priority={true}
+                  layout="responsive"
+                  width={350}
+                  height={300}
+                />
               </div>
               <div className="text-center transition-transform transform hover:scale-105 duration-300">
                 <button
                   className="bg-blue-shade-200 py-3 px-6 rounded-full text-white font-semibold"
-                  onClick={onOpen}
+                  onClick={() => {
+                    setModalStep(1);
+                    setModalData({ title: "", description: "" });
+                    onOpen();
+                  }}
                 >
                   Start an instant meet
                 </button>
@@ -266,75 +338,94 @@ function InstantMeet({ isDelegate, selfDelegate, daoName }: instantMeetProps) {
 
       <Modal
         isOpen={isOpen}
-        onClose={() => {
-          onClose();
-        }}
+        onClose={handleCloseModal}
         className="font-poppins"
+        placement="center"
+        backdrop="blur"
       >
         <ModalContent>
-          <>
-            <ModalHeader className="flex flex-col gap-1">
-              Provide details for instant meet
-            </ModalHeader>
-            <ModalBody>
-              <div className="px-1 font-medium">Title:</div>
-              <input
-                type="text"
-                name="title"
-                value={modalData.title}
-                onChange={handleModalInputChange}
-                placeholder="Explain Governance"
-                className="outline-none bg-[#D9D9D945] rounded-md px-2 py-1 text-sm"
-                required
-              />
+          <ModalHeader className="flex flex-col gap-1">
+            {modalStep === 1
+              ? "Provide details for instant meet"
+              : "Instant Meet Created"}
+          </ModalHeader>
 
-              <div className="px-1 font-medium">Description:</div>
-              <textarea
-                name="description"
-                value={modalData.description}
-                onChange={handleModalInputChange}
-                placeholder="Please share anything that will help prepare for our meeting."
-                className="outline-none bg-[#D9D9D945] rounded-md px-2 py-1 text-sm"
-                required
+          <ModalBody className="relative overflow-hidden min-h-[280px]">
+            {/* Step 1: Form View */}
+            <div
+              className={`absolute top-0 left-0 w-full transition-all duration-300 ease-in-out transform px-6 ${
+                modalStep === 1
+                  ? "translate-x-0 opacity-100"
+                  : "-translate-x-full opacity-0 pointer-events-none"
+              }`}
+            >
+              <InstantMeetForm
+                key="instant-meet-form"
+                initialData={modalData}
+                daoName={daoName}
+                onChange={handleFormChange}
               />
+            </div>
 
-              <div className="px-1 font-medium">Selected DAO:</div>
-              <div className="outline-none bg-[#D9D9D945] rounded-md px-2 py-1 text-sm capitalize">
-                {daoName}
-              </div>
-            </ModalBody>
-            <ModalFooter>
-              <Button
-                color="default"
-                onPress={() => {
-                  onClose();
-                  // setIsScheduling(false);
-                }}
-              >
-                Close
-              </Button>
-              <Button
-                color="primary"
-                onPress={startInstantMeet}
-                isDisabled={confirmSave}
-              >
-                {confirmSave ? (
-                  <div className="flex items-center justify-center">
+            {/* Step 2: Confirmation View */}
+            <div
+              className={`absolute top-0 left-0 w-full transition-all duration-300 ease-in-out transform ${
+                modalStep === 2
+                  ? "translate-x-0 opacity-100"
+                  : "translate-x-full opacity-0 pointer-events-none"
+              }`}
+            >
+              <ModalConfirmationContent />
+            </div>
+          </ModalBody>
+
+          <ModalFooter>
+            {modalStep === 1 && (
+              <>
+                <Button
+                  color="default"
+                  variant="light"
+                  onPress={handleCloseModal}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  color="primary"
+                  onPress={startInstantMeet}
+                  isDisabled={confirmSave || !modalData.title.trim()}
+                >
+                  {confirmSave ? (
                     <Oval
                       visible={true}
                       height="20"
                       width="20"
-                      color="#0500FF"
+                      color="#FFFFFF"
                       secondaryColor="#cdccff"
                       ariaLabel="oval-loading"
+                      strokeWidth={3}
                     />
-                  </div>
-                ) : (
-                  <>Save</>
-                )}
-              </Button>
-            </ModalFooter>
-          </>
+                  ) : (
+                    "Create Meet"
+                  )}
+                </Button>
+              </>
+            )}
+            {modalStep === 2 && (
+              <>
+                <Button
+                  color="primary"
+                  className="bg-blue-shade-200 hover:bg-blue-700 text-white"
+                  onPress={() => {
+                    openMeetingInNewTab(createdRoomId);
+                    handleCloseModal();
+                  }}
+                  isDisabled={!createdRoomId}
+                >
+                  Start Meet
+                </Button>
+              </>
+            )}
+          </ModalFooter>
         </ModalContent>
       </Modal>
     </div>
