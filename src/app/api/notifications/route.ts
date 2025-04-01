@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
     const collection = db.collection("notifications");
 
     const notifications = await collection
-      .find({ receiver_address: address })
+      .find({ receiver_address: { $regex: address, $options: "i" } })
       .toArray();
 
     if (cacheWrapper.isAvailable) {

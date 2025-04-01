@@ -8,6 +8,7 @@ import RecordedSessions from "./RecordedSessions";
 import ProposalVote from "./ProposalVote";
 import Followers from "./Followers";
 import Attestation from "./Attestation";
+import OfficeHours from "./OfficeHours";
 import ConnectWalletWithENS from "../ConnectWallet/ConnectWalletWithENS";
 import { Notification } from "./NotificationTypeUtils";
 import { useAccount } from "wagmi";
@@ -73,6 +74,8 @@ function NotificationMain() {
     { name: "Followers", value: "followers" },
     { name: "Attestations", value: "attestations" },
     // { name: "Instant Meet", value: "instant-meet" }
+    { name: "Proposal Vote", value: "proposalVote" },
+    { name: "Office Hours", value: "officeHours" }
   ];
 
   const isValidAuthentication = () => {
@@ -106,6 +109,8 @@ function NotificationMain() {
       } else if (tabValue === "attestations") {
         router.push(path + `?active=${tabValue}`);
       } else if (tabValue === "officeHours") {
+        router.push(path + `?active=${tabValue}`);
+      } else if (tabValue === "proposalVote") {
         router.push(path + `?active=${tabValue}`);
       } else {
         router.push(path + `?active=${tabValue}`);
@@ -348,17 +353,17 @@ function NotificationMain() {
     }
   };
 
-  const handleTabClick = (tab: string) => {
-    if (
-      tab === "recordedSessions" ||
-      tab === "followers" ||
-      tab === "attestations"
-    ) {
-      toast("Coming Soon 🚀");
-    } else {
-      router.push(`${path}?active=${tab}`);
-    }
-  };
+  // const handleTabClick = (tab: string) => {
+  //   if (
+  //     tab === "recordedSessions" ||
+  //     tab === "followers" ||
+  //     tab === "attestations"
+  //   ) {
+  //     toast("Coming Soon 🚀");
+  //   } else {
+  //     router.push(`${path}?active=${tab}`);
+  //   }
+  // };
 
   const renderContent = () => {
     if (isPageLoading) {
@@ -475,6 +480,8 @@ function NotificationMain() {
       recordedSessions: RecordedSessions,
       followers: Followers,
       attestations: Attestation,
+      proposalVote: ProposalVote,
+      officeHours: OfficeHours,
     };
     const Component =
       components[activeTab as keyof typeof components] || NotificationAll;
@@ -590,7 +597,7 @@ function NotificationMain() {
                 }`}
               onClick={() => router.push(path + "?active=proposalVote")}
             >
-              ProposalVote
+              Proposal Vote
             </button>
             <button
               className={`py-4 px-2 outline-none ${searchParams.get("active") === "officeHours"
