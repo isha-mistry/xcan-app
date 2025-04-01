@@ -1,119 +1,143 @@
-export class PushNotificationService {
-  private static instance: PushNotificationService;
+interface PushNotificationPayload {
+  title: string;
+  body: string;
+  data?: any;
+}
 
-  private constructor() {}
+// Utility function to convert VAPID key
+export function urlBase64ToUint8Array(base64String: string): Uint8Array {
+  const padding = '='.repeat((4 - base64String.length % 4) % 4);
+  const base64 = (base64String + padding)
+    .replace(/-/g, '+')
+    .replace(/_/g, '/');
 
-  public static getInstance(): PushNotificationService {
-    if (!this.instance) {
-      this.instance = new PushNotificationService();
-    }
-    return this.instance;
+  const rawData = window.atob(base64);
+  const outputArray = new Uint8Array(rawData.length);
+
+  for (let i = 0; i < rawData.length; ++i) {
+    outputArray[i] = rawData.charCodeAt(i);
+  }
+  return outputArray;
+}
+
+// Check if push notifications are supported
+export function isPushNotificationSupported(): boolean {
+  return 'serviceWorker' in navigator && 'PushManager' in window;
+}
+
+// Request notification permission
+export async function requestNotificationPermission(): Promise<boolean> {
+  if (!isPushNotificationSupported()) {
+    console.warn('Push notifications not supported');
+    return false;
   }
 
-  // Type-safe method to check notification support
-  public isNotificationSupported(): boolean {
-    return 'Notification' in window;
+  const permission = await Notification.requestPermission();
+  return permission === 'granted';
+}
+
+// Register service worker
+export async function registerServiceWorker(): Promise<ServiceWorkerRegistration | null> {
+  if (!isPushNotificationSupported()) {
+    console.warn('Push notifications not supported');
+    return null;
   }
 
-  // Type-safe method to get current permission status
-  public getNotificationPermission(): NotificationPermission {
-    if (!this.isNotificationSupported()) {
-      return 'denied';
-    }
-    return Notification.permission;
+  try {
+    return await navigator.serviceWorker.register('/sw.js');
+  } catch (error) {
+    console.error('Service Worker registration failed:', error);
+    return null;
   }
+}
 
-  // Comprehensive method to request permission
-  public async requestNotificationPermission(): Promise<NotificationPermission> {
-    // Check if notifications are supported
-    if (!this.isNotificationSupported()) {
-      console.warn('Notifications are not supported in this browser');
-      return 'denied';
+// Subscribe to push notifications
+export async function subscribeToPushNotifications(): Promise<PushSubscription | null> {
+  try {
+    // Ensure service worker is registered
+    const registration = await registerServiceWorker();
+    if (!registration) {
+      console.warn('Service worker not registered');
+      return null;
     }
 
-    // Request permission
-    const permission = await Notification.requestPermission();
-
-    // Handle different permission states
-    switch (permission) {
-      case 'granted':
-        console.log('Notification permission granted');
-        break;
-      case 'denied':
-        console.warn('Notification permission denied');
-        break;
-      case 'default':
-        console.log('Notification permission not yet chosen');
-        break;
+    // Check permission
+    const permissionGranted = await requestNotificationPermission();
+    if (!permissionGranted) {
+      console.warn('Notification permission denied');
+      return null;
     }
 
-    return permission;
+    // Subscribe to push notifications
+    return await registration.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: urlBase64ToUint8Array(process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!),
+    });
+  } catch (error) {
+    console.error('Push subscription failed:', error);
+    return null;
   }
+}
 
-  // Method to send push notification with permission check
-  public async sendPushNotification(notification: {
-    title: string;
-    body: string;
-    icon?: string;
-    data?: any;
-  }): Promise<boolean> {
-    // Comprehensive permission check
-    const currentPermission = this.getNotificationPermission();
+// Send push notification subscription to server
+export async function sendSubscriptionToServer(
+  subscription: PushSubscription, 
+  payload?: any
+): Promise<boolean> {
+  try {
+    const response = await fetch('/api/push-notifications', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ 
+        subscription, 
+        payload 
+      })
+    });
 
-    // Handle different permission scenarios
-    switch (currentPermission) {
-      case 'granted':
-        try {
-          // Ensure service worker is ready
-          const registration = await navigator.serviceWorker.ready;
-          
-          registration.showNotification(notification.title, {
-            body: notification.body,
-            icon: notification.icon || '/icon.png',
-            badge: '/icon.png',
-            data: notification.data
-          });
-
-          return true;
-        } catch (error) {
-          console.error('Error showing push notification:', error);
-          return false;
-        }
-      
-      case 'denied':
-        console.warn('Notifications are blocked');
-        return false;
-      
-      case 'default':
-        // Attempt to request permission
-        const newPermission = await this.requestNotificationPermission();
-        
-        if (newPermission === 'granted') {
-          return this.sendPushNotification(notification);
-        }
-        
-        return false;
-    }
+    return response.ok;
+  } catch (error) {
+    console.error('Failed to send subscription to server:', error);
+    return false;
   }
+}
 
-  // Enhanced method to ensure notification readiness
-  public async ensureNotificationReady(): Promise<boolean> {
-    if (!this.isNotificationSupported()) {
-      console.warn('Notifications not supported');
+// Send push notification
+export async function sendPushNotification(
+  payload: PushNotificationPayload
+): Promise<boolean> {
+  try {
+    // Ensure notifications are supported and permitted
+    if (!await requestNotificationPermission()) {
+      console.warn('Notification permission not granted');
       return false;
     }
 
-    const currentPermission = this.getNotificationPermission();
-
-    if (currentPermission === 'granted') {
-      return true;
+    // Get or create subscription
+    const subscription = await subscribeToPushNotifications();
+    if (!subscription) {
+      console.warn('Could not create push subscription');
+      return false;
     }
 
-    if (currentPermission === 'default') {
-      const newPermission = await this.requestNotificationPermission();
-      return newPermission === 'granted';
-    }
-
+    // Send to server
+    return await sendSubscriptionToServer(subscription, payload);
+  } catch (error) {
+    console.error('Push notification sending failed:', error);
     return false;
   }
+}
+
+// Check if notifications are ready
+export async function ensureNotificationReady(): Promise<boolean> {
+  if (!isPushNotificationSupported()) {
+    console.warn('Push notifications not supported');
+    return false;
+  }
+
+  const permissionGranted = await requestNotificationPermission();
+  const registration = await registerServiceWorker();
+
+  return permissionGranted && !!registration;
 }

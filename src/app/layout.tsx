@@ -17,6 +17,7 @@ import { ApiDataProvider } from "@/contexts/ApiDataContext";
 import TopNavbar from "@/components/TopNavbar/TopNavbar";
 import { Toaster } from "react-hot-toast";
 import AuthGuard from "@/components/ComponentUtils/AuthGuard";
+import { PushNotificationProvider } from "./providers/PushNotificationProvider";
 const poppins = Poppins({
   subsets: ["latin"],
   weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
@@ -124,10 +125,12 @@ export default function RootLayout({
           <Suspense>
             <RootProviders>
               <ApiDataProvider>
+
                 <div className="flex">
                   {/* <div className="hidden lg:block fixed w-[6%] bg-blue-shade-100 h-screen z-10">
                     <SidebarMain />
                   </div>*/}
+                  <PushNotificationProvider />
                   <div className="lg:hidden fixed z-10 w-full bg-white border border-b-0">
                     <SidebarMainMobile />
                   </div>
@@ -139,6 +142,7 @@ export default function RootLayout({
                     <AuthGuard>{children}</AuthGuard>
                   </div>
                 </div>
+
               </ApiDataProvider>
             </RootProviders>
           </Suspense>

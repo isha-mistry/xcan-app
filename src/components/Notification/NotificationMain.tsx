@@ -27,7 +27,7 @@ import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 
 import { fetchApi } from "@/utils/api";
 import { BellOff, ChevronDownIcon, Wallet } from "lucide-react";
-import { PushNotificationService } from "@/services/pushNotificationService";
+import * as pushNotificationService from '@/services/pushNotificationService';
 
 function NotificationMain() {
   const { isConnected } = useConnection();
@@ -64,7 +64,6 @@ function NotificationMain() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [selectedTab, setSelectedTab] = useState("Info");
   const dropdownRef = useRef<HTMLDivElement | null>(null);
-  const pushNotificationService = PushNotificationService.getInstance();
 
   const tabs = [
     { name: "All", value: "all" },
@@ -222,7 +221,7 @@ function NotificationMain() {
     // Function to handle new notifications
     const handleNewNotification = async (message: Notification) => {
       console.log("New notification received:", message);
-      
+
       // Create notification data
       const notificationData: Notification = {
         _id: message?._id,
@@ -242,16 +241,11 @@ function NotificationMain() {
 
       // Send web push notification
       try {
-        // Check if notifications are supported and permission is granted
-        const isReady = await pushNotificationService.ensureNotificationReady();
-        
-        if (isReady) {
-          await pushNotificationService.sendPushNotification({
-            title: message.notification_title || 'New Notification',
-            body: message.content || 'You have a new notification',
-            data: notificationData
-          });
-        }
+        await pushNotificationService.sendPushNotification({
+          title: message.notification_title || 'New Notification',
+          body: message.content || 'You have a new notification',
+          data: notificationData
+        });
       } catch (error) {
         console.error('Error handling push notification:', error);
       }
