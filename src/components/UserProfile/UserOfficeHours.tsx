@@ -162,7 +162,7 @@ function UserOfficeHours({
 
   useEffect(() => {
     if (!selfDelegate && searchParams.get("hours") === "schedule") {
-      router.replace(path + "?active=officeHours&hours=attended");
+      router.replace(path + "?active=officeHours&hours=attended&dao="+daoName);
     }
   }, [isDelegate, selfDelegate, searchParams.get("hours")]);
 
@@ -243,7 +243,7 @@ function UserOfficeHours({
                 : "text-[#3E3D3D] bg-white"
             }`}
             onClick={() =>
-              router.push(path + "?active=officeHours&hours=attended")
+              router.push(path + "?active=officeHours&hours=attended&dao="+daoName)
             }
           >
             <CheckCircle size={16} className="drop-shadow-lg" />

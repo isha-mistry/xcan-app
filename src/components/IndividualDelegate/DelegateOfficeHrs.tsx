@@ -128,7 +128,6 @@ function DelegateOfficeHrs({ props }: { props: Type }) {
   useEffect(() => {
     const fetchUserOfficeHours = async () => {
       try {
-        console.log("Fetching office hours for:", props.daoDelegates);
         const response = await fetchApi(
           `/get-office-hours?host_address=${props.individualDelegate}&dao_name=${props.daoDelegates}&type=${currentTab}`,
           {
@@ -220,7 +219,7 @@ function DelegateOfficeHrs({ props }: { props: Type }) {
                 : "text-[#3E3D3D] bg-white"
             }`}
             onClick={() =>
-              router.push(path + "?active=officeHours&hours=attended")
+              router.push(path + "?active=officeHours&hours=attended&dao="+props.daoDelegates)
             }
           >
             <CheckCircle size={16} className="drop-shadow-lg" />

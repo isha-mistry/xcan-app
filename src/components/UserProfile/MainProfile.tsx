@@ -42,7 +42,7 @@ import { Oval } from "react-loader-spinner"
 import { useSession } from "next-auth/react";
 import { BASE_URL, LIGHTHOUSE_BASE_API_KEY } from "@/config/constants";
 import { getDaoName } from "@/utils/chainUtils";
-
+import {checkLetsGrowDAODelegateStatus} from "@/utils/checkLetsGrowDAODelegateStatus"
 interface Following {
   follower_address: string;
   isFollowing: boolean;
@@ -725,7 +725,6 @@ function MainProfile() {
 useEffect(() => {
   // Check the `dao` query parameter from the URL
   const daoParam = searchParams.get("dao");
-  console.log("daoParam:", daoParam);
   if (daoParam && Object.keys(daoConfigs).includes(daoParam.toLowerCase())) {
     setDaoName(daoParam.toLowerCase());
     return;
@@ -736,8 +735,6 @@ useEffect(() => {
     (key) => daoConfigs[key].chainName === chain?.name
   );
 
-  console.log("Chain name:", chain?.name);
-  console.log("daoKey:", daoKey);
   
   setDaoName(daoKey || "");
 }, [chain, chain?.name, path, searchParams.toString()]);  // 👈 Added `router.asPath` to trigger updates
@@ -794,7 +791,11 @@ useEffect(() => {
         const daoKey = Object.keys(daoConfigs).find(
           (key) => daoConfigs[key].chainName === chain.name
         );
-
+        if (daoName === "letsgrowdao") {
+          const letsgrowdaoDelegate =await checkLetsGrowDAODelegateStatus(walletAddress);
+          setSelfDelegate(letsgrowdaoDelegate);
+          return;
+        }
         const contractAddress = daoKey ? daoConfigs[daoKey].tokenContractAddress : null;
         const network = daoKey;
 
@@ -854,7 +855,7 @@ useEffect(() => {
       }
     };
     checkDelegateStatus();
-  }, [walletAddress, chain]);
+  }, [walletAddress,chain,daoName]);
 
   useEffect(() => {
     if (!walletAddress) return;
@@ -888,28 +889,37 @@ useEffect(() => {
         const res = await fetchApi(`/profile/${walletAddress}`, requestOptions);
 
         const dbResponse = await res.json();
-
-        let karmaDetails;
-
-        try {
-          const karmaRes = await fetch(
-            `https://api.karmahq.xyz/api/dao/find-delegate?dao=${dao}&user=${walletAddress}`
-          );
-          karmaDetails = await karmaRes.json();
-
-          if (karmaDetails.length > 0) {
-            setKarmaEns(karmaDetails?.data?.delegate?.ensName);
-            setKarmaImage(karmaDetails?.data?.delegate?.profilePicture);
-            setKarmaDesc(
-              karmaDetails?.data?.delegate?.delegatePitch?.customFields[1]
-                ?.value
-            );
-          }
+        const delegateResponse = await fetch(
+          `/api/search-delegate?address=${walletAddress}&dao=${daoName}`
+        );
+        const details = await delegateResponse.json();
+        // setDelegateInfo(details.data.delegate);
+        if (details.length > 0) {
           setIsDelegate(true);
-        } catch (e) {
-          console.log("error: ", e);
+        }else{
           setIsDelegate(false);
         }
+        // let karmaDetails;
+
+        // try {
+        //   const karmaRes = await fetch(
+        //     `https://api.karmahq.xyz/api/dao/find-delegate?dao=${dao}&user=${walletAddress}`
+        //   );
+        //   karmaDetails = await karmaRes.json();
+
+        //   if (karmaDetails.length > 0) {
+        //     setKarmaEns(karmaDetails?.data?.delegate?.ensName);
+        //     setKarmaImage(karmaDetails?.data?.delegate?.profilePicture);
+        //     setKarmaDesc(
+        //       karmaDetails?.data?.delegate?.delegatePitch?.customFields[1]
+        //         ?.value
+        //     );
+        //   }
+        //   setIsDelegate(true);
+        // } catch (e) {
+        //   console.log("error: ", e);
+        //   setIsDelegate(false);
+        // }
 
         if (dbResponse.data.length > 0) {
           setIsPageLoading(false);
@@ -952,14 +962,14 @@ useEffect(() => {
             await handleUpdateFollowings("all", 0, 1);
           }
         } else {
-          setUserData({
-            displayName: karmaDetails.data.delegate.ensName,
-            discord: karmaDetails.data.delegate.discordHandle,
-            discourse: karmaDetails.data.delegate.discourseHandle,
-            twitter: karmaDetails.data.delegate.twitterHandle,
-            github: karmaDetails.data.delegate.githubHandle,
-            displayImage: karmaDetails.data.delegate.profilePicture,
-          });
+          // setUserData({
+          //   displayName: karmaDetails.data.delegate.ensName,
+          //   discord: karmaDetails.data.delegate.discordHandle,
+          //   discourse: karmaDetails.data.delegate.discourseHandle,
+          //   twitter: karmaDetails.data.delegate.twitterHandle,
+          //   github: karmaDetails.data.delegate.githubHandle,
+          //   displayImage: karmaDetails.data.delegate.profilePicture,
+          // });
           await handleUpdateFollowings(daoName, 0, 1);
           setIsPageLoading(false);
         }
@@ -1194,7 +1204,7 @@ useEffect(() => {
                 {selfDelegate === false ? (
                   <div className="pt-2 flex flex-col 2.3sm:flex-row gap-2 w-full items-center">
                     <div className=" flex flex-col xs:flex-row gap-2 w-full xs:w-auto items-center">
-                      <button
+                      {daoName !== "letsgrowdao" &&(<button
                         className="bg-blue-shade-200 font-bold text-white rounded-full py-[10px] px-4 xs:py-[9px] md:py-2.5 xs:px-4 sm:px-6 xs:text-xs sm:text-sm md:text-base lg:px-8 lg:py-[10px] w-full xs:w-auto h-fit"
                         onClick={() => handleDelegateVotes(`${walletAddress}`)}
                         disabled={isspin}
@@ -1206,7 +1216,7 @@ useEffect(() => {
                         ) : (
                           "Become Delegate"
                         )}
-                      </button>
+                      </button>)}
 
                       <button
                         className="bg-blue-shade-200 font-bold text-white rounded-full px-6 py-[10px] xs:py-2 md:py-2.5 md:text-base xs:text-xs sm:text-sm lg:px-8 lg:py-[10px] w-full xs:w-[160px] lg:w-[185px] flex items-center justify-center h-fit"

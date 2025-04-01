@@ -127,6 +127,7 @@ function UserInfo({
   isDelegate,
   isSelfDelegate,
   onSaveButtonClick,
+  daoName,
   attestationCounts,
 }: userInfoProps) {
   const { address } = useAccount();
@@ -152,12 +153,12 @@ function UserInfo({
     {
       number: sessionAttendCount,
       desc: "Sessions attended",
-      ref: `/profile/${walletAddress}}?active=sessions&session=attended`,
+      ref: `/profile/${walletAddress}}?active=sessions&session=attended&dao=${daoName}`,
     },
     {
       number: officehoursAttendCount,
       desc: "Office Hours attended",
-      ref: `/profile/${walletAddress}}?active=officeHours&hours=attended`,
+      ref: `/profile/${walletAddress}}?active=officeHours&hours=attended&dao=${daoName}`,
     },
   ];
   const getDaoNameByChain = (chainName: string): string | undefined => {
@@ -262,18 +263,17 @@ function UserInfo({
       fetchAttestation("offchain");
     }
   }, [activeButton, walletAddress, address, chain]);
-
   if (isDelegate === true || isSelfDelegate === true) {
     blocks.unshift(
       {
         number: sessionHostCount,
         desc: "Sessions hosted",
-        ref: `/profile/${walletAddress}}?active=sessions&session=hosted`,
+        ref: `/profile/${walletAddress}}?active=sessions&session=hosted&dao=${daoName}`,
       },
       {
         number: officehoursHostCount,
         desc: "Office Hours hosted",
-        ref: `/profile/${walletAddress}}?active=officeHours&hours=attended`,
+        ref: `/profile/${walletAddress}}?active=officeHours&hours=attended&dao=${daoName}`,
       }
     );
   }

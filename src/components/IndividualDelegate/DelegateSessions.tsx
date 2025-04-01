@@ -193,7 +193,7 @@ function DelegateSessions({ props }: { props: Type }) {
                 : "text-[#3E3D3D] bg-white"
             }`}
             onClick={() =>
-              router.push(path + "?active=delegatesSession&session=attended")
+              router.push(path + `?active=delegatesSession&session=attended&dao=${props.daoDelegates}`)
             }
           >
             <CheckCircle size={16} className="drop-shadow-lg" />

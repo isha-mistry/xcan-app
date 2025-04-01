@@ -34,7 +34,6 @@ query MyQuery($id: String!) {
 `;
 export const GET = async (req: NextRequest) => {
     try {
-        console.log("search delegate")
         const { searchParams } = new URL(req.url);
         const address = searchParams.get('address')?.toLowerCase();
         const dao = searchParams.get('dao');
@@ -42,7 +41,6 @@ export const GET = async (req: NextRequest) => {
             return NextResponse.json({ error: 'Address and DAO parameters are required.' }, { status: 400 });
         }
         let data;
-        console.log(address,dao)
         if(dao==="optimism"){
          data = await op_client.query(DELEGATE_QUERY,{id:address}).toPromise();
         }else if(dao==="arbitrum"){
@@ -53,7 +51,6 @@ export const GET = async (req: NextRequest) => {
         if (!data || !data.data || !data.data.delegates || data.data.delegates.length === 0) {
             return NextResponse.json({ error: 'Delegate not found.' }, { status: 404 });
         }
-        console.log(data.data)
         return NextResponse.json(data.data.delegates);
     } catch (e) {
         console.log(e);

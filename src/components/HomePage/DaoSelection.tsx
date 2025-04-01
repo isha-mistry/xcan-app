@@ -11,6 +11,7 @@ import PopupGenerateLink from "./PopupGenerateLink";
 import { usePrivy } from "@privy-io/react-auth";
 import ConnectWalletHomePage from "./ConnectwalletHomePage";
 import { dao_details } from "@/config/daoDetails";
+import { checkLetsGrowDAODelegateStatus } from "@/utils/checkLetsGrowDAODelegateStatus"
 
 interface DaoSelectionProps {
   onClose: () => void;
@@ -45,13 +46,13 @@ function DaoSelection({
   const [showWalletPopup, setShowWalletPopup] = useState(false);
   const [selectedDao, setSelectedDao] = useState<string>("");
 
-    useEffect(() => {
-      if (authenticated && selectedDao && showWalletPopup) {
-        setShowWalletPopup(false); 
-        checkDelegateStatus(selectedDao); 
-      }
-    }, [authenticated, selectedDao]);
-  
+  useEffect(() => {
+    if (authenticated && selectedDao && showWalletPopup) {
+      setShowWalletPopup(false);
+      checkDelegateStatus(selectedDao);
+    }
+  }, [authenticated, selectedDao]);
+
 
   const pushToGTM = (eventData: GTMEvent) => {
     if (typeof window !== 'undefined' && window.dataLayer) {
@@ -65,8 +66,8 @@ function DaoSelection({
   };
 
 
-   // Generic handler for all DAOs
-   const handleDaoClick = (daoName: string) => {
+  // Generic handler for all DAOs
+  const handleDaoClick = (daoName: string) => {
     pushToGTM({
       event: 'dao_selection',
       category: 'DAO Selection',
@@ -80,12 +81,12 @@ function DaoSelection({
   const handleDaoSelection = (network: string) => {
     setDao(network);
     setSelectedDao(network);
-    
+
     if (!authenticated) {
       setShowWalletPopup(true);
       return;
     }
-    
+
     checkDelegateStatus(network);
   };
 
@@ -118,35 +119,16 @@ function DaoSelection({
         } catch (error) {
           console.error("Error in reading contract:", error);
         }
-      } 
-      
-      // Check subgraph for Let's Grow DAO
-      if (network === "letsgrow") {
-        const letsgrowSubgraphUrl = "https://api.studio.thegraph.com/query/68573/lets_grow_dao_votingtoken/v0.0.2"; // Replace with actual subgraph URL
-        
-        try {
-          const response = await fetch(letsgrowSubgraphUrl, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              query: `
-                  query MyQuery($address: Bytes!) {
-                    delegates(where: {id: $address}) {
-                      id
-                      lastUpdated
-                    }
-                  }
-              `,
-              variables: {
-                address: address?.toLowerCase()
-              }
-            })
-          });
+      }
 
-          const result = await response.json();
-          isDelegate = result.data.delegates.length > 0;
+      // Check subgraph for Let's Grow DAO
+      if (network === "letsgrowdao") {
+        try {
+          if (address) {
+            isDelegate = await checkLetsGrowDAODelegateStatus(address);
+          } else {
+            console.error("Address is undefined");
+          }
         } catch (error) {
           console.error("Error querying Let's Grow DAO subgraph:", error);
         }
@@ -299,8 +281,8 @@ function DaoSelection({
       </div>
       {showPopup && <PopupGenerateLink onclose={handlePopupClose} dao={dao} />}
       {showWalletPopup && (
-        <ConnectWalletHomePage 
-          onClose={() => setShowWalletPopup(false)} 
+        <ConnectWalletHomePage
+          onClose={() => setShowWalletPopup(false)}
         />
       )}
     </>
