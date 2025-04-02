@@ -14,8 +14,9 @@ import {
   formatSlotDateAndTime,
   getDisplayNameOrAddr,
 } from "@/utils/NotificationUtils";
+import { SOCKET_BASE_URL } from "@/config/constants";
 
-const SOCKET_BASE_URL = process.env.SOCKET_BASE_URL || "http://localhost:3001";
+
 
 function getRandomElementFromArray(arr: any[]) {
   const randomIndex = Math.floor(Math.random() * arr.length);
