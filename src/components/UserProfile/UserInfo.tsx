@@ -20,6 +20,7 @@ interface userInfoProps {
   onSaveButtonClick: (description?: string) => Promise<void>;
   daoName: string;
   attestationCounts: MeetingRecords | null;
+  isLoadingStatus?: boolean;
 }
 
 const StyledMDEditorWrapper = styled.div`
@@ -129,6 +130,7 @@ function UserInfo({
   onSaveButtonClick,
   daoName,
   attestationCounts,
+  isLoadingStatus,
 }: userInfoProps) {
   const { address } = useAccount();
   const { chain } = useAccount();
@@ -147,7 +149,7 @@ function UserInfo({
   const [activeButton, setActiveButton] = useState("onchain");
   const [originalDesc, setOriginalDesc] = useState(description || karmaDesc);
   const [isMobile, setIsMobile] = useState(false);
-
+  console.log(isLoadingStatus);
   const router = useRouter();
   const blocks = [
     {
@@ -277,6 +279,7 @@ function UserInfo({
       }
     );
   }
+
   return (
     <div className="pt-4">
       <div className="flex gap-2 0.5xs:gap-4 rounded-xl text-sm flex-wrap">

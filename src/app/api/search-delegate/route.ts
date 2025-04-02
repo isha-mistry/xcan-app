@@ -48,9 +48,9 @@ export const GET = async (req: NextRequest) => {
         }else{
         data= await letsgrow_client.query(LETSGROW_DELEGATE_QUERY,{id:address}).toPromise();
         }
-        if (!data || !data.data || !data.data.delegates || data.data.delegates.length === 0) {
-            return NextResponse.json({ error: 'Delegate not found.' }, { status: 404 });
-        }
+        if (!data?.data?.delegates || data.data.delegates.length === 0) {
+          return NextResponse.json([]);
+         }
         return NextResponse.json(data.data.delegates);
     } catch (e) {
         console.log(e);
