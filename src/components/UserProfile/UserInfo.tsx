@@ -328,7 +328,9 @@ function UserInfo({
               }}
               textareaProps={{
                 placeholder: "Type your description here...",
+                readOnly: !isEditing,
               }}
+              commandsFilter={(cmd) => cmd.name === 'fullscreen' ? false : cmd}
             />
           </StyledMDEditorWrapper>
 
