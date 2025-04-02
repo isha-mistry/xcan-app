@@ -27,6 +27,7 @@ export interface BaseDAOConfig {
     delegateChangedsUrl:string;
     alchemyAttestationUrl:string;
     offchainAttestationUrl:string;
+    communityCalendarUrl?:string;
     // Add any other DAO-specific fields you need
   }
 

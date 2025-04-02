@@ -260,6 +260,7 @@ import Proposals from "./Proposals";
 import IndividualDaoHeader from "../ComponentUtils/IndividualDaoHeader";
 import AboutDao from "./AboutDao";
 import Leaderboard from "./Leaderboard";
+import Communitycalendar from "../community-calendar/Communitycalendar";
 import { ChevronDownIcon } from "lucide-react";
 
 function SpecificDAO({ props }: { props: { daoDelegates: string } }) {
@@ -324,6 +325,7 @@ function SpecificDAO({ props }: { props: { daoDelegates: string } }) {
     { name: "Delegates List", value: "delegatesList" },
     { name: "Delegates Sessions", value: "delegatesSession" },
     { name: "Office Hours", value: "officeHours" },
+    { name:"Community Calendar", value: "communityCalendar" },
     { name: "Leaderboard", value: "leaderboard" },
   ];
 
@@ -353,6 +355,7 @@ function SpecificDAO({ props }: { props: { daoDelegates: string } }) {
     officeHours: <OfficeHours props={props.daoDelegates} />,
     proposals: <Proposals props={props.daoDelegates} />,
     about: <AboutDao props={props.daoDelegates} />,
+    communityCalendar: <Communitycalendar props={props.daoDelegates} />,
     leaderboard: <Leaderboard props={props.daoDelegates} />
   };
 

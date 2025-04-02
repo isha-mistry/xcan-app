@@ -25,6 +25,7 @@ export const daoConfigs: { [key: string]: DAOConfig } = {
     subgraphUrl: "https://api.studio.thegraph.com/query/68573/op/v0.0.9",
     alchemyAttestationUrl: process.env.NEXT_PUBLIC_OP_ATTESTATION_URL || "",
     offchainAttestationUrl: "https://optimism.easscan.org",
+    communityCalendarUrl:"https://calendar.google.com/calendar/u/0/embed?src=c_fnmtguh6noo6qgbni2gperid4k@group.calendar.google.com&ctz=America/Los_Angeles&pli=1",
     proposalUrl:
       process.env.NEXT_PUBLIC_OPTIMISM_PROPOSALS_GRAPH_URL ||
       "https://api.studio.thegraph.com/query/68573/v6_proxy/version/latest",
@@ -68,6 +69,7 @@ export const daoConfigs: { [key: string]: DAOConfig } = {
     subgraphUrl: "https://api.studio.thegraph.com/query/68573/arb_token/v0.0.3",
     alchemyAttestationUrl: process.env.NEXT_PUBLIC_ARB_ATTESTATION_URL || "",
     offchainAttestationUrl: "https://arbitrum.easscan.org",
+    communityCalendarUrl:"https://calendar.google.com/calendar/u/0/embed?src=c_4157985d2452dfd8a91b6a36bccab37deb9bffe9053a4b9bcc4e9fff9ef02924@group.calendar.google.com&ctz=Europe/Warsaw&pli=1",
     proposalUrl:
       process.env.NEXT_PUBLIC_ARBITRUM_PROPOSALS_GRAPH_URL ||
       "https://api.studio.thegraph.com/query/68573/arb_proposal/v0.0.9",
