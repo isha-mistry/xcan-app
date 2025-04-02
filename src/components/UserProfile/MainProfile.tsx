@@ -562,7 +562,7 @@ function MainProfile() {
   const handleSave = async (newDescription?: string) => {
     try {
       // Check if the delegate already exists in the database
-      if (newDescription) {
+      if (typeof newDescription === 'string') {
         setDescription(newDescription);
       }
       setIsLoading(true);
@@ -638,6 +638,7 @@ function MainProfile() {
           Authorization: `Bearer ${token}`,
         }),
       };
+      const descriptionToSave = typeof newDescription === 'string' ? newDescription : description;
       const raw = JSON.stringify({
         address: walletAddress,
         image: modalData.displayImage,
@@ -654,7 +655,7 @@ function MainProfile() {
             dao_name: daoName,
             network: chain?.name,
             discourse: modalData.discourse,
-            description: newDescription ? newDescription : description,
+            description:descriptionToSave,
           },
         ],
       });
@@ -677,6 +678,10 @@ function MainProfile() {
           discourse: modalData.discourse,
           github: modalData.github,
         });
+        if (typeof newDescription === 'string') {
+          setDescription(newDescription);
+      }
+      // toast.success("Profile updated successfully!");
       } else {
         console.error("Failed to update delegate:", result.error);
         setIsLoading(false);

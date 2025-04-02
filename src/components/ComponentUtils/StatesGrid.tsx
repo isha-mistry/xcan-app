@@ -17,10 +17,10 @@ interface StatsBlock {
 const StatsGrid: React.FC<StatsGridProps> = ({ blocks, isLoading, onBlockClick }) => {
   // Get appropriate icon based on description
   const getIcon = (desc: string): React.ReactNode => {
-    if (desc.includes('Sessions hosted')) return <Calendar className="w-6 h-6 text-blue-200" />;
-    if (desc.includes('Sessions attended')) return <Users className="w-6 h-6 text-blue-200" />;
-    if (desc.includes('Office Hours hosted')) return <Activity className="w-6 h-6 text-blue-200" />;
-    return <Clock className="w-6 h-6 text-blue-200" />;
+    if (desc.includes('Sessions hosted')) return <Calendar className="w-6 h-6 text-blue-200 group-hover:text-white" />;
+    if (desc.includes('Sessions attended')) return <Users className="w-6 h-6 text-blue-200 group-hover:text-white" />;
+    if (desc.includes('Office Hours hosted')) return <Activity className="w-6 h-6 text-blue-200 group-hover:text-white" />;
+    return <Clock className="w-6 h-6 text-blue-200 group-hover:text-white" />;
   };
 
   return (
@@ -32,12 +32,12 @@ const StatsGrid: React.FC<StatsGridProps> = ({ blocks, isLoading, onBlockClick }
             onClick={() => onBlockClick(block.ref)}
             className="group relative overflow-hidden bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer border border-gray-100"
           >
-            <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-100 to-indigo-100 opacity-0 group-hover:opacity-95 transition-opacity duration-300" />
             
             <div className="relative p-6 flex flex-col items-start">
               {/* Icon and Number Row */}
               <div className="flex items-center justify-between w-full mb-4">
-                <div className="p-3 bg-white/10 rounded-lg group-hover:bg-blue-50 transition-colors duration-300">
+                <div className="p-3 bg-white/10 rounded-lg group-hover:bg-blue-500/30 transition-colors duration-300">
                   {getIcon(block.desc)}
                 </div>
                 {isLoading ? (
