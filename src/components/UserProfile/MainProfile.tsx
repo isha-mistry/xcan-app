@@ -65,7 +65,7 @@ function MainProfile() {
   const [karmaDesc, setKarmaDesc] = useState("");
   const [isPageLoading, setIsPageLoading] = useState(true);
   const [selfDelegate, setSelfDelegate] = useState(false);
-  const [daoName, setDaoName] = useState("optimism");
+  const [daoName, setDaoName] = useState("");
   const [attestationStatistics, setAttestationStatistics] =useState<MeetingRecords | null>(null);
   const [isCopied, setIsCopied] = useState(false);
   const [followings, setFollowings] = useState(0);
@@ -795,16 +795,29 @@ useEffect(() => {
       if (!walletAddress || !chain) return;
       setIsDelegateLoading(true);
       try {
+        // Get the current chain name from the URL or selected DAO
+        const currentChainName = chain.name.toLowerCase();
+        
         const daoKey = Object.keys(daoConfigs).find(
-          (key) => daoConfigs[key].chainName === chain.name
+        // Find the daoKey that matches the current chain name
+          (key) => daoConfigs[key].chainName.toLowerCase() === currentChainName
         );
+
+        if (!daoKey) {
+          console.error("No matching DAO found for chain:", currentChainName);
+          setIsDelegateLoading(false);
+          return;
+        }
+
+        
         if (daoName === "letsgrowdao") {
           const letsgrowdaoDelegate = await checkLetsGrowDAODelegateStatus(walletAddress);
           setSelfDelegate(letsgrowdaoDelegate);
           setIsDelegateLoading(false);
           return;
         }
-        const contractAddress = daoKey ? daoConfigs[daoKey].tokenContractAddress : null;
+       
+        const contractAddress = daoConfigs[daoKey].tokenContractAddress;
         const network = daoKey;
 
         const predefinedChains: Record<string, any> = {
@@ -837,12 +850,14 @@ useEffect(() => {
             ];
           })
         );
-        const viemChain = daoKey ? chainMappings[daoKey] : null;
+
+        const viemChain = chainMappings[daoKey];
 
         const public_client = createPublicClient({
-          chain: viemChain || optimism,
+          chain: viemChain,
           transport: http(),
         });
+
 
         const delegateTx = (await public_client.readContract({
           address: contractAddress as `0x${string}`,
@@ -851,20 +866,22 @@ useEffect(() => {
           args: [walletAddress],
         })) as string;
 
+
         const isSelfDelegate =
-          delegateTx.toLowerCase() !==
-            "0x0000000000000000000000000000000000000000" &&
           delegateTx.toLowerCase() === walletAddress.toLowerCase();
         setSelfDelegate(isSelfDelegate);
       } catch (e) {
-        console.log("error in function: ", e);
+        console.error("Error in checkDelegateStatus:", e);
         setSelfDelegate(false);
       } finally {
         setIsDelegateLoading(false);
       }
     };
-    checkDelegateStatus();
-  }, [walletAddress,daoName]);
+
+    // Add a small delay to ensure chain information is updated
+    const timeoutId = setTimeout(checkDelegateStatus, 1000);
+    return () => clearTimeout(timeoutId);
+  }, [walletAddress, chain, daoName]);
 
   useEffect(() => {
     if (!walletAddress) return;
@@ -1386,6 +1403,7 @@ useEffect(() => {
             </div>
 
             <div>
+              {/* {console.log("loading states",selfDelegate,isDelegate,isDelegateLoading)  } */}
               {searchParams.get("active") === "info" ? (
                 <div className="pt-2 xs:pt-4 sm:pt-6 px-4 md:px-6 lg:px-14">
                   <UserInfo
