@@ -864,7 +864,7 @@ useEffect(() => {
       }
     };
     checkDelegateStatus();
-  }, [walletAddress, chain, daoName]);
+  }, [walletAddress,daoName]);
 
   useEffect(() => {
     if (!walletAddress) return;
@@ -1386,7 +1386,7 @@ useEffect(() => {
             </div>
 
             <div>
-              {searchParams.get("active") === "info" && !isDelegateLoading ? (
+              {searchParams.get("active") === "info" ? (
                 <div className="pt-2 xs:pt-4 sm:pt-6 px-4 md:px-6 lg:px-14">
                   <UserInfo
                     karmaDesc={karmaDesc}
@@ -1401,41 +1401,41 @@ useEffect(() => {
                     isLoadingStatus={isDelegateLoading}
                   />
                 </div>
-              ) : (
-                <div className="pt-2 xs:pt-4 sm:pt-6 px-4 md:px-6 lg:px-14">
-                  {/* Onchain/Offchain buttons skeleton */}
-                  <div className="flex gap-2 0.5xs:gap-4 rounded-xl text-sm flex-wrap">
-                    <div className="h-10 w-24 bg-gray-100 rounded-full animate-pulse"></div>
-                    <div className="h-10 w-24 bg-gray-100 rounded-full animate-pulse"></div>
-                  </div>
+              ) : (""
+                // <div className="pt-2 xs:pt-4 sm:pt-6 px-4 md:px-6 lg:px-14">
+                //   {/* Onchain/Offchain buttons skeleton */}
+                //   <div className="flex gap-2 0.5xs:gap-4 rounded-xl text-sm flex-wrap">
+                //     <div className="h-10 w-24 bg-gray-100 rounded-full animate-pulse"></div>
+                //     <div className="h-10 w-24 bg-gray-100 rounded-full animate-pulse"></div>
+                //   </div>
 
-                  {/* Stats grid skeleton */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
-                    {[1, 2, 3, 4].map((i) => (
-                      <div key={i} className="bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow duration-200">
-                        <div className="flex flex-col items-center justify-center">
-                          <div className="h-8 w-16 bg-gray-100 rounded animate-pulse mb-2"></div>
-                          <div className="h-4 w-24 bg-gray-100 rounded animate-pulse"></div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                //   {/* Stats grid skeleton */}
+                //   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
+                //     {[1, 2, 3, 4].map((i) => (
+                //       <div key={i} className="bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow duration-200">
+                //         <div className="flex flex-col items-center justify-center">
+                //           <div className="h-8 w-16 bg-gray-100 rounded animate-pulse mb-2"></div>
+                //           <div className="h-4 w-24 bg-gray-100 rounded animate-pulse"></div>
+                //         </div>
+                //       </div>
+                //     ))}
+                //   </div>
 
-                  {/* Description section skeleton */}
-                  <div className="mt-7">
-                    <div className="bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow duration-200">
-                      <div className="space-y-4">
-                        <div className="h-4 w-3/4 bg-gray-100 rounded animate-pulse"></div>
-                        <div className="space-y-3">
-                          <div className="h-4 w-full bg-gray-100 rounded animate-pulse"></div>
-                          <div className="h-4 w-5/6 bg-gray-100 rounded animate-pulse"></div>
-                          <div className="h-4 w-4/6 bg-gray-100 rounded animate-pulse"></div>
-                          <div className="h-4 w-3/4 bg-gray-100 rounded animate-pulse"></div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                //   {/* Description section skeleton */}
+                //   <div className="mt-7">
+                //     <div className="bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow duration-200">
+                //       <div className="space-y-4">
+                //         <div className="h-4 w-3/4 bg-gray-100 rounded animate-pulse"></div>
+                //         <div className="space-y-3">
+                //           <div className="h-4 w-full bg-gray-100 rounded animate-pulse"></div>
+                //           <div className="h-4 w-5/6 bg-gray-100 rounded animate-pulse"></div>
+                //           <div className="h-4 w-4/6 bg-gray-100 rounded animate-pulse"></div>
+                //           <div className="h-4 w-3/4 bg-gray-100 rounded animate-pulse"></div>
+                //         </div>
+                //       </div>
+                //     </div>
+                //   </div>
+                // </div>
               )}
 
               {selfDelegate === true &&
