@@ -1,8 +1,6 @@
-// app/api/push-notifications/route.ts
-import { NextRequest, NextResponse } from 'next/server';
-import webpush from 'web-push';
+import { NextRequest, NextResponse } from "next/server";
+import webpush from "web-push";
 
-// Configure VAPID keys
 webpush.setVapidDetails(
   `mailto:${process.env.VAPID_EMAIL}`,
   process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!,
@@ -17,40 +15,45 @@ export async function POST(request: NextRequest) {
     // Validate input
     if (!subscription || !payload) {
       return NextResponse.json(
-        { error: 'Subscription and payload are required' }, 
+        { error: "Subscription and payload are required" },
         { status: 400 }
       );
     }
 
+    console.log("payload: ", payload);
+    console.log("subscription: ", subscription);
+
     // Send push notification
-    await webpush.sendNotification(
-      subscription, 
+    const data = await webpush.sendNotification(
+      subscription,
       JSON.stringify({
         title: payload.title,
         body: payload.body,
-        data: payload.data || {}
+        data: payload.data || {},
       })
     );
 
+    console.log("Push notification sent:", data);
+
     return NextResponse.json(
-      { message: 'Notification sent successfully' }, 
+      { message: "Notification sent successfully" },
       { status: 200 }
     );
   } catch (error) {
-    console.error('Push notification error:', error);
+    console.error("Push notification error:", error);
 
     // Handle specific types of errors
     if (error instanceof Error) {
-      if (error.message.includes('subscription not found')) {
+      if (error.message.includes("subscription not found")) {
         return NextResponse.json(
-          { error: 'Subscription expired or invalid' }, 
+          { error: "Subscription expired or invalid" },
           { status: 410 }
         );
       }
     }
 
     return NextResponse.json(
-      { error: 'Failed to send notification' }, 
+      { error: "Failed to send notification" },
       { status: 500 }
     );
   }
