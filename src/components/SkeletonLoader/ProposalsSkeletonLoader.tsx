@@ -1,7 +1,23 @@
-import React from 'react';
-
+import React,{useState} from 'react';
+import Alert from '../Alert/Alert';
 const ProposalsSkeletonLoader = () => {
+  const [showAlert, setShowAlert] = useState(true);
+  const handleCloseAlert = () => {
+    setShowAlert(false);
+  };
   return (
+    <>
+    {showAlert && (
+      <Alert
+        message={
+          <>
+          ⚠️ Fetching data is taking longer than usual. We're looking into the Subgraph issue. Thanks for your patience!
+        </>
+        }
+        type="error"
+        onClose={handleCloseAlert}
+      />
+    )}
     <div className="rounded-[2rem] mt-4">
       {[...Array(5)].map((_, index) => (
         <div
@@ -39,6 +55,7 @@ const ProposalsSkeletonLoader = () => {
         </div>
       ))}
     </div>
+    </>
   );
 };
 
