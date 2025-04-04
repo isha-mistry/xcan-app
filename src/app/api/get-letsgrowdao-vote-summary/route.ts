@@ -29,7 +29,7 @@ async function fetchAllVotes(): Promise<Vote[]> {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${process.env.THEGRAPH_API_KEY}`,
+        Authorization: `Bearer ${process.env.NEXT_PUBLIC_THEGRAPH_API_KEY}`,
       },
       body: JSON.stringify({
         query: `

@@ -6,7 +6,7 @@ const client = new Client({
   url: 'https://api.studio.thegraph.com/query/68573/arb_proxy/version/latest',
   fetchOptions: {
     headers: {
-      Authorization: `Bearer ${process.env.THEGRAPH_API_KEY}`,
+      Authorization: `Bearer ${process.env.NEXT_PUBLIC_THEGRAPH_API_KEY}`,
     },
   },
   exchanges: [fetchExchange],

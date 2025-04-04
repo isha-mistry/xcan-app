@@ -154,7 +154,7 @@ function SpecificDelegate({ props }: { props: Type }) {
     url: daoConfigs[props.daoDelegates]?.delegateChangedsUrl || "",
     fetchOptions: {
       headers: {
-        Authorization: `Bearer ${process.env.THEGRAPH_API_KEY}`,
+        Authorization: `Bearer ${process.env.NEXT_PUBLIC_THEGRAPH_API_KEY}`,
       },
     },
     exchanges: [cacheExchange, fetchExchange],
@@ -299,7 +299,7 @@ function SpecificDelegate({ props }: { props: Type }) {
           url: currentDAO.delegateChangedsUrl,
           fetchOptions: {
             headers: {
-              Authorization: `Bearer ${process.env.THEGRAPH_API_KEY}`,
+              Authorization: `Bearer ${process.env.NEXT_PUBLIC_THEGRAPH_API_KEY}`,
             },
           },
           exchanges: [cacheExchange, fetchExchange],
