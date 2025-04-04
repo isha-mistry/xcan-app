@@ -271,7 +271,7 @@ useEffect(() => {
                   ? "text-[#0500FF] font-semibold bg-[#f5f5f5]"
                   : "text-[#3E3D3D] bg-white"
               }`}
-              onClick={() => handleNavigation('ongoing', 'Office Hours Navigation', 'Live Tab Clicked', 'Live')}
+              onClick={() => handleNavigation(path + '?hours=ongoing', 'Office Hours Navigation', 'Live Tab Clicked', 'Live')}
             >
               <Clock size={16} className="drop-shadow-lg" />
               Live

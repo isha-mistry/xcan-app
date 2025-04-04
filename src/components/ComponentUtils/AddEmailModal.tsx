@@ -3,6 +3,7 @@ import { MdCancel } from "react-icons/md";
 import NotifyMe from "@/assets/images/NotifyMe.png";
 import Image from "next/image";
 import { ThreeDots } from "react-loader-spinner";
+import toast from "react-hot-toast";
 
 function AddEmailModal({
   addingEmail,
@@ -11,7 +12,7 @@ function AddEmailModal({
   mailId,
   isValidEmail,
   onEmailChange,
-   onSubmit,
+  onSubmit,
 }: {
   addingEmail?: undefined | boolean;
   isOpen?: Boolean | undefined;
@@ -21,6 +22,31 @@ function AddEmailModal({
   onEmailChange: (email: string) => void;
   onSubmit: () => void;
 }) {
+  const [emailError, setEmailError] = useState(false);
+
+  const validateEmail = (email: string) => {
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}(\.[a-zA-Z]{2,})?$/;
+    return emailRegex.test(email);
+  };
+
+  const handleEmailChange = (email: string) => {
+    onEmailChange(email);
+    if (email) {
+      const isValid = validateEmail(email);
+      setEmailError(!isValid);
+    } else {
+      setEmailError(false);
+    }
+  };
+
+  const handleSubmit = () => {
+    if (mailId && !validateEmail(mailId)) {
+      toast.error("Please enter a valid email address");
+      return;
+    }
+    onSubmit();
+  };
+
   useEffect(() => {
     // Lock scrolling when the modal is open
     if (isOpen) {
@@ -71,23 +97,33 @@ function AddEmailModal({
                 </div>
                 <div className="flex flex-col items-center w-full">
                   <div className="flex flex-row gap-5 w-full justify-center">
-                    <input
-                      type="text"
-                      value={mailId || ""}
-                      onChange={(e) => onEmailChange(e.target.value)}
-                      placeholder="xyz@gmail.com"
-                      className={`border border-gray-300 rounded-xl ps-3 py-2 text-md w-1/2`}
-                    />
+                    <div className="w-1/2">
+                      <input
+                        type="text"
+                        value={mailId || ""}
+                        onChange={(e) => handleEmailChange(e.target.value)}
+                        placeholder="xyz@gmail.com"
+                        className={`border ${
+                          emailError ? "border-red-500" : "border-gray-300"
+                        } rounded-xl ps-3 py-2 text-md w-full focus:outline-none focus:ring-2 ${
+                          emailError ? "focus:ring-red-500" : "focus:ring-blue-500"
+                        }`}
+                      />
+                      {emailError && (
+                        <p className="text-red-500 text-sm mt-1">
+                          Please enter a valid email address
+                        </p>
+                      )}
+                    </div>
                     <button
-                      onClick={onSubmit}
-                      className="bg-black text-white px-16 py-4 font-semibold rounded-full hover:bg-gray-900"
-                      disabled={addingEmail}
+                      onClick={handleSubmit}
+                      className="bg-black text-white px-16 py-4 font-semibold rounded-full hover:bg-gray-900 disabled:opacity-50 disabled:cursor-not-allowed"
+                      disabled={addingEmail || emailError}
                     >
                       {addingEmail ? (
                         <ThreeDots
                           visible={true}
                           height="24"
-                          // width="70"
                           color="#ffffff"
                           radius="9"
                           ariaLabel="three-dots-loading"
@@ -99,12 +135,6 @@ function AddEmailModal({
                       )}
                     </button>
                   </div>
-                  {/* {!isValidEmail && (
-                    <p className="text-red-500 text-sm mt-1">
-                      Invalid email format
-                    </p>
-                  )} */}
-
                   <div className="text-blue-shade-100 text-xs italic mt-4">
                     You can also add your email address later from your profile.
                     Cancel or submit email to continue your scheduling.

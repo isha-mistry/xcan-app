@@ -705,8 +705,9 @@ function ScheduledUserSessions({ daoName }: { daoName: string }) {
               type="date"
               value={selectedDate}
               onChange={(e) => setSelectedDate(e.target.value)}
-              className="border border-gray-300 rounded px-3 py-2 mt-1 w-full cursor-pointer"
+              className="border border-gray-300 rounded px-3 py-2 mt-1 w-full cursor-pointer hover:border-gray-300 focus:border-gray-300 focus:ring-1 focus:ring-gray-300 outline-none transition-colors duration-200 [&::-webkit-calendar-picker-indicator]:cursor-pointer"
               min={formattedDate}
+              onClick={(e) => e.currentTarget.showPicker()}
             />
           </div>
 
