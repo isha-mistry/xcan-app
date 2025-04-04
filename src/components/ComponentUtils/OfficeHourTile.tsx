@@ -310,7 +310,7 @@ const OfficeHourTile = ({
             </div>
             <div className={`absolute top-2 left-2 bg-black rounded-full`}>
               <Image
-                src={daoConfigs[data.dao_name.toLowerCase()].logo}
+                src={daoConfigs[data.dao_name.toLowerCase()]?.logo}
                 alt="image"
                 width={100}
                 height={100}
@@ -342,7 +342,7 @@ const OfficeHourTile = ({
                 <div className=" flex items-center ">
                   <div>
                     <Image
-                      src={daoConfigs[data.dao_name.toLowerCase()].logo}
+                      src={daoConfigs[data.dao_name.toLowerCase()]?.logo}
                       alt="image"
                       width={100}
                       height={100}
