@@ -749,21 +749,17 @@ console.log(newProposals, "newProposals")
 
   return (
     <>
-      {/* {showAlert && !isOptimism && (
+      {showAlert && dao_name !== "letsgrowdao" && (
         <Alert
           message={
             <>
-            ⚠️ <b>Important Notice:</b> The statuses <b>&quot;Closed&quot;</b> and{" "}
-            <b>&quot;Succeeded&quot;</b> displayed for Proposals 2 & 3 are incorrect. 🛠️
-            Voting has been extended and remains open. ✅ We are actively
-            working to fix this issue. Please check back later to cast your
-            vote! 🗳️
+            ⚠️ <b>Important Notice:</b> We are actively working on fetching the data from the Subgraph. Thank you for your patience!
           </>
           }
           type="error"
           onClose={handleCloseAlert}
         />
-      )} */}
+      )}
       <div className="rounded-[2rem] mt-4">
         {displayedProposals.map((proposal: Proposal, index: number) => {
           const calculatedProposalTiming = proposalTiming
