@@ -44,6 +44,8 @@ import {
   DELEGATE_CHANGED_QUERY,
   GET_LATEST_DELEGATE_VOTES_CHANGED,
   op_client,
+  DELEGATE_QUERY,
+  letsgrow_client,
 } from "@/config/staticDataUtils";
 // import { getEnsNameOfUser } from "../ConnectWallet/ENSResolver";
 import DelegateTileModal from "../ComponentUtils/DelegateTileModal";
@@ -147,12 +149,28 @@ function SpecificDelegate({ props }: { props: Type }) {
   const [isFromDatabase, setFromDatabase] = useState(false);
   const [errorOccurred, setErrorOccurred] = useState(false);
   const [avatar, setAvatar] = useState("");
-
+    const dao_name = path.split("/").filter(Boolean)[0] || "";
+  const client = createClient({
+    url: daoConfigs[props.daoDelegates]?.delegateChangedsUrl || "",
+    fetchOptions: {
+      headers: {
+        Authorization: `Bearer ${process.env.THEGRAPH_API_KEY}`,
+      },
+    },
+    exchanges: [cacheExchange, fetchExchange],
+  });
   const pushToGTM = (eventData: GTMEvent) => {
     if (typeof window !== "undefined" && window.dataLayer) {
       window.dataLayer.push(eventData);
     }
   };
+  const handlePastVoteClick =()=>{
+    if(dao_name !== 'letsgrowdao'){
+      router.push(path + "?active=pastVotes");
+    }else{
+      toast("Coming Soon! 🚀");
+    }
+  }
 
   const handleCopy = (addr: string) => {
     copy(addr);
@@ -165,7 +183,7 @@ function SpecificDelegate({ props }: { props: Type }) {
 
   const { data: accountBalance }: any = useReadContract({
     abi: dao_abi.abi,
-    address: daoConfigs[props.daoDelegates].chainAddress as `0x${string}`,
+    address: daoConfigs[props.daoDelegates].tokenContractAddress as `0x${string}`,
     functionName: "balanceOf",
     // args:['0x6eda5acaff7f5964e1ecc3fd61c62570c186ca0c' as Address]
     args: [walletAddress as Address],
@@ -186,8 +204,10 @@ function SpecificDelegate({ props }: { props: Type }) {
     if (selected) {
       setSelectedTab(selected.name);
       setIsDropdownOpen(false);
-      if (tabValue === "pastVotes") {
+      if (tabValue === "pastVotes" && dao_name !== "letsgrowdao") {
         router.push(path + "?active=pastVotes");
+      }else if(tabValue === "pastVotes" && dao_name === "letsgrowdao"){
+        toast("Coming Soon! 🚀");
       } else if (tabValue === "sessions") {
         router.push(path + "?active=delegatesSession&session=book");
       } else if (tabValue === "officeHours") {
@@ -277,6 +297,11 @@ function SpecificDelegate({ props }: { props: Type }) {
 
         const client = createClient({
           url: currentDAO.delegateChangedsUrl,
+          fetchOptions: {
+            headers: {
+              Authorization: `Bearer ${process.env.THEGRAPH_API_KEY}`,
+            },
+          },
           exchanges: [cacheExchange, fetchExchange],
         });
 
@@ -394,37 +419,21 @@ function SpecificDelegate({ props }: { props: Type }) {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const apiKey = process.env.NEXT_PUBLIC_TALLY_API_KEY;
-        if (!apiKey) {
-          throw new Error("API key is missing");
-        }
-        fetch("https://api.tally.xyz/query", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Api-Key": apiKey,
-          },
-          body: JSON.stringify({
-            query: totalCount,
-            variables: variables,
-          }),
-        })
-          .then((result) => result.json())
-          .then((finalCounting) => {
-            setVotesCount(finalCounting.data.delegate.votesCount);
-            setDelegatorsCount(finalCounting.data.delegate.delegatorsCount);
-          })
-          .catch((error) => {
-            console.error("Error:", error);
-          });
-
-        const data = await op_client
+        let data: any;
+        if(props.daoDelegates==="letsgrowdao"){
+          
+          data= await client.query(DELEGATE_QUERY,{id:props.individualDelegate.toString()}).toPromise();
+          console.log(client,data,DELEGATE_QUERY,props.individualDelegate.toString());
+          setVotingPower(data.data.delegates[0].delegatedBalance ? data.data.delegates[0].delegatedBalance : 0);
+        }else{
+         data = await client
           .query(GET_LATEST_DELEGATE_VOTES_CHANGED, {
             delegate: props.individualDelegate.toString(),
           })
           .toPromise();
-
-        setVotingPower(data.data.delegateVotesChangeds[0].newBalance);
+          console.log(data);
+          setVotingPower(data.data.delegates[0].latestBalance ? data.data.delegates[0].latestBalance : 0);
+        }
       } catch (error) {
         console.error("Error fetching data", error);
       }
@@ -544,7 +553,7 @@ function SpecificDelegate({ props }: { props: Type }) {
       //   const address1 = addr[0];
       let currentDAO=daoConfigs[props.daoDelegates];
       let delegateTxAddr = "";
-      const contractAddress = currentDAO?currentDAO.chainAddress:"";
+      const contractAddress = currentDAO?currentDAO.tokenContractAddress:"";
         // props.daoDelegates === "optimism"
         //   ? "0x4200000000000000000000000000000000000042"
         //   : props.daoDelegates === "arbitrum"
@@ -589,7 +598,7 @@ function SpecificDelegate({ props }: { props: Type }) {
     } else if (number >= 1000) {
       return (number / 1000).toFixed(2) + "k";
     } else {
-      return number;
+      return number.toFixed(2);
     }
   };
 
@@ -845,11 +854,11 @@ function SpecificDelegate({ props }: { props: Type }) {
   //     return;
   //   }
 
-  //   let chainAddress;
+  //   let tokenContractAddress;
   //   if (props.daoDelegates === "optimism") {
-  //     chainAddress = "0x4200000000000000000000000000000000000042";
+  //     tokenContractAddress = "0x4200000000000000000000000000000000000042";
   //   } else if (props.daoDelegates === "arbitrum") {
-  //     chainAddress = "0x912CE59144191C1204E64559FE8253a0e49E6548";
+  //     tokenContractAddress = "0x912CE59144191C1204E64559FE8253a0e49E6548";
   //   } else {
   //     return;
   //   }
@@ -868,7 +877,7 @@ function SpecificDelegate({ props }: { props: Type }) {
   //       try {
   //         setDelegatingToAddr(true);
   //         const delegateTx = await walletClient.writeContract({
-  //           address: chainAddress,
+  //           address: tokenContractAddress,
   //           chain: props.daoDelegates === "arbitrum" ? arbitrum : optimism,
   //           abi: dao_abi.abi,
   //           functionName: "delegate",
@@ -912,8 +921,8 @@ function SpecificDelegate({ props }: { props: Type }) {
       return;
     }
 
-    const chainAddress = getChainAddress(chain?.name);
-    if (!chainAddress) {
+    const tokenContractAddress = getChainAddress(chain?.name);
+    if (!tokenContractAddress) {
       toast.error("Invalid chain address,try again!");
       pushToGTM({
         event: "delegation_attempt",
@@ -993,7 +1002,7 @@ function SpecificDelegate({ props }: { props: Type }) {
 
       const signer = await provider.getSigner();
 
-      const contract = new Contract(chainAddress, dao_abi.abi, signer);
+      const contract = new Contract(tokenContractAddress, dao_abi.abi, signer);
 
       const tx = await contract.delegate(to);
       await tx.wait();
@@ -1081,124 +1090,124 @@ function SpecificDelegate({ props }: { props: Type }) {
     }
   };
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        // Fetch data from your backend API to check if the address exists
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     try {
+  //       // Fetch data from your backend API to check if the address exists
 
-        // const dbResponse = await axios.get(`/api/profile/${address}`);
+  //       // const dbResponse = await axios.get(`/api/profile/${address}`);
 
-        const token = await getAccessToken();
-        const myHeaders: HeadersInit = {
-          "Content-Type": "application/json",
-          ...(walletAddress && {
-            "x-wallet-address": walletAddress,
-            Authorization: `Bearer ${token}`,
-          }),
-        };
+  //       const token = await getAccessToken();
+  //       const myHeaders: HeadersInit = {
+  //         "Content-Type": "application/json",
+  //         ...(walletAddress && {
+  //           "x-wallet-address": walletAddress,
+  //           Authorization: `Bearer ${token}`,
+  //         }),
+  //       };
 
-        // const raw = JSON.stringify({
-        //   address: props.individualDelegate,
-        //   // daoName: props.daoDelegates,
-        // });
+  //       // const raw = JSON.stringify({
+  //       //   address: props.individualDelegate,
+  //       //   // daoName: props.daoDelegates,
+  //       // });
 
-        const requestOptions: any = {
-          method: "GET",
-          headers: myHeaders,
-          // body: raw,
-          redirect: "follow",
-        };
-        const res = await fetchApi(
-          `/profile/${props.individualDelegate}`,
-          requestOptions
-        );
+  //       const requestOptions: any = {
+  //         method: "GET",
+  //         headers: myHeaders,
+  //         // body: raw,
+  //         redirect: "follow",
+  //       };
+  //       const res = await fetchApi(
+  //         `/profile/${props.individualDelegate}`,
+  //         requestOptions
+  //       );
 
-        const dbResponse = await res.json();
+  //       const dbResponse = await res.json();
 
-        if (
-          dbResponse &&
-          Array.isArray(dbResponse.data) &&
-          dbResponse.data.length > 0
-        ) {
-          // Iterate over each item in the response data array
-          for (const item of dbResponse.data) {
-            // Check if address and daoName match
+  //       if (
+  //         dbResponse &&
+  //         Array.isArray(dbResponse.data) &&
+  //         dbResponse.data.length > 0
+  //       ) {
+  //         // Iterate over each item in the response data array
+  //         for (const item of dbResponse.data) {
+  //           // Check if address and daoName match
 
-            // if (
-            //   item.daoName === dao &&
-            //   item.address === props.individualDelegate
-            // ) {
-            // Data found in the database, set the state accordingly
-            // setResponseFromDB(true);
+  //           // if (
+  //           //   item.daoName === dao &&
+  //           //   item.address === props.individualDelegate
+  //           // ) {
+  //           // Data found in the database, set the state accordingly
+  //           // setResponseFromDB(true);
 
-            if (item.image) {
-              setFromDatabase(true);
-              setDisplayImage(item.image);
-            }
+  //           if (item.image) {
+  //             setFromDatabase(true);
+  //             setDisplayImage(item.image);
+  //           }
 
-            setDescription(item.description);
-            setAttestationStatistics(item?.meetingRecords ?? null);
-            if (item.isEmailVisible) {
-              setIsEmailVisible(true);
-              setEmailId(item.emailId);
-            }
-            const matchingNetwork = item.networks?.find(
-              (network: any) => network.dao_name === props.daoDelegates
-            );
+  //           setDescription(item.description);
+  //           setAttestationStatistics(item?.meetingRecords ?? null);
+  //           if (item.isEmailVisible) {
+  //             setIsEmailVisible(true);
+  //             setEmailId(item.emailId);
+  //           }
+  //           const matchingNetwork = item.networks?.find(
+  //             (network: any) => network.dao_name === props.daoDelegates
+  //           );
 
-            // If a matching network is found, set the discourse ID
-            if (matchingNetwork) {
-              setDescription(matchingNetwork.description);
-            } else {
-              // Handle the case where no matching network is found
-              console.log(
-                "No matching network found for the specified dao_name"
-              );
-            }
-            setDisplayName(item.displayName);
+  //           // If a matching network is found, set the discourse ID
+  //           if (matchingNetwork) {
+  //             setDescription(matchingNetwork.description);
+  //           } else {
+  //             // Handle the case where no matching network is found
+  //             console.log(
+  //               "No matching network found for the specified dao_name"
+  //             );
+  //           }
+  //           setDisplayName(item.displayName);
 
-            if (!authenticated) {
-              setIsFollowing(false);
-              isNotification(false);
-              await fetchDelegateData();
-            } else {
-              // await updateFollowerState();
-              // await setFollowerscount();
-              await fetchDelegateData();
-              console.log("Followers count!", followers);
-              setFollowerCountLoading(false);
-              setIsFollowStatusLoading(false);
-            }
-            setSocials({
-              twitter: item.socialHandles.twitter,
-              discord: item.socialHandles.discord,
-              discourse: item.socialHandles.discourse,
-              github: item.socialHandles.github,
-            });
-            // Exit the loop since we found a match
-            //   break;
-            // }
-          }
-        } else {
-          console.log(
-            "Data not found in the database, fetching from third-party API"
-          );
-          const { avatar: fetchedAvatar } = await fetchEnsNameAndAvatar(
-            props.individualDelegate
-          );
-          setDisplayImage(fetchedAvatar ? fetchedAvatar : "");
-          setFollowerCountLoading(false);
-          setIsFollowStatusLoading(false);
-          // Data not found in the database, fetch data from the third-party API
-          // }
-        }
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      }
-    };
+  //           if (!authenticated) {
+  //             setIsFollowing(false);
+  //             isNotification(false);
+  //             await fetchDelegateData();
+  //           } else {
+  //             // await updateFollowerState();
+  //             // await setFollowerscount();
+  //             await fetchDelegateData();
+  //             console.log("Followers count!", followers);
+  //             setFollowerCountLoading(false);
+  //             setIsFollowStatusLoading(false);
+  //           }
+  //           setSocials({
+  //             twitter: item.socialHandles.twitter,
+  //             discord: item.socialHandles.discord,
+  //             discourse: item.socialHandles.discourse,
+  //             github: item.socialHandles.github,
+  //           });
+  //           // Exit the loop since we found a match
+  //           //   break;
+  //           // }
+  //         }
+  //       } else {
+  //         console.log(
+  //           "Data not found in the database, fetching from third-party API"
+  //         );
+  //         const { avatar: fetchedAvatar } = await fetchEnsNameAndAvatar(
+  //           props.individualDelegate
+  //         );
+  //         setDisplayImage(fetchedAvatar ? fetchedAvatar : "");
+  //         setFollowerCountLoading(false);
+  //         setIsFollowStatusLoading(false);
+  //         // Data not found in the database, fetch data from the third-party API
+  //         // }
+  //       }
+  //     } catch (error) {
+  //       console.error("Error fetching data:", error);
+  //     }
+  //   };
 
-    fetchData();
-  }, [props]);
+  //   fetchData();
+  // }, [props]);
 
   useEffect(() => {
     const fetchEnsName = async () => {
@@ -1497,11 +1506,7 @@ function SpecificDelegate({ props }: { props: Type }) {
                       </div>
                       <div className="text-[#4F4F4F] border-[0.5px] border-[#D9D9D9] rounded-md px-3 lg:px-2 xl:px-3 py-1">
                         <span className="text-blue-shade-200 font-semibold">
-                          {props.daoDelegates === "arbitrum"
-                            ? votesCount
-                              ? formatNumber(votesCount / 10 ** 18)
-                              : 0
-                            : votingPower
+                          {votingPower
                             ? formatNumber(votingPower / 10 ** 18)
                             : 0}
                           &nbsp;
@@ -1520,7 +1525,7 @@ function SpecificDelegate({ props }: { props: Type }) {
                     </div>
 
                     <div className="pt-2 flex flex-col xs:flex-row gap-2 w-full">
-                      <button
+                     {props.daoDelegates !== "letsgrowdao"&&( <button
                         className="bg-blue-shade-200 font-bold text-white rounded-full py-[10px] px-6 xs:py-2 xs:px-4 sm:px-6 xs:text-xs sm:text-sm text-sm lg:px-8 lg:py-[10px] w-full xs:w-[112px] md:w-auto"
                         // onClick={() =>
                         //   handleDelegateVotes(`${props.individualDelegate}`)
@@ -1530,7 +1535,7 @@ function SpecificDelegate({ props }: { props: Type }) {
                       >
                         Delegate
                       </button>
-
+)}
                       <div className="flex gap-2 w-full">
                         <button
                           className={`font-bold xs:text-xs sm:text-sm text-sm text-white rounded-full w-full xs:w-[112px] md:w-[128px] h-[40px] lg:py-[10px] py-[10px] xs:py-2 flex justify-center items-center ${
@@ -1701,7 +1706,7 @@ function SpecificDelegate({ props }: { props: Type }) {
                       ? "text-blue-shade-200 font-semibold border-blue-shade-200"
                       : "border-transparent"
                   }`}
-                  onClick={() => router.push(path + "?active=pastVotes")}
+                  onClick={handlePastVoteClick}
                 >
                   Past Votes
                 </button>

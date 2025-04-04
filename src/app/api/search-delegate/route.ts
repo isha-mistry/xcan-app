@@ -4,12 +4,32 @@ export const revalidate = 0;
 
 const op_client = new Client({
     url: 'https://api.studio.thegraph.com/query/68573/op/v0.0.9',
+    fetchOptions: {
+    headers: {
+      Authorization: `Bearer ${process.env.THEGRAPH_API_KEY}`,
+    },
+  },
     exchanges: [cacheExchange, fetchExchange],
 });
 const arb_client = new Client({
     url: 'https://api.studio.thegraph.com/query/68573/arb_token/version/latest',
+    fetchOptions: {
+    headers: {
+      Authorization: `Bearer ${process.env.THEGRAPH_API_KEY}`,
+    },
+  },
     exchanges: [cacheExchange, fetchExchange],
 });
+const letsgrow_client = new Client({
+    url: "https://api.studio.thegraph.com/query/68573/lets_grow_dao_votingtoken/v0.0.2",
+    fetchOptions: {
+    headers: {
+      Authorization: `Bearer ${process.env.THEGRAPH_API_KEY}`,
+    },
+  },
+    exchanges: [cacheExchange, fetchExchange],
+});
+  
 const DELEGATE_QUERY = gql`
 query MyQuery($id: String!) {
   delegates(where:{id: $id}) {
@@ -19,26 +39,33 @@ query MyQuery($id: String!) {
   }
 }
 `;
+const LETSGROW_DELEGATE_QUERY = gql`
+query MyQuery($id: String!) {
+  delegates(where:{id: $id}) {
+    delegatedBalance
+    id
+  }
+}
+`;
 export const GET = async (req: NextRequest) => {
     try {
-        console.log("search delegate")
         const { searchParams } = new URL(req.url);
-        const address = searchParams.get('address')?.toLocaleLowerCase();
+        const address = searchParams.get('address')?.toLowerCase();
         const dao = searchParams.get('dao');
         if (!address || !dao) {
             return NextResponse.json({ error: 'Address and DAO parameters are required.' }, { status: 400 });
         }
         let data;
-        console.log(address,dao)
         if(dao==="optimism"){
          data = await op_client.query(DELEGATE_QUERY,{id:address}).toPromise();
-        }else{
+        }else if(dao==="arbitrum"){
           data = await arb_client.query(DELEGATE_QUERY,{id:address}).toPromise();
-        } 
-        if (!data || !data.data || !data.data.delegates || data.data.delegates.length === 0) {
-            return NextResponse.json({ error: 'Delegate not found.' }, { status: 404 });
+        }else{
+        data= await letsgrow_client.query(LETSGROW_DELEGATE_QUERY,{id:address}).toPromise();
         }
-        console.log(data.data)
+        if (!data?.data?.delegates || data.data.delegates.length === 0) {
+          return NextResponse.json([]);
+         }
         return NextResponse.json(data.data.delegates);
     } catch (e) {
         console.log(e);

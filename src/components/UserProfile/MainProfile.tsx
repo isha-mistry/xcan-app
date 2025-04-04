@@ -42,7 +42,7 @@ import { Oval } from "react-loader-spinner"
 import { useSession } from "next-auth/react";
 import { BASE_URL, LIGHTHOUSE_BASE_API_KEY } from "@/config/constants";
 import { getDaoName } from "@/utils/chainUtils";
-
+import {checkLetsGrowDAODelegateStatus} from "@/utils/checkLetsGrowDAODelegateStatus"
 interface Following {
   follower_address: string;
   isFollowing: boolean;
@@ -65,7 +65,7 @@ function MainProfile() {
   const [karmaDesc, setKarmaDesc] = useState("");
   const [isPageLoading, setIsPageLoading] = useState(true);
   const [selfDelegate, setSelfDelegate] = useState(false);
-  const [daoName, setDaoName] = useState("optimism");
+  const [daoName, setDaoName] = useState("");
   const [attestationStatistics, setAttestationStatistics] =useState<MeetingRecords | null>(null);
   const [isCopied, setIsCopied] = useState(false);
   const [followings, setFollowings] = useState(0);
@@ -96,6 +96,7 @@ function MainProfile() {
     discourse: "",
     github: "",
   });
+  const [isDelegateLoading, setIsDelegateLoading] = useState(true);
   const tabs = [
     { name: "Info", value: "info" },
     ...(selfDelegate ? [{ name: "Past Votes", value: "votes" }] : []),
@@ -186,9 +187,9 @@ function MainProfile() {
         (key) => daoConfigs[key].chainId == currentChainId
       );
 
-      // Ensure daoKey is not undefined before accessing chainAddress
+      // Ensure daoKey is not undefined before accessing tokenContractAddress
       const ContractAddress = daoKey
-        ? daoConfigs[daoKey].chainAddress
+        ? daoConfigs[daoKey].tokenContractAddress
         : undefined;
       if (!ContractAddress) {
         toast.error("Invalid ContractAddress address for current network");
@@ -727,14 +728,43 @@ function MainProfile() {
       setSelectedTab(tab?.name || "Info");
     }
   }, [searchParams, tabs]);
+useEffect(() => {
+  // Check the `dao` query parameter from the URL
+  const daoParam = searchParams.get("dao");
+  if (daoParam && Object.keys(daoConfigs).includes(daoParam.toLowerCase())) {
+    setDaoName(daoParam.toLowerCase());
+    return;
+  }
 
-  useEffect(() => {
-    const daoKey = Object.keys(daoConfigs).find(
-      (key) => daoConfigs[key].chainName === chain?.name
-    );
-    setDaoName(daoKey ? daoKey : "");
-  }, [chain, chain?.name]);
+  // If no DAO is found in the URL, determine it by chain
+  const daoKey = Object.keys(daoConfigs).find(
+    (key) => daoConfigs[key].chainName === chain?.name
+  );
 
+  
+  setDaoName(daoKey || "");
+}, [chain, chain?.name, path, searchParams.toString()]);  // 👈 Added `router.asPath` to trigger updates
+
+  
+  // useEffect(() => {
+  //   if (!chain?.name) return;
+  
+  //   const matchingDaos = Object.entries(daoConfigs)
+  //     .filter(([_, dao]) => dao.chainName === chain.name);
+  
+  //   if (matchingDaos.length === 0) {
+  //     setDaoName("");
+  //     return;
+  //   }
+  // console.log("matchingDaos", matchingDaos);
+  //   // Pick the DAO with the lowest chainId (ensures consistency)
+  //   const selectedDao = matchingDaos.reduce((prev, current) =>
+  //     prev[1].chainId < current[1].chainId ? prev : current
+  //   );
+  
+  //   setDaoName(selectedDao[0]); // Set the key of the selected DAO
+  // }, [chain, chain?.name]);
+  
   useEffect(() => {
     if (isConnected && authenticated && path.includes("profile/undefined")) {
       const newPath = path.includes("profile/undefined")
@@ -763,12 +793,31 @@ function MainProfile() {
   useEffect(() => {
     const checkDelegateStatus = async () => {
       if (!walletAddress || !chain) return;
+      setIsDelegateLoading(true);
       try {
+        // Get the current chain name from the URL or selected DAO
+        const currentChainName = chain.name.toLowerCase();
+        
         const daoKey = Object.keys(daoConfigs).find(
-          (key) => daoConfigs[key].chainName === chain.name
+        // Find the daoKey that matches the current chain name
+          (key) => daoConfigs[key].chainName.toLowerCase() === currentChainName
         );
 
-        const contractAddress = daoKey ? daoConfigs[daoKey].chainAddress : null;
+        if (!daoKey) {
+          console.error("No matching DAO found for chain:", currentChainName);
+          setIsDelegateLoading(false);
+          return;
+        }
+
+        
+        if (daoName === "letsgrowdao") {
+          const letsgrowdaoDelegate = await checkLetsGrowDAODelegateStatus(walletAddress);
+          setSelfDelegate(letsgrowdaoDelegate);
+          setIsDelegateLoading(false);
+          return;
+        }
+       
+        const contractAddress = daoConfigs[daoKey].tokenContractAddress;
         const network = daoKey;
 
         const predefinedChains: Record<string, any> = {
@@ -779,7 +828,6 @@ function MainProfile() {
 
         const chainMappings: Record<string, any> = Object.fromEntries(
           Object.entries(daoConfigs).map(([key, config]) => {
-            // Use predefined viem chains if available, otherwise define it dynamically
             return [
               key,
               predefinedChains[key] || {
@@ -791,7 +839,7 @@ function MainProfile() {
                   symbol: config.tokenSymbol,
                   decimals: 18,
                 },
-                rpcUrls: { default: { http: [`https://rpc.${key}.xyz`] } }, // Update with actual RPC URL
+                rpcUrls: { default: { http: [`https://rpc.${key}.xyz`] } },
                 blockExplorers: {
                   default: {
                     name: `${config.name} Explorer`,
@@ -802,12 +850,14 @@ function MainProfile() {
             ];
           })
         );
-        const viemChain = daoKey ? chainMappings[daoKey] : null;
+
+        const viemChain = chainMappings[daoKey];
 
         const public_client = createPublicClient({
-          chain: viemChain || optimism,
+          chain: viemChain,
           transport: http(),
         });
+
 
         const delegateTx = (await public_client.readContract({
           address: contractAddress as `0x${string}`,
@@ -816,23 +866,28 @@ function MainProfile() {
           args: [walletAddress],
         })) as string;
 
+
         const isSelfDelegate =
-          delegateTx.toLowerCase() !==
-            "0x0000000000000000000000000000000000000000" &&
           delegateTx.toLowerCase() === walletAddress.toLowerCase();
         setSelfDelegate(isSelfDelegate);
       } catch (e) {
-        console.log("error in function: ", e);
+        console.error("Error in checkDelegateStatus:", e);
         setSelfDelegate(false);
+      } finally {
+        setIsDelegateLoading(false);
       }
     };
-    checkDelegateStatus();
-  }, [walletAddress, chain]);
+
+    // Add a small delay to ensure chain information is updated
+    const timeoutId = setTimeout(checkDelegateStatus, 1000);
+    return () => clearTimeout(timeoutId);
+  }, [walletAddress, chain, daoName]);
 
   useEffect(() => {
     if (!walletAddress) return;
     const fetchData = async () => {
       try {
+        setIsDelegateLoading(true);
         const token = await getAccessToken();
 
         const daoKey = Object.keys(daoConfigs).find(
@@ -861,28 +916,32 @@ function MainProfile() {
         const res = await fetchApi(`/profile/${walletAddress}`, requestOptions);
 
         const dbResponse = await res.json();
+        const delegateResponse = await fetch(
+          `/api/search-delegate?address=${walletAddress}&dao=${daoName}`
+        );
+        const details = await delegateResponse.json();
+        setIsDelegate(Array.isArray(details) && details.length > 0);
+        // let karmaDetails;
+        setIsDelegateLoading(false);
+        // try {
+        //   const karmaRes = await fetch(
+        //     `https://api.karmahq.xyz/api/dao/find-delegate?dao=${dao}&user=${walletAddress}`
+        //   );
+        //   karmaDetails = await karmaRes.json();
 
-        let karmaDetails;
-
-        try {
-          const karmaRes = await fetch(
-            `https://api.karmahq.xyz/api/dao/find-delegate?dao=${dao}&user=${walletAddress}`
-          );
-          karmaDetails = await karmaRes.json();
-
-          if (karmaDetails.length > 0) {
-            setKarmaEns(karmaDetails?.data?.delegate?.ensName);
-            setKarmaImage(karmaDetails?.data?.delegate?.profilePicture);
-            setKarmaDesc(
-              karmaDetails?.data?.delegate?.delegatePitch?.customFields[1]
-                ?.value
-            );
-          }
-          setIsDelegate(true);
-        } catch (e) {
-          console.log("error: ", e);
-          setIsDelegate(false);
-        }
+        //   if (karmaDetails.length > 0) {
+        //     setKarmaEns(karmaDetails?.data?.delegate?.ensName);
+        //     setKarmaImage(karmaDetails?.data?.delegate?.profilePicture);
+        //     setKarmaDesc(
+        //       karmaDetails?.data?.delegate?.delegatePitch?.customFields[1]
+        //         ?.value
+        //     );
+        //   }
+        //   setIsDelegate(true);
+        // } catch (e) {
+        //   console.log("error: ", e);
+        //   setIsDelegate(false);
+        // }
 
         if (dbResponse.data.length > 0) {
           setIsPageLoading(false);
@@ -925,14 +984,14 @@ function MainProfile() {
             await handleUpdateFollowings("all", 0, 1);
           }
         } else {
-          setUserData({
-            displayName: karmaDetails.data.delegate.ensName,
-            discord: karmaDetails.data.delegate.discordHandle,
-            discourse: karmaDetails.data.delegate.discourseHandle,
-            twitter: karmaDetails.data.delegate.twitterHandle,
-            github: karmaDetails.data.delegate.githubHandle,
-            displayImage: karmaDetails.data.delegate.profilePicture,
-          });
+          // setUserData({
+          //   displayName: karmaDetails.data.delegate.ensName,
+          //   discord: karmaDetails.data.delegate.discordHandle,
+          //   discourse: karmaDetails.data.delegate.discourseHandle,
+          //   twitter: karmaDetails.data.delegate.twitterHandle,
+          //   github: karmaDetails.data.delegate.githubHandle,
+          //   displayImage: karmaDetails.data.delegate.profilePicture,
+          // });
           await handleUpdateFollowings(daoName, 0, 1);
           setIsPageLoading(false);
         }
@@ -1032,7 +1091,7 @@ function MainProfile() {
                     <Link
                       href={
                         daoName
-                          ? `${daoConfigs[daoName].discourseUrl}/${userData.discourse}`
+                          ? `${daoConfigs[daoName]?.discourseUrl}/${userData.discourse}`
                           : ""
                       }
                       className={`border-[0.5px] border-[#8E8E8E] rounded-full h-fit p-1  ${
@@ -1167,7 +1226,7 @@ function MainProfile() {
                 {selfDelegate === false ? (
                   <div className="pt-2 flex flex-col 2.3sm:flex-row gap-2 w-full items-center">
                     <div className=" flex flex-col xs:flex-row gap-2 w-full xs:w-auto items-center">
-                      <button
+                      {daoName !== "letsgrowdao" &&(<button
                         className="bg-blue-shade-200 font-bold text-white rounded-full py-[10px] px-4 xs:py-[9px] md:py-2.5 xs:px-4 sm:px-6 xs:text-xs sm:text-sm md:text-base lg:px-8 lg:py-[10px] w-full xs:w-auto h-fit"
                         onClick={() => handleDelegateVotes(`${walletAddress}`)}
                         disabled={isspin}
@@ -1179,7 +1238,7 @@ function MainProfile() {
                         ) : (
                           "Become Delegate"
                         )}
-                      </button>
+                      </button>)}
 
                       <button
                         className="bg-blue-shade-200 font-bold text-white rounded-full px-6 py-[10px] xs:py-2 md:py-2.5 md:text-base xs:text-xs sm:text-sm lg:px-8 lg:py-[10px] w-full xs:w-[160px] lg:w-[185px] flex items-center justify-center h-fit"
@@ -1283,7 +1342,7 @@ function MainProfile() {
                     ? "text-blue-shade-200 font-semibold border-b-2 border-blue-shade-200"
                     : "border-transparent"
                 }`}
-                onClick={() => router.push(path + "?active=info")}
+                onClick={() => router.push(path + "?active=info&dao=" + daoName)}
               >
                 Info
               </button>
@@ -1294,7 +1353,7 @@ function MainProfile() {
                       ? "text-blue-shade-200 font-semibold border-b-2 border-blue-shade-200"
                       : "border-transparent"
                   }`}
-                  onClick={() => router.push(path + "?active=votes")}
+                  onClick={() => router.push(path + "?active=votes&dao=" + daoName)}
                 >
                   Past Votes
                 </button>
@@ -1310,7 +1369,7 @@ function MainProfile() {
                     path +
                       `?active=sessions&session=${
                         selfDelegate ? "schedule" : "attending"
-                      }`
+                      }&dao=${daoName}`
                   )
                 }
               >
@@ -1323,7 +1382,7 @@ function MainProfile() {
                     : "border-transparent"
                 }`}
                 onClick={() =>
-                  router.push(path + "?active=officeHours&hours=schedule")
+                  router.push(path + "?active=officeHours&hours=schedule&dao=" + daoName)
                 }
               >
                 Office Hours
@@ -1336,7 +1395,7 @@ function MainProfile() {
                       ? "text-blue-shade-200 font-semibold border-b-2 border-blue-shade-200"
                       : "border-transparent"
                   }`}
-                  onClick={() => router.push(path + "?active=instant-meet")}
+                  onClick={() => router.push(path + "?active=instant-meet&dao=" + daoName)}
                 >
                   Instant Meet
                 </button>
@@ -1344,6 +1403,7 @@ function MainProfile() {
             </div>
 
             <div>
+              {/* {console.log("loading states",selfDelegate,isDelegate,isDelegateLoading)  } */}
               {searchParams.get("active") === "info" ? (
                 <div className="pt-2 xs:pt-4 sm:pt-6 px-4 md:px-6 lg:px-14">
                   <UserInfo
@@ -1356,10 +1416,44 @@ function MainProfile() {
                     }
                     daoName={daoName}
                     attestationCounts={attestationStatistics}
+                    isLoadingStatus={isDelegateLoading}
                   />
                 </div>
-              ) : (
-                ""
+              ) : (""
+                // <div className="pt-2 xs:pt-4 sm:pt-6 px-4 md:px-6 lg:px-14">
+                //   {/* Onchain/Offchain buttons skeleton */}
+                //   <div className="flex gap-2 0.5xs:gap-4 rounded-xl text-sm flex-wrap">
+                //     <div className="h-10 w-24 bg-gray-100 rounded-full animate-pulse"></div>
+                //     <div className="h-10 w-24 bg-gray-100 rounded-full animate-pulse"></div>
+                //   </div>
+
+                //   {/* Stats grid skeleton */}
+                //   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
+                //     {[1, 2, 3, 4].map((i) => (
+                //       <div key={i} className="bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow duration-200">
+                //         <div className="flex flex-col items-center justify-center">
+                //           <div className="h-8 w-16 bg-gray-100 rounded animate-pulse mb-2"></div>
+                //           <div className="h-4 w-24 bg-gray-100 rounded animate-pulse"></div>
+                //         </div>
+                //       </div>
+                //     ))}
+                //   </div>
+
+                //   {/* Description section skeleton */}
+                //   <div className="mt-7">
+                //     <div className="bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow duration-200">
+                //       <div className="space-y-4">
+                //         <div className="h-4 w-3/4 bg-gray-100 rounded animate-pulse"></div>
+                //         <div className="space-y-3">
+                //           <div className="h-4 w-full bg-gray-100 rounded animate-pulse"></div>
+                //           <div className="h-4 w-5/6 bg-gray-100 rounded animate-pulse"></div>
+                //           <div className="h-4 w-4/6 bg-gray-100 rounded animate-pulse"></div>
+                //           <div className="h-4 w-3/4 bg-gray-100 rounded animate-pulse"></div>
+                //         </div>
+                //       </div>
+                //     </div>
+                //   </div>
+                // </div>
               )}
 
               {selfDelegate === true &&

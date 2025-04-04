@@ -20,6 +20,7 @@ interface userInfoProps {
   onSaveButtonClick: (description?: string) => Promise<void>;
   daoName: string;
   attestationCounts: MeetingRecords | null;
+  isLoadingStatus?: boolean;
 }
 
 const StyledMDEditorWrapper = styled.div`
@@ -121,13 +122,48 @@ const MDEditor = dynamic(
   { ssr: false }
 );
 
+const UserInfoSkeleton = () => {
+  return (
+    <div className="pt-4">
+      {/* Toggle buttons skeleton */}
+      <div className="flex gap-2 0.5xs:gap-4 rounded-xl text-sm flex-wrap mb-4">
+        <div className="py-2 px-4 w-24 h-10 bg-gray-200 animate-pulse rounded-full"></div>
+        <div className="py-2 px-4 w-24 h-10 bg-gray-200 animate-pulse rounded-full"></div>
+      </div>
+
+      {/* Stats grid skeleton */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {[...Array(4)].map((_, index) => (
+          <div key={index} className="bg-white p-4 rounded-xl shadow-md">
+            <div className="h-8 w-16 bg-gray-200 animate-pulse rounded-full mb-2"></div>
+            <div className="h-4 w-32 bg-gray-200 animate-pulse rounded-full"></div>
+          </div>
+        ))}
+      </div>
+
+      {/* Description editor skeleton */}
+      <div className="mt-7 mx-4 xs:mx-0 sm:mx-4 md:mx-16 lg:mx-0">
+        <div className="bg-white p-6 rounded-xl shadow-md">
+          <div className="space-y-3">
+            <div className="h-4 w-3/4 bg-gray-200 animate-pulse rounded-full"></div>
+            <div className="h-4 w-1/2 bg-gray-200 animate-pulse rounded-full"></div>
+            <div className="h-4 w-2/3 bg-gray-200 animate-pulse rounded-full"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 function UserInfo({
   karmaDesc,
   description,
   isDelegate,
   isSelfDelegate,
   onSaveButtonClick,
+  daoName,
   attestationCounts,
+  isLoadingStatus,
 }: userInfoProps) {
   const { address } = useAccount();
   const { chain } = useAccount();
@@ -146,18 +182,18 @@ function UserInfo({
   const [activeButton, setActiveButton] = useState("onchain");
   const [originalDesc, setOriginalDesc] = useState(description || karmaDesc);
   const [isMobile, setIsMobile] = useState(false);
-
+  console.log(isLoadingStatus);
   const router = useRouter();
   const blocks = [
     {
       number: sessionAttendCount,
       desc: "Sessions attended",
-      ref: `/profile/${walletAddress}}?active=sessions&session=attended`,
+      ref: `/profile/${walletAddress}}?active=sessions&session=attended&dao=${daoName}`,
     },
     {
       number: officehoursAttendCount,
       desc: "Office Hours attended",
-      ref: `/profile/${walletAddress}}?active=officeHours&hours=attended`,
+      ref: `/profile/${walletAddress}}?active=officeHours&hours=attended&dao=${daoName}`,
     },
   ];
   const getDaoNameByChain = (chainName: string): string | undefined => {
@@ -262,108 +298,114 @@ function UserInfo({
       fetchAttestation("offchain");
     }
   }, [activeButton, walletAddress, address, chain]);
-
   if (isDelegate === true || isSelfDelegate === true) {
     blocks.unshift(
       {
         number: sessionHostCount,
         desc: "Sessions hosted",
-        ref: `/profile/${walletAddress}}?active=sessions&session=hosted`,
+        ref: `/profile/${walletAddress}}?active=sessions&session=hosted&dao=${daoName}`,
       },
       {
         number: officehoursHostCount,
         desc: "Office Hours hosted",
-        ref: `/profile/${walletAddress}}?active=officeHours&hours=attended`,
+        ref: `/profile/${walletAddress}}?active=officeHours&hours=attended&dao=${daoName}`,
       }
     );
   }
+
   return (
-    <div className="pt-4">
-      <div className="flex gap-2 0.5xs:gap-4 rounded-xl text-sm flex-wrap">
-        <button
-          className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md ${
-            activeButton === "onchain"
-              ? "text-[#0500FF] font-semibold bg-[#f5f5f5]"
-              : "text-[#3E3D3D] bg-white"
-          } `}
-          onClick={() => fetchAttestation("onchain")}
-        >
-          <Link size={16} className="drop-shadow-lg" />
-          Onchain
-        </button>
-        <button
-          className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md ${
-            activeButton === "offchain"
-              ? "text-[#0500FF] font-semibold bg-[#f5f5f5]"
-              : "text-[#3E3D3D] bg-white"
-          }`}
-          onClick={() => fetchAttestation("offchain")}
-        >
-          <Cloud size={16} className="drop-shadow-lg" />
-          Offchain
-        </button>
-      </div>
-      <StatsGrid
-        blocks={blocks}
-        isLoading={isLoading}
-        onBlockClick={(ref: string) => router.push(ref)}
-      />
-
-      {isSelfDelegate ? (
-        <div
-          style={{ boxShadow: "0px 4px 30.9px 0px rgba(0, 0, 0, 0.12)" }}
-          className={`flex flex-col justify-between min-h-48 rounded-xl my-7 mx-4 xs:mx-0 sm:mx-4 md:mx-16 lg:mx-0 p-6
-        ${isEditing ? "outline" : ""}`}
-        >
-          <StyledMDEditorWrapper className="w-full">
-            <MDEditor
-              value={isEditing ? tempDesc : description || karmaDesc}
-              onChange={handleDescChange}
-              preview={isMobile ? (isEditing ? "edit" : "preview") : "live"}
-              height={isMobile ? 400 : 300}
-              hideToolbar={!isEditing}
-              visibleDragbar={false}
-              previewOptions={{
-                rehypePlugins: [[rehypeSanitize]],
-              }}
-              textareaProps={{
-                placeholder: "Type your description here...",
-                readOnly: !isEditing,
-              }}
-              commandsFilter={(cmd) => cmd.name === 'fullscreen' ? false : cmd}
-            />
-          </StyledMDEditorWrapper>
-
-          <div className="flex justify-end mt-3">
-            {isEditing ? (
-              <>
-                <button
-                  className="bg-blue-shade-100 text-white text-sm py-1 px-3 rounded-full font-semibold mr-2"
-                  onClick={handleCancelClick}
-                >
-                  Cancel
-                </button>
-                <button
-                  className="bg-blue-shade-100 text-white text-sm py-1 px-3 rounded-full font-semibold"
-                  onClick={handleSaveClick}
-                >
-                  {loading ? "Saving" : "Save"}
-                </button>
-              </>
-            ) : (
-              <button
-                className="bg-blue-shade-100 text-white text-sm py-1 px-4  rounded-full font-semibold"
-                onClick={() => setEditing(true)}
-              >
-                Edit
-              </button>
-            )}
-          </div>
-        </div>
+    <>
+      {isLoadingStatus ? (
+        <UserInfoSkeleton />
       ) : (
-        <></>
+        <div className="pt-4">
+          <div className="flex gap-2 0.5xs:gap-4 rounded-xl text-sm flex-wrap">
+            <button
+              className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md ${
+                activeButton === "onchain"
+                  ? "text-[#0500FF] font-semibold bg-[#f5f5f5]"
+                  : "text-[#3E3D3D] bg-white"
+              } `}
+              onClick={() => fetchAttestation("onchain")}
+            >
+              <Link size={16} className="drop-shadow-lg" />
+              Onchain
+            </button>
+            <button
+              className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md ${
+                activeButton === "offchain"
+                  ? "text-[#0500FF] font-semibold bg-[#f5f5f5]"
+                  : "text-[#3E3D3D] bg-white"
+              }`}
+              onClick={() => fetchAttestation("offchain")}
+            >
+              <Cloud size={16} className="drop-shadow-lg" />
+              Offchain
+            </button>
+          </div>
+          <StatsGrid
+            blocks={blocks}
+            isLoading={isLoading}
+            onBlockClick={(ref: string) => router.push(ref)}
+          />
+
+          {isSelfDelegate ? (
+            <div
+              style={{ boxShadow: "0px 4px 30.9px 0px rgba(0, 0, 0, 0.12)" }}
+              className={`flex flex-col justify-between min-h-48 rounded-xl my-7 mx-4 xs:mx-0 sm:mx-4 md:mx-16 lg:mx-0 p-6
+            ${isEditing ? "outline" : ""}`}
+            >
+              <StyledMDEditorWrapper className="w-full">
+                <MDEditor
+                  value={isEditing ? tempDesc : description || karmaDesc}
+                  onChange={handleDescChange}
+                  preview={isMobile ? (isEditing ? "edit" : "preview") : "live"}
+                  height={isMobile ? 400 : 300}
+                  hideToolbar={!isEditing}
+                  visibleDragbar={false}
+                  previewOptions={{
+                    rehypePlugins: [[rehypeSanitize]],
+                  }}
+                  textareaProps={{
+                    placeholder: "Type your description here...",
+                    readOnly: !isEditing,
+                  }}
+                  commandsFilter={(cmd) => cmd.name === 'fullscreen' ? false : cmd}
+                />
+              </StyledMDEditorWrapper>
+
+              <div className="flex justify-end mt-3">
+                {isEditing ? (
+                  <>
+                    <button
+                      className="bg-blue-shade-100 text-white text-sm py-1 px-3 rounded-full font-semibold mr-2"
+                      onClick={handleCancelClick}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      className="bg-blue-shade-100 text-white text-sm py-1 px-3 rounded-full font-semibold"
+                      onClick={handleSaveClick}
+                    >
+                      {loading ? "Saving" : "Save"}
+                    </button>
+                  </>
+                ) : (
+                  <button
+                    className="bg-blue-shade-100 text-white text-sm py-1 px-4  rounded-full font-semibold"
+                    onClick={() => setEditing(true)}
+                  >
+                    Edit
+                  </button>
+                )}
+              </div>
+            </div>
+          ) : (
+            <></>
+          )}
+        </div>
       )}
-    </div>
+    </>
   );
 }
 

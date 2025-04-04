@@ -160,7 +160,7 @@ const options = (!customOptions || customOptions.length < 1) ? defaultOptions : 
               delegate: address.toString(),
             })
             .toPromise();
-          setVotesCount(data.data.delegateVotesChangeds[0]?.newBalance?data.data.delegateVotesChangeds[0]?.newBalance:0);
+          setVotesCount(data.data.delegates[0]?.latestBalance?data.data.delegates[0]?.latestBalance:0);
         }
       } catch (error) {
         console.error("Error fetching data", error);
@@ -178,7 +178,7 @@ const options = (!customOptions || customOptions.length < 1) ? defaultOptions : 
     } else if (number >= 1000) {
       return (number / 1000).toFixed(2) + "k";
     } else {
-      return number.toString();
+      return number.toFixed(2);
     }
   };
 

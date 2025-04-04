@@ -128,22 +128,22 @@ function DelegateInfo({
     {
       number: sessionHostCount,
       desc: "Sessions hosted",
-      ref: `/${props.daoDelegates}/${props.individualDelegate}?active=delegatesSession&session=hosted`,
+      ref: `/${props.daoDelegates}/${props.individualDelegate}?active=delegatesSession&session=hosted&dao=${props.daoDelegates}`,
     },
     {
       number: sessionAttendCount,
       desc: "Sessions attended",
-      ref: `/${props.daoDelegates}/${props.individualDelegate}?active=delegatesSession&session=attended`,
+      ref: `/${props.daoDelegates}/${props.individualDelegate}?active=delegatesSession&session=attended&dao=${props.daoDelegates}`,
     },
     {
       number: officehoursHostCount,
       desc: "Office Hours hosted",
-      ref: `/${props.daoDelegates}/${props.individualDelegate}?active=officeHours&hours=hosted`,
+      ref: `/${props.daoDelegates}/${props.individualDelegate}?active=officeHours&hours=hosted&dao=${props.daoDelegates}`,
     },
     {
       number: officehoursAttendCount,
       desc: "Office Hours attended",
-      ref: `/${props.daoDelegates}/${props.individualDelegate}?active=officeHours&hours=attended`,
+      ref: `/${props.daoDelegates}/${props.individualDelegate}?active=officeHours&hours=attended&dao=${props.daoDelegates}`,
     },
   ];
 
@@ -197,7 +197,6 @@ function DelegateInfo({
         try {
           setLoading(true);
           setLoadingOpAgora(true);
-          console.log(props.individualDelegate);
           const res = await fetch(
             `/api/get-statement?individualDelegate=${props.individualDelegate}`,
             {

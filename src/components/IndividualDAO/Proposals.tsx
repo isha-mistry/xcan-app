@@ -13,6 +13,7 @@ import ProposalStatus from "./ProposalStatus";
 import Alert from "../Alert/Alert";
 import { daoConfigs } from "@/config/daos";
 import { ProposalStatusBadge } from "./ProposalStatusBadge";
+import { usePathname } from "next/navigation";
 
 interface Proposal {
   proposalId: string;
@@ -77,8 +78,24 @@ function Proposals({ props }: { props: string }) {
   );
   const [proposalTiming, setProposalTiming] = useState<any>(null);
   const [page, setPage] = useState(1); // Track the number of times "View More" is clicked
-  const[showAlert, setShowAlert]=useState(true)
+  const [showAlert, setShowAlert] = useState(true)
   const [loadingMore, setLoadingMore] = useState(false);
+  const path = usePathname();
+  const dao_name = path.split("/").filter(Boolean)[0] || "";
+
+  function getTitleFromDescription(description:string) {
+    if (!description) {
+      return ""; // Or a default like "No Description"
+    }
+  
+    try {
+      const parsedDescription = JSON.parse(description);
+      return parsedDescription.title || ""; // Return title if it exists, otherwise empty string
+    } catch (error) {
+      console.error("Error parsing JSON:", error);
+      return description; // If parsing fails, return the original string as is
+    }
+  }
   const handleCloseAlert = () => {
     setShowAlert(false);
   };
@@ -116,6 +133,7 @@ function Proposals({ props }: { props: string }) {
         );
       }
       const canceledProposals = await canceledResponse.json();
+      console.log(canceledProposals, "canceledProposals")
       setCanceledProposals(canceledProposals);
 
       // Check cache
@@ -136,7 +154,7 @@ function Proposals({ props }: { props: string }) {
       const proposalEndpoint = isOptimism
         ? "/api/get-proposals"
         : daoConfigs[props]?.proposalAPIendpoint?.ProposalEndpoint;
-
+      console.log(proposalEndpoint, "proposalEndpoint")
       if (!proposalEndpoint) {
         throw new Error("Proposal endpoint is missing.");
       }
@@ -144,7 +162,7 @@ function Proposals({ props }: { props: string }) {
       // Fetch proposals and vote summary
       const [proposalsResponse, voteSummaryResponse] = await Promise.all([
         fetch(proposalEndpoint),
-        fetch(`/api/get-vote-summary?dao=${props}`),
+        props === "letsgrowdao" ? fetch(`/api/get-letsgrowdao-vote-summary?dao=${props}`) : fetch(`/api/get-vote-summary?dao=${props}`),
       ]);
 
       if (!proposalsResponse.ok || !voteSummaryResponse.ok) {
@@ -192,14 +210,15 @@ function Proposals({ props }: { props: string }) {
         // Set the timing state
         setProposalTiming(proposalTimestamp);
       } else {
+        console.log(responseData.data, "responseData.data", canceledProposals)
         // Arbitrum handling
         newProposals = responseData.data
-          .filter(
-            (p: any) =>
-              !canceledProposals.some(
-                (cp: any) => cp.proposalId === p.proposalId
-              )
-          )
+          // .filter(
+          //   (p: any) =>
+          //     !canceledProposals.some(
+          //       (cp: any) => cp.proposalId === p.proposalId
+          //     )
+          // )
           .map((p: any) => {
             const voteSummary = voteSummaryData.proposalVoteSummaries.find(
               (vote: any) => vote.proposalId === p.proposalId
@@ -207,6 +226,7 @@ function Proposals({ props }: { props: string }) {
             return {
               ...p,
               votesLoaded: true,
+              ...(voteSummary?.quorumReached !== undefined && { quorumReached: voteSummary.quorumReached }),
               support0Weight: weiToEther(voteSummary?.weightAgainst) || 0,
               support1Weight: weiToEther(voteSummary?.weightFor) || 0,
               support2Weight: weiToEther(voteSummary?.weightAbstain) || 0,
@@ -214,7 +234,7 @@ function Proposals({ props }: { props: string }) {
           });
 
         // Fetch queue info for DAO
-        const queueEndpoint=daoConfigs[props].proposalAPIendpoint?.ProposalQueueEndpoint;
+        const queueEndpoint = daoConfigs[props].proposalAPIendpoint?.ProposalQueueEndpoint;
         const queueResponse = await fetch(`${queueEndpoint}`);
         if (!queueResponse.ok) {
           throw new Error("Failed to fetch queue information");
@@ -235,7 +255,7 @@ function Proposals({ props }: { props: string }) {
 
       // Sort proposals by timestamp
       newProposals.sort((a, b) => b.blockTimestamp - a.blockTimestamp);
-    
+console.log(newProposals, "newProposals") 
       // Update cache and state
       cache[props] = newProposals;
       setAllProposals(newProposals);
@@ -268,30 +288,30 @@ function Proposals({ props }: { props: string }) {
       if (!response.ok) throw new Error("Failed to fetch proposal timing");
       const data = await response.json();
       setPage(data.currentPage + 1); // Increment page
-      
-      setProposalTiming((prevProposals:any) => {
+
+      setProposalTiming((prevProposals: any) => {
         if (reset) {
           return [...data.proposals]; // Reset state with new data
         }
-  
+
         if (!prevProposals) {
           return [...data.proposals]; // Initialize if null
         }
-  
+
         // Create a map of existing proposals for efficient lookup
         const existingProposalsMap = new Map(
-          prevProposals.map((p:any) => [p.createdTransactionHash, p])
+          prevProposals.map((p: any) => [p.createdTransactionHash, p])
         );
-  
+
         // Add new proposals to the map
-        data.proposals.forEach((proposal:any) => {
+        data.proposals.forEach((proposal: any) => {
           existingProposalsMap.set(proposal.createdTransactionHash, proposal);
         });
-  
+
         // Convert map back to array
         return Array.from(existingProposalsMap.values());
       });
-      
+
       return data.proposals; // Return the new proposals
     } catch (error) {
       console.error("Error fetching proposal timing:", error);
@@ -595,7 +615,35 @@ function Proposals({ props }: { props: string }) {
   const loadMoreProposals = useCallback(async () => {
     setLoadingMore(true);
     try {
-      if (props === "optimism") {
+      if (props === "arbitrum") {
+        // For Arbitrum
+        // First, fetch the timing data and wait for it to complete
+        const newTimingData = await fetchProposalTiming();
+
+        const currentLength = displayedProposals.length;
+        const moreProposals = cache[props].slice(
+          currentLength,
+          currentLength + proposalsPerPage
+        );
+
+        // Enrich the proposals with timing data before adding them
+        const enrichedProposals = moreProposals.map((proposal: any) => {
+          const matchedTiming = newTimingData.find(
+            (timing: any) => timing.createdTransactionHash === proposal.transactionHash
+          );
+          return matchedTiming ? { ...proposal, timing: matchedTiming } : proposal;
+        });
+
+        // Use a Set to ensure uniqueness based on proposalId
+        const uniqueProposals = new Set(
+          [...displayedProposals, ...enrichedProposals].map((p) => JSON.stringify(p))
+        );
+        setDisplayedProposals(Array.from(uniqueProposals).map((p) => JSON.parse(p)));
+
+        if (currentLength + proposalsPerPage >= cache[props].length) {
+          fetchProposals();
+        }
+      } else {
         let nextPage;
         if (currentCache) {
           nextPage = Math.ceil(currentCache.updatedProposals.length / proposalsPerPage) + 1;
@@ -605,41 +653,14 @@ function Proposals({ props }: { props: string }) {
         const startIndex = (nextPage - 1) * proposalsPerPage;
         const endIndex = startIndex + proposalsPerPage;
         const newProposals = cache[props].slice(startIndex, endIndex);
-  
+
         // Use a Set to ensure uniqueness based on proposalId
         const uniqueProposals = new Set(
           [...displayedProposals, ...newProposals].map((p) => JSON.stringify(p))
         );
         setDisplayedProposals(Array.from(uniqueProposals).map((p) => JSON.parse(p)));
         setCurrentPage(nextPage);
-      } else {
-        // For Arbitrum
-        // First, fetch the timing data and wait for it to complete
-        const newTimingData = await fetchProposalTiming();
-        
-        const currentLength = displayedProposals.length;
-        const moreProposals = cache[props].slice(
-          currentLength,
-          currentLength + proposalsPerPage
-        );
-  
-        // Enrich the proposals with timing data before adding them
-        const enrichedProposals = moreProposals.map((proposal:any) => {
-          const matchedTiming = newTimingData.find(
-            (timing:any) => timing.createdTransactionHash === proposal.transactionHash
-          );
-          return matchedTiming ? { ...proposal, timing: matchedTiming } : proposal;
-        });
-  
-        // Use a Set to ensure uniqueness based on proposalId
-        const uniqueProposals = new Set(
-          [...displayedProposals, ...enrichedProposals].map((p) => JSON.stringify(p))
-        );
-        setDisplayedProposals(Array.from(uniqueProposals).map((p) => JSON.parse(p)));
-  
-        if (currentLength + proposalsPerPage >= cache[props].length) {
-          fetchProposals();
-        }
+
       }
     } catch (error) {
       console.error("Error loading more proposals:", error);
@@ -745,106 +766,113 @@ function Proposals({ props }: { props: string }) {
       )} */}
       <div className="rounded-[2rem] mt-4">
         {displayedProposals.map((proposal: Proposal, index: number) => {
-          const calculatedProposalTiming = proposalTiming 
-          ? proposalTiming.find((timing: any) => timing.createdTransactionHash === proposal.transactionHash) 
-          : undefined;
-           // Combine proposal with timing data if available
-            const enrichedProposal = calculatedProposalTiming 
+          const calculatedProposalTiming = proposalTiming
+            ? proposalTiming.find((timing: any) => timing.createdTransactionHash === proposal.transactionHash)
+            : undefined;
+          // Combine proposal with timing data if available
+          const enrichedProposal = calculatedProposalTiming
             ? { ...proposal, timing: calculatedProposalTiming }
             : proposal;
-          return(
-          <div
-            key={index}
-            className="flex flex-col 1.3lg:flex-row px-2 py-4 0.5xs:p-4 text-lg mb-2 gap-2 1.3lg:gap-5 bg-gray-100  hover:bg-gray-50 rounded-3xl transition-shadow duration-300 ease-in-out shadow-lg cursor-pointer 1.3lg:items-center group"
-            onClick={() => handleClick(proposal)}
-          >
-            <div className="flex items-center 1.3lg:w-[55%] ">
-              <Image
-                src={dao_details[props as keyof typeof dao_details].logo}
-                alt={`${dao_details[props as keyof typeof dao_details].title
-                  } logo`}
-                className="size-10 ml-0 mr-[2px] 0.2xs:mr-2 xs:mx-5 rounded-full flex-shrink-0"
-              />
+          return (
+            <div
+              key={index}
+              className="flex flex-col 1.3lg:flex-row px-2 py-4 0.5xs:p-4 text-lg mb-2 gap-2 1.3lg:gap-5 bg-gray-100  hover:bg-gray-50 rounded-3xl transition-shadow duration-300 ease-in-out shadow-lg cursor-pointer 1.3lg:items-center group"
+              onClick={() => handleClick(proposal)}
+            >
+              <div className="flex items-center 1.3lg:w-[55%] ">
+                <Image
+                  src={dao_details[props as keyof typeof dao_details].logo}
+                  alt={`${dao_details[props as keyof typeof dao_details].title
+                    } logo`}
+                  className="size-10 ml-0 mr-[2px] 0.2xs:mr-2 xs:mx-5 rounded-full flex-shrink-0"
+                />
 
-              <div>
-                <p className="text-base font-medium group-hover:text-blue-500 transition-colors duration-300">
-                  {proposal.proposalId ===
-                    "109425185690543736048728494223916696230797128756558452562790432121529327921478"
-                    ? `[Cancelled] ${truncateText(
-                      proposal.description || "",
-                      65
-                    )}`
-                    : truncateText(proposal.description || "", 65)}
-                </p>
-                <div className="flex gap-1">
-                  {/* <Image src={user} alt="" className="size-4" /> */}
-                  <p className="flex text-[9px] xs:text-[11px] font-normal items-center">
-                    <span className="text-[#004DFF]"> Created at </span>&nbsp;
-                    {formatDate(proposal.blockTimestamp)}
-                    <span>
-                      <LuDot />
-                    </span>
-                    <span className="font-bold text-xs xs:text-sm text-blue-shade-200">
-                      OnChain
-                    </span>
+                <div>
+                  {dao_name !== "letsgrowdao" ? (
+                  <p className="text-base font-medium group-hover:text-blue-500 transition-colors duration-300">
+                    {proposal.proposalId ===
+                      "109425185690543736048728494223916696230797128756558452562790432121529327921478"
+                      ? `[Cancelled] ${truncateText(
+                        proposal.description || "",
+                        65
+                      )}`
+                      : truncateText(proposal.description || "", 65)}
                   </p>
+                  ):(
+                    <p className="text-base font-medium group-hover:text-blue-500 transition-colors duration-300">
+                     {truncateText(getTitleFromDescription(proposal.description || "") || "",65)}
+                  </p>
+                  )}
+                  <div className="flex gap-1">
+                    {/* <Image src={user} alt="" className="size-4" /> */}
+                    <p className="flex text-[9px] xs:text-[11px] font-normal items-center">
+                      <span className="text-[#004DFF]"> Created at </span>&nbsp;
+                      {formatDate(proposal.blockTimestamp)}
+                      <span>
+                        <LuDot />
+                      </span>
+                      <span className="font-bold text-xs xs:text-sm text-blue-shade-200">
+                        OnChain
+                      </span>
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div className="flex flex-wrap justify-between items-center 1.3lg:w-[45%] mt-2 1.3lg:mt-0 gap-1 mx-auto 1.3lg:mx-0">
-            
-            {/* {proposal.votesLoaded && calculatedProposalTiming ? ( */}
-              {/* <ProposalStatus
+              <div className="flex flex-wrap justify-between items-center 1.3lg:w-[45%] mt-2 1.3lg:mt-0 gap-1 mx-auto 1.3lg:mx-0">
+
+                {/* {proposal.votesLoaded && calculatedProposalTiming ? ( */}
+                {/* <ProposalStatus
                 proposal={proposal}
                 canceledProposals={canceledProposals}
                 networkType={props} // or whatever network you're using
                 proposalTiming={calculatedProposalTiming}
               /> */}
-             {/* ) : (
+                {/* ) : (
                <StatusLoader />
              )} */}
 
-            {props === "arbitrum" ? (
-              proposal.votesLoaded  ? (
-                <ProposalStatus
-                  proposal={enrichedProposal}
-                  canceledProposals={canceledProposals}
-                  networkType={props}
-                  proposalTiming={calculatedProposalTiming}
-                />
-              ) : (
-                <StatusLoader />
-              )
-            ) : (
-              <ProposalStatus
-                proposal={proposal}
-                canceledProposals={canceledProposals}
-                networkType={props} // or whatever network you're using
-                proposalTiming={calculatedProposalTiming}
-              />
-            )}
+                {props === "arbitrum" ? (
+                  proposal.votesLoaded ? (
+                    <ProposalStatus
+                      proposal={enrichedProposal}
+                      canceledProposals={canceledProposals}
+                      networkType={props}
+                      proposalTiming={calculatedProposalTiming}
+                    />
+                  ) : (
+                    <StatusLoader />
+                  )
+                ) : (
+                  <ProposalStatus
+                    proposal={proposal}
+                    canceledProposals={canceledProposals}
+                    networkType={props} // or whatever network you're using
+                    proposalTiming={calculatedProposalTiming}
+                  />
+                )}
 
-              {proposal.votesLoaded ? (
-                <div
-                  className={`py-0.5 rounded-md text-xs xs:text-sm font-medium flex justify-center items-center w-28 xs:w-32 
+                {proposal.votesLoaded ? (
+                  <div
+                    className={`py-0.5 rounded-md text-xs xs:text-sm font-medium flex justify-center items-center w-28 xs:w-32 
                   ${proposal?.proposalData ? '' : getProposalStatusYet(proposal, canceledProposals).style}`}
-                >
-                  {proposal?.proposalData
-                    ? <NextUITooltip content='Multiple Options'><Image src={VotedOnOptions} alt="Multiple Options" className="w-6 h-6" /></NextUITooltip>
-                    : getProposalStatusYet(proposal, canceledProposals).text}
+                  >
+                    {proposal?.proposalData
+                      ? <NextUITooltip content='Multiple Options'><Image src={VotedOnOptions} alt="Multiple Options" className="w-6 h-6" /></NextUITooltip>
+                      : getProposalStatusYet(proposal, canceledProposals).text}
+                  </div>
+                ) : (
+                  <VoteLoader />
+                )}
+                <div className="rounded-full bg-[#F4D3F9] border border-[#77367A] flex text-[#77367A] text-[10px] xs:text-xs h-[22px] items-center justify-center w-[80px] xs:w-[92px] xs:h-fit py-[1px] xs:py-0.5 font-medium px-2 ">
+                  <ProposalStatusBadge
+                    proposal={proposal} matchedProposal={proposalTiming?.find((timing: any) => timing.createdTransactionHash === proposal.transactionHash)} canceledProposals={canceledProposals}
+                  />
                 </div>
-              ) : (
-                <VoteLoader />
-              )}
-              <div className="rounded-full bg-[#F4D3F9] border border-[#77367A] flex text-[#77367A] text-[10px] xs:text-xs h-[22px] items-center justify-center w-[80px] xs:w-[92px] xs:h-fit py-[1px] xs:py-0.5 font-medium px-2 ">
-                <ProposalStatusBadge
-                  proposal={proposal} matchedProposal={proposalTiming?.find((timing: any) => timing.createdTransactionHash === proposal.transactionHash)} canceledProposals={canceledProposals}
-                />              
-                </div>
+              </div>
             </div>
-          </div>
-        )})}
+          )
+        })}
         {displayedProposals?.length < cache[props]?.length && (
           <div className="flex items-center justify-center">
             <button
@@ -852,16 +880,16 @@ function Proposals({ props }: { props: string }) {
               disabled={loadingMore}
               className="bg-blue-shade-100 text-white py-2 px-4 w-[115px] flex justify-center items-center rounded-lg font-medium"
             >
-                {loadingMore ? (
+              {loadingMore ? (
                 <>
                   <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white"></div>
                 </>
-                ) : (
+              ) : (
                 "View More"
-                )}
-              </button>
-            </div>
-           )}
+              )}
+            </button>
+          </div>
+        )}
       </div>
     </>
   );

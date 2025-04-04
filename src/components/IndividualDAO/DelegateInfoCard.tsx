@@ -43,7 +43,7 @@ const DelegateInfoCard: React.FC<DelegateInfoCardProps> = ({
   const [tooltipContent, setTooltipContent] = useState("Copy");
   const [isAnimating, setIsAnimating] = useState(false);
 
-
+console.log("delegate",delegate)  
 
   const pushToGTM = (eventData: GTMEvent) => {
     if (typeof window !== "undefined" && window.dataLayer) {
@@ -157,7 +157,7 @@ const DelegateInfoCard: React.FC<DelegateInfoCardProps> = ({
           <h3 className="text-xl font-semibold truncate">{displayName}</h3>
           <div className="flex items-center justify-center space-x-2">
             <span className="text-sm text-gray-600">
-              {`${delegate.delegate.slice(0, 6)}...${delegate.delegate.slice(
+              {`${delegate?.delegate.slice(0, 6)}...${delegate.delegate.slice(
                 -4
               )}`}
             </span>
@@ -179,7 +179,7 @@ const DelegateInfoCard: React.FC<DelegateInfoCardProps> = ({
         <div className="bg-blue-100 mx-auto w-fit text-blue-800 text-sm font-medium px-2.5 py-1 rounded-full text-center">
           {formatNumber(delegate.adjustedBalance)} delegated tokens
         </div>
-
+{ daoName !== "letsgrowdao" && (
         <motion.button
           className="w-full bg-gradient-to-r from-[#3b82f6] to-[#31316d] text-white font-medium py-2 px-4 rounded-3xl overflow-hidden relative"
           whileHover={{ scale: 1.05 }}
@@ -208,7 +208,7 @@ const DelegateInfoCard: React.FC<DelegateInfoCardProps> = ({
           >
             <IoArrowForward size={24} />
           </motion.div>
-        </motion.button>
+        </motion.button>)}
       </div>
     </motion.div>
   );

@@ -206,7 +206,7 @@ function DelegateOfficeHrs({ props }: { props: Type }) {
                 : "text-[#3E3D3D] bg-white"
             }`}
             onClick={() =>
-              router.push(path + "?active=officeHours&hours=hosted")
+              router.push(path + "?active=officeHours&hours=hosted&dao="+props.daoDelegates)
             }
           >
             <Users size={16} className="drop-shadow-lg" />
@@ -219,7 +219,7 @@ function DelegateOfficeHrs({ props }: { props: Type }) {
                 : "text-[#3E3D3D] bg-white"
             }`}
             onClick={() =>
-              router.push(path + "?active=officeHours&hours=attended")
+              router.push(path + "?active=officeHours&hours=attended&dao="+props.daoDelegates)
             }
           >
             <CheckCircle size={16} className="drop-shadow-lg" />
