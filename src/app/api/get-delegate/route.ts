@@ -74,7 +74,7 @@ function getClient(daoName: string): Client {
       url: config.subgraphUrl as string,
       fetchOptions: {
         headers: {
-          Authorization: `Bearer ${process.env.THEGRAPH_API_KEY}`,
+          Authorization: `Bearer ${process.env.NEXT_PUBLIC_THEGRAPH_API_KEY}`,
         },
       },
       exchanges: [cacheExchange, fetchExchange],

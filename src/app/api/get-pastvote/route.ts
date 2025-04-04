@@ -5,7 +5,7 @@ const op_client = createClient({
     url: process.env.OPTIMISM_PROPOSALS_GRAPH_URL!,
     fetchOptions: {
         headers: {
-          Authorization: `Bearer ${process.env.THEGRAPH_API_KEY}`,
+          Authorization: `Bearer ${process.env.NEXT_PUBLIC_THEGRAPH_API_KEY}`,
         },
       },
     exchanges: [cacheExchange, fetchExchange],
@@ -15,7 +15,7 @@ const arb_client = createClient({
     url: process.env.NEXT_PUBLIC_ARBITRUM_PROPOSALS_GRAPH_URL!,
     fetchOptions: {
         headers: {
-          Authorization: `Bearer ${process.env.THEGRAPH_API_KEY}`,
+          Authorization: `Bearer ${process.env.NEXT_PUBLIC_THEGRAPH_API_KEY}`,
         },
       },
     exchanges: [cacheExchange, fetchExchange],

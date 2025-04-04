@@ -206,7 +206,7 @@ export async function GET(req: NextRequest) {
     url: clientUrl,
     fetchOptions: {
       headers: {
-        Authorization: `Bearer ${process.env.THEGRAPH_API_KEY}`,
+        Authorization: `Bearer ${process.env.NEXT_PUBLIC_THEGRAPH_API_KEY}`,
       },
     },
     exchanges: [fetchExchange],
