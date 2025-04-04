@@ -2,20 +2,40 @@ import { cacheExchange, createClient, fetchExchange, gql } from "urql";
 
 export const arb_client = createClient({
   url: "https://api.studio.thegraph.com/query/477/arbitrum/v0.0.2 ",
+  fetchOptions: {
+    headers: {
+      Authorization: `Bearer ${process.env.THEGRAPH_API_KEY}`,
+    },
+  },
   exchanges: [cacheExchange, fetchExchange],
 });
 
 export const op_client = createClient({
   url: "https://api.studio.thegraph.com/query/68573/op/v0.0.1",
+  fetchOptions: {
+    headers: {
+      Authorization: `Bearer ${process.env.THEGRAPH_API_KEY}`,
+    },
+  },
   exchanges: [cacheExchange, fetchExchange],
 });
 export const letsgrow_client = createClient({
   url: "https://api.studio.thegraph.com/query/68573/lets_grow_dao_votingtoken/v0.0.2",
+  fetchOptions: {
+    headers: {
+      Authorization: `Bearer ${process.env.THEGRAPH_API_KEY}`,
+    },
+  },
   exchanges: [cacheExchange, fetchExchange],
 });
 
 export const nft_client = createClient({
   url: "https://api.studio.thegraph.com/query/71916/choraxzora/version/latest",
+  fetchOptions: {
+    headers: {
+      Authorization: `Bearer ${process.env.THEGRAPH_API_KEY}`,
+    },
+  },
   exchanges: [cacheExchange, fetchExchange],
 });
 

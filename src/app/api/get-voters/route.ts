@@ -204,6 +204,11 @@ export async function GET(req: NextRequest) {
   
   const client = createClient({
     url: clientUrl,
+    fetchOptions: {
+      headers: {
+        Authorization: `Bearer ${process.env.THEGRAPH_API_KEY}`,
+      },
+    },
     exchanges: [fetchExchange],
   });
 

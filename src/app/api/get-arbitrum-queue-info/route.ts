@@ -4,6 +4,11 @@ export const revalidate = 0;
 
 const client = new Client({
   url: 'https://api.studio.thegraph.com/query/68573/arbitrum_proposals/v0.0.4',
+  fetchOptions: {
+    headers: {
+      Authorization: `Bearer ${process.env.THEGRAPH_API_KEY}`,
+    },
+  },
   exchanges: [cacheExchange, fetchExchange],
 });
 

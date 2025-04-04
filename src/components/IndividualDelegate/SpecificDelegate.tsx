@@ -152,6 +152,11 @@ function SpecificDelegate({ props }: { props: Type }) {
     const dao_name = path.split("/").filter(Boolean)[0] || "";
   const client = createClient({
     url: daoConfigs[props.daoDelegates]?.delegateChangedsUrl || "",
+    fetchOptions: {
+      headers: {
+        Authorization: `Bearer ${process.env.THEGRAPH_API_KEY}`,
+      },
+    },
     exchanges: [cacheExchange, fetchExchange],
   });
   const pushToGTM = (eventData: GTMEvent) => {
@@ -292,6 +297,11 @@ function SpecificDelegate({ props }: { props: Type }) {
 
         const client = createClient({
           url: currentDAO.delegateChangedsUrl,
+          fetchOptions: {
+            headers: {
+              Authorization: `Bearer ${process.env.THEGRAPH_API_KEY}`,
+            },
+          },
           exchanges: [cacheExchange, fetchExchange],
         });
 

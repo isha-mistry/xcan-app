@@ -810,9 +810,9 @@ function ProposalMain({ props }: { props: Props }) {
 
   useEffect(() => {
     const fetchCanacelledProposals = async () => {
-      const response = await fetch(`/api/get-canceledproposal`);
+      const response = await fetch(`/api/get-canceledproposal?dao=${props.daoDelegates}`);
       const result = await response.json();
-
+      
       setCanceledProposals(result);
     };
     fetchCanacelledProposals();
@@ -1001,7 +1001,6 @@ function ProposalMain({ props }: { props: Props }) {
 
           let state = "Closed";
           let message = "";
-
           if (proposalStartTime && proposalStartTime > currentDate) {
             // Proposal is yet to start, show countdown
             const timeDiff = proposalStartTime - currentDate;
@@ -1017,15 +1016,21 @@ function ProposalMain({ props }: { props: Props }) {
 
             state = `Starts in ${timeParts.join(" ")}`;
           } else if (
-            proposalStartTime &&
+         (  proposalStartTime &&
             proposalEndTime &&
             currentDate >= proposalStartTime &&
-            currentDate < proposalEndTime
+            currentDate < proposalEndTime) || (result.data[0].startTime && currentDate >= result.data[0].startTime && currentDate < result.data[0].endTime)
           ) {
             // Proposal is active
             state = "Active";
           } else {
             // Proposal has ended
+            state = "Closed";
+          }
+          if (
+            Array.isArray(canceledProposals) &&
+            canceledProposals.some((item: any) => item.proposalId === result.data[0].proposalId)
+          ) {
             state = "Closed";
           }
 
@@ -1336,7 +1341,7 @@ function ProposalMain({ props }: { props: Props }) {
   };
 
   const isActive =
-    proposalState === "Active" && !(props.daoDelegates === "optimism");
+    proposalState === "Active" && (props.daoDelegates === "arbitrum");
 
   const currentDate = new Date();
   useEffect(() => {

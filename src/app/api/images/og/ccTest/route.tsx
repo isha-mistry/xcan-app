@@ -4,7 +4,7 @@ import { IMAGE_URL } from "@/config/staticDataUtils";
 import { daoConfigs } from "@/config/daos";
 export const revalidate = 0;
 
- export const runtime = "edge";
+//  export const runtime = "edge";
 
 const size = {
   width: 1200,

@@ -4,6 +4,11 @@ export const revalidate = 0;
 
 const client = new Client({
   url: 'https://api.studio.thegraph.com/query/68573/lets_grow_dao_proposal/version/latest',
+  fetchOptions: {
+    headers: {
+      Authorization: `Bearer ${process.env.THEGRAPH_API_KEY}`,
+    },
+  },
   exchanges: [fetchExchange],
 });
 

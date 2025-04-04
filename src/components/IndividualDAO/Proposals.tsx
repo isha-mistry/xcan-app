@@ -123,17 +123,18 @@ function Proposals({ props }: { props: string }) {
   const fetchProposals = async () => {
     setLoading(true);
     try {
-      // // Fetch canceled proposals
-      // const canceledResponse = await fetch(
-      //   `/api/get-canceledproposal?dao=${props}`
-      // );
-      // if (!canceledResponse.ok) {
-      //   throw new Error(
-      //     `Failed to fetch canceled proposals: ${canceledResponse.status}`
-      //   );
-      // }
-      // const canceledProposals = await canceledResponse.json();
-      // setCanceledProposals(canceledProposals);
+      // Fetch canceled proposals
+      const canceledResponse = await fetch(
+        `/api/get-canceledproposal?dao=${props}`
+      );
+      if (!canceledResponse.ok) {
+        throw new Error(
+          `Failed to fetch canceled proposals: ${canceledResponse.status}`
+        );
+      }
+      const canceledProposals = await canceledResponse.json();
+      console.log(canceledProposals, "canceledProposals")
+      setCanceledProposals(canceledProposals);
 
       // Check cache
       if (cache[props]) {
@@ -209,14 +210,15 @@ function Proposals({ props }: { props: string }) {
         // Set the timing state
         setProposalTiming(proposalTimestamp);
       } else {
+        console.log(responseData.data, "responseData.data", canceledProposals)
         // Arbitrum handling
         newProposals = responseData.data
-          .filter(
-            (p: any) =>
-              !canceledProposals.some(
-                (cp: any) => cp.proposalId === p.proposalId
-              )
-          )
+          // .filter(
+          //   (p: any) =>
+          //     !canceledProposals.some(
+          //       (cp: any) => cp.proposalId === p.proposalId
+          //     )
+          // )
           .map((p: any) => {
             const voteSummary = voteSummaryData.proposalVoteSummaries.find(
               (vote: any) => vote.proposalId === p.proposalId
@@ -253,7 +255,7 @@ function Proposals({ props }: { props: string }) {
 
       // Sort proposals by timestamp
       newProposals.sort((a, b) => b.blockTimestamp - a.blockTimestamp);
-
+console.log(newProposals, "newProposals") 
       // Update cache and state
       cache[props] = newProposals;
       setAllProposals(newProposals);

@@ -281,6 +281,11 @@ console.log("formattedDelegates",formattedDelegates);
 
     const client = createClient({
       url: daoConfigs[props].delegateChangedsUrl,
+      fetchOptions: {
+        headers: {
+          Authorization: `Bearer ${process.env.THEGRAPH_API_KEY}`,
+        },
+      },
       exchanges: [cacheExchange, fetchExchange],
     });
     
