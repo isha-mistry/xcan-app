@@ -749,11 +749,11 @@ console.log(newProposals, "newProposals")
 
   return (
     <>
-      {showAlert && dao_name !== "letsgrowdao" && (
+      {showAlert  && (
         <Alert
           message={
             <>
-            ⚠️ <b>Important Notice:</b> We are actively working on fetching the data from the Subgraph. Thank you for your patience!
+            ⚠️ Fetching data is taking longer than usual. We&apos;re looking into the Subgraph issue. Thanks for your patience!
           </>
           }
           type="error"
