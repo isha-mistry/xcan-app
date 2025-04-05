@@ -1000,7 +1000,7 @@ function ProposalMain({ props }: { props: Props }) {
           const proposalStartTime = proposalStarttimestamp?.TimeInEpoch || 0;
           const proposalEndTime = proposalEndtimestamp?.TimeInEpoch || 0;
 
-          let state = "Closed";
+          let state = "";
           let message = "";
 
           // Wait for cancelled proposals to load before setting state
@@ -1089,7 +1089,7 @@ function ProposalMain({ props }: { props: Props }) {
       setLoading(false);
     };
     fetchDescription();
-  }, [props]);
+  }, [props,canceledProposals]);
 
   const fetchVotePage = async (blockTimestamp: string, first: number) => {
     const response = await fetch(
