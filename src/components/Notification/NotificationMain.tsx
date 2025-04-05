@@ -28,7 +28,6 @@ import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 
 import { fetchApi } from "@/utils/api";
 import { BellOff, ChevronDownIcon, Wallet } from "lucide-react";
-import * as pushNotificationService from '@/services/pushNotificationService';
 
 function NotificationMain() {
   const { isConnected } = useConnection();
@@ -244,16 +243,6 @@ function NotificationMain() {
       addNotification(notificationData);
       updateCombinedNotifications();
 
-      // Send web push notification
-      try {
-        await pushNotificationService.sendPushNotification({
-          title: message.notification_title || 'New Notification',
-          body: message.content || 'You have a new notification',
-          data: notificationData
-        });
-      } catch (error) {
-        console.error('Error handling push notification:', error);
-      }
     };
 
     // Socket connection and event binding
