@@ -7,11 +7,21 @@ export const runtime = "nodejs";
 
 const op_client = new Client({
   url: 'https://api.studio.thegraph.com/query/68573/v6/version/latest',
+  fetchOptions: {
+    headers: {
+      Authorization: `Bearer ${process.env.NEXT_PUBLIC_THEGRAPH_API_KEY}`,
+    },
+  },
   exchanges: [fetchExchange],
 });
 
 const arb_client = new Client({
   url: "https://api.studio.thegraph.com/query/68573/arb_proposal/version/latest",
+  fetchOptions: {
+    headers: {
+      Authorization: `Bearer ${process.env.NEXT_PUBLIC_THEGRAPH_API_KEY}`,
+    },
+  },
   exchanges: [fetchExchange],
 });
 
@@ -66,15 +76,6 @@ export async function GET(req: NextRequest) {
     let result;
 
     result=await client.query(COMBINED_VOTE_QUERY,{}).toPromise();
-    // if (dao === "optimism") {
-    //   result = await op_client
-    //     .query(COMBINED_VOTE_QUERY,{})
-    //     .toPromise();
-    // } else {
-    //   result = await arb_client
-    //     .query(COMBINED_VOTE_QUERY, {})
-    //     .toPromise();
-    // }
 
     if (result.error) {
       console.error("GraphQL query error:", result.error);

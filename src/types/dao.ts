@@ -5,13 +5,14 @@ import type { Abi } from "viem";
 
 export interface BaseDAOConfig {
     name: string;
+    uniqueIdentifier: string;
     logo: string;
     chainId: number;
     chainName:string;
     viemchain:Chain;
     dataSource?:object; //object used for if DAO doesn't have contract to APIs endpoint 
     useContractSourceAddress?:{Address:string},
-    chainAddress: string;
+    tokenContractAddress: string;
     lighthoueseIcon:string;
     explorerUrl: string;
     governanceUrl?: string;

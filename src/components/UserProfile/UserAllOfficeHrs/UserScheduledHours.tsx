@@ -606,7 +606,6 @@ const UserScheduledHours: React.FC<{
       isDateSelected,
     ]
   );
-{console.log(selectedDates, "selected dates in user schedule")}
   const memoizedTimeSlotSection = useMemo(
     () => (
       <TimeSlotSection

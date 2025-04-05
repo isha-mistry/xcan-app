@@ -145,7 +145,7 @@ const ExploreDAOs = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 md:w-[95%] 2md:w-[85%] gap-6 2xl:w-[65%] mx-auto"
+            className="grid grid-cols-1 sm:grid-cols-2 md:w-[80%] 1.3lg:w-[60%] 1.7xl:w-[50%] gap-6 2xl:w-[45%] mx-auto"
           >
             {daoInfo.length > 0 ? (
               daoInfo.map((dao: any) => (

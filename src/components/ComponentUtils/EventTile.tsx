@@ -450,7 +450,7 @@ function EventTile({ tileIndex, data: initialData, isEvent }: TileProps) {
                     closeDelay={1}
                     showArrow
                   >
-                    <div  className={`flex items-center justify-center gap-2 w-full px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-indigo-500 to-blue-500 rounded-full hover:from-indigo-600 hover:to-blue-600 transition-all duration-300 transform hover:scale-[1.02]`} onClick={() => {
+                    <div  className={`flex items-center justify-center gap-2 w-full px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-indigo-500 to-blue-500 rounded-full hover:from-indigo-600 hover:to-blue-600 transition-all duration-300 transform hover:scale-[1.02] cursor-pointer`} onClick={() => {
                           setStartLoading(true); 
                           const meetingUrl = `${MEETING_BASE_URL}/meeting/session/${data.meetingId}/lobby`;
                           window.open(meetingUrl, "_blank"); 
@@ -554,7 +554,7 @@ function EventTile({ tileIndex, data: initialData, isEvent }: TileProps) {
                   </div>
                 ) : (
                   <div
-                    className={`flex items-center justify-center gap-2 w-full px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-indigo-500 to-blue-500 rounded-full hover:from-indigo-600 hover:to-blue-600 transition-all duration-300 transform hover:scale-[1.02]`}
+                    className={`flex items-center justify-center gap-2 w-full px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-indigo-500 to-blue-500 rounded-full hover:from-indigo-600 hover:to-blue-600 transition-all duration-300 transform hover:scale-[1.02] cursor-pointer`}
                     >
                     <BsPersonVideo3 className="w-4 h-4" />
                     <span >Join Session</span>

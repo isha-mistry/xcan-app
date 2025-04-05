@@ -21,6 +21,7 @@ interface UserSessionsProps {
 }
 
 function UserSessions({
+  isDelegate,
   selfDelegate,
   daoName,
 }: UserSessionsProps) {
@@ -119,7 +120,7 @@ function UserSessions({
 
   useEffect(() => {
     if (selfDelegate === false && searchParams.get("session") === "schedule") {
-      router.replace(path + "?active=sessions&session=attending");
+      router.replace(path + "?active=sessions&session=attending&dao="+daoName);
     }
   }, [selfDelegate]);
 
@@ -139,7 +140,7 @@ function UserSessions({
           ref={scrollContainerRef}
           onScroll={handleScroll}
         >
-          {selfDelegate === true && (
+          {(selfDelegate === true || isDelegate===true)&& (
             <button
               className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md  ${
                 searchParams.get("session") === "schedule"
@@ -155,7 +156,7 @@ function UserSessions({
             </button>
           )}
 
-          {selfDelegate === true && (
+          {(selfDelegate === true || isDelegate===true)&& (
             <button
               className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md  ${
                 searchParams.get("session") === "book"
@@ -177,13 +178,13 @@ function UserSessions({
                 : "text-[#3E3D3D] bg-white"
             }`}
             onClick={() =>
-              router.push(path + "?active=sessions&session=attending")
+              router.push(path + "?active=sessions&session=attending&dao="+daoName) 
             }
           >
             <UserCheck size={16} className="drop-shadow-lg" />
             Attending
           </button>
-          {selfDelegate === true && (
+          {(selfDelegate === true || isDelegate===true) && (
             <button
               className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md ${
                 searchParams.get("session") === "hosted"
@@ -191,7 +192,7 @@ function UserSessions({
                   : "text-[#3E3D3D] bg-white"
               }`}
               onClick={() =>
-                router.push(path + "?active=sessions&session=hosted")
+                router.push(path + "?active=sessions&session=hosted&dao="+daoName)
               }
             >
               <Users size={16} className="drop-shadow-lg" />
@@ -205,7 +206,7 @@ function UserSessions({
                 : "text-[#3E3D3D] bg-white"
             }`}
             onClick={() =>
-              router.push(path + "?active=sessions&session=attended")
+              router.push(path + "?active=sessions&session=attended&dao="+daoName)
             }
           >
              <CheckCircle size={16} className="drop-shadow-lg" />
@@ -222,19 +223,19 @@ function UserSessions({
         )}
 
         <div className="py-6 sm:py-10 sm:px-20 md:px-6 lg:px-14">
-          {selfDelegate === true &&
+          {(selfDelegate === true || isDelegate===true) &&
             searchParams.get("session") === "schedule" && (
               <div className="px-3">
                 <ScheduledUserSessions daoName={daoName} />
               </div>
             )}
-          {selfDelegate === true && searchParams.get("session") === "book" && (
+          {(selfDelegate === true || isDelegate===true)&& searchParams.get("session") === "book" && (
             <BookedUserSessions daoName={daoName} />
           )}
           {searchParams.get("session") === "attending" && (
             <AttendingUserSessions daoName={daoName} />
           )}
-          {selfDelegate === true &&
+          {(selfDelegate === true || isDelegate===true) &&
             searchParams.get("session") === "hosted" &&
             (dataLoading ? (
               <RecordedSessionsSkeletonLoader />

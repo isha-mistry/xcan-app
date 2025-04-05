@@ -11,6 +11,7 @@ import { fetchApi } from "@/utils/api";
 import { OfficeHoursProps } from "@/types/OfficeHoursTypes";
 import { CiSearch } from "react-icons/ci";
 import {Calendar,CalendarCheck,CheckCircle,Clock,Users,} from "lucide-react";
+import useSWR from "swr";
 
 
 interface UserOfficeHoursProps {
@@ -29,7 +30,7 @@ function UserOfficeHours({
   const { getAccessToken } = usePrivy();
   const { walletAddress } = useWalletAddress();
   const [searchQuery, setSearchQuery] = useState("");
-  const [dataLoading, setDataLoading] = useState(true);
+  // const [dataLoading, setDataLoading] = useState(true);
   const [showLeftShadow, setShowLeftShadow] = useState(false);
   const [showRightShadow, setShowRightShadow] = useState(false);
 
@@ -38,6 +39,30 @@ function UserOfficeHours({
   const searchParams = useSearchParams();
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
   const currentTab = searchParams.get("hours") || ""; 
+
+  // SWR fetcher function
+  const fetcher = async (url: string) => {
+    const token = await getAccessToken();
+    const response = await fetchApi(url, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.json();
+  };
+
+  // SWR hook for data fetching
+  const { data, error, isLoading, mutate } = useSWR(
+    walletAddress && daoName
+      ? `/get-office-hours?host_address=${walletAddress}&dao_name=${daoName}&type=${currentTab}`
+      : null,
+    fetcher,
+    {
+      revalidateOnFocus: true,
+      revalidateOnReconnect: true,
+      refreshInterval: 10000, // Refresh every 10 seconds
+    }
+  );
 
   // Original data from API
   const [originalData, setOriginalData] = useState({
@@ -54,6 +79,20 @@ function UserOfficeHours({
     hosted: [] as OfficeHoursProps[],
     attended: [] as OfficeHoursProps[],
   });
+
+  // Update data when SWR data changes
+  useEffect(() => {
+    if (data) {
+      const newData = {
+        ongoing: data.data.ongoing,
+        upcoming: data.data.upcoming,
+        hosted: data.data.hosted,
+        attended: data.data.attended,
+      };
+      setOriginalData(newData);
+      setFilteredData(newData);
+    }
+  }, [data]);
 
   const handleSearch = (searchTerm: string) => {
     setSearchQuery(searchTerm);
@@ -103,35 +142,35 @@ function UserOfficeHours({
     }
   };
 
-  const fetchUserOfficeHours = useCallback(async () => {
-    try {
-      const token = await getAccessToken();
-      const response = await fetchApi(
-        `/get-office-hours?host_address=${walletAddress}&dao_name=${daoName}&type=${currentTab}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+  // const fetchUserOfficeHours = useCallback(async () => {
+  //   try {
+  //     const token = await getAccessToken();
+  //     const response = await fetchApi(
+  //       `/get-office-hours?host_address=${walletAddress}&dao_name=${daoName}&type=${currentTab}`,
+  //       {
+  //         headers: {
+  //           Authorization: `Bearer ${token}`,
+  //         },
+  //       }
+  //     );
 
-      const result = await response.json();
+  //     const result = await response.json();
 
-      const data = {
-        ongoing: result.data.ongoing,
-        upcoming: result.data.upcoming,
-        hosted: result.data.hosted,
-        attended: result.data.attended,
-      };
+  //     const data = {
+  //       ongoing: result.data.ongoing,
+  //       upcoming: result.data.upcoming,
+  //       hosted: result.data.hosted,
+  //       attended: result.data.attended,
+  //     };
 
-      setOriginalData(data);
-      setFilteredData(data); // Initially, filtered data is same as original
-    } catch (error) {
-      console.error("Error fetching office hours:", error);
-    } finally {
-      setDataLoading(false);
-    }
-  }, [walletAddress, daoName, getAccessToken]);
+  //     setOriginalData(data);
+  //     setFilteredData(data); // Initially, filtered data is same as original
+  //   } catch (error) {
+  //     console.error("Error fetching office hours:", error);
+  //   } finally {
+  //     setDataLoading(false);
+  //   }
+  // }, [walletAddress, daoName, getAccessToken]);
 
 
   const getCurrentData = () => {
@@ -152,17 +191,17 @@ function UserOfficeHours({
     return () => window.removeEventListener("resize", checkForOverflow);
   }, []);
 
-  useEffect(() => {
-    fetchUserOfficeHours();
-  }, [fetchUserOfficeHours]);
+  // useEffect(() => {
+  //   fetchUserOfficeHours();
+  // }, [fetchUserOfficeHours]);
 
-  useEffect(() => {
-    setDataLoading(true);
-  }, [walletAddress]);
+  // useEffect(() => {
+  //   setDataLoading(true);
+  // }, [walletAddress]);
 
   useEffect(() => {
     if (!selfDelegate && searchParams.get("hours") === "schedule") {
-      router.replace(path + "?active=officeHours&hours=attended");
+      router.replace(path + "?active=officeHours&hours=attended&dao="+daoName);
     }
   }, [isDelegate, selfDelegate, searchParams.get("hours")]);
 
@@ -229,7 +268,7 @@ function UserOfficeHours({
                   : "text-[#3E3D3D] bg-white"
               }`}
               onClick={() =>
-                router.push(path + "?active=officeHours&hours=hosted")
+                router.push(path + "?active=officeHours&hours=hosted&dao="+daoName)
               }
             >
               <Users size={16} className="drop-shadow-lg" />
@@ -243,7 +282,7 @@ function UserOfficeHours({
                 : "text-[#3E3D3D] bg-white"
             }`}
             onClick={() =>
-              router.push(path + "?active=officeHours&hours=attended")
+              router.push(path + "?active=officeHours&hours=attended&dao="+daoName)
             }
           >
             <CheckCircle size={16} className="drop-shadow-lg" />
@@ -273,13 +312,15 @@ function UserOfficeHours({
             searchParams.get("hours") === "schedule" && (
               <UserScheduledHours
                 daoName={daoName}
-                onScheduleSave={fetchUserOfficeHours}
+                // onScheduleSave={fetchUserOfficeHours}
+                onScheduleSave={() => mutate()}
               />
             )}
 
           {searchParams.get("hours") !== "schedule" && (
             <>
-              {dataLoading ? (
+            {/* {dataLoading ? ( */}
+              {isLoading ? (
                 <RecordedSessionsSkeletonLoader />
               ) : getCurrentData().length === 0 ? (
                 <div className="flex flex-col justify-center items-center">

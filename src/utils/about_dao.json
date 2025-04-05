@@ -161,5 +161,63 @@
         "gov": "https://mantle.com/mantle"
       }
     }
+  },
+  "letsgrowdao": {
+    "introduction": "Let's Grow DAO is a decentralized autonomous organization (DAO) dedicated to fostering the growth and unity of the Regen Movement through the development and support of public goods. It aims to connect individuals, projects, and resources within the regenerative ecosystem, leveraging Web3 principles to create accessible tools, knowledge, and funding mechanisms that empower the adoption of regenerative practices and contribute to a more sustainable and equitable future for all.",
+    "display_text":"Let's Grow DAO",
+    "mission_and_vision": {
+      "mission": "To unite and grow the Regen Movement through the public goods ecosystem. 💚🌳",
+      "vision": ["Let's GROW DAO aims to unite the Regen community and GROW the movement with initiatives that foster positive sum dynamics."]
+    },
+    "values":{
+      "value":[
+        {
+          "title": "Unifying Vision",
+          "description": "We believe in the power of collective action. Our movement is a mosaic of diverse tribes, each contributing uniquely towards our shared vision. In unity, we find strength; in collaboration, we find progress."
+        },
+        {
+          "title": "Scalable Impact",
+          "description": "Our aim is not just to create ripples but to generate waves of positive change. We seek scalable solutions that extend their regenerative impact across communities, ecosystems, and borders."
+        },
+        {
+          "title": "Fairness in Action",
+          "description": "Equity and justice are the bedrock of our approach. We strive for fairness in every endeavor, ensuring that our initiatives are accessible and beneficial."
+        },
+        {
+          "title": "Service Beyond Self",
+          "description": "We work selflessly, guided by our mission, not ego. Our commitment is to the cause, and our reward is the collective success of our movement."
+        },
+        {
+          "title": "Empowering Communities",
+          "description": "At our core, we believe in the power of community. We are committed to empowering individuals and groups, fostering an environment where every voice is heard and valued."
+        },
+        {
+          "title": "Perseverance in Pursuit",
+          "description": "The path to regeneration is long and fraught with challenges. We embrace this journey with resilience, committed to overcoming obstacles and achieving our goals."
+        },
+        {
+          "title": "Authenticity in Action",
+          "description": "We lead by example, embodying the principles we preach. Our actions are a reflection of our true, regenerative intentions."
+        },
+        {
+          "title": "Accountability to All",
+          "description": "We hold ourselves accountable to our community, our planet, and future generations. Our decisions and actions are transparent and aligned with our mission."
+        }
+      ]
+    },
+    
+    "community_and_resources": {
+      "website": "https://www.letsgrow.network/",
+      "dashboard":"https://link.letsgrow.network/dao",
+      "communityHub": "https://garden.letsgrow.network/page-8020229466123785",
+      "twitter": {
+        "letsgrowdao": "https://twitter.com/LetsGrowDAO"
+      },
+      "warpcast": "https://warpcast.com/letsgrowdao",
+      "telegram": "https://link.letsgrow.network/telegram",
+      "LGLJoinVideo": "https://link.letsgrow.network/video",
+      "manifesto":"https://link.letsgrow.network/manifesto",
+      "guild":"https://guild.xyz/letsgrowdao"
+    }
   }
 }

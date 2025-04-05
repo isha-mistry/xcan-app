@@ -165,7 +165,7 @@ const OfficeHourTile = ({
             description: updatedData.bookedDescription
               ? updatedData.bookedDescription
               : item.description,
-              thumbnail_image:updatedData.thumbnail_image
+            thumbnail_image: updatedData.thumbnail_image
               ? updatedData.thumbnail_image
               : item.thumbnail_image,
           };
@@ -193,14 +193,14 @@ const OfficeHourTile = ({
     // Open the meeting in a new tab
     window.open(`${MEETING_BASE_URL}/meeting/officehours/${meetingId}/lobby`, '_blank');
 
-    // Reset loading state after a short delay.  Adjust the delay as necessary
+    // Reset loading state after a short delay
     setTimeout(() => {
       setLoadingStates((prev: any) => ({ ...prev, [meetingId]: false }));
-    }, 500); // Adjust the time (milliseconds) as needed.
+    }, 500);
   };
-//   const handleJoinMeeting = (meetingId: string) => {
-//     window.open(`${MEETING_BASE_URL}/meeting/officehours/${meetingId}/lobby`, '_blank');
-// };
+  //   const handleJoinMeeting = (meetingId: string) => {
+  //     window.open(`${MEETING_BASE_URL}/meeting/officehours/${meetingId}/lobby`, '_blank');
+  // };
 
   type DaoName = "optimism" | "arbitrum";
   const daoLogos: Record<DaoName, StaticImageData> = {
@@ -245,7 +245,7 @@ const OfficeHourTile = ({
               attendees:
                 item.attendees?.map((attendee) =>
                   attendee.attendee_address.toLowerCase() ===
-                  walletAddress?.toLowerCase()
+                    walletAddress?.toLowerCase()
                     ? { ...attendee, attendee_uid: uid }
                     : attendee
                 ) || [],
@@ -275,9 +275,8 @@ const OfficeHourTile = ({
     >
       {localData.map((data: OfficeHoursProps, index: number) => (
         <div
-          className={`border border-[#D9D9D9] sm:rounded-3xl ${
-            isRecorded ? "cursor-pointer" : ""
-          }`}
+          className={`border border-[#D9D9D9] sm:rounded-3xl ${isRecorded ? "cursor-pointer" : ""
+            }`}
           key={index}
           onClick={() => {
             isRecorded && router.push(`/watch/${data.meetingId}`);
@@ -287,7 +286,7 @@ const OfficeHourTile = ({
               action: 'Video Click',
               label: `Office Hours Video - ${data.title} clicked in Library}`,
             });
-        
+
           }}
         >
           <div
@@ -311,7 +310,7 @@ const OfficeHourTile = ({
             </div>
             <div className={`absolute top-2 left-2 bg-black rounded-full`}>
               <Image
-                src={daoConfigs[data.dao_name.toLowerCase()].logo}
+                src={daoConfigs[data.dao_name.toLowerCase()]?.logo}
                 alt="image"
                 width={100}
                 height={100}
@@ -343,7 +342,7 @@ const OfficeHourTile = ({
                 <div className=" flex items-center ">
                   <div>
                     <Image
-                      src={daoConfigs[data.dao_name.toLowerCase()].logo}
+                      src={daoConfigs[data.dao_name.toLowerCase()]?.logo}
                       alt="image"
                       width={100}
                       height={100}
@@ -402,11 +401,10 @@ const OfficeHourTile = ({
                       e.stopPropagation();
                       handleCopy(data.host_address, index, e);
                     }}
-                    className={`transition-colors duration-300 ${
-                      copyStates[index]
+                    className={`transition-colors duration-300 ${copyStates[index]
                         ? "text-blue-500"
                         : "hover:text-blue-500"
-                    }`}
+                      }`}
                   />
                 </span>
               </Tooltip>
@@ -544,12 +542,12 @@ const OfficeHourTile = ({
                         year: "numeric",
                       })
                       .replace(/\//g, "/")}, ${new Date(
-                      data.startTime
-                    ).toLocaleString("en-US", {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                      hour12: true,
-                    })}`}
+                        data.startTime
+                      ).toLocaleString("en-US", {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        hour12: true,
+                      })}`}
                   </span>
                 </div>
 
@@ -576,9 +574,41 @@ const OfficeHourTile = ({
                     </div>
 
                     <button
-                      onClick={() =>
-                        data.meetingId && handleStartSession(data.meetingId)
-                      }
+                      onClick={() => {
+                        if (data.meetingId) {
+                          handleStartSession(data.meetingId);
+                        } else {
+                          // Replace the current toast.error with this:
+                          toast.custom((t) => (
+                            <div
+                              className={`${t.visible ? 'animate-enter' : 'animate-leave'
+                                } max-w-md w-full bg-white shadow-lg rounded-lg pointer-events-auto flex ring-1 ring-black ring-opacity-5 overflow-hidden`}
+                            >
+                              <div className="w-1 bg-red-500"></div>
+                              <div className="flex-1 w-0 p-4">
+                                <div className="flex items-start">
+                                  <div className="flex-shrink-0">
+                                    <svg className="h-6 w-6 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                    </svg>
+                                  </div>
+                                  <div className="ml-3 flex-1 font-poppins">
+                                    <p className="text-sm font-medium text-gray-900">
+                                      Office Hours Not Scheduled for Today
+                                    </p>
+                                    <p className="mt-1 text-sm text-gray-500">
+                                      You cannot start this office hour session today as it is scheduled for another day.
+                                    </p>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          ), {
+                            duration: 5000,
+                            position: 'top-center',
+                          });
+                        }
+                      }}
                       className="flex items-center justify-center gap-2 w-full px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-indigo-500 to-blue-500 rounded-full hover:from-indigo-600 hover:to-blue-600 transition-all duration-300 transform hover:scale-[1.02]"
                     >
                       {data.meetingId && loadingStates[data.meetingId] ? (
@@ -603,8 +633,8 @@ const OfficeHourTile = ({
             )}
             {isOngoing && (
               <button
-                onClick={(e) =>{
-                  e.stopPropagation(); 
+                onClick={(e) => {
+                  e.stopPropagation();
                   data.meetingId && handleStartSession(data.meetingId);
                   // data.meetingId && handleJoinMeeting(data.meetingId);
                   pushToGTM({
@@ -649,7 +679,7 @@ const OfficeHourTile = ({
             endTime: new Date(
               editModalData.itemData.endTime
             ).toLocaleTimeString(),
-            thumbnail_image:editModalData.itemData.thumbnail_image
+            thumbnail_image: editModalData.itemData.thumbnail_image
           }}
           date={new Date(editModalData.itemData.startTime)}
           onClose={handleEditModalClose}

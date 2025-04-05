@@ -9,10 +9,11 @@ import { Abi } from "viem";
 export const daoConfigs: { [key: string]: DAOConfig } = {
   optimism: {
     name: "optimism",
+    uniqueIdentifier: "optimism-mainnet", 
     logo: "/images/op.png", // Move images to public folder for better maintainability
     chainId: 10,
     chainName: "OP Mainnet",
-    chainAddress: "0x4200000000000000000000000000000000000042",
+    tokenContractAddress: "0x4200000000000000000000000000000000000042",
     viemchain: optimism,
     lighthoueseIcon:
       "https://gateway.lighthouse.storage/ipfs/QmXaKNwUxvd4Ksc9R6hd36eBo97e7e7YPDCVuvHwqG4zgQ",
@@ -33,7 +34,7 @@ export const daoConfigs: { [key: string]: DAOConfig } = {
     attestationUrl: "https://optimism.easscan.org/offchain/attestation/view",
     eascontracAddress: "0x4200000000000000000000000000000000000021",
     delegateChangedsUrl:
-      "https://api.studio.thegraph.com/query/68573/op/v0.0.1",
+      "https://api.studio.thegraph.com/query/68573/op/v0.0.9",
     descriptionQuery: gql`
       query OptimismDescription($proposalId: String!) {
         proposalCreated1S(where: { proposalId: $proposalId }) {
@@ -55,10 +56,11 @@ export const daoConfigs: { [key: string]: DAOConfig } = {
   },
   arbitrum: {
     name: "arbitrum",
+    uniqueIdentifier: "arbitrum-mainnet", 
     logo: "/images/arbitrum.jpg",
     chainId: 42161,
     chainName: "Arbitrum One",
-    chainAddress: "0x912CE59144191C1204E64559FE8253a0e49E6548",
+    tokenContractAddress: "0x912CE59144191C1204E64559FE8253a0e49E6548",
     viemchain: arbitrum,
     lighthoueseIcon:
       "https://gateway.lighthouse.storage/ipfs/QmdP6ZkLq4FF8dcvxBs48chqFiXu7Gr8SgPCqMtfr7VA4L",
@@ -78,7 +80,7 @@ export const daoConfigs: { [key: string]: DAOConfig } = {
     attestationUrl: "https://arbitrum.easscan.org/offchain/attestation/view",
     eascontracAddress: "0xbD75f629A22Dc1ceD33dDA0b68c546A1c035c458",
     delegateChangedsUrl:
-      "https://api.studio.thegraph.com/query/477/arbitrum/v0.0.2",
+      "https://api.studio.thegraph.com/query/68573/arb_token/v0.0.3",
     descriptionQuery: gql`
       query MyQuery($proposalId: String!) {
         proposalCreateds(
@@ -94,10 +96,11 @@ export const daoConfigs: { [key: string]: DAOConfig } = {
   },
   arbitrumSepolia: {
     name: "Arbitrum Sepolia",
+    uniqueIdentifier: "arbitrumsepolia-mainnet", 
     logo: "/images/arbitrum.jpg", // Ensure you add this image to your public folder
     chainId: 421614,
     chainName: "Arbitrum Sepolia",
-    chainAddress: "0x0000000000000000000000000000000000000000", // Replace with actual address if available
+    tokenContractAddress: "0x0000000000000000000000000000000000000000", // Replace with actual address if available
     viemchain: arbitrumSepolia,
     lighthoueseIcon:
       "https://gateway.lighthouse.storage/ipfs/QmdP6ZkLq4FF8dcvxBs48chqFiXu7Gr8SgPCqMtfr7VA4L",
@@ -131,12 +134,57 @@ export const daoConfigs: { [key: string]: DAOConfig } = {
     `,
     type:"subgraph",
   },
+  letsgrowdao: {
+    name: "Let's Grow DAO",
+    uniqueIdentifier: "letsgrowdao-mainnet", 
+    logo: "/images/letsGrow.jpg", // Move images to public folder for better maintainability
+    chainId: 10,
+    chainName: "OP Mainnet",
+    tokenContractAddress: "0x6d95ad838d00427838d6e6fac043271a0ef2e484",
+    viemchain: optimism,
+    lighthoueseIcon:
+      "https://gateway.lighthouse.storage/ipfs/QmXaKNwUxvd4Ksc9R6hd36eBo97e7e7YPDCVuvHwqG4zgQ",
+    useContractSourceAddress:{Address:"0xcDF27F107725988f2261Ce2256bDfCdE8B382B10"},
+    discourseUrl: "https://gov.optimism.io/u",
+    explorerUrl: "https://optimistic.etherscan.io",
+    governanceUrl: "https://vote.optimism.io",
+    tokenSymbol: "OP",
+    dataSource:{},
+    subgraphUrl: "https://api.studio.thegraph.com/query/68573/lets_grow_dao_votingtoken/v0.0.3",
+    proposalAPIendpoint:{ProposalEndpoint:"/api/get-letsgrowdao-proposals",ProposalQueueEndpoint:"/api/get-arbitrum-queue-info"},
+    alchemyAttestationUrl: process.env.NEXT_PUBLIC_OP_ATTESTATION_URL || "",
+    offchainAttestationUrl: "https://optimism.easscan.org",
+    proposalUrl:"https://api.studio.thegraph.com/query/68573/lets_grow_dao_proposal/version/latest",
+    proposalAbi: op_proposals_abi as Abi,
+    attestationUrl: "https://optimism.easscan.org/offchain/attestation/view",
+    eascontracAddress: "0x4200000000000000000000000000000000000021",
+    delegateChangedsUrl:
+      "https://api.studio.thegraph.com/query/68573/lets_grow_dao_votingtoken/v0.0.2",
+    descriptionQuery: gql`
+      query OptimismDescription($proposalId: String!) {
+        proposalCreated1S(where: { proposalId: $proposalId }) {
+          description
+        }
+        proposalCreated2S(where: { proposalId: $proposalId }) {
+          description
+        }
+        proposalCreated3S(where: { proposalId: $proposalId }) {
+          description
+        }
+        proposalCreateds(where: { proposalId: $proposalId }) {
+          description
+        }
+      }
+    `,
+    type:"subgraph",
+    excludeAddresses: ["0x00000000000000000000000000000000000a4b86"]
+  },
   // mantle: {
   //   name: "Mantle",
   //   logo: "/images/Mantledaologo.png",
   //   chainId: 5000,
   //   chainName: "Mantle",
-  //   chainAddress: "0xEd459209796D741F5B609131aBd927586fcCACC5", // Replace with actual address
+  //   tokenContractAddress: "0xEd459209796D741F5B609131aBd927586fcCACC5", // Replace with actual address
   //   viemchain: mantle,
   //   lighthoueseIcon:
   //     "https://gateway.lighthouse.storage/ipfs/QmdP6ZkLq4FF8dcvxBs48chqFiXu7Gr8SgPCqMtfr7VA4L",
