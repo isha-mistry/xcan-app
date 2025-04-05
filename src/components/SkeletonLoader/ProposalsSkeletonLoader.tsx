@@ -11,7 +11,7 @@ const ProposalsSkeletonLoader = () => {
       <Alert
         message={
           <>
-          ⚠️ Fetching data is taking longer than usual. We're looking into the Subgraph issue. Thanks for your patience!
+          ⚠️ Fetching data is taking longer than usual. Were looking into the Subgraph issue. Thanks for your patience!
         </>
         }
         type="error"

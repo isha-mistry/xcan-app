@@ -21,10 +21,8 @@ export const ProposalStatusBadge = ({
     const currentTime = Math.floor(Date.now() / 1000); // Get current time in seconds
     const startTime = Math.floor(startTimestamp/1000); // Ensure startTimestamp is in seconds
 
-    console.log("currentTime:", currentTime, "startTime:", startTime);
 
     const timeDiff = startTime - currentTime; // Time difference in seconds
-    console.log("timeDiff:", timeDiff);
 
     if (timeDiff <= 0) {
         return "Starting now"; // Handle case when time difference is zero or negative
@@ -40,7 +38,6 @@ export const ProposalStatusBadge = ({
     if (hours > 0) timeParts.push(`${hours}h`);
     if (minutes > 0) timeParts.push(`${minutes}m`);
 
-    console.log("timeParts:", timeParts);
     
     return `Starts in ${timeParts.join(" ")}`;
 };
@@ -107,10 +104,8 @@ export const ProposalStatusBadge = ({
           
           // Make API call for this proposal
           const response = await fetch(`/api/get-tally-proposal?onchainId=${proposal.proposalId}&governorId=${governorId}`);
-          console.log("response",response)
           if (response.ok) {
             const data = await response.json();
-            console.log("data is ",data);
             if (data.success && data.proposal) {
               let startTimestamp, endTimestamp;
               if (data.proposal.start?.timestamp) {

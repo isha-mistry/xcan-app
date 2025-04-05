@@ -109,9 +109,16 @@ export async function GET(req: NextRequest) {
   const dao = searchParams.get('dao');
 
   try {
-    const config = dao ? daoConfigs[dao] : { url: DEFAULT_ENDPOINT, query: BASE_PROPOSAL_QUERY };
+    if (!dao) {
+      return NextResponse.json(
+        { error: 'DAO parameter is required' },
+        { status: 400 }
+      );
+    }
+
+    const config = daoConfigs[dao];
     
-    if (dao && !config) {
+    if (!config) {
       return NextResponse.json(
         { error: `DAO "${dao}" not supported. Available DAOs: ${Object.keys(daoConfigs).join(', ')}` },
         { status: 400 }
@@ -125,11 +132,12 @@ export async function GET(req: NextRequest) {
       0,
       config.dataTransformer
     );
+    
     return NextResponse.json(allProposals);
   } catch (error) {
-    console.error('Unexpected error:', error);
+    console.error('Error in get-canceledproposal:', error);
     return NextResponse.json(
-      { error: 'An unexpected error occurred' },
+      { error: error instanceof Error ? error.message : 'An unexpected error occurred' },
       { status: 500 }
     );
   }

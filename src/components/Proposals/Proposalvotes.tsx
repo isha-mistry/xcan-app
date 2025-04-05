@@ -57,7 +57,6 @@ const Proposalvotes: React.FC<ProposalvotesProps> = ({
 }) => {
   // Only run queries when both contract and proposalId are available
   const isReady = !!contract && !!proposalId;
-  console.log("contract", contract, blockNumber, dao, proposalId);
   const { data: votesData, isLoading: isVotesLoading } = useReadContract({
     address: contract,
     abi: daoConfigs[dao.toLowerCase()].proposalAbi,
@@ -76,7 +75,6 @@ const Proposalvotes: React.FC<ProposalvotesProps> = ({
         : [proposalId !== undefined ? BigInt(proposalId) : BigInt(0)],
     chainId: daoConfigs[dao].chainId,
   });
-  console.log("votedata", quorum, votesData);
   // Create vote data for chart only when data is available
   const voteData = useMemo(() => {
     if (!votesData || !Array.isArray(votesData)) {
