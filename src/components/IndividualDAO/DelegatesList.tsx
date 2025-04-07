@@ -124,7 +124,6 @@ function DelegatesList({ props }: { props: string }) {
       if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
 
       const data = await res.json();
-      console.log("Delegate data:", data);
       const formattedDelegates = await Promise.all(
         data.delegates.map(async (delegate: any) => {
           return {
@@ -136,7 +135,6 @@ function DelegatesList({ props }: { props: string }) {
           };
         })
       );
-console.log("formattedDelegates",formattedDelegates);
       setDelegateData((prev) => [...prev, ...formattedDelegates]);
       setSkip(data.nextSkip);
       setHasMore(data.hasMore);
@@ -190,7 +188,6 @@ console.log("formattedDelegates",formattedDelegates);
           );
           const filtered = await res.json();
 
-          console.log("Filtered results:", filtered);
           if (filtered.length > 0) {
             const formattedDelegate = {
               delegate: filtered[0].id,
@@ -220,7 +217,6 @@ console.log("formattedDelegates",formattedDelegates);
       setSearchQuery(query); // Immediately update the input field
       // If the input is cleared, reset any search-related processing
       if (query === "") {
-        console.log("Input cleared");
         debouncedSearch(""); // Optionally reset the query results
         return;
       }
@@ -242,7 +238,6 @@ console.log("formattedDelegates",formattedDelegates);
         try {
           const resolvedAddress = await fetchEnsAddress(query); // Resolve ENS to address
           if (resolvedAddress) {
-            console.log("Resolved ENS address:", resolvedAddress);
             debouncedSearch(resolvedAddress); // Query using the resolved address
           } else {
             console.log("No address found for ENS name.");
@@ -477,7 +472,6 @@ console.log("formattedDelegates",formattedDelegates);
 
       // console.log('Getting signer...');
       const signer = await provider.getSigner();
-console.log("signer",signer,tokenContractAddress);
       // console.log('Creating contract instance...');
       const contract = new Contract(tokenContractAddress, dao_abi.abi, signer);
 

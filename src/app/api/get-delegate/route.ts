@@ -90,7 +90,7 @@ export const GET = async (req: NextRequest) => {
     const skip = parseInt(searchParams.get("skip") || "0", 10);
     const sort = searchParams.get("sort") || "default";
     const UNIQUE_DELEGATES_COUNT = 20;
-    const FETCH_SIZE = 1000;
+    const FETCH_SIZE = 100; // Reduced batch size for more efficient fetching
 
     if (!dao || !daoConfigs[dao]) {
       return NextResponse.json(
@@ -123,19 +123,28 @@ export const GET = async (req: NextRequest) => {
 
     const client = getClient(dao);
     let uniqueDelegates = new Map();
-    let hasMore = true;
-    let newSkip = skip;
+    let hasMoreData = true;
+    let currentSkip = skip;
+    let totalFetched = 0;
+    
+    // We'll fetch one extra delegate to check if there are more beyond what we need
+    const fetchSizeWithExtra = UNIQUE_DELEGATES_COUNT + 1;
 
-    while (uniqueDelegates.size < UNIQUE_DELEGATES_COUNT && hasMore) {
+    while (uniqueDelegates.size < fetchSizeWithExtra && hasMoreData) {
       const delegateChangeds = await fetchSubgraphDelegates(
         client,
         query,
         FETCH_SIZE,
-        newSkip,
+        currentSkip,
         config.excludeAddresses
       );
 
-      if (delegateChangeds.length < FETCH_SIZE) hasMore = false;
+      totalFetched += delegateChangeds.length;
+      
+      // If we got fewer results than requested, we've reached the end of data
+      if (delegateChangeds.length < FETCH_SIZE) {
+        hasMoreData = false;
+      }
 
       for (const change of delegateChangeds) {
         const { id, latestBalance, delegatedFromCount } = change;
@@ -145,26 +154,40 @@ export const GET = async (req: NextRequest) => {
             balance: latestBalance, 
             ...(delegatedFromCount !== undefined && { delegatedFromCount }) 
           });
+          
+          // Stop collecting once we have enough plus one extra to check for more
+          if (uniqueDelegates.size >= fetchSizeWithExtra) {
+            break;
+          }
         }
-    
-        if (uniqueDelegates.size >= UNIQUE_DELEGATES_COUNT) break;
       }
 
-      newSkip += delegateChangeds.length;
+      // Update skip for next batch
+      currentSkip += delegateChangeds.length;
+      
+      // If we got no results at all, exit the loop
+      if (delegateChangeds.length === 0) {
+        break;
+      }
     }
 
-    let result = Array.from(uniqueDelegates.entries()).map(([delegate, data]) => ({
+    // Convert the Map to an Array
+    let fetchedResult = Array.from(uniqueDelegates.entries()).map(([delegate, data]) => ({
       delegate,
       ...data,
     }));
 
     // Ensure result is always an array
-    if (!Array.isArray(result)) {
-      console.error("Error: result is not an array!", result);
-      result = [];
+    if (!Array.isArray(fetchedResult)) {
+      console.error("Error: result is not an array!", fetchedResult);
+      fetchedResult = [];
     }
 
-    result = result.slice(0, UNIQUE_DELEGATES_COUNT);
+    // Calculate next skip value accurately
+    const nextSkip = skip + UNIQUE_DELEGATES_COUNT;
+
+    // Get only the requested number of delegates (not the extra one)
+    let result = fetchedResult.slice(0, UNIQUE_DELEGATES_COUNT);
 
     // Random sorting if requested
     if (sort === "random") {
@@ -174,10 +197,14 @@ export const GET = async (req: NextRequest) => {
         .map(({ value }) => value);
     }
 
+    // The hasMore value is true only if we collected more delegates than we need
+    const hasMore = uniqueDelegates.size > UNIQUE_DELEGATES_COUNT;
+
     return NextResponse.json({
       delegates: result,
-      nextSkip: newSkip,
-      hasMore,
+      nextSkip: nextSkip,
+      totalFetched: totalFetched,
+      hasMore: hasMore,
     });
   } catch (error) {
     console.error(error);
