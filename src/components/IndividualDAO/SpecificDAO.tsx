@@ -325,7 +325,9 @@ function SpecificDAO({ props }: { props: { daoDelegates: string } }) {
     { name: "Delegates List", value: "delegatesList" },
     { name: "Delegates Sessions", value: "delegatesSession" },
     { name: "Office Hours", value: "officeHours" },
-    { name:"Community Calendar", value: "communityCalendar" },
+    ...(props.daoDelegates !== "letsgrowdao"
+      ? [{ name: "Community Calendar", value: "communityCalendar" }]
+      : []),
     { name: "Leaderboard", value: "leaderboard" },
   ];
 
