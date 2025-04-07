@@ -108,7 +108,7 @@ function DelegatesList({ props }: { props: string }) {
   };
   const { data: accountBalance }: any = useReadContract({
     abi: dao_abi.abi,
-    address: daoConfigs[props].chainAddress as `0x${string}`,
+    address: daoConfigs[props].tokenContractAddress as `0x${string}`,
     functionName: "balanceOf",
     // args:['0x6eda5acaff7f5964e1ecc3fd61c62570c186ca0c' as Address]
     args: [walletAddress as Address],
@@ -124,18 +124,19 @@ function DelegatesList({ props }: { props: string }) {
       if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
 
       const data = await res.json();
+      console.log("Delegate data:", data);
       const formattedDelegates = await Promise.all(
         data.delegates.map(async (delegate: any) => {
           return {
             ...delegate,
-            adjustedBalance: delegate.latestBalance / 10 ** 18,
+            adjustedBalance: delegate.balance / 10 ** 18,
             // profilePicture: props === "optimism" ? OPLogo : ARBLogo,
             profilePicture:daoConfigs[props].logo,
             ensName: truncateAddress(delegate.delegate),
           };
         })
       );
-
+console.log("formattedDelegates",formattedDelegates);
       setDelegateData((prev) => [...prev, ...formattedDelegates]);
       setSkip(data.nextSkip);
       setHasMore(data.hasMore);
@@ -188,6 +189,8 @@ function DelegatesList({ props }: { props: string }) {
             `/api/search-delegate?address=${query}&dao=${props}`
           );
           const filtered = await res.json();
+
+          console.log("Filtered results:", filtered);
           if (filtered.length > 0) {
             const formattedDelegate = {
               delegate: filtered[0].id,
@@ -278,6 +281,11 @@ function DelegatesList({ props }: { props: string }) {
 
     const client = createClient({
       url: daoConfigs[props].delegateChangedsUrl,
+      fetchOptions: {
+        headers: {
+          Authorization: `Bearer ${process.env.NEXT_PUBLIC_THEGRAPH_API_KEY}`,
+        },
+      },
       exchanges: [cacheExchange, fetchExchange],
     });
     
@@ -326,7 +334,7 @@ function DelegatesList({ props }: { props: string }) {
   //     return;
   //   }
 
-  //   const chainAddress = getChainAddress(chain?.name);
+  //   const tokenContractAddress = getChainAddress(chain?.name);
   //   const network = props === "optimism" ? "OP Mainnet" : "Arbitrum One";
   //   alert(`189:${network}`);
   //   alert(`190:${walletClient?.chain.name}`);
@@ -340,7 +348,7 @@ function DelegatesList({ props }: { props: string }) {
   //   try {
   //     setDelegatingToAddr(true);
   //     await walletClient.writeContract({
-  //       address: chainAddress,
+  //       address: tokenContractAddress,
   //       chain: props === "arbitrum" ? arbitrum : optimism,
   //       abi: dao_abi.abi,
   //       functionName: "delegate",
@@ -387,9 +395,9 @@ function DelegatesList({ props }: { props: string }) {
       return;
     }
 
-    // const chainAddress = getChainAddress(chain?.name);
-    const chainAddress=daoConfigs[props.toLowerCase()].chainAddress;
-    if (!chainAddress) {
+    // const tokenContractAddress = getChainAddress(chain?.name);
+    const tokenContractAddress=daoConfigs[props.toLowerCase()].tokenContractAddress;
+    if (!tokenContractAddress) {
       toast.error("Invalid chain address,try again!");
       pushToGTM({
         event: "delegation_attempt",
@@ -469,9 +477,9 @@ function DelegatesList({ props }: { props: string }) {
 
       // console.log('Getting signer...');
       const signer = await provider.getSigner();
-
+console.log("signer",signer,tokenContractAddress);
       // console.log('Creating contract instance...');
-      const contract = new Contract(chainAddress, dao_abi.abi, signer);
+      const contract = new Contract(tokenContractAddress, dao_abi.abi, signer);
 
       // console.log('Initiating delegation transaction...');
       const tx = await contract.delegate(to);

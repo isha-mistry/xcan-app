@@ -12,7 +12,6 @@ const SelectDaoButton: React.FC<{ daoName: string }> = ({ daoName }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-
   const router = useRouter();
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const hoverDelay = 300;
@@ -37,12 +36,12 @@ const SelectDaoButton: React.FC<{ daoName: string }> = ({ daoName }) => {
     }, hoverDelay);
   };
 
-  const handleChainSwitch = async (chainId: number) => {
+  const handleChainSwitch = async (chainId: number, daoKey: string) => {
     setIsLoading(true);
     try {
       await switchChain?.({ chainId });
       if (address) {
-        router.push(`/profile/${address}?active=info`);
+        router.push(`/profile/${address}?active=info&dao=${daoKey}`);
       }
     } catch (error) {
       console.error("Error switching chain:", error);
@@ -79,8 +78,8 @@ const SelectDaoButton: React.FC<{ daoName: string }> = ({ daoName }) => {
                 />
                 <div>
                   <h1 className="text-sm md:text-lg font-medium text-gray-900">
-                    {currentDaoConfig.name.charAt(0).toUpperCase() +
-                      currentDaoConfig.name.slice(1)}
+                    {currentDaoConfig?.name.charAt(0).toUpperCase() +
+                      currentDaoConfig?.name.slice(1)}
                   </h1>
                 </div>
               </div>
@@ -121,7 +120,7 @@ const SelectDaoButton: React.FC<{ daoName: string }> = ({ daoName }) => {
                     <div
                       className="option flex items-center cursor-pointer px-2 sm:px-3 py-1.5 sm:py-2 
                    rounded-lg transition duration-300 ease-in-out transform hover:scale-105 capitalize"
-                      onClick={() => handleChainSwitch(dao.chainId)}
+                      onClick={() => handleChainSwitch(dao.chainId, key)}
                     >
                       <div className="flex items-center">
                         <Image

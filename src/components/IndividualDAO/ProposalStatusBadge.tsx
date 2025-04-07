@@ -52,7 +52,12 @@ export const ProposalStatusBadge = ({
       const currentTime = Math.floor(Date.now() / 1000);
       const startTime = proposal.startTime;
       const endTime = proposal.endTime;
-
+      if (
+        Array.isArray(canceledProposals) &&
+        canceledProposals.some((item: any) => item.proposalId === proposal.proposalId)
+      ) {
+        return "Closed";
+      }
       if (currentTime < startTime) {
         // return getRemainingTime(startTime.getTime());
         return "Upcoming";
@@ -75,7 +80,7 @@ export const ProposalStatusBadge = ({
           // return getRemainingTime(startTime.getTime());
           return "Upcoming";
         } else if (currentTime >= startTime && currentTime <= endTime) {
-          return "Active";
+          return "Active2";
         } else {
           return "Closed";
         }
@@ -127,7 +132,7 @@ export const ProposalStatusBadge = ({
                   // return getRemainingTime(startTime.getTime());
                   return "Upcoming";
                  } else if (currentTime >= startTime && currentTime <= endTime) {
-                  return "Active";
+                  return "Active3";
                 } else {
                   return "Closed";
                 }
