@@ -54,7 +54,6 @@ const ProposalMainStatus = ({ proposalTimeline, dao , defeated, cancelled, cance
 
 
   // const blockNumber = "12345678"; // Example block number
-  console.log("proposalTimeline", proposalTimeline);
   const timelineData: TimelineItem[] = (
     [
       (!cancelled || isBeforeCancellation(new Date(proposalTimeline[0].publishOnchain.time * 1000).toString())) ? {
@@ -161,7 +160,6 @@ const ProposalMainStatus = ({ proposalTimeline, dao , defeated, cancelled, cance
       }: null
     ] as TimelineItem[]
   ).filter(Boolean); // ✅ Removes null values
-console.log("timelineData",timelineData)
 const formatDate = (dateString: string): string => {
   const date = new Date(dateString);
   const day = date.getDate(); // Get local date

@@ -137,6 +137,7 @@ function ProposalMain({ props }: { props: Props }) {
   const [isLoading, setIsLoading] = useState(true);
   const [chartData, setChartData] = useState<any>([]);
   const [canceledProposals, setCanceledProposals] = useState<any[]>([]);
+  const [isLoadingCanceledProposals, setIsLoadingCanceledProposals] = useState(true);
   const [support0Weight, setSupport0Weight] = useState(0);
   const [support1Weight, setSupport1Weight] = useState(0);
   const [support2Weight, setSupport2Weight] = useState(0);
@@ -535,7 +536,6 @@ function ProposalMain({ props }: { props: Props }) {
   );
 
   const quorum = Number(quorumData) / 10 ** 18;
-  console.log("quorum", quorum, quorumDataConfig);
   // Use the appropriate data based on the network
   // const hasUserVoted = props.daoDelegates === "optimism"
   // ? Boolean(hasVotedOptimism)
@@ -565,7 +565,7 @@ function ProposalMain({ props }: { props: Props }) {
       );
 
       if (!response.ok) {
-        // console.log("Network response was not ok");
+        console.log("Network response was not ok");
       }
       const result = await response.json();
     } catch (error) {
@@ -666,14 +666,36 @@ function ProposalMain({ props }: { props: Props }) {
   //     }
   //   }
   // }, [isExpanded, data?.description]);
+  useEffect(() => {
+    const fetchCanacelledProposals = async () => {
+      setIsLoadingCanceledProposals(true);
+      try {
+        const response = await fetch(`/api/get-canceledproposal?dao=${props.daoDelegates}`);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const result = await response.json();
+        if (Array.isArray(result)) {
+          setCanceledProposals(result);
+        } else {
+          console.error("Invalid response format:", result);
+          setCanceledProposals([]);
+        }
+      } catch (error) {
+        console.error("Error fetching canceled proposals:", error);
+        setCanceledProposals([]);
+      } finally {
+        setIsLoadingCanceledProposals(false);
+      }
+    };
+    fetchCanacelledProposals();
+  }, [props.daoDelegates]);
 
   useEffect(() => {
     if (contentRef.current) {
-      console.log(contentRef.current.scrollHeight, "scroll height");
       const shouldShowButton = isLargeScreen
         ? contentRef.current.scrollHeight > 640
         : contentRef.current.scrollHeight > 200;
-      console.log(shouldShowButton, "shouldshow button");
       setShowViewMoreButton(shouldShowButton);
     }
   }, [data?.description, isLargeScreen, loading, , formattedDescription]);
@@ -808,15 +830,8 @@ function ProposalMain({ props }: { props: Props }) {
     }
   };
 
-  useEffect(() => {
-    const fetchCanacelledProposals = async () => {
-      const response = await fetch(`/api/get-canceledproposal?dao=${props.daoDelegates}`);
-      const result = await response.json();
-      
-      setCanceledProposals(result);
-    };
-    fetchCanacelledProposals();
-  }, []);
+ 
+
   useEffect(() => {
     const fetchDescription = async () => {
       if (props.daoDelegates === "optimism") {
@@ -834,7 +849,6 @@ function ProposalMain({ props }: { props: Props }) {
             proposalCreateds,
           } = result.data;
 
-          console.log("optimism result", result.data);
           const currentTime = Date.now() / 1000;
           if (proposalCreated1S.length > 0) {
             const proposalTime = {
@@ -952,6 +966,7 @@ function ProposalMain({ props }: { props: Props }) {
       } else {
         setError(null);
         try {
+          
           const proposalEndpoint =
             daoConfigs[props.daoDelegates].proposalAPIendpoint
               ?.ProposalEndpoint;
@@ -963,11 +978,9 @@ function ProposalMain({ props }: { props: Props }) {
             `${proposalEndpoint}?proposalId=${props.id}`
           );
           const result = await response.json();
-          console.log("arbitrum result", result);
           const deadlineBlock =
             result.data[0].extension?.extendedDeadline ||
             result.data[0].endBlock;
-          console.log("deadlineBlock", deadlineBlock);
           const proposalStarttimestamp = result.data[0]?.startBlock
             ? await calculateEthBlockMiningTime(
                 Number(result.data[0].startBlock),
@@ -982,62 +995,54 @@ function ProposalMain({ props }: { props: Props }) {
               )
             : undefined;
 
-          console.log(
-            "proposal timestamps",
-            proposalStarttimestamp,
-            proposalEndtimestamp
-          );
-
           const currentDate = Date.now() / 1000; // Convert to seconds
-          console.log(
-            "proposalStarttimestamp",
-            proposalStarttimestamp,
-            currentDate,
-            proposalEndtimestamp
-          );
           // Extract epoch times
           const proposalStartTime = proposalStarttimestamp?.TimeInEpoch || 0;
           const proposalEndTime = proposalEndtimestamp?.TimeInEpoch || 0;
 
-          let state = "Closed";
+          let state = "";
           let message = "";
-          if (proposalStartTime && proposalStartTime > currentDate) {
-            // Proposal is yet to start, show countdown
-            const timeDiff = proposalStartTime - currentDate;
-            const days = Math.floor(timeDiff / (3600 * 24));
-            const hours = Math.floor((timeDiff % (3600 * 24)) / 3600);
-            const minutes = Math.floor((timeDiff % 3600) / 60);
 
-            // Build the message dynamically, filtering out zeros
-            const timeParts = [];
-            if (days > 0) timeParts.push(`${days}d`);
-            if (hours > 0) timeParts.push(`${hours}h`);
-            if (minutes > 0) timeParts.push(`${minutes}m`);
+          // Wait for cancelled proposals to load before setting state
+          if (!isLoadingCanceledProposals) {
+            // First check if proposal is cancelled
+            if (Array.isArray(canceledProposals) && 
+                canceledProposals.some((item: any) => item.proposalId === result.data[0].proposalId)) {
+              state = "Closed";
+            } else if (proposalStartTime && proposalStartTime > currentDate) {
+              // Proposal is yet to start, show countdown
+              const timeDiff = proposalStartTime - currentDate;
+              const days = Math.floor(timeDiff / (3600 * 24));
+              const hours = Math.floor((timeDiff % (3600 * 24)) / 3600);
+              const minutes = Math.floor((timeDiff % 3600) / 60);
 
-            state = `Starts in ${timeParts.join(" ")}`;
-          } else if (
-         (  proposalStartTime &&
-            proposalEndTime &&
-            currentDate >= proposalStartTime &&
-            currentDate < proposalEndTime) || (result.data[0].startTime && currentDate >= result.data[0].startTime && currentDate < result.data[0].endTime)
-          ) {
-            // Proposal is active
-            state = "Active";
-          } else {
-            // Proposal has ended
-            state = "Closed";
+              // Build the message dynamically, filtering out zeros
+              const timeParts = [];
+              if (days > 0) timeParts.push(`${days}d`);
+              if (hours > 0) timeParts.push(`${hours}h`);
+              if (minutes > 0) timeParts.push(`${minutes}m`);
+
+              state = `Starts in ${timeParts.join(" ")}`;
+            } else if (
+              (proposalStartTime &&
+                proposalEndTime &&
+                currentDate >= proposalStartTime &&
+                currentDate < proposalEndTime) || 
+              (result.data[0].startTime && 
+                currentDate >= result.data[0].startTime && 
+                currentDate < result.data[0].endTime)
+            ) {
+              // Proposal is active
+              state = "Active";
+            } else {
+              // Proposal has ended
+              state = "Closed";
+            }
           }
-          if (
-            Array.isArray(canceledProposals) &&
-            canceledProposals.some((item: any) => item.proposalId === result.data[0].proposalId)
-          ) {
-            state = "Closed";
-          }
-
+          
           setProposalState(state);
 
           setVotingEndTime(proposalEndTime);
-          console.log("Proposal state:", state, message);
 
           setData(result.data[0]);
 
@@ -1075,9 +1080,7 @@ function ProposalMain({ props }: { props: Props }) {
               time: queueInfo?.eta,
             },
           };
-          console.log("proposalTime", proposalTime);
           setProposalTimeline([proposalTime]);
-          console.log("proposalTimeline");
         } catch (err: any) {
           setError(err.message);
         }
@@ -1086,7 +1089,7 @@ function ProposalMain({ props }: { props: Props }) {
       setLoading(false);
     };
     fetchDescription();
-  }, [props]);
+  }, [props,canceledProposals]);
 
   const fetchVotePage = async (blockTimestamp: string, first: number) => {
     const response = await fetch(
@@ -1203,7 +1206,6 @@ function ProposalMain({ props }: { props: Props }) {
     }
   };
   const processProposalDailyVoteSummaries = (data: any[]) => {
-    console.log("data", data);
     // Transform the data directly from the new query
     const processedData = data.map((summary) => ({
       name: summary.dayString,
@@ -1213,7 +1215,6 @@ function ProposalMain({ props }: { props: Props }) {
       totalVotes: parseFloat(summary.totalVotes) / 1e18,
       date: new Date(summary.dayString), // Assuming 'day' is a valid date string
     }));
-    console.log("processedData", processedData);
     // Optional: Sort the data by date
     const sortedData = processedData.sort(
       (a, b) => a.date.getTime() - b.date.getTime()
@@ -1363,17 +1364,14 @@ function ProposalMain({ props }: { props: Props }) {
     const timeDifference = currentTime - proposalTime;
     const daysDifference = timeDifference / (24 * 60 * 60 * 1000);
 
-    console.log(canceledProposals, "cancle proposal");
     if (canceledProposals.some((item) => item.proposalId === props.id)) {
       return "CANCELLED";
     }
 
     if (props.daoDelegates === "arbitrum") {
-      console.log("queue start and end", queueStartTime, queueEndTime);
-      console.log(quorum, support1Weight, support0Weight);
+
       if (queueStartTime && queueEndTime) {
         const currentTime = currentDate.getTime() / 1000; // Convert to seconds
-        console.log("currentTime", currentTime < queueStartTime, queueEndTime);
         if (currentTime < queueStartTime) {
           return currentDate <= votingEndTime! ? "PENDING" : "QUEUED";
         } else if (
@@ -1388,14 +1386,6 @@ function ProposalMain({ props }: { props: Props }) {
             : "DEFEATED";
         }
       } else {
-        console.log(
-          "votingEndTime",
-          votingEndTime,
-          currentTime.getTime(),
-          quorum,
-          support1Weight,
-          support0Weight
-        );
         return !votingEndTime
           ? "PENDING"
           : currentTime.getTime() / 1000 > votingEndTime
@@ -1416,21 +1406,6 @@ function ProposalMain({ props }: { props: Props }) {
       }
       const currentTimeEpoch = Date.now() / 1000;
       const effectiveQuorum = dailyVotes[0]?.quorum ?? quorum;
-      console.log("dailyVotes", dailyVotes, quorum, effectiveQuorum);
-      console.log(
-        "currentTimeEpoch",
-        currentTimeEpoch,
-        data.endTime,
-        quorum,
-        support1Weight,
-        support0Weight,
-        support2Weight
-      );
-      console.log(
-        "conditioncheck",
-        support1Weight! > support0Weight!,
-        effectiveQuorum < support1Weight + support2Weight
-      );
       return currentTimeEpoch > data.endTime!
         ? effectiveQuorum < support1Weight + support2Weight &&
           support1Weight! > support0Weight!

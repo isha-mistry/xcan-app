@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+export const revalidate = 0;
 
 interface Vote {
   transactionHash: string;
@@ -22,7 +23,6 @@ interface ProposalVoteSummary {
 // Adjust total supply and quorum as needed
 const TOTAL_SUPPLY = BigInt(21); // Increased for more realistic scenario
 const QUORUM_THRESHOLD = TOTAL_SUPPLY * BigInt(51) / BigInt(100); 
-console.log('Quorum Threshold:', QUORUM_THRESHOLD.toString());
 async function fetchAllVotes(): Promise<Vote[]> {
   try {
     const response = await fetch('https://api.studio.thegraph.com/query/68573/lets_grow_dao_proposal/version/latest', {
@@ -84,7 +84,6 @@ function calculateVoteWeights(votes: Vote[]): ProposalVoteSummary {
     .reduce((total, vote) => total + safeParseBalance(vote.balance), BigInt(0));
 
   const totalVotes = weightFor + weightAgainst;
-console.log('Total Votes:', totalVotes.toString());
   return {
     proposalId: votes[0]?.proposal || '',
     weightFor: weightFor.toString(),
@@ -112,7 +111,7 @@ export async function GET(request: NextRequest) {
     }
 
     const proposalSummaries = summarizeProposalVotes(votes);
-    
+
     return NextResponse.json({ 
       totalVotesFound: votes.length,
       proposalVoteSummaries: proposalSummaries 

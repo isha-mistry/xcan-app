@@ -24,7 +24,6 @@ const ProposalStatus: React.FC<ProposalStatusProps> = ({
   const [status, setStatus] =  useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   // const [proposalTiming, setProposalTiming] = useState<ProposalTiming | null>(null);
-console.log("--------proposalStatus--------",proposal,"-----",canceledProposals,"-----",networkType,"-----",proposalTiming)
   const StatusLoader = () => (
     <div className="flex items-center justify-center p-2">
       <Loader2 className="h-4 w-4 animate-spin" />
@@ -36,11 +35,8 @@ console.log("--------proposalStatus--------",proposal,"-----",canceledProposals,
       try {
         const TodayDate = new Date();
         const currentTime = Math.round(TodayDate.getTime() / 1000);
-        console.log("currentTime",currentTime)
         let calculatedStatus: string | null = null;
         if (networkType === "arbitrum") {
-          console.log("proposalTiming",proposalTiming)
-          console.log("proposalTiming",proposal.queueStartTime,proposal.queueEndTime,currentTime)
           const endTimeEpoch = proposal.timing?.endTime 
           ? Math.floor(new Date(proposal.timing.endTime).getTime() / 1000) 
           : null;
@@ -58,14 +54,12 @@ console.log("--------proposalStatus--------",proposal,"-----",canceledProposals,
           } else if (endTimeEpoch && currentTime > endTimeEpoch) {
             calculatedStatus= proposal.support1Weight! > proposal.support0Weight! ? "SUCCEEDED" : "DEFEATED";
           } else {
-            console.log(proposal,currentTime)
             // Default case if proposal is still in voting period or pending
             calculatedStatus = "PENDING";
           }
         } else {
           // Other DAO networks logic
           // First check if proposal is cancelled
-          console.log("proposal",proposal,currentTime,proposal.endTime)
           if(proposal.proposalId==="114318499951173425640219752344574142419220609526557632733105006940618608635406" || proposal.proposalId==="38506287861710446593663598830868940900144818754960277981092485594195671514829"){
             calculatedStatus ="SUCCEEDED"
           }else if (
