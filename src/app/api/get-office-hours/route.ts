@@ -232,7 +232,7 @@ export async function GET(req: NextRequest) {
                 case "Recorded":
                   recorded.push(meetingDocument);
 
-                  if (result.host_address === host_address) {
+                  if (result.host_address.toLowerCase() === host_address?.toLowerCase()) {
                     meetingDocument.meeting_starttime =
                       attendanceVerification?.startTime;
                     meetingDocument.meeting_endtime =
@@ -249,7 +249,7 @@ export async function GET(req: NextRequest) {
 
                   if (
                     meeting.attendees?.some(
-                      (attendee) => attendee.attendee_address === host_address
+                      (attendee) => attendee.attendee_address.toLowerCase() === (host_address || '').toLowerCase()
                     )
                   ) {
                     meetingDocument.meeting_starttime =
@@ -263,7 +263,7 @@ export async function GET(req: NextRequest) {
                           metadata: { walletAddress: string };
                         }) =>
                           participant.metadata?.walletAddress?.toLowerCase() ===
-                          host_address?.toLowerCase()
+                          (host_address || '').toLowerCase()
                       );
                     meetingDocument.isEligible = isParticipant;
                     attended.push(meetingDocument);
