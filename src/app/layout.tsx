@@ -17,6 +17,7 @@ import { ApiDataProvider } from "@/contexts/ApiDataContext";
 import TopNavbar from "@/components/TopNavbar/TopNavbar";
 import { Toaster } from "react-hot-toast";
 import AuthGuard from "@/components/ComponentUtils/AuthGuard";
+
 const poppins = Poppins({
   subsets: ["latin"],
   weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
@@ -43,14 +44,22 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://app.chora.club/"),
   title: "Chora Club",
   description: "Discover. Learn. Engage.",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'ChoraClub PWA'
+  },
+  manifest: '/manifest.json',
   icons: {
     icon: ["/favicon.png"],
+    apple: [{ url: "/favicon.png" }],
   },
   openGraph: {
     title: "Chora Club",
     description: "Discover. Learn. Engage.",
     url: "https://app.chora.club/",
     siteName: "Chora Club",
+
     images: [
       {
         url: "https://gateway.lighthouse.storage/ipfs/QmZmWxpdhQZnag8HZtwZPLR5wtK2jjfgsTBMpNpmijtZ5x",
@@ -68,6 +77,7 @@ export const metadata: Metadata = {
     locale: "en_US",
     type: "website",
   },
+
 };
 
 export default function RootLayout({
@@ -115,6 +125,7 @@ export default function RootLayout({
           <Suspense>
             <RootProviders>
               <ApiDataProvider>
+
                 <div className="flex">
                   {/* <div className="hidden lg:block fixed w-[6%] bg-blue-shade-100 h-screen z-10">
                     <SidebarMain />
@@ -130,6 +141,7 @@ export default function RootLayout({
                     <AuthGuard>{children}</AuthGuard>
                   </div>
                 </div>
+
               </ApiDataProvider>
             </RootProviders>
           </Suspense>

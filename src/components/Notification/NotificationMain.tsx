@@ -64,6 +64,7 @@ function NotificationMain() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [selectedTab, setSelectedTab] = useState("Info");
   const dropdownRef = useRef<HTMLDivElement | null>(null);
+
   const tabs = [
     { name: "All", value: "all" },
     // { name: "Past Votes", value: "votes" },
@@ -221,30 +222,42 @@ function NotificationMain() {
   }, [fetchNotifications, canFetch]);
 
   useEffect(() => {
+    // Function to handle new notifications
+    const handleNewNotification = async (message: Notification) => {
+      console.log("New notification received:", message);
+
+      // Create notification data
+      const notificationData: Notification = {
+        _id: message?._id,
+        receiver_address: message.receiver_address,
+        content: message.content,
+        createdAt: Date.now(),
+        read_status: false,
+        notification_name: message.notification_name,
+        notification_type: message.notification_type,
+        notification_title: message.notification_title,
+        additionalData: message?.additionalData,
+      };
+
+      // Add to local state
+      addNotification(notificationData);
+      updateCombinedNotifications();
+
+    };
+
+    // Socket connection and event binding
     if (socket && walletAddress && socketId) {
+      // Register host
       socket.emit("register_host", { hostAddress: walletAddress, socketId });
 
-      socket.on("new_notification", (message: Notification) => {
-        console.log("New notification received:", message);
-        const notificationData: Notification = {
-          _id: message?._id,
-          receiver_address: message.receiver_address,
-          content: message.content,
-          createdAt: Date.now(),
-          read_status: false,
-          notification_name: message.notification_name,
-          notification_type: message.notification_type,
-          notification_title: message.notification_title,
-          additionalData: message?.additionalData,
-        };
-        addNotification(notificationData);
-        updateCombinedNotifications();
-      });
+      // Listen for new notifications
+      socket.on("new_notification", handleNewNotification);
     }
 
+    // Cleanup function
     return () => {
       if (socket) {
-        socket.off("new_notification");
+        socket.off("new_notification", handleNewNotification);
       }
     };
   }, [

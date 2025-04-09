@@ -16,8 +16,6 @@ import {
 } from "@/utils/NotificationUtils";
 import { SOCKET_BASE_URL } from "@/config/constants";
 
-
-
 function getRandomElementFromArray(arr: any[]) {
   const randomIndex = Math.floor(Math.random() * arr.length);
   return arr[randomIndex];
@@ -107,6 +105,7 @@ async function sendNotifications(
 
         socket.on("connect", () => {
           console.log("Connected to WebSocket server from API");
+          console.log("Socket url", SOCKET_BASE_URL);
 
           // Emit office_hours_scheduled event with notifications
           socket.emit("officehours_scheduled", {
