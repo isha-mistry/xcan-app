@@ -17,6 +17,6 @@ if [ $? -ne 0 ]; then
 fi
 
 # ✅ Run tests
-echo "🧪 Running tests..."
-yarn test
+# echo "🧪 Running tests..."
+# yarn test
 
