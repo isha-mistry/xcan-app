@@ -37,6 +37,9 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# Ignore Workbox cache script and service worker
+public/workbox-*.js
+
 .env*
 .flaskenv*
 !.env.project

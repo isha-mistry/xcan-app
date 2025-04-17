@@ -1,0 +1,48 @@
+name: PR Check
+
+on:
+  pull_request:
+    branches:
+      - main-v2.0.0
+
+jobs:
+  validate-pr:
+    name: Validate PR Rules
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: ⬇️ Checkout code
+        uses: actions/checkout@v3
+
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: yarn
+
+      - name: 📥 Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: 🔎 Check ESLint rules
+        run: yarn eslint . --ext .ts,.tsx
+
+      # - name: 🧪 Run tests
+      #   run: yarn test
+
+      - name: 🏗️ Run build to ensure no build errors
+        run: yarn build
+
+      - name: 🚫 Prevent direct push to main
+        if: github.event.pull_request.base.ref == 'main-v2.0.0' && github.event.pull_request.head.ref == 'main-v2.0.0'
+        run: |
+          echo "❌ Direct PR to main from main is not allowed"
+          exit 1
+
+      - name: 🔤 Check branch name lowercase
+        run: |
+          BRANCH_NAME="${{ github.head_ref }}"
+          echo "🔍 Checking branch name: $BRANCH_NAME"
+          if ! echo "$BRANCH_NAME" | grep -qE '^[a-z0-9/_\-]+$'; then
+            echo "❌ Branch name must be lowercase only"
+            exit 1
+          fi

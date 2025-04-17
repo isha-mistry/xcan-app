@@ -1,0 +1,22 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+# ✅ Check lowercase branch name
+branch="$(git symbolic-ref --short HEAD)"
+if ! echo "$branch" | grep -qE '^[a-z0-9/_\-]+$'; then
+  echo "❌ Branch name must be lowercase only. Current: $branch"
+  exit 1
+fi
+
+# ✅ ESLint check
+echo "🔧 Running ESLint..."
+yarn eslint . --ext .ts,.tsx
+if [ $? -ne 0 ]; then
+  echo "❌ ESLint check failed."
+  exit 1
+fi
+
+# ✅ Run tests
+echo "🧪 Running tests..."
+yarn test
+

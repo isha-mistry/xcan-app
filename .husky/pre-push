@@ -1,0 +1,15 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+branch="$(git symbolic-ref --short HEAD)"
+if [ "$branch" = "main-v2.0.0" ]; then
+  echo "🚫 Direct push to main is not allowed. Please use a feature branch."
+  exit 1
+fi
+
+echo "📦 Running build..."
+yarn build
+if [ $? -ne 0 ]; then
+  echo "❌ Build failed. Fix the issues before pushing."
+  exit 1
+fi
