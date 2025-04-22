@@ -2,10 +2,17 @@
 . "$(dirname "$0")/_/husky.sh"
 
 branch="$(git symbolic-ref --short HEAD)"
+
 if [ "$branch" = "main-v2.0.0" ]; then
-  echo "🚫 Direct push to main is not allowed. Please use a feature branch."
-  exit 1
+  if [ "$BYPASS_PROTECTED" != "true" ]; then
+    echo "🚫 Direct push to $branch is not allowed. Please use a feature branch."
+    echo "👉 To bypass (only for emergencies), run: BYPASS_PROTECTED=true git push"
+    exit 1
+  else
+    echo "⚠️ Bypass active: Pushing directly to $branch"
+  fi
 fi
+
 
 echo "📦 Running build..."
 yarn build

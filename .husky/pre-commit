@@ -3,10 +3,13 @@
 
 # ✅ Check lowercase branch name
 branch="$(git symbolic-ref --short HEAD)"
-if ! echo "$branch" | grep -qE '^[a-z0-9/_\-]+$'; then
-  echo "❌ Branch name must be lowercase only. Current: $branch"
+
+if ! echo "$branch" | grep -qE '^[a-z0-9/_\.\-]+$'; then
+  echo "❌ Branch name must be lowercase only and can only include a-z, 0-9, /, -, and ."
+  echo "Current branch: $branch"
   exit 1
 fi
+
 
 # ✅ ESLint check
 echo "🔧 Running ESLint..."
