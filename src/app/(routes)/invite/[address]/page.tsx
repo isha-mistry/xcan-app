@@ -10,11 +10,10 @@ export async function generateMetadata(
 ): Promise<Metadata> {
   const inviteeDetails = await fetchInviteeDetails(params.address);
 
-  const title = `You have been invited on ChoraClub by ${
-    inviteeDetails?.ensName ||
+  const title = `You have been invited on ChoraClub by ${inviteeDetails?.ensName ||
     inviteeDetails?.displayName ||
     inviteeDetails?.formattedAddr
-  }`;
+    }`;
   const description = "Ours truly,";
 
   const user =
@@ -22,13 +21,13 @@ export async function generateMetadata(
 
   return {
     metadataBase: new URL("https://stylus-university.vercel.app/"),
-    title: "Stylus University",
+    title: "Arbitrum University",
     description: "Discover. Learn. Engage.",
     openGraph: {
       title: title,
       description: description,
       url: `https://stylus-university.vercel.app/invite/${params.address}`,
-      siteName: "Stylus University",
+      siteName: "Arbitrum University",
       // images: [
       //   `${BASE_URL}/api/images/og/referral?inviteeName=${encodeURIComponent(
       //     inviteeDetails?.ensName ||

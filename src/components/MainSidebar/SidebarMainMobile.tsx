@@ -20,6 +20,7 @@ import cclogo from "@/assets/images/daos/CCLogo.png";
 import { IoGiftSharp } from "react-icons/io5";
 import ConnectWalletWithENS from "../ConnectWallet/ConnectWalletWithENS";
 import { usePrivy } from "@privy-io/react-auth";
+import logo from "@/assets/images/icon.svg";
 
 const SidebarMainMobile = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -71,30 +72,37 @@ const SidebarMainMobile = () => {
 
   return (
     <div className="relative">
-      <div className="absolute top-0 left-0 flex items-center justify-between w-full border-b-1 p-1 bg-white">
+      <div className="absolute top-0 left-0 flex items-center justify-between w-full border-b-1 p-1 bg-[#1a1a1a]">
         <div className="flex">
           <div
-            className={`${authenticationCheck ? "block" : "hidden"} bg-blue-shade-200 text-white text-lg font-bold p-1.5 rounded-full cursor-pointer my-4 mx-2 0.2xs:mx-4`}
+            className={`bg-blue-shade-200 text-white text-lg font-bold p-1.5 rounded-full cursor-pointer my-4 mx-2 0.2xs:mx-4`}
             onClick={toggleSidebar}
           >
             <IoMenu className="size-6" />
           </div>
-          <div className={`${authenticationCheck ? "block" : "hidden"} border border-l-0 h-16`}></div>
+          <div className={`flex border border-l-0 h-16`}></div>
           <Link
             className="ml-2 0.2xs:ml-4 mt-[3px] text-black font-semibold text-[32px] font-tektur flex items-center"
-            href={isConnected ? "/" : ""}
+            href={"/"}
           >
-            Chora <span className="text-blue-shade-200">Club</span>
+            <Image
+              src={logo}
+              alt={"image"}
+              width={200}
+              height={200}
+              className="h-11 w-11"
+            ></Image>
+            <span className="text-white text-[26px]">Arbitrum University</span>
           </Link>
         </div>
-        <div className="mr-2 xm:mr-4">
-          {(isLoginPage && isConnected && authenticated) && <ConnectWalletWithENS />}{" "}
-        </div>
+        {/* <div className="mr-2 xm:mr-4">
+          {<ConnectWalletWithENS />}
+        </div> */}
       </div>
 
       <div
         ref={sidebarRef}
-        className={`fixed inset-y-0 left-0 w-full font-tektur sm:w-72 bg-blue-shade-200 text-white transform z-10 ${isOpen ? "translate-x-0" : "-translate-x-full"
+        className={`fixed inset-y-0 left-0 w-full font-tektur bg-blue-shade-200 text-white transform z-10 ${isOpen ? "translate-x-0" : "-translate-x-full"
           } transition-transform duration-500 ease-in-out`}
         onClick={handleSidebarClick}
       >
@@ -110,10 +118,10 @@ const SidebarMainMobile = () => {
               <HiArrowSmLeft className="size-6" />
             </button>
             <Link
-              className="ml-5 text-black font-semibold text-[32px] font-tektur"
-              href={"https://chora.club/"}
+              className="ml-5 text-black font-semibold text-[26px] font-tektur"
+              href={"https://stylus-university.vercel.app/"}
             >
-              Chora <span className="text-white">Club</span>
+              Arbitrum <span className="text-white">University</span>
             </Link>
           </div>
 
@@ -209,22 +217,6 @@ const SidebarMainMobile = () => {
                 </Link>
                 <div className="h-[0.1px] w-full bg-white"></div>
               </li>
-              <li>
-                <Link
-                  href={"https://docs.chora.club/"}
-                  target="_blank"
-                  className="block py-4 pl-6 sm:py-5 hover:bg-blue-shade-100"
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center">
-                      <SiGitbook className="size-5 mr-4" />
-                      <span>Docs</span>
-                    </div>
-                    <FiArrowUpRight className="w-5 h-5" />
-                  </div>
-                </Link>
-                <div className="h-[0.1px] w-full bg-white"></div>
-              </li>
 
               {/* <Link href="#" className="block py-4 pl-6 sm:py-5 hover:bg-blue-shade-100">
                 <div className="flex items-center justify-between">
@@ -235,24 +227,18 @@ const SidebarMainMobile = () => {
                     <FiArrowUpRight className="w-5 h-5" />
                   </div>
                 </Link> */}
-              {!isConnected && !session ? (
-                isPageLoading || sessionLoading ? (
-                  <li>
-                    <div className="block py-4 pl-6 sm:py-5 hover:bg-blue-shade-100">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center">
-                          <FaUser className="size-5 mr-4" />
-                          <span>Profile</span>
-                        </div>
-                        <FiArrowUpRight className="w-5 h-5" />
+              {!isConnected || !session ? (
+                <li>
+                  <div className="block py-4 pl-6 sm:py-5 hover:bg-blue-shade-100">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center">
+                        <FaUser className="size-5 mr-4" />
+                        <span>Profile</span>
                       </div>
+                      <FiArrowUpRight className="w-5 h-5" />
                     </div>
-                  </li>
-                ) : (
-                  <li>
-                    <ConnectWallet />
-                  </li>
-                )
+                  </div>
+                </li>
               ) : (
                 <li>
                   <Link
@@ -271,67 +257,13 @@ const SidebarMainMobile = () => {
               )}
             </ul>
           </nav>
-          {storedDao.length > 0 && (
-            <>
-              <div className=" flex flex-col w-[90%] gap-2 absolute bottom-4 mx-[5%] ">
-                <h1 className="text-white font-semibold text-lg">
-                  Recently Viewed DAOs
-                </h1>
-                <div className="flex items-center gap-4 rounded-xl bg-blue-shade-300 p-4">
-                  {storedDao ? (
-                    storedDao.map((data, index) => (
-                      <div
-                        key={index}
-                        className="flex flex-col items-center"
-                        onMouseOver={() => handleMouseOver(index)}
-                        onMouseOut={() => handleMouseOut(index)}
-                      >
-                        <Badge
-                          isInvisible={!badgeVisiblity[index]}
-                          content={<IoClose />}
-                          className="p-[0.1rem] cursor-pointer border-blue-shade-300"
-                          color="danger"
-                          size="sm"
-                          onClick={() => handleBadgeClick(data[0])}
-                        >
-                          <Tooltip
-                            content={
-                              <div
-                                className={`${styles.customTooltip} capitalize`}
-                              >
-                                {data[0]}
-                              </div>
-                            }
-                            placement="bottom"
-                            className="rounded-md bg-opacity-90 bg-gray-700"
-                            closeDelay={1}
-                          >
-                            <Link href={`/${data[0]}?active=about`}>
-                              <Image
-                                key={index}
-                                src={data[1]}
-                                width={80}
-                                height={80}
-                                alt="image"
-                                className={`w-10 h-10 xl:w-11 xl:h-11 2xl:w-12 2xl:h-12 2.5xl:w-14 2.5xl:h-14 rounded-full cursor-pointer ${styles.icon3d
-                                  } ${pathname.includes(`/${data[0]}`)
-                                    ? "border-white border-[2.5px]"
-                                    : ""
-                                  }`}
-                                priority={true}
-                              ></Image>
-                            </Link>
-                          </Tooltip>
-                        </Badge>
-                      </div>
-                    ))
-                  ) : (
-                    <></>
-                  )}
-                </div>
-              </div>
-            </>
-          )}
+
+          <>
+            <div className=" flex flex-col w-[90%] gap-2 absolute bottom-4 mx-[5%] ">
+              <ConnectWalletWithENS />
+            </div>
+          </>
+
         </div>
       </div>
     </div>

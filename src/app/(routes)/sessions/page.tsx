@@ -4,14 +4,14 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://stylus-university.vercel.app/"),
-  title: "Stylus University",
+  title: "Arbitrum University",
   description: "Discover. Learn. Engage.",
   openGraph: {
     title: "Available Delegates",
     description:
       "Explore available uses by date, and time to book sessions and unlock Web3 opportunities.",
     url: "https://stylus-university.vercel.app/available-delegates",
-    siteName: "Stylus University",
+    siteName: "Arbitrum University",
     // images: [
     //   {
     //     url: "https://gateway.lighthouse.storage/ipfs/QmUEoQqvoYbfp9ZD3AHzDNBYTmwovDifVBxWByzr8mMKnT",

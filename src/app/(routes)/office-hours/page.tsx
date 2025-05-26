@@ -5,14 +5,14 @@ import WalletWrapper from "@/components/WalletWrapper";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://stylus-university.vercel.app/"),
-  title: "Stylus University",
+  title: "Arbitrum University",
   description: "Discover. Learn. Engage.",
   openGraph: {
     title: "Office Hours",
     description:
       "Find all the current, upcoming, and past office hours hosted by different DAOs, and easily search them by using Title or Host Address.",
     url: "https://stylus-university.vercel.app/office-hours?hours=ongoing",
-    siteName: "Stylus University",
+    siteName: "Arbitrum University",
     // images: [
     //   {
     //     url: "https://gateway.lighthouse.storage/ipfs/QmPjZZxacLkRM1kPSBMmyV45MUtCHJPAPYW21cSds8gUet",
@@ -35,9 +35,9 @@ export const metadata: Metadata = {
 function page() {
   return (
     <WalletWrapper>
-    <div>
+      <div>
         <DaoOfficeHours />
-    </div>
+      </div>
     </WalletWrapper>
   );
 }

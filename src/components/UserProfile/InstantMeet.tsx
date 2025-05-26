@@ -209,15 +209,14 @@ function InstantMeet({ isDelegate, selfDelegate, daoName }: instantMeetProps) {
           d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
         />
       </svg>
-      <h2 className="text-xl font-semibold mb-2 text-[#3E3D3D]">
+      <h2 className="text-xl font-semibold mb-2 text-white">
         Instant Meet Ready!
       </h2>
-      <p className="text-base text-gray-600 mb-4 max-w-md px-4">
-        Your instant meeting <strong>{createdMeetingTitle || "..."}</strong> for{" "}
-        <strong>{daoName.charAt(0).toUpperCase() + daoName.slice(1)}</strong>{" "}
+      <p className="text-base text-gray-200 mb-4 max-w-md px-4">
+        Your instant meeting <strong>{createdMeetingTitle || "..."}</strong> 
         DAO has been created.
       </p>
-      <p className="text-xs text-gray-500 mt-2">
+      <p className="text-xs text-gray-400 mt-2">
         Click <strong>Start Meet</strong> below to join.
       </p>
     </div>
@@ -337,21 +336,25 @@ function InstantMeet({ isDelegate, selfDelegate, daoName }: instantMeetProps) {
       <Modal
         isOpen={isOpen}
         onClose={handleCloseModal}
-        className="font-tektur"
+        className="font-tektur dark"
         placement="center"
         backdrop="blur"
+        classNames={{
+          base: "bg-gray-900 border border-gray-700",
+          backdrop: "bg-black/50"
+        }}
       >
-        <ModalContent>
-          <ModalHeader className="flex flex-col gap-1">
+        <ModalContent className="bg-gray-900 text-white border border-gray-700">
+          <ModalHeader className="flex flex-col gap-1 bg-gray-900 text-white border-b border-gray-700">
             {modalStep === 1
               ? "Provide details for instant meet"
               : "Instant Meet Created"}
           </ModalHeader>
 
-          <ModalBody className="relative overflow-hidden min-h-[280px]">
+          <ModalBody className="relative overflow-hidden min-h-[280px] bg-gray-900">
             {/* Step 1: Form View */}
             <div
-              className={`absolute top-0 left-0 w-full transition-all duration-300 ease-in-out transform px-6 ${modalStep === 1
+              className={`w-full transition-all duration-300 ease-in-out transform px-6 ${modalStep === 1
                 ? "translate-x-0 opacity-100"
                 : "-translate-x-full opacity-0 pointer-events-none"
                 }`}
@@ -375,13 +378,14 @@ function InstantMeet({ isDelegate, selfDelegate, daoName }: instantMeetProps) {
             </div>
           </ModalBody>
 
-          <ModalFooter>
+          <ModalFooter className="bg-gray-900 border-t border-gray-700">
             {modalStep === 1 && (
               <>
                 <Button
                   color="default"
                   variant="light"
                   onPress={handleCloseModal}
+                  className="text-gray-300 hover:text-white hover:bg-gray-700"
                 >
                   Cancel
                 </Button>
@@ -389,6 +393,7 @@ function InstantMeet({ isDelegate, selfDelegate, daoName }: instantMeetProps) {
                   color="primary"
                   onPress={startInstantMeet}
                   isDisabled={confirmSave || !modalData.title.trim()}
+                  className="bg-blue-600 hover:bg-blue-700 text-white disabled:bg-gray-600 disabled:text-gray-400"
                 >
                   {confirmSave ? (
                     <Oval
@@ -410,7 +415,7 @@ function InstantMeet({ isDelegate, selfDelegate, daoName }: instantMeetProps) {
               <>
                 <Button
                   color="primary"
-                  className="bg-blue-shade-200 hover:bg-blue-700 text-white"
+                  className="bg-blue-600 hover:bg-blue-700 text-white disabled:bg-gray-600 disabled:text-gray-400"
                   onPress={() => {
                     openMeetingInNewTab(createdRoomId);
                     handleCloseModal();

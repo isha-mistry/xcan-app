@@ -64,7 +64,7 @@ export async function GET(req: NextRequest, context: { params: Params }) {
 
       client.close();
       return NextResponse.json(
-        { success: true, collection: "meetings", data: mergedData },
+        { success: true, collection: "sessions", data: mergedData },
         { status: 200 }
       );
     } else if (officeHoursDocuments.length > 0) {

@@ -41,7 +41,7 @@ export async function PUT(req: NextRequest, res: NextResponse) {
     const db = client.db();
     const collectionRef = db.collection(collection);
 
-    if (collection === "meetings") {
+    if (collection === "sessions") {
       // Handle meetings collection
       const result = await collectionRef.findOneAndUpdate(
         { meetingId: meetingId, meeting_status: "Recorded" },

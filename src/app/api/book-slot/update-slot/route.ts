@@ -175,7 +175,7 @@ export async function PUT(
           try {
             await sendMail({
               to: emailId,
-              name: "Stylus University",
+              name: "Arbitrum University",
               subject: "Session Rejected",
               body: `The session you have booked has been rejected by the delegate due to following reason: ${rejectionReason}`,
             });

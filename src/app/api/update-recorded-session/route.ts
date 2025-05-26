@@ -28,7 +28,7 @@ export async function PUT(req: NextRequest, res: NextResponse) {
     const collection = db.collection("sessions");
 
     if (cacheWrapper.isAvailable) {
-      await cacheWrapper.delete("meetings");
+      await cacheWrapper.delete("sessions");
     }
 
     // Prepare the update object

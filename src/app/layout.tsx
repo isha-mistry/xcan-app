@@ -31,12 +31,12 @@ const tektur = Tektur({
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://stylus-university.vercel.app/"),
-  title: "Arbitrum Stylus University",
+  title: "Arbitrum University",
   description: "Discover. Learn. Engage.",
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
-    title: 'Arbitrum Stylus University PWA'
+    title: 'Arbitrum University PWA'
   },
   manifest: '/manifest.json',
   icons: {
@@ -44,10 +44,10 @@ export const metadata: Metadata = {
     apple: [{ url: "/favicon.png" }],
   },
   openGraph: {
-    title: "Arbitrum Stylus University",
+    title: "Arbitrum University",
     description: "Discover. Learn. Engage.",
     url: "https://stylus-university.vercel.app/",
-    siteName: "Arbitrum Stylus University",
+    siteName: "Arbitrum University",
 
     // images: [
     //   {
@@ -63,7 +63,7 @@ export const metadata: Metadata = {
     //     alt: "img",
     //   },
     // ],
-    
+
     locale: "en_US",
     type: "website",
   },

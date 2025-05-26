@@ -49,7 +49,7 @@ async function prepareOgImage(watchData: any) {
     title = title.substring(0, 45) + "...";
   }
 
-  console.log(title,"title of vifeo")
+  console.log(title, "title of vifeo")
   // Construct the URL for the image API
   const imageApiUrl = `${BASE_URL}/api/images/og/video?title=${encodeURIComponent(
     title
@@ -93,7 +93,7 @@ export async function generateMetadata({
 
     const formattedDaoName = dao_name
       ? dao_name.charAt(0).toUpperCase() + dao_name.slice(1)
-      : "Unknown DAO"; 
+      : "Unknown DAO";
 
     if (description.length > 55) {
       description = description.substring(0, 55) + "...";
@@ -102,10 +102,10 @@ export async function generateMetadata({
     // const imageApiUrl = await prepareOgImage(watchData);
 
     return {
-      title: "Stylus University",
+      title: "Arbitrum University",
       description: `Watch this video hosted on ${formattedDaoName} DAO on ${title}`,
       openGraph: {
-        title: "Stylus University",
+        title: "Arbitrum University",
         description: `Watch this video: ${title}`,
         // images: [imageApiUrl],
       },

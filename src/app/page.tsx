@@ -2,12 +2,15 @@
 
 import { motion } from "framer-motion";
 import { Calendar, Clock, Users, Video, BookOpen, Award, Star } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export default function Home() {
+  const router = useRouter();
+
   return (
     <main className="min-h-screen bg-dark-primary font-tektur">
       {/* Hero Section */}
-      <section className="relative min-h-[85vh] flex items-center justify-center overflow-hidden">
+      <section className="relative min-h-[85vh] py-6 flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-dark-secondary to-dark-primary opacity-50"></div>
         <div className="container mx-auto px-4 z-10">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
@@ -22,7 +25,7 @@ export default function Home() {
                 <span className="text-blue-shade-100 font-medium">Join Our Growing Community</span>
               </div>
               <h1 className="text-4xl md:text-6xl font-bold text-dark-text-primary mb-6 leading-tight">
-                Welcome to Stylus University
+                Welcome to Arbitrum University
               </h1>
               <p className="text-xl text-dark-text-secondary mb-8 max-w-2xl">
                 Your platform for meaningful sessions and office hours. Connect, learn, and grow with our community of experts and learners.
@@ -66,6 +69,7 @@ export default function Home() {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   className="bg-blue-shade-100 text-white px-8 py-3 rounded-full font-semibold hover:bg-blue-shade-300 transition-colors flex items-center justify-center gap-2"
+                  onClick={() => router.push("/profile?active=info")}
                 >
                   <Star className="w-5 h-5" />
                   Get Started
@@ -74,6 +78,7 @@ export default function Home() {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   className="bg-dark-tertiary text-dark-text-primary px-8 py-3 rounded-full font-semibold hover:bg-dark-accent transition-colors flex items-center justify-center gap-2"
+                  onClick={() => router.push("/profile?active=info")}
                 >
                   <Calendar className="w-5 h-5" />
                   View Schedule
@@ -213,6 +218,7 @@ export default function Home() {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             className="bg-blue-shade-100 text-white px-8 py-3 rounded-full font-semibold hover:bg-blue-shade-300 transition-colors"
+            onClick={() => router.push("/profile?active=info")}
           >
             Get Started
           </motion.button>

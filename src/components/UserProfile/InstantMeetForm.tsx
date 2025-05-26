@@ -47,11 +47,6 @@ const InstantMeetForm = React.memo(
           required
           key="form-description-textarea" 
         />
-
-        <div className="px-1 font-medium">Selected DAO:</div>
-        <div className="outline-none bg-[#D9D9D945] rounded-md px-2 py-1 text-sm capitalize mt-1">
-          {daoName}
-        </div>
       </>
     );
   }

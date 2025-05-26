@@ -21,7 +21,7 @@ export async function GET(req: NextRequest, res: NextResponse) {
     const limit = parseInt(url.searchParams.get("limit") || "20");
     const offset = (page - 1) * limit;
 
-    // const cacheKey = "meetings"; // Single cache key for all meeting data
+    // const cacheKey = "sessions"; // Single cache key for all meeting data
     const cacheKey = `meetings_${page}_${limit}`;
 
     // Try to get from cache first

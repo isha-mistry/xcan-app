@@ -148,7 +148,7 @@ export async function POST(req: NextRequest) {
             try {
               await sendMail({
                 to: emailId,
-                name: "Stylus University",
+                name: "Arbitrum University",
                 subject: "Session Booked",
                 body: compileBookedSessionTemplate(
                   "Your session has been Booked.",
@@ -170,7 +170,7 @@ export async function POST(req: NextRequest) {
             try {
               await sendMail({
                 to: emailId,
-                name: "Stylus University",
+                name: "Arbitrum University",
                 subject: "Session Booked",
                 body: compileBookedSessionTemplate(
                   "🎉 Hooray! Your session is officially booked! ",

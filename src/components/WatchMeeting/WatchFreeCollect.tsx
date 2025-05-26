@@ -257,7 +257,7 @@ const WatchFreeCollect = ({
         });
         const responseData = await response.json();
         return responseData;
-      } else if (collection === "meetings") {
+      } else if (collection === "sessions") {
         raw = JSON.stringify({
           meetingId: data.meetingId,
           host_address: data.host_address,

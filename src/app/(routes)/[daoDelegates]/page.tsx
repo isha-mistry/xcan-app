@@ -43,13 +43,13 @@ import WalletWrapper from "@/components/WalletWrapper";
 
 //   return {
 //     metadataBase: new URL("https://stylus-university.vercel.app/"),
-//     title: "Stylus University",
+//     title: "Arbitrum University",
 //     description: "Discover. Learn. Engage.",
 //     openGraph: {
 //       title: delegateMetadata.title,
 //       description: delegateMetadata.description,
 //       url: `https://stylus-university.vercel.app/${daoDelegates}`,
-//       siteName: "Stylus University",
+//       siteName: "Arbitrum University",
 //       images: [
 //         {
 //           url: delegateMetadata.image,
@@ -73,13 +73,13 @@ import WalletWrapper from "@/components/WalletWrapper";
 function page({ params }: { params: { daoDelegates: string } }) {
   return (
     <WalletWrapper>
-    <div>
-      {/* {metadataConfig[params.daoDelegates] ? ( */}
+      <div>
+        {/* {metadataConfig[params.daoDelegates] ? ( */}
         <IndividualDAO props={params} />
-      {/* ) : (
+        {/* ) : (
         <PageNotFound />
       )} */}
-    </div>
+      </div>
     </WalletWrapper>
   );
 }

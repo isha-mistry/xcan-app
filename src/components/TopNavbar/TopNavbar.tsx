@@ -1,8 +1,7 @@
 "use client";
 import Link from "next/link";
 import Image from "next/image";
-// import logo from "@/assets/images/icon.svg";
-import logo_text from "@/assets/images/text.svg";
+import logo from "@/assets/images/icon.svg";
 import { usePathname } from "next/navigation";
 import styles from "./TopNavbar.module.css";
 import style from "../Notification/NotificationIconComponent.module.css";
@@ -94,21 +93,15 @@ function TopNavbar() {
     <>
       <div className="flex justify-between items-center w-screen px-4 font-tektur">
         <div className="flex gap-2 items-center">
-          <Link href="/" target="_blank">
-            {/* <Image
+          <Link href="/" target="_blank" className="flex items-center gap-2">
+            <Image
               src={logo}
               alt={"image"}
               width={200}
               height={200}
-              className="logo bg-black rounded-full p-1 w-10 h-10"
-            ></Image> */}
-            <Image
-              src={logo_text}
-              alt={"image"}
-              width={200}
-              height={200}
-              className="w-80"
+              className="h-11 w-11"
             ></Image>
+            <span className="text-white text-[26px] font-bold">Arbitrum University</span>
           </Link>
           {/* <Link
             className="text-black font-semibold text-[28px] font-tektur flex items-center mt-[4px]"

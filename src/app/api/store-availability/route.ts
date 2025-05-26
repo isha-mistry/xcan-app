@@ -100,7 +100,7 @@ export async function POST(
           try {
             await sendMail({
               to: emailId,
-              name: "Stylus University",
+              name: "Arbitrum University",
               subject: "Session Scheduled",
               body: compileBookedSessionTemplate(
                 "Your session has been Scheduled.",
@@ -158,7 +158,7 @@ export async function POST(
             try {
               await sendMail({
                 to: emailId,
-                name: "Stylus University",
+                name: "Arbitrum University",
                 subject: "Session Scheduled",
                 body: compileBookedSessionTemplate(
                   "Your session has been Scheduled.",

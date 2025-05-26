@@ -187,7 +187,7 @@ export async function GET(req: NextRequest) {
                 display: "flex",
               }}
             >
-              {inviteeName} has invited you to become a creator on Stylus University!
+              {inviteeName} has invited you to become a creator on Arbitrum University!
             </div>
             <div style={{ display: "flex", gap: "10px" }}>
               <div

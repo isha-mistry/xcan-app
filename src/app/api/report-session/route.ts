@@ -40,7 +40,7 @@ export async function POST(req: NextRequest, res: NextResponse) {
     let existingDocument;
     let query;
 
-    if (collection === "meetings") {
+    if (collection === "sessions") {
       query = { meetingId, host_address };
       existingDocument = await collectionRef.findOne(query);
     } else if (collection === "office_hours") {
@@ -79,7 +79,7 @@ export async function POST(req: NextRequest, res: NextResponse) {
       (report) => report.user_wallet_address
     );
 
-    if (collection === "meetings") {
+    if (collection === "sessions") {
       const existingReports = existingDocument.video_reports?.reports || [];
       const userAlreadyReported = existingReports.some(
         (report: { user_wallet_address: string }) =>

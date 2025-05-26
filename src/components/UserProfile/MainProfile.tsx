@@ -4,7 +4,7 @@ import React, { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import copy from "copy-to-clipboard";
 import Link from "next/link";
-import ccLogo from "@/assets/images/daos/CCLogo2.png";
+import ccLogo from "@/assets/images/icon.svg";
 import dao_abi from "../../artifacts/Dao.sol/GovernanceToken.json";;
 import lighthouse from "@lighthouse-web3/sdk";
 import InstantMeet from "./InstantMeet";
@@ -67,12 +67,6 @@ function MainProfile() {
   const [daoName, setDaoName] = useState("");
   const [attestationStatistics, setAttestationStatistics] = useState<MeetingRecords | null>(null);
   const [isCopied, setIsCopied] = useState(false);
-  const [followings, setFollowings] = useState(0);
-  const [followers, setFollowers] = useState(0);
-  const [loading, setLoading] = useState(false);
-  const [isFollowingModalOpen, setIsFollowingModalOpen] = useState(false);
-  const [userFollowings, setUserFollowings] = useState<Following[]>([]);
-  const [isModalLoading, setIsModalLoading] = useState(false);
   const [isToggled, setToggle] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [selectedTab, setSelectedTab] = useState("Info");
@@ -541,19 +535,6 @@ function MainProfile() {
                         ? "w-full xs:w-28 xs:h-28 sm:w-36 sm:h-36 lg:w-40 lg:h-40 rounded-3xl"
                         : "w-14 h-14 sm:w-20 sm:h-20 lg:w-20 lg:h-20 rounded-3xl"
                     }
-                    priority={true}
-                  />
-
-                  <Image
-                    src={ccLogo}
-                    alt="ChoraClub Logo"
-                    className="absolute top-0 right-0 bg-white rounded-full"
-                    style={{
-                      width: "30px",
-                      height: "30px",
-                      marginTop: "10px",
-                      marginRight: "10px",
-                    }}
                     priority={true}
                   />
                 </div>
