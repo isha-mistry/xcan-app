@@ -246,7 +246,7 @@ function InstantMeet({ isDelegate, selfDelegate, daoName }: instantMeetProps) {
           <div className="grid gris-cols-4 2md:grid-cols-7 rounded-3xl border-solid border-2 border-[#F9F9F9]-900">
             <div className="col-span-4 border-solid border-b-2 2md:border-b-0 2md:border-r-2 border-[#F9F9F9]-900">
               <div className="p-6 xs:p-10 xm:p-14">
-                <div className="text-white text-2xl xs:text-3xl font-semibold font-poppins text-center">
+                <div className="text-white text-2xl xs:text-3xl font-semibold font-tektur text-center">
                   Start an Instant Meeting
                 </div>
                 <div className="grid grid-cols-2 xm:grid-cols-3 xm:grid-rows-2 text-xs xs:text-sm gap-6 xs:gap-11 font-semibold pt-8 text-[#3E3D3D] text-center">
@@ -255,7 +255,7 @@ function InstantMeet({ isDelegate, selfDelegate, daoName }: instantMeetProps) {
                       key={index}
                       content={
                         <div className="px-1 py-3 w-80 ">
-                          <div className="font-poppins text-white text-center">
+                          <div className="font-tektur text-white text-center">
                             {data.description}
                           </div>
                         </div>
@@ -337,7 +337,7 @@ function InstantMeet({ isDelegate, selfDelegate, daoName }: instantMeetProps) {
       <Modal
         isOpen={isOpen}
         onClose={handleCloseModal}
-        className="font-poppins"
+        className="font-tektur"
         placement="center"
         backdrop="blur"
       >
@@ -352,8 +352,8 @@ function InstantMeet({ isDelegate, selfDelegate, daoName }: instantMeetProps) {
             {/* Step 1: Form View */}
             <div
               className={`absolute top-0 left-0 w-full transition-all duration-300 ease-in-out transform px-6 ${modalStep === 1
-                  ? "translate-x-0 opacity-100"
-                  : "-translate-x-full opacity-0 pointer-events-none"
+                ? "translate-x-0 opacity-100"
+                : "-translate-x-full opacity-0 pointer-events-none"
                 }`}
             >
               <InstantMeetForm
@@ -367,8 +367,8 @@ function InstantMeet({ isDelegate, selfDelegate, daoName }: instantMeetProps) {
             {/* Step 2: Confirmation View */}
             <div
               className={`absolute top-0 left-0 w-full transition-all duration-300 ease-in-out transform ${modalStep === 2
-                  ? "translate-x-0 opacity-100"
-                  : "translate-x-full opacity-0 pointer-events-none"
+                ? "translate-x-0 opacity-100"
+                : "translate-x-full opacity-0 pointer-events-none"
                 }`}
             >
               <ModalConfirmationContent />

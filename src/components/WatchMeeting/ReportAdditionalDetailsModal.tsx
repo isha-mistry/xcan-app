@@ -129,7 +129,7 @@ function ReportAdditionalDetailsModal({
 
   return (
     <>
-      <div className="fixed inset-0 z-50 flex items-center justify-center font-poppins">
+      <div className="fixed inset-0 z-50 flex items-center justify-center font-tektur">
         <div
           className="absolute inset-0 backdrop-blur-md"
           onClick={toggleModal}

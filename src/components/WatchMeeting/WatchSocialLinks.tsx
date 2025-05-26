@@ -35,12 +35,12 @@ const WatchSocialLinks = ({
       socialMedia: "Discourse",
       handles:
         data.dao_name === "optimism" &&
-        data.hostProfileInfo?.socialHandles?.discourse
+          data.hostProfileInfo?.socialHandles?.discourse
           ? `https://gov.optimism.io/${data.hostProfileInfo?.socialHandles?.discourse}`
           : data.dao_name === "arbitrum" &&
             data.hostProfileInfo?.socialHandles?.discourse
-          ? `https://forum.arbitrum.foundation/${data.hostProfileInfo?.socialHandles?.discourse}`
-          : "",
+            ? `https://forum.arbitrum.foundation/${data.hostProfileInfo?.socialHandles?.discourse}`
+            : "",
     },
     {
       img: twitter,
@@ -67,7 +67,7 @@ const WatchSocialLinks = ({
 
   return (
     <>
-      <div className="font-poppins 1.7xl:text-lg  text-base w-full">
+      <div className="font-tektur 1.7xl:text-lg  text-base w-full">
         <div className="flex mb-5">
           <p className="font-medium xl:text-base 1.7xl:text-lg">Social Links</p>
         </div>

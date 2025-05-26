@@ -93,7 +93,7 @@ function UpdateSessionDetails({ roomId }: { roomId: string }) {
     try {
       if (address?.toLowerCase() === data.host_address.toLowerCase()) {
         setLoading(true);
-        const token=await getAccessToken();
+        const token = await getAccessToken();
         const myHeaders: HeadersInit = {
           "Content-Type": "application/json",
           ...(address && {
@@ -136,7 +136,7 @@ function UpdateSessionDetails({ roomId }: { roomId: string }) {
   };
 
   return (
-    <div className="font-poppins">
+    <div className="font-tektur">
       {!dataLoading ? (
         address?.toLowerCase() === data?.host_address.toLowerCase() ? (
           <div className="py-5 px-16 ">
@@ -167,21 +167,19 @@ function UpdateSessionDetails({ roomId }: { roomId: string }) {
               <div className="flex">
                 <Button
                   onClick={() => setViewMode("edit")}
-                  className={`rounded-l-full ${
-                    viewMode === "edit"
+                  className={`rounded-l-full ${viewMode === "edit"
                       ? "bg-black text-white"
                       : "bg-white border border-black text-black"
-                  }`}
+                    }`}
                 >
                   Edit
                 </Button>
                 <Button
                   onClick={() => setViewMode("preview")}
-                  className={`rounded-r-full ${
-                    viewMode === "preview"
+                  className={`rounded-r-full ${viewMode === "preview"
                       ? "bg-black text-white"
                       : "bg-white border border-black text-black"
-                  }`}
+                    }`}
                 >
                   Preview
                 </Button>

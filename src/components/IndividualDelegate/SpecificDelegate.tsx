@@ -71,7 +71,7 @@ function SpecificDelegate({ props }: { props: Type }) {
   const [isFromDatabase, setFromDatabase] = useState(false);
   const [errorOccurred, setErrorOccurred] = useState(false);
   const [avatar, setAvatar] = useState("");
-  const {address} = useAccount();
+  const { address } = useAccount();
 
 
   const handleCopy = (addr: string) => {
@@ -390,7 +390,7 @@ function SpecificDelegate({ props }: { props: Type }) {
             <MainProfileSkeletonLoader />
           ) :
             errorOccurred == false ? (
-              <div className="font-poppins">
+              <div className="font-tektur">
                 {/* {followed && <Confetti recycle={false} numberOfPieces={550} />} */}
                 <div className="flex flex-col md:flex-row pb-5 lg:py-5 px-4 md:px-6 lg:px-14 justify-between items-start">
                   <div className="flex flex-col xs:flex-row xs:items-start xs:justify-start items-center lg:items-start justify-center lg:justify-start w-full lg:w-auto">

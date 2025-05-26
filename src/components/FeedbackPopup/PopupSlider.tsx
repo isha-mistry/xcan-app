@@ -97,7 +97,7 @@ function PopupSlider({
   };
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center z-50 font-poppins">
+    <div className="fixed inset-0 flex items-center justify-center z-50 font-tektur">
       <div className="absolute inset-0 backdrop-blur-md"></div>
       <div className="bg-white py-8 px-10 rounded-2xl border w-1/3 2xl:w-1/4 border-black shadow-lg relative z-10">
         {popups.length > 1 && (
@@ -127,11 +127,10 @@ function PopupSlider({
               <button
                 onClick={prevPopup}
                 disabled={currentPopup === 0 || isSubmitting}
-                className={`text-sm font-semibold px-4 ${
-                  currentPopup === 0 || isSubmitting
+                className={`text-sm font-semibold px-4 ${currentPopup === 0 || isSubmitting
                     ? "opacity-50 cursor-not-allowed"
                     : ""
-                }`}
+                  }`}
               >
                 Previous
               </button>
@@ -139,11 +138,10 @@ function PopupSlider({
                 <button
                   onClick={nextPopup}
                   disabled={responses[currentPopup] === undefined}
-                  className={`py-1 px-3  font-semibold text-sm text-white rounded-full ${
-                    responses[currentPopup] === undefined
+                  className={`py-1 px-3  font-semibold text-sm text-white rounded-full ${responses[currentPopup] === undefined
                       ? "cursor-not-allowed bg-gray-500"
                       : "bg-blue-shade-200"
-                  }`}
+                    }`}
                 >
                   Next
                 </button>
@@ -155,11 +153,10 @@ function PopupSlider({
             <button
               onClick={handleSubmit}
               disabled={Object.keys(responses).length !== popups.length}
-              className={`py-1 px-3 font-semibold text-sm text-white rounded-full ${
-                Object.keys(responses).length !== popups.length
+              className={`py-1 px-3 font-semibold text-sm text-white rounded-full ${Object.keys(responses).length !== popups.length
                   ? "cursor-not-allowed bg-gray-500"
                   : "bg-green-800"
-              }`}
+                }`}
             >
               {isSubmitting ? (
                 <div className="flex items-center justify-center px-4">

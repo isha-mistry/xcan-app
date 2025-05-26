@@ -206,7 +206,7 @@ function Leaderboard({ props }: { props: string }) {
 
   return (
     <>
-      <div className="container mx-auto xs:p-4 font-poppins">
+      <div className="container mx-auto xs:p-4 font-tektur">
         <div className="max-w-5xl flex flex-grow mx-auto justify-between items-center mb-4">
           <div className="font-semibold text-[22px] hidden lg:block">
             Delegate&apos;s Leaderboard
@@ -240,9 +240,8 @@ function Leaderboard({ props }: { props: string }) {
               </select>
               <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
                 <div
-                  className={`transform transition-transform duration-300 ${
-                    isDropdownOpen ? "rotate-180" : ""
-                  }`}
+                  className={`transform transition-transform duration-300 ${isDropdownOpen ? "rotate-180" : ""
+                    }`}
                 >
                   <FaChevronDown className="h-4 w-4 text-black" />
                 </div>
@@ -292,13 +291,12 @@ function Leaderboard({ props }: { props: string }) {
                     ].map((item, index) => (
                       <div
                         key={index}
-                        className={`relative mx-2 w-[110px] text-gray-600 flex flex-col justify-center ${
-                          item.align === "left"
+                        className={`relative mx-2 w-[110px] text-gray-600 flex flex-col justify-center ${item.align === "left"
                             ? "text-left justify-self-start ml-3"
                             : item.align === "right"
-                            ? "text-right items-end"
-                            : "text-center"
-                        }`}
+                              ? "text-right items-end"
+                              : "text-center"
+                          }`}
                         onMouseEnter={() =>
                           setHoveredTitle(item.label.toLowerCase())
                         }
@@ -329,13 +327,12 @@ function Leaderboard({ props }: { props: string }) {
                   <div className="flex flex-col 1.7lg:flex-row justify-between 1.7lg:items-center items-start">
                     <div className="flex items-center space-x-2 xs:space-x-5 mb-2 xs:mb-3 sm:mb-0">
                       <div
-                        className={`text-[#3E3D3D] font-semibold ml-2 xs:ml-5 flex justify-center items-center size-[56px] xs:size-[67px] ${
-                          getRankSymbol(delegate, allDelegatesData) === "#1" ||
-                          getRankSymbol(delegate, allDelegatesData) === "#2" ||
-                          getRankSymbol(delegate, allDelegatesData) === "#3"
+                        className={`text-[#3E3D3D] font-semibold ml-2 xs:ml-5 flex justify-center items-center size-[56px] xs:size-[67px] ${getRankSymbol(delegate, allDelegatesData) === "#1" ||
+                            getRankSymbol(delegate, allDelegatesData) === "#2" ||
+                            getRankSymbol(delegate, allDelegatesData) === "#3"
                             ? ""
                             : "text-2xl"
-                        }`}
+                          }`}
                       >
                         {getRankSymbol(delegate, sortedAndFilteredData)}
                       </div>
@@ -370,11 +367,10 @@ function Leaderboard({ props }: { props: string }) {
                             <span className="cursor-pointer text-xs">
                               <IoCopy
                                 onClick={() => handleCopy(delegate.address)}
-                                className={`transition-colors duration-300 ${
-                                  copiedAddress === delegate.address
+                                className={`transition-colors duration-300 ${copiedAddress === delegate.address
                                     ? "text-blue-500"
                                     : ""
-                                }`}
+                                  }`}
                               />
                             </span>
                           </Tooltip>

@@ -591,7 +591,7 @@ function ScheduledUserSessions() {
               Select Time Slot Size:
               <Tooltip
                 content={
-                  <div className="font-poppins p-2 max-w-80 text-black rounded-md">
+                  <div className="font-tektur p-2 max-w-80 text-black rounded-md">
                     The duration for which you would be able to take the
                     session. The preferred duration is 30 minutes. And note that
                     the selected time slot size will apply to all the selected
@@ -627,7 +627,7 @@ function ScheduledUserSessions() {
               Select Date:
               <Tooltip
                 content={
-                  <div className="font-poppins p-2 text-black rounded-md">
+                  <div className="font-tektur p-2 text-black rounded-md">
                     It is based on your timezone.
                   </div>
                 }
@@ -656,7 +656,7 @@ function ScheduledUserSessions() {
               Select Available Time:
               <Tooltip
                 content={
-                  <div className="font-poppins p-2 max-w-80 text-black rounded-md">
+                  <div className="font-tektur p-2 max-w-80 text-black rounded-md">
                     Session start time and end time based on your timezone.
                   </div>
                 }
@@ -757,7 +757,7 @@ function ScheduledUserSessions() {
                 Total Session Count:
                 <Tooltip
                   content={
-                    <div className="font-poppins p-2 max-w-80 text-black rounded-md">
+                    <div className="font-tektur p-2 max-w-80 text-black rounded-md">
                       Displays the number of individual time slots available for
                       booking, calculated based on your selected time range and
                       slot duration.
@@ -798,7 +798,7 @@ function ScheduledUserSessions() {
                       return (
                         <div
                           key={index}
-                          className={`shadow p-1.5 rounded-md flex flex-col items-center text-left basis-1/3 text-sm font-poppins ${isPast
+                          className={`shadow p-1.5 rounded-md flex flex-col items-center text-left basis-1/3 text-sm font-tektur ${isPast
                             ? "bg-red-100 text-red-500"
                             : "bg-slate-800 hover:bg-slate-700"
                             }`}

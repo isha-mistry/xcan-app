@@ -55,7 +55,7 @@ function ReferralsMain() {
       return <ConnectYourWallet />;
     }
 
-    if (!address|| !isConnected || !ready) {
+    if (!address || !isConnected || !ready) {
       return (
         <div className="flex items-center justify-center h-screen">
           <RotatingLines
@@ -82,7 +82,7 @@ function ReferralsMain() {
 
   return (
     <>
-      <div className="font-poppins">{renderContent()}</div>
+      <div className="font-tektur">{renderContent()}</div>
     </>
   );
 }

@@ -30,7 +30,7 @@ const tektur = Tektur({
 // });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://app.chora.club/"),
+  metadataBase: new URL("https://stylus-university.vercel.app/"),
   title: "Arbitrum Stylus University",
   description: "Discover. Learn. Engage.",
   appleWebApp: {
@@ -46,23 +46,24 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Arbitrum Stylus University",
     description: "Discover. Learn. Engage.",
-    url: "https://app.chora.club/",
+    url: "https://stylus-university.vercel.app/",
     siteName: "Arbitrum Stylus University",
 
-    images: [
-      {
-        url: "https://gateway.lighthouse.storage/ipfs/QmZmWxpdhQZnag8HZtwZPLR5wtK2jjfgsTBMpNpmijtZ5x",
-        width: 800,
-        height: 600,
-        alt: "img",
-      },
-      {
-        url: "https://gateway.lighthouse.storage/ipfs/QmZmWxpdhQZnag8HZtwZPLR5wtK2jjfgsTBMpNpmijtZ5x",
-        width: 1800,
-        height: 1600,
-        alt: "img",
-      },
-    ],
+    // images: [
+    //   {
+    //     url: "https://gateway.lighthouse.storage/ipfs/QmZmWxpdhQZnag8HZtwZPLR5wtK2jjfgsTBMpNpmijtZ5x",
+    //     width: 800,
+    //     height: 600,
+    //     alt: "img",
+    //   },
+    //   {
+    //     url: "https://gateway.lighthouse.storage/ipfs/QmZmWxpdhQZnag8HZtwZPLR5wtK2jjfgsTBMpNpmijtZ5x",
+    //     width: 1800,
+    //     height: 1600,
+    //     alt: "img",
+    //   },
+    // ],
+    
     locale: "en_US",
     type: "website",
   },

@@ -9,23 +9,23 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Available Delegates",
     description:
-      "Explore available delegates by DAO, date, and time to book sessions and unlock Web3 opportunities.",
+      "Explore available uses by date, and time to book sessions and unlock Web3 opportunities.",
     url: "https://stylus-university.vercel.app/available-delegates",
     siteName: "Stylus University",
-    images: [
-      {
-        url: "https://gateway.lighthouse.storage/ipfs/QmUEoQqvoYbfp9ZD3AHzDNBYTmwovDifVBxWByzr8mMKnT",
-        width: 800,
-        height: 600,
-        alt: "img",
-      },
-      {
-        url: "https://gateway.lighthouse.storage/ipfs/QmUEoQqvoYbfp9ZD3AHzDNBYTmwovDifVBxWByzr8mMKnT",
-        width: 1800,
-        height: 1600,
-        alt: "img",
-      },
-    ],
+    // images: [
+    //   {
+    //     url: "https://gateway.lighthouse.storage/ipfs/QmUEoQqvoYbfp9ZD3AHzDNBYTmwovDifVBxWByzr8mMKnT",
+    //     width: 800,
+    //     height: 600,
+    //     alt: "img",
+    //   },
+    //   {
+    //     url: "https://gateway.lighthouse.storage/ipfs/QmUEoQqvoYbfp9ZD3AHzDNBYTmwovDifVBxWByzr8mMKnT",
+    //     width: 1800,
+    //     height: 1600,
+    //     alt: "img",
+    //   },
+    // ],
     locale: "en_US",
     type: "website",
   },

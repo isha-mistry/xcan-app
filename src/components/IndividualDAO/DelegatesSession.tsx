@@ -182,10 +182,10 @@ function DelegatesSession({ props }: { props: string }) {
     );
 
   return (
-    <div className="font-poppins">
+    <div className="font-tektur">
       {/* <div
         style={{ background: "rgba(238, 237, 237, 0.36)" }}
-        className="flex border-[0.5px] border-black w-1/3 rounded-full my-4 font-poppins"
+        className="flex border-[0.5px] border-black w-1/3 rounded-full my-4 font-tektur"
       >
         <input
           type="text"
@@ -206,8 +206,8 @@ function DelegatesSession({ props }: { props: string }) {
         <div className="flex gap-2 0.5xs:gap-4 rounded-xl text-sm flex-wrap">
           <button
             className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md ${searchParams.get("session") === "recorded"
-                ? "text-[#0500FF] font-semibold bg-[#f5f5f5]"
-                : "text-[#3E3D3D] bg-white"
+              ? "text-[#0500FF] font-semibold bg-[#f5f5f5]"
+              : "text-[#3E3D3D] bg-white"
               }`}
             onClick={() =>
               router.push(path + "?active=delegatesSession&session=recorded")
@@ -227,7 +227,7 @@ function DelegatesSession({ props }: { props: string }) {
           <input
             type="text"
             placeholder="Search by title and host address"
-            className="w-[100%] pl-2 pr-4 py-1.5 font-poppins md:py-2 text-sm bg-transparent outline-none"
+            className="w-[100%] pl-2 pr-4 py-1.5 font-tektur md:py-2 text-sm bg-transparent outline-none"
             value={searchQuery}
             onChange={(e) => handleSearchChange(e.target.value)}
           />

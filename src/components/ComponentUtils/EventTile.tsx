@@ -461,7 +461,7 @@ function EventTile({ tileIndex, data: initialData, isEvent }: TileProps) {
                   </div>
                 </Tooltip>
                 {isOpen && (
-                  <div className="font-poppins z-[70] fixed inset-0 flex items-center justify-center backdrop-blur-md">
+                  <div className="font-tektur z-[70] fixed inset-0 flex items-center justify-center backdrop-blur-md">
                     <div className="bg-white rounded-[41px] overflow-hidden shadow-lg w-1/2">
                       <div className="relative">
                         <div className="flex flex-col gap-1 text-white bg-[#292929] p-4 py-7">

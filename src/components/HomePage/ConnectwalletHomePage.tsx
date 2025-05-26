@@ -16,12 +16,12 @@ function ConnectWalletHomePage({ onClose }: ConnectWalletHomePageProps) {
     if (!authenticated) {
       try {
         await login();
-      } catch (error) {}
+      } catch (error) { }
     } else {
       if (!user?.google && !user?.farcaster) {
         try {
           await connectWallet();
-        } catch (error) {}
+        } catch (error) { }
       }
     }
   };
@@ -59,7 +59,7 @@ function ConnectWalletHomePage({ onClose }: ConnectWalletHomePageProps) {
                   size={16}
                   className="mr-2 size-5  group-hover:rotate-6 transition-transform"
                 />
-                <span className="font-poppins mt-1 ">Connect Wallet</span>
+                <span className="font-tektur mt-1 ">Connect Wallet</span>
               </button>
             </div>
           </div>

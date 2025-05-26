@@ -513,7 +513,7 @@ function MainProfile() {
         <Heading />
       </div>
       {!isPageLoading ? (
-        <div className="font-poppins">
+        <div className="font-tektur">
           <div className="relative flex pb-5 lg:py-5 px-4 md:px-6 lg:px-14 items-start">
             <div className="flex flex-col xs:flex-row xs:items-start xs:justify-start items-center lg:items-start justify-center lg:justify-start w-full lg:w-auto">
               <div

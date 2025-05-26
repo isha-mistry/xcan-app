@@ -20,7 +20,7 @@ function BookingSuccessModal({
 
   const shareOnTwitter = () => {
     const url = encodeURIComponent(
-      `https://app.chora.club/sessions?active=availableDelegates`
+      `https://stylus-university.vercel.app/sessions?active=availableDelegates`
     );
     const text = encodeURIComponent(
       `Hello Geeks! 🎉\nJust booked my session on @ChoraClub and can't wait to learn more about the #Web3 ecosystem from the experienced Delegate!🌐\n👉 ${decodeURIComponent(
@@ -61,7 +61,7 @@ function BookingSuccessModal({
     <>
       {isOpen && (
         <>
-          <div className="fixed inset-0 z-50 flex items-center justify-center font-poppins">
+          <div className="fixed inset-0 z-50 flex items-center justify-center font-tektur">
             <div
               className="absolute inset-0 backdrop-blur-md"
               onClick={onClose}></div>

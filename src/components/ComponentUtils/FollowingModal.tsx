@@ -141,7 +141,7 @@ function FollowingModal({
 
   return (
     <div
-      className="font-poppins z-[70] fixed inset-0 flex items-center justify-center backdrop-blur-md"
+      className="font-tektur z-[70] fixed inset-0 flex items-center justify-center backdrop-blur-md"
       onClick={() => setIsFollowingModalOpen(false)}
     >
       <div
@@ -228,8 +228,8 @@ function FollowingModal({
                           <Tooltip content={tooltipContent} className="bg-gray-700">
                             <IoCopy
                               className={`${animatingAddresses[user.follower_address]
-                                  ? "text-blue-500"
-                                  : "text-gray-400 hover:text-gray-600"
+                                ? "text-blue-500"
+                                : "text-gray-400 hover:text-gray-600"
                                 } size-3 xs:size-4 hover:text-blue-shade-100 cursor-pointer`}
                               onClick={(e) => {
                                 e.stopPropagation();

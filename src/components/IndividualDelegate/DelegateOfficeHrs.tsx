@@ -230,7 +230,7 @@ function DelegateOfficeHrs({ props }: { props: Type }) {
           <input
             type="text"
             placeholder="Search by title or host address"
-            className="w-[100%] pl-2 pr-4 py-1.5 font-poppins md:py-2 text-sm bg-transparent outline-none"
+            className="w-[100%] pl-2 pr-4 py-1.5 font-tektur md:py-2 text-sm bg-transparent outline-none"
             value={searchQuery}
             onChange={(e) => handleSearch(e.target.value)}
           />

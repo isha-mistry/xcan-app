@@ -4,17 +4,12 @@ import ExploreDAOs from "@/components/DAOs/ExploreDAOs";
 import { useAccount } from "wagmi";
 
 function Page() {
-  const { isConnected } = useAccount();
-    return (
-      <>
-      {isConnected? (
+  // const { isConnected } = useAccount();
+  return (
+    <>
+      <ExploreDAOs />
+    </>
+  );
+}
 
-        <ExploreDAOs />
-      ):
-        <ConnectYourWallet/>
-      }
-      </>
-    );
-  }
-  
-  export default Page;
+export default Page;

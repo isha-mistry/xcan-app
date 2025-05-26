@@ -9,14 +9,14 @@ export const DEFAULT_METADATA: Metadata = {
     description: "The requested page does not exist.",
     url: "https://stylus-university.vercel.app/",
     siteName: "Stylus University",
-    images: [
-      {
-        url: "https://gateway.lighthouse.storage/ipfs/bafybeiez3e5gvqra2r3ijbg2arrdhaalzoqqzgr5s4tc2tlysyuywnzude", // Default or error image
-        width: 800,
-        height: 600,
-        alt: "img",
-      },
-    ],
+    // images: [
+    //   {
+    //     url: "https://gateway.lighthouse.storage/ipfs/bafybeiez3e5gvqra2r3ijbg2arrdhaalzoqqzgr5s4tc2tlysyuywnzude", // Default or error image
+    //     width: 800,
+    //     height: 600,
+    //     alt: "img",
+    //   },
+    // ],
     locale: "en_US",
     type: "website",
   },

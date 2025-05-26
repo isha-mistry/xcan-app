@@ -100,7 +100,7 @@ function MintedNFTs() {
       toast("Coming soon!");
     }
   };
-  const handleOption=(option: string)=>{
+  const handleOption = (option: string) => {
     if (option === "OfficeHours") {
       toast("Coming Soon! 🚀"); // Show toast when Office Hours is selected
     }
@@ -125,23 +125,21 @@ function MintedNFTs() {
         </div>
         <div className="flex gap-2 0.5xs:gap-4 rounded-xl text-sm flex-wrap mt-6">
           <button
-            className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md ${
-              active === "Sessions"
+            className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md ${active === "Sessions"
                 ? "text-[#0500FF] font-semibold bg-[#f5f5f5]"
                 : "text-[#3E3D3D] bg-white"
-            }`}
-            onClick={()=>handleOption("Sessions")}
+              }`}
+            onClick={() => handleOption("Sessions")}
           >
             <Calendar size={16} className="drop-shadow-lg" />
             Sessions
           </button>
           <button
-            className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md ${
-              active === "OfficeHours"
+            className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md ${active === "OfficeHours"
                 ? "text-[#0500FF] font-semibold bg-[#f5f5f5]"
                 : "text-[#3E3D3D] bg-white"
-            }`}
-            onClick={()=>handleOption("OfficeHours")}
+              }`}
+            onClick={() => handleOption("OfficeHours")}
           >
             <Clock size={16} className="drop-shadow-lg" />
             Office Hours
@@ -154,7 +152,7 @@ function MintedNFTs() {
           </div>
         ) : mintedNFTs.length > 0 ? (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 sm:gap-10 py-8 font-poppins">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 sm:gap-10 py-8 font-tektur">
               {mintedNFTs.map((nft) => (
                 <NFTTile
                   key={nft.id}

@@ -29,18 +29,18 @@ export async function generateMetadata(
       description: description,
       url: `https://stylus-university.vercel.app/invite/${params.address}`,
       siteName: "Stylus University",
-      images: [
-        `${BASE_URL}/api/images/og/referral?inviteeName=${encodeURIComponent(
-          inviteeDetails?.ensName ||
-            inviteeDetails?.displayName ||
-            inviteeDetails?.formattedAddr
-        )}&inviteeAvatar=${encodeURIComponent(
-          inviteeDetails?.ensAvatar ||
-            (inviteeDetails?.displayImage &&
-              `https://gateway.lighthouse.storage/ipfs/${inviteeDetails.displayImage}`) ||
-            user
-        )}`,
-      ].filter((param): param is string => param !== null),
+      // images: [
+      //   `${BASE_URL}/api/images/og/referral?inviteeName=${encodeURIComponent(
+      //     inviteeDetails?.ensName ||
+      //       inviteeDetails?.displayName ||
+      //       inviteeDetails?.formattedAddr
+      //   )}&inviteeAvatar=${encodeURIComponent(
+      //     inviteeDetails?.ensAvatar ||
+      //       (inviteeDetails?.displayImage &&
+      //         `https://gateway.lighthouse.storage/ipfs/${inviteeDetails.displayImage}`) ||
+      //       user
+      //   )}`,
+      // ].filter((param): param is string => param !== null),
       locale: "en_US",
       type: "website",
     },

@@ -30,7 +30,7 @@ function AttestationModal({
   const [submitted, setSubmitted] = useState(false);
   const [feedbackStored, setFeedbackStored] = useState(false);
   const [hoverRating, setHoverRating] = useState<number>(0);
-  const { address ,isConnected} = useAccount();
+  const { address, isConnected } = useAccount();
   const { ready, authenticated, login, logout, user } = usePrivy();
 
   useEffect(() => {
@@ -54,7 +54,7 @@ function AttestationModal({
   };
 
   const shareOnTwitter = () => {
-    const url = encodeURIComponent(`https://app.chora.club/`);
+    const url = encodeURIComponent(`https://stylus-university.vercel.app/`);
     const text = encodeURIComponent(
       `Just attended an amazing session on #Web3 in @ChoraClub! Learned so much and got a deeper understanding of ecosystem. Feeling inspired and ready to dive in!🚀 \n👉 ${decodeURIComponent(
         url
@@ -118,10 +118,10 @@ function AttestationModal({
   return (
     <div>
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center font-poppins">
+        <div className="fixed inset-0 z-50 flex items-center justify-center font-tektur">
           <div
             className="absolute inset-0 bg-gray-800"
-            // onClick={toggleModal}
+          // onClick={toggleModal}
           ></div>
           <div className="z-50 bg-white rounded-3xl max-w-7xl">
             <Confetti recycle={false} />

@@ -1,7 +1,8 @@
 "use client";
 import Link from "next/link";
 import Image from "next/image";
-import logo from "@/assets/images/daos/CCLogo.png";
+// import logo from "@/assets/images/icon.svg";
+import logo_text from "@/assets/images/text.svg";
 import { usePathname } from "next/navigation";
 import styles from "./TopNavbar.module.css";
 import style from "../Notification/NotificationIconComponent.module.css";
@@ -25,8 +26,8 @@ function TopNavbar() {
     updateCombinedNotifications
   } = useNotificationStudioState();
 
-  const isHomePage = pathname === "/";
-  const isLoginPage = pathname === "/login";
+  // const isHomePage = pathname === "/";
+  // const isLoginPage = pathname === "/login";
 
   useEffect(() => {
     const fetchNotifications = async () => {
@@ -91,24 +92,30 @@ function TopNavbar() {
 
   return (
     <>
-      <div className="flex justify-between items-center w-screen px-4">
+      <div className="flex justify-between items-center w-screen px-4 font-tektur">
         <div className="flex gap-2 items-center">
-          <Link href={isConnected ? "/" : ""} target="_blank">
-            <Image
+          <Link href="/" target="_blank">
+            {/* <Image
               src={logo}
               alt={"image"}
               width={200}
               height={200}
               className="logo bg-black rounded-full p-1 w-10 h-10"
+            ></Image> */}
+            <Image
+              src={logo_text}
+              alt={"image"}
+              width={200}
+              height={200}
+              className="w-80"
             ></Image>
           </Link>
-          <Link
-            className="text-black font-semibold text-[28px] font-poppins flex items-center mt-[4px]"
+          {/* <Link
+            className="text-black font-semibold text-[28px] font-tektur flex items-center mt-[4px]"
             href={isConnected ? "/" : ""}
           >
-            Chora{" "}
-            <span className="ml-1 text-white flex items-center">Club</span>
-          </Link>
+
+          </Link> */}
         </div>
 
         <div className="flex gap-3 items-center">
@@ -116,8 +123,8 @@ function TopNavbar() {
           <>
             <div className="flex gap-4">
               <Link
-                href={"/"}
-                className={`${styles.item} text-blue-shade-500 font-medium ${isHomePage
+                href={"/explore-daos"}
+                className={`${styles.item} text-blue-shade-500 font-medium ${pathname.includes(`/explore-daos`)
                   ? `text-white ${styles.activeitem}`
                   : ""
                   }`}

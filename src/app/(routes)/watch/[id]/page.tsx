@@ -99,15 +99,15 @@ export async function generateMetadata({
       description = description.substring(0, 55) + "...";
     }
 
-    const imageApiUrl = await prepareOgImage(watchData);
+    // const imageApiUrl = await prepareOgImage(watchData);
 
     return {
       title: "Stylus University",
       description: `Watch this video hosted on ${formattedDaoName} DAO on ${title}`,
       openGraph: {
         title: "Stylus University",
-        description: `Watch this video hosted on ${formattedDaoName} DAO on ${title}`,
-        images: [imageApiUrl],
+        description: `Watch this video: ${title}`,
+        // images: [imageApiUrl],
       },
     };
   } catch (error) {

@@ -92,7 +92,7 @@ function TotalRewards() {
     address: protocolRewardsAddress[NETWORKS.ARBITRUM.chainId as keyof typeof protocolRewardsAddress],
     functionName: "balanceOf",
     args: [address as Address],
-    chainId:NETWORKS.ARBITRUM.chainId
+    chainId: NETWORKS.ARBITRUM.chainId
   });
 
   const { data: arbitrumSepoliaBalance } = useReadContract({
@@ -190,7 +190,7 @@ function TotalRewards() {
     }
     try {
       setClaimingReward(true);
-      
+
       // Switch chain if needed
       if (chainId !== chain) {
         try {
@@ -203,7 +203,7 @@ function TotalRewards() {
       }
 
       const withdrawAmount = balance / BigInt(2);
-      
+
       // Use the chain parameter instead of chainId here
       await writeContractAsync({
         abi: protocolRewardsABI,
@@ -216,7 +216,7 @@ function TotalRewards() {
     } finally {
       setClaimingReward(false);
     }
-   
+
   }
 
   // Process all network balances
@@ -233,17 +233,17 @@ function TotalRewards() {
       ...NETWORKS.OPTIMISM,
       accountBalance: optimismBalance || BigInt(0)
     }
-  ].filter(network=>network.accountBalance>BigInt(0));
+  ].filter(network => network.accountBalance > BigInt(0));
 
 
 
-  const formatETHValue:any = (value: bigint) => {
+  const formatETHValue: any = (value: bigint) => {
     return Number(formatEther(value)).toFixed(5); // Consistently using 4 decimal places
   };
 
   return (
     <>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:py-6 font-poppins">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:py-6 font-tektur">
         <div className="bg-gradient-to-br from-blue-500 to-purple-600 text-white rounded-lg overflow-hidden shadow-lg transition-all duration-300 hover:shadow-xl">
           <div className="p-6">
             <h2 className="text-2xl font-bold flex items-center mb-4">
@@ -262,73 +262,72 @@ function TotalRewards() {
         </div>
 
         <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-      <div className="p-4 xm:p-6">
-        <h2 className="text-2xl font-bold mb-4">Claim Rewards</h2>
-        {fetchingReward ? (
-          <div className="flex flex-col items-center justify-center py-2">
-            <Loader2 className="h-5 w-5 animate-spin text-blue-500 mb-4" />
-            <p className="text-gray-500">Fetching your rewards...</p>
-          </div>
-        ) : networkBalances.length > 0 ? (
-          <div className="space-y-4">
-            {networkBalances.map((network, index) => (
-              <div
-                key={index}
-                className="flex flex-col xm:flex-row md:flex-col 1.7lg:flex-row items-center justify-between border-b pb-4 last:border-b-0 last:pb-0 gap-4"
-              >
-                <div className="flex items-center gap-4 0.2xs:gap-6 md:gap-4 1.7lg:gap-6 justify-between">
-                  <div className="flex items-center space-x-2">
-                    <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
-                      <Image
-                        src={network.logo}
-                        alt="logo"
-                        className="w-8 h-8 object-contain"
-                      />
-                    </div>
-                    <div className="flex flex-col">
-                      <span className="font-medium text-xs xm:text-base md:text-xs 1.7lg:text-base">
-                        {displayEnsName}
-                      </span>
-                      <span className="text-xs text-gray-500">
-                        {network.name}
-                      </span>
-                    </div>
-                  </div>
-                  <div>
-                    <div className="font-semibold text-sm xm:text-lg md:text-sm 1.7lg:text-lg">
-                      {formatETHValue(network.accountBalance)} ETH
-                    </div>
-                    <div className="text-xs xm:text-sm md:text-xs 1.7lg:text-sm text-gray-500">
-                      ≈ ${(Number(formatEther(network.accountBalance)) * ethToUsdConversionRate).toFixed(2)} USD
-                    </div>
-                  </div>
-                </div>
-                <button
-                  onClick={() => handleClaim(network.chainId, network.accountBalance)}
-                  disabled={claimingReward || network.accountBalance <= BigInt(0)}
-                  className={`bg-gradient-to-r from-green-400 to-blue-500 text-white px-4 py-2 rounded-full transition-all duration-300 shadow-md hover:shadow-lg flex items-center justify-center min-w-[100px] ${
-                    (claimingReward || network.accountBalance <= BigInt(0))
-                      ? "opacity-50 cursor-not-allowed from-gray-400 to-gray-500"
-                      : "hover:from-green-500 hover:to-blue-600"
-                  }`}
-                >
-                  {claimingReward && network.chainId==chainId ? (
-                    <Loader2 className="mr-2 h-6 w-6 animate-spin" />
-                  ) : (
-                    "Claim"
-                  )}
-                </button>
+          <div className="p-4 xm:p-6">
+            <h2 className="text-2xl font-bold mb-4">Claim Rewards</h2>
+            {fetchingReward ? (
+              <div className="flex flex-col items-center justify-center py-2">
+                <Loader2 className="h-5 w-5 animate-spin text-blue-500 mb-4" />
+                <p className="text-gray-500">Fetching your rewards...</p>
               </div>
-            ))}
+            ) : networkBalances.length > 0 ? (
+              <div className="space-y-4">
+                {networkBalances.map((network, index) => (
+                  <div
+                    key={index}
+                    className="flex flex-col xm:flex-row md:flex-col 1.7lg:flex-row items-center justify-between border-b pb-4 last:border-b-0 last:pb-0 gap-4"
+                  >
+                    <div className="flex items-center gap-4 0.2xs:gap-6 md:gap-4 1.7lg:gap-6 justify-between">
+                      <div className="flex items-center space-x-2">
+                        <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
+                          <Image
+                            src={network.logo}
+                            alt="logo"
+                            className="w-8 h-8 object-contain"
+                          />
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="font-medium text-xs xm:text-base md:text-xs 1.7lg:text-base">
+                            {displayEnsName}
+                          </span>
+                          <span className="text-xs text-gray-500">
+                            {network.name}
+                          </span>
+                        </div>
+                      </div>
+                      <div>
+                        <div className="font-semibold text-sm xm:text-lg md:text-sm 1.7lg:text-lg">
+                          {formatETHValue(network.accountBalance)} ETH
+                        </div>
+                        <div className="text-xs xm:text-sm md:text-xs 1.7lg:text-sm text-gray-500">
+                          ≈ ${(Number(formatEther(network.accountBalance)) * ethToUsdConversionRate).toFixed(2)} USD
+                        </div>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => handleClaim(network.chainId, network.accountBalance)}
+                      disabled={claimingReward || network.accountBalance <= BigInt(0)}
+                      className={`bg-gradient-to-r from-green-400 to-blue-500 text-white px-4 py-2 rounded-full transition-all duration-300 shadow-md hover:shadow-lg flex items-center justify-center min-w-[100px] ${(claimingReward || network.accountBalance <= BigInt(0))
+                          ? "opacity-50 cursor-not-allowed from-gray-400 to-gray-500"
+                          : "hover:from-green-500 hover:to-blue-600"
+                        }`}
+                    >
+                      {claimingReward && network.chainId == chainId ? (
+                        <Loader2 className="mr-2 h-6 w-6 animate-spin" />
+                      ) : (
+                        "Claim"
+                      )}
+                    </button>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8 text-gray-500">
+                <HiGift size={48} className="mx-auto mb-4 text-gray-400" />
+                <p>No rewards available to claim at the moment.</p>
+              </div>
+            )}
           </div>
-        ) : (
-          <div className="text-center py-8 text-gray-500">
-            <HiGift size={48} className="mx-auto mb-4 text-gray-400" />
-            <p>No rewards available to claim at the moment.</p>
-          </div> 
-        )}
-      </div>
-    </div>
+        </div>
       </div>
 
       <div className="mt-4">

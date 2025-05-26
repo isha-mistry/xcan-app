@@ -2,7 +2,7 @@ import React from "react";
 
 const AvailableSessionsSkeletonLoader = () => {
   return (
-    <div className="overflow-auto font-poppins grid grid-cols-1 md:grid-cols-1 1.5lg:grid-cols-2 2xl:grid-cols-2 gap-12 py-5 px-6 md:px-10">
+    <div className="overflow-auto font-tektur grid grid-cols-1 md:grid-cols-1 1.5lg:grid-cols-2 2xl:grid-cols-2 gap-12 py-5 px-6 md:px-10">
       {Array.from({ length: 4 }).map((_, index) => (
         <div
           key={index}

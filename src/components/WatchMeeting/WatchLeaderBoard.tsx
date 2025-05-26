@@ -66,16 +66,16 @@ const WatchLeaderBoard = ({
   const defaultAvatars = [user1, user2, user3, user4, user5];
   let avatarIndex = 0;
 
-  const getAvatarForAddress = (address: string, ensAvatar?: string|null) => {
+  const getAvatarForAddress = (address: string, ensAvatar?: string | null) => {
     if (addressToAvatar.has(address)) {
       return addressToAvatar.get(address);
     }
-    
+
     if (ensAvatar) {
       addressToAvatar.set(address, ensAvatar);
       return ensAvatar;
     }
-    
+
     const avatar = defaultAvatars[avatarIndex % defaultAvatars.length];
     addressToAvatar.set(address, avatar);
     avatarIndex++;
@@ -110,9 +110,9 @@ const WatchLeaderBoard = ({
 
         const special = await Promise.all([
           leaderBoardData.firstCollector &&
-            fetchEnsNameAndAvatar(leaderBoardData.firstCollector.user),
+          fetchEnsNameAndAvatar(leaderBoardData.firstCollector.user),
           leaderBoardData.latestCollector &&
-            fetchEnsNameAndAvatar(leaderBoardData.latestCollector.user),
+          fetchEnsNameAndAvatar(leaderBoardData.latestCollector.user),
         ]);
 
         const specialEntries = [
@@ -158,7 +158,7 @@ const WatchLeaderBoard = ({
             return {
               smallEmoji: [emoji1, emoji2, emoji3, emoji4, emoji5][index % 5],
               text: index < 3 ? `Top #${index + 1}` : `#${index + 1}`,
-              img:avatar,
+              img: avatar,
               name:
                 ensDetails?.ensName ||
                 `${holder.user.slice(0, 6)}...${holder.user.slice(-4)}`,
@@ -228,7 +228,7 @@ const WatchLeaderBoard = ({
           color: entry.color,
         }}
       >
-        <div className="border rounded-lg text-xs sm:text-sm py-1 px-2 sm:px-4" style={{backgroundColor: entry.bgColor,}}>
+        <div className="border rounded-lg text-xs sm:text-sm py-1 px-2 sm:px-4" style={{ backgroundColor: entry.bgColor, }}>
           {entry.balance}x
         </div>
       </div>
@@ -237,22 +237,22 @@ const WatchLeaderBoard = ({
 
   return (
     <>
-      <div className="font-poppins  w-full">
+      <div className="font-tektur  w-full">
         <div className="flex justify-between items-center mb-3 sm:mb-5 px-2 sm:px-4">
           <div className="flex">
-          <p className="text-sm sm:text-base lg:text-lg font-medium text-blue-shade-100">
-            🏆LeaderBoard
-          </p>
+            <p className="text-sm sm:text-base lg:text-lg font-medium text-blue-shade-100">
+              🏆LeaderBoard
+            </p>
           </div>
           {topEntries.length === 0 && specialEntries.length === 0 ? (
             <></>
           ) : (
             <button
-            className="text-[10px] sm:text-xs text-blue-shade-100 bg-blue-shade-700 rounded py-1 px-2 border border-blue-shade-100 hover:bg-blue-shade-600 transition-colors"
-            onClick={handleViewAll}
-          >
-            View All
-          </button>
+              className="text-[10px] sm:text-xs text-blue-shade-100 bg-blue-shade-700 rounded py-1 px-2 border border-blue-shade-100 hover:bg-blue-shade-600 transition-colors"
+              onClick={handleViewAll}
+            >
+              View All
+            </button>
           )}
         </div>
         <div className="flex flex-col gap-2">

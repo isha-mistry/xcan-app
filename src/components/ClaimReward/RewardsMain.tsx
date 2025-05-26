@@ -10,7 +10,7 @@ import { TailSpin, Rings, Triangle } from "react-loader-spinner";
 import Heading from "../ComponentUtils/Heading";
 
 function RewardsMain() {
-  const { isConnected, isPageLoading,isReady } =
+  const { isConnected, isPageLoading, isReady } =
     useConnection();
   const [loadingMessage, setLoadingMessage] = useState("Initializing...");
 
@@ -76,7 +76,7 @@ function RewardsMain() {
           <div className="min-h-screen h-fit bg-gradient-to-b from-blue-50 to-blue-100">
             <div className="relative mx-auto px-4 md:px-6 lg:px-16 py-8">
               <Heading />
-              <div className="max-w-6xl mx-auto p-4 0.5xs:p-6 space-y-8 font-poppins">
+              <div className="max-w-6xl mx-auto p-4 0.5xs:p-6 space-y-8 font-tektur">
                 <TotalRewards />
                 <MintedNFTs />
               </div>

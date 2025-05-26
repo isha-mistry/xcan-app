@@ -224,7 +224,7 @@ function RecordedSessionsTile({
   return (
     <>
       <div
-        className={`grid min-[475px]:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 ${gridCols} sm:gap-10 py-8 font-poppins`}
+        className={`grid min-[475px]:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 ${gridCols} sm:gap-10 py-8 font-tektur`}
       >
         {meetingData.map((data: any, index: number) => (
           <div

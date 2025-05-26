@@ -240,7 +240,7 @@ const OfficeHourTile = ({
 
   return (
     <div
-      className={`grid min-[475px]:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 sm:gap-10 py-8 font-poppins`}
+      className={`grid min-[475px]:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 sm:gap-10 py-8 font-tektur`}
     >
       {localData.map((data: OfficeHoursProps, index: number) => (
         <div
@@ -524,7 +524,7 @@ const OfficeHourTile = ({
                                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                                     </svg>
                                   </div>
-                                  <div className="ml-3 flex-1 font-poppins">
+                                  <div className="ml-3 flex-1 font-tektur">
                                     <p className="text-sm font-medium text-gray-900">
                                       Office Hours Not Scheduled for Today
                                     </p>

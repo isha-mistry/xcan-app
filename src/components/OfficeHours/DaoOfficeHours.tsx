@@ -225,71 +225,71 @@ function DaoOfficeHours() {
         <Heading />
       </div>
 
-      <div className="relative w-full px-4 md:px-6 lg:px-14 pb-8 font-poppins">
+      <div className="relative w-full px-4 md:px-6 lg:px-14 pb-8 font-tektur">
         {/* <div className="max-w-7xl mx-auto"> */}
-          <div className="bg-gray-800 rounded-xl shadow-lg p-6 mb-8 border border-gray-700">
-            {/* Tab buttons */}
-            <div className="flex gap-2 0.5xs:gap-4 rounded-xl text-sm flex-wrap mb-6">
-              <button
-                className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-gray-700 shadow-md ${searchParams.get("hours") === "ongoing"
-                  ? "text-blue-400 font-semibold bg-gray-700"
-                  : "text-gray-300 bg-gray-800"
-                  }`}
-                onClick={() => handleNavigation(path + '?hours=ongoing', 'Office Hours Navigation', 'Live Tab Clicked', 'Live')}
-              >
-                <Clock size={16} className="drop-shadow-lg" />
-                Live
-              </button>
-              <button
-                className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-gray-700 shadow-md ${searchParams.get("hours") === "upcoming"
-                  ? "text-blue-400 font-semibold bg-gray-700"
-                  : "text-gray-300 bg-gray-800"
-                  }`}
-                onClick={() => handleNavigation(path + "?hours=upcoming", 'Office Hours Navigation', 'Scheduled Tab Clicked', 'Scheduled')}
-              >
-                <Calendar size={16} className="drop-shadow-lg" />
-                Scheduled
-              </button>
-              <button
-                className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-gray-700 shadow-md ${searchParams.get("hours") === "recorded"
-                  ? "text-blue-400 font-semibold bg-gray-700"
-                  : "text-gray-300 bg-gray-800"
-                  }`}
-                onClick={() => handleNavigation(path + "?hours=recorded", 'Office Hours Navigation', 'Recorded Tab Clicked', 'Recorded')}
-              >
-                <BookOpen size={16} className="drop-shadow-lg" />
-                Recorded
-              </button>
-            </div>
-
-            {/* Search bar */}
-            <div className="flex items-center rounded-full shadow-lg bg-gray-700 text-white cursor-pointer w-full max-w-md mb-6">
-              <CiSearch className="text-xl text-gray-400 ml-4" />
-              <input
-                type="text"
-                placeholder="Search by title or host address"
-                className="w-full pl-3 pr-4 py-3 font-poppins text-base bg-transparent outline-none text-gray-100 placeholder-gray-400"
-                value={searchQuery}
-                onChange={(e) => handleSearch(e.target.value)}
-              />
-            </div>
-
-            {/* Content */}
-            <div className="mt-6">
-              {dataLoading ? (
-                <RecordedSessionsSkeletonLoader />
-              ) : getCurrentData().length > 0 ? (
-                <OfficeHourTile
-                  isOngoing={searchParams.get("hours") === "ongoing"}
-                  isUpcoming={searchParams.get("hours") === "upcoming"}
-                  isRecorded={searchParams.get("hours") === "recorded"}
-                  data={getCurrentData()}
-                />
-              ) : (
-                <NoResultsFound />
-              )}
-            </div>
+        <div className="bg-gray-800 rounded-xl shadow-lg p-6 mb-8 border border-gray-700">
+          {/* Tab buttons */}
+          <div className="flex gap-2 0.5xs:gap-4 rounded-xl text-sm flex-wrap mb-6">
+            <button
+              className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-gray-700 shadow-md ${searchParams.get("hours") === "ongoing"
+                ? "text-blue-400 font-semibold bg-gray-700"
+                : "text-gray-300 bg-gray-800"
+                }`}
+              onClick={() => handleNavigation(path + '?hours=ongoing', 'Office Hours Navigation', 'Live Tab Clicked', 'Live')}
+            >
+              <Clock size={16} className="drop-shadow-lg" />
+              Live
+            </button>
+            <button
+              className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-gray-700 shadow-md ${searchParams.get("hours") === "upcoming"
+                ? "text-blue-400 font-semibold bg-gray-700"
+                : "text-gray-300 bg-gray-800"
+                }`}
+              onClick={() => handleNavigation(path + "?hours=upcoming", 'Office Hours Navigation', 'Scheduled Tab Clicked', 'Scheduled')}
+            >
+              <Calendar size={16} className="drop-shadow-lg" />
+              Scheduled
+            </button>
+            <button
+              className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-gray-700 shadow-md ${searchParams.get("hours") === "recorded"
+                ? "text-blue-400 font-semibold bg-gray-700"
+                : "text-gray-300 bg-gray-800"
+                }`}
+              onClick={() => handleNavigation(path + "?hours=recorded", 'Office Hours Navigation', 'Recorded Tab Clicked', 'Recorded')}
+            >
+              <BookOpen size={16} className="drop-shadow-lg" />
+              Recorded
+            </button>
           </div>
+
+          {/* Search bar */}
+          <div className="flex items-center rounded-full shadow-lg bg-gray-700 text-white cursor-pointer w-full max-w-md mb-6">
+            <CiSearch className="text-xl text-gray-400 ml-4" />
+            <input
+              type="text"
+              placeholder="Search by title or host address"
+              className="w-full pl-3 pr-4 py-3 font-tektur text-base bg-transparent outline-none text-gray-100 placeholder-gray-400"
+              value={searchQuery}
+              onChange={(e) => handleSearch(e.target.value)}
+            />
+          </div>
+
+          {/* Content */}
+          <div className="mt-6">
+            {dataLoading ? (
+              <RecordedSessionsSkeletonLoader />
+            ) : getCurrentData().length > 0 ? (
+              <OfficeHourTile
+                isOngoing={searchParams.get("hours") === "ongoing"}
+                isUpcoming={searchParams.get("hours") === "upcoming"}
+                isRecorded={searchParams.get("hours") === "recorded"}
+                data={getCurrentData()}
+              />
+            ) : (
+              <NoResultsFound />
+            )}
+          </div>
+        </div>
         {/* </div> */}
       </div>
     </div>

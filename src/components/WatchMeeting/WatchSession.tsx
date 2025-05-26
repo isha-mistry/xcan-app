@@ -72,14 +72,14 @@ function WatchSession({
   const path = usePathname();
 
   const userImages = [
-    user1, 
-    user2, 
-    user3, 
-    user4, 
-    user5, 
-    user6, 
-    user7, 
-    user8, 
+    user1,
+    user2,
+    user3,
+    user4,
+    user5,
+    user6,
+    user7,
+    user8,
     user9
   ];
 
@@ -150,9 +150,8 @@ function WatchSession({
     <div className="">
       <div className="rounded-3xl border border-[#CCCCCC] bg-[#F2F2F2]">
         <div
-          className={`px-6 pt-4 pb-4 ${
-            data.description.length > 0 ? "border-b" : ""
-          }  border-[#CCCCCC]`}
+          className={`px-6 pt-4 pb-4 ${data.description.length > 0 ? "border-b" : ""
+            }  border-[#CCCCCC]`}
         >
           <div className="text-lg font-semibold pb-3">
             {sessionDetails.title || data.title}
@@ -185,53 +184,52 @@ function WatchSession({
                   </div>
                 </div>
                 <>
-                {data.uid_host ? (
-                  <Tooltip
-                    showArrow
-                    content={
-                      <div className="font-poppins">Offchain Attestation</div>
-                    }
-                    placement="top"
-                    className="rounded-md bg-opacity-90 max-w-96 bg-gray-700"
-                    closeDelay={1}
-                  >
-                    <Link
-                      href={
-                        data.uid_host
-                          ? `${
-                              daoConfigs[data.dao_name.toLowerCase()]
-                                .attestationUrl
-                            }/${data.uid_host}`
-                          : "#"
+                  {data.uid_host ? (
+                    <Tooltip
+                      showArrow
+                      content={
+                        <div className="font-tektur">Offchain Attestation</div>
                       }
-                      onClick={(e) => {
-                        if (!data.uid_host) {
-                          e.preventDefault();
-                          toast.error("Offchain attestation not available");
-                        }
-                      }}
-                      target="_blank"
+                      placement="top"
+                      className="rounded-md bg-opacity-90 max-w-96 bg-gray-700"
+                      closeDelay={1}
                     >
-                      <Image
-                        src={offChain_link}
-                        alt="image"
-                        height={100}
-                        width={100}
-                        className="w-6 h-6"
-                        priority
-                        quality={100}
-                      />
-                    </Link>
-                  </Tooltip>
-                   ): (
+                      <Link
+                        href={
+                          data.uid_host
+                            ? `${daoConfigs[data.dao_name.toLowerCase()]
+                              .attestationUrl
+                            }/${data.uid_host}`
+                            : "#"
+                        }
+                        onClick={(e) => {
+                          if (!data.uid_host) {
+                            e.preventDefault();
+                            toast.error("Offchain attestation not available");
+                          }
+                        }}
+                        target="_blank"
+                      >
+                        <Image
+                          src={offChain_link}
+                          alt="image"
+                          height={100}
+                          width={100}
+                          className="w-6 h-6"
+                          priority
+                          quality={100}
+                        />
+                      </Link>
+                    </Tooltip>
+                  ) : (
                     <></>
-                   )}
+                  )}
                 </>
                 {data.onchain_host_uid ? (
                   <Tooltip
                     showArrow
                     content={
-                      <div className="font-poppins">Onchain Attestation</div>
+                      <div className="font-tektur">Onchain Attestation</div>
                     }
                     placement="top"
                     className="rounded-md bg-opacity-90 max-w-96 bg-gray-700"
@@ -240,10 +238,9 @@ function WatchSession({
                     <Link
                       href={
                         data.onchain_host_uid
-                          ? `${
-                              daoConfigs[data.dao_name.toLowerCase()]
-                                .attestationUrl
-                            }/${data.onchain_host_uid}`
+                          ? `${daoConfigs[data.dao_name.toLowerCase()]
+                            .attestationUrl
+                          }/${data.onchain_host_uid}`
                           : "#"
                       }
                       onClick={(e) => {
@@ -305,8 +302,8 @@ function WatchSession({
                   {collection === "meetings"
                     ? formatTimeAgo(data.slot_time)
                     : collection === "office_hours"
-                    ? formatTimeAgo(data.startTime)
-                    : ""}
+                      ? formatTimeAgo(data.startTime)
+                      : ""}
                 </div>
               </div>
               {path.includes("/watch") && (
@@ -352,7 +349,7 @@ function WatchSession({
             {showPopup && (
               <div
                 className={`absolute bg-white rounded-xl mt-1 py-2 duration-200 ease-in-out z-30 ${styles.customScrollbar}`}
-                style={{ boxShadow: "0px 4px 9.1px 0px rgba(0,0,0,0.04)" ,maxHeight: "300px", overflowY: "auto"}}
+                style={{ boxShadow: "0px 4px 9.1px 0px rgba(0,0,0,0.04)", maxHeight: "300px", overflowY: "auto" }}
               >
                 {data.attendees.map((attendee, index) => (
                   <div key={index}>
@@ -382,7 +379,7 @@ function WatchSession({
                         <Tooltip
                           showArrow
                           content={
-                            <div className="font-poppins">
+                            <div className="font-tektur">
                               Offchain Attestation
                             </div>
                           }
@@ -393,10 +390,9 @@ function WatchSession({
                           <Link
                             href={
                               daoConfigs
-                                ? `${
-                                    daoConfigs[data.dao_name.toLowerCase()]
-                                      .attestationUrl
-                                  }/${attendee.attendee_uid}`
+                                ? `${daoConfigs[data.dao_name.toLowerCase()]
+                                  .attestationUrl
+                                }/${attendee.attendee_uid}`
                                 : ""
                             }
                             target="_blank"
@@ -420,7 +416,7 @@ function WatchSession({
                         <Tooltip
                           showArrow
                           content={
-                            <div className="font-poppins">
+                            <div className="font-tektur">
                               Onchain Attestation
                             </div>
                           }
@@ -431,10 +427,9 @@ function WatchSession({
                           <Link
                             href={
                               daoConfigs
-                                ? `${
-                                    daoConfigs[data.dao_name.toLowerCase()]
-                                      .attestationUrl
-                                  }/${attendee.onchain_attendee_uid}}`
+                                ? `${daoConfigs[data.dao_name.toLowerCase()]
+                                  .attestationUrl
+                                }/${attendee.onchain_attendee_uid}}`
                                 : ""
                               // data.dao_name === "optimism" ||
                               // data.dao_name === "Optimism"
@@ -485,9 +480,8 @@ function WatchSession({
               <>
                 <div
                   ref={contentRef}
-                  className={`max-h-full transition-max-height duration-500 ease-in-out overflow-hidden ${
-                    isExpanded ? "max-h-full" : "max-h-24 line-clamp-3"
-                  }`}
+                  className={`max-h-full transition-max-height duration-500 ease-in-out overflow-hidden ${isExpanded ? "max-h-full" : "max-h-24 line-clamp-3"
+                    }`}
                   style={{
                     maxHeight: isExpanded ? `${contentHeight}px` : "6rem",
                   }}

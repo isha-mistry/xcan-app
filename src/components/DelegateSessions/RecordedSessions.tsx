@@ -89,14 +89,14 @@ function RecordedSessions() {
       }
       setError(null);
       const response = await fetch(
-      // `/api/get-recorded-meetings`, 
-      `/api/get-recorded-meetings?page=${isLoadMore ? page + 1 : 1}&limit=10`,
+        // `/api/get-recorded-meetings`, 
+        `/api/get-recorded-meetings?page=${isLoadMore ? page + 1 : 1}&limit=10`,
         {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -196,7 +196,7 @@ function RecordedSessions() {
   return (
     <>
       <div className="">
-        <div className="flex my-4 justify-end md:justify-start items-center gap-2 sm:gap-3 md:gap-4 font-poppins px-4 sm:px-0">
+        <div className="flex my-4 justify-end md:justify-start items-center gap-2 sm:gap-3 md:gap-4 font-tektur px-4 sm:px-0">
           {/* <div
             style={{ background: "rgba(238, 237, 237, 0.36)" }}
             className="hidden md:flex border-[0.5px] border-black w-1/3 rounded-full"
@@ -231,17 +231,15 @@ function RecordedSessions() {
 
           <div className=" md:hidden search-container relative flex justify-end">
             <div
-              className={` md:hidden transition-all duration-500 flex items-center rounded-full shadow-lg bg-gray-100 text-black cursor-pointer ${
-                openSearch ? "w-full" : "w-7 h-7 justify-center"
-              }`}
+              className={` md:hidden transition-all duration-500 flex items-center rounded-full shadow-lg bg-gray-100 text-black cursor-pointer ${openSearch ? "w-full" : "w-7 h-7 justify-center"
+                }`}
               onClick={() => {
                 setOpenSearch(!openSearch);
               }}
             >
               <CiSearch
-                className={`text-base transition-all duration-700 ease-in-out ${
-                  openSearch ? "ml-3" : ""
-                }`}
+                className={`text-base transition-all duration-700 ease-in-out ${openSearch ? "ml-3" : ""
+                  }`}
               />
               {openSearch && (
                 <input
@@ -295,8 +293,8 @@ function RecordedSessions() {
           <RecordedSessionsSkeletonLoader />
         ) : meetingData && meetingData.length > 0 ? (
           <>
-          <RecordedSessionsTile meetingData={meetingData} />
-          {hasMore && (
+            <RecordedSessionsTile meetingData={meetingData} />
+            {hasMore && (
               <div className="flex justify-center mt-6 mb-8">
                 <button
                   className="bg-blue-shade-100 text-white py-2 px-4 w-fit rounded-lg font-medium"

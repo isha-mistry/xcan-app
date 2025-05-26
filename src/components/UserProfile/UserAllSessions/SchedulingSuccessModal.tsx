@@ -23,7 +23,7 @@ function SchedulingSuccessModal({
     const userAddress = data.userAddress;
     const dao_name = data.dao_name;
     const url = encodeURIComponent(
-      `https://app.chora.club/${dao_name}/${userAddress}?active=delegatesSession&session=book`
+      `https://stylus-university.vercel.app/${dao_name}/${userAddress}?active=delegatesSession&session=book`
     );
     const text = encodeURIComponent(
       `Hello Web3 Enthusiasts!🎉\nI've opened up some time slots for sessions on @ChoraClub!📅\nDon't miss out – book your session now to learn more about Web3 ecosystem! 📝\n👉 ${decodeURIComponent(
@@ -44,7 +44,7 @@ function SchedulingSuccessModal({
   const CopyUrl = () => {
     const userAddress = data.userAddress;
     const dao_name = data.dao_name;
-    const url = `https://app.chora.club/${dao_name}/${userAddress}?active=delegatesSession&session=book`;
+    const url = `https://stylus-university.vercel.app/${dao_name}/${userAddress}?active=delegatesSession&session=book`;
     copy(url);
     setIsToolTip(true);
     setTimeout(() => {
@@ -97,9 +97,9 @@ function SchedulingSuccessModal({
                 <div className="flex justify-between">
                   <Tooltip
                     showArrow
-                    content={<div className="font-poppins">Copied</div>}
+                    content={<div className="font-tektur">Copied</div>}
                     placement="bottom"
-                    className="rounded-md bg-opacity-90 bg-black text-white bg-gray-700"
+                    className="rounded-md bg-opacity-90 text-white bg-gray-700"
                     closeDelay={1}
                     isOpen={isToolTip} // Set isOpen based on the isToolTip state
                   >
@@ -111,7 +111,7 @@ function SchedulingSuccessModal({
                         <BsCopy className="ml-2" />
                       </button>
                     </span>
-                  </Tooltip>    
+                  </Tooltip>
 
                   <button
                     className="bg-black text-white rounded-full px-4 py-2 flex items-center space-x-1"

@@ -416,7 +416,7 @@ function AvailableSessions() {
 
   return (
     <div className="xs:mx-4">
-      <div className="flex flex-col lg:flex-row lg:gap-3 bg-[#D9D9D945] px-2 py-4 xs:p-4 mt-4 mx-2 rounded-2xl font-poppins">
+      <div className="flex flex-col lg:flex-row lg:gap-3 bg-[#D9D9D945] px-2 py-4 xs:p-4 mt-4 mx-2 rounded-2xl font-tektur">
         {/* <div
           style={{ background: "rgba(238, 237, 237, 0.36)" }}
           className="flex border-[0.5px] border-black w-fit rounded-full  "
@@ -455,7 +455,7 @@ function AvailableSessions() {
           </div>
           <Tooltip
             showArrow
-            content={<div className="font-poppins">More Options</div>}
+            content={<div className="font-tektur">More Options</div>}
             placement="bottom"
             className="rounded-md   bg-gray-700"
             closeDelay={1}
@@ -482,7 +482,7 @@ function AvailableSessions() {
               <Tooltip
                 showArrow
                 content={
-                  <div className="font-poppins">
+                  <div className="font-tektur">
                     Select a date to view available Delegates for that date.
                   </div>
                 }
@@ -504,7 +504,7 @@ function AvailableSessions() {
           <Tooltip
             showArrow
             content={
-              <div className="font-poppins">
+              <div className="font-tektur">
                 Select a time to view available Delegates for that specific
                 time.
               </div>
@@ -622,11 +622,11 @@ function AvailableSessions() {
         </div>
       </div>
 
-      <div className="pt-8 font-poppins">
+      <div className="pt-8 font-tektur">
         {!initialFetchComplete || isPageLoading ? (
           <AvailableSessionsSkeletonLoader />
         ) : daoInfo && daoInfo?.length > 0 ? (
-          <div className="overflow-auto font-poppins grid grid-cols-1 md:grid-cols-1 1.5lg:grid-cols-2 2xl:grid-cols-2 gap-12 py-5 px-6 md:px-10">
+          <div className="overflow-auto font-tektur grid grid-cols-1 md:grid-cols-1 1.5lg:grid-cols-2 2xl:grid-cols-2 gap-12 py-5 px-6 md:px-10">
             {daoInfo.map((daos: any, index: number) => (
               <div
                 key={index}
@@ -746,8 +746,8 @@ function AvailableSessions() {
                               >
                                 <div
                                   className={`pl-2 pt-[2px] cursor-pointer  ${animatingButtons[daos.session.userAddress]
-                                      ? "text-blue-500"
-                                      : "text-[#3E3D3D]"
+                                    ? "text-blue-500"
+                                    : "text-[#3E3D3D]"
                                     }`}
                                 >
                                   <IoCopy

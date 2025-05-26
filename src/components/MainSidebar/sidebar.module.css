@@ -77,7 +77,7 @@
 }
 
 .customTooltip {
-  font-family: var(--font-poppins);
+  font-family: var(--font-tektur);
   transform-origin: center;
   animation: expandTooltip 0.3s ease-out forwards;
 }

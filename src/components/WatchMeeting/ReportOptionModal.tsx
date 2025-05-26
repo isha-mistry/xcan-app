@@ -79,7 +79,7 @@ function ReportOptionModal({
   return (
     <div>
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center font-poppins">
+        <div className="fixed inset-0 z-50 flex items-center justify-center font-tektur">
           <div
             className="absolute inset-0 backdrop-blur-md"
             onClick={toggleModal}
@@ -130,11 +130,10 @@ function ReportOptionModal({
                   <button
                     type="submit"
                     disabled={!selectedCategory}
-                    className={`px-4 py-2 rounded font-semibold ${
-                      selectedCategory
+                    className={`px-4 py-2 rounded font-semibold ${selectedCategory
                         ? "text-blue-shade-100 hover:text-blue-shade-200"
                         : "text-gray-500 cursor-not-allowed"
-                    }`}
+                      }`}
                   >
                     Next
                   </button>
