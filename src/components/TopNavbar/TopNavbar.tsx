@@ -16,7 +16,7 @@ import { fetchApi } from "@/utils/api";
 function TopNavbar() {
   const pathname = usePathname();
   const { authenticated } = usePrivy();
-  const { status, walletAddress, isConnected } = useSidebar();
+  const { status, address, isConnected } = useSidebar();
   const sessionLoading = status === "loading";
   const {
     hasAnyUnreadNotification,
@@ -30,16 +30,16 @@ function TopNavbar() {
 
   useEffect(() => {
     const fetchNotifications = async () => {
-      if (isConnected && authenticated && walletAddress) {
+      if (isConnected && authenticated && address) {
         try {
           const token = await getAccessToken();
           const myHeaders: HeadersInit = {
             "Content-Type": "application/json",
-            "x-wallet-address": walletAddress,
+            "x-wallet-address": address,
             Authorization: `Bearer ${token}`,
           };
 
-          const raw = JSON.stringify({ address: walletAddress });
+          const raw = JSON.stringify({ address: address });
           const requestOptions: RequestInit = {
             method: "POST",
             headers: myHeaders,
@@ -82,7 +82,7 @@ function TopNavbar() {
   }, [
     isConnected,
     authenticated,
-    walletAddress,
+    address,
     setNotifications,
     setHasAnyUnreadNotification,
     updateCombinedNotifications,
@@ -169,7 +169,7 @@ function TopNavbar() {
                 </Link>
               </Badge>
               <Link
-                href={`/profile/${walletAddress}?active=info`}
+                href={`/profile/${address}?active=info`}
                 className={`${styles.item} text-blue-shade-500 font-medium ${pathname.includes(`/profile`)
                   ? `text-white ${styles.activeitem}`
                   : ""
