@@ -55,7 +55,7 @@ export default function NoResultsFound() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
-        className="text-2xl font-bold mb-2 text-gray-800"
+        className="text-2xl font-bold mb-2 text-gray-200"
       >
         It&apos;s Empty Here
       </motion.h2>

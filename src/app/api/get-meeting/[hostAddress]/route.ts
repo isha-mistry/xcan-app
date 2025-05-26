@@ -6,8 +6,6 @@ type Params = {
 };
 
 export async function GET(req: NextRequest, context: { params: Params }) {
-  const url = new URL(req.url);
-  const daoName = url.searchParams.get("dao_name");
   const host_address = context.params.hostAddress;
   // console.log("host_address:::", host_address);
   try {
@@ -16,13 +14,12 @@ export async function GET(req: NextRequest, context: { params: Params }) {
 
     // Access the collection
     const db = client.db();
-    const collection = db.collection("meetings");
+    const collection = db.collection("sessions");
 
     // Find documents based on user_address
     const documents = await collection
       .find({
         host_address: { $regex: new RegExp(`^${host_address}$`, "i") },
-        dao_name: daoName,
       })
       .sort({ slot_time: -1 })
       .toArray();
@@ -52,7 +49,7 @@ export async function POST(req: NextRequest, context: { params: Params }) {
 
     // Access the collection
     const db = client.db();
-    const collection = db.collection("meetings");
+    const collection = db.collection("sessions");
 
     // Get the current time in ISO format
     const currentTimeISO = new Date().toISOString();

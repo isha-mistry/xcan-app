@@ -12,7 +12,6 @@ import styles from "./DelegateInfo.module.css";
 import { marked } from "marked";
 import { useAccount } from "wagmi";
 import { usePrivy } from "@privy-io/react-auth";
-import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 import { fetchApi } from "@/utils/api";
 import { BASE_URL } from "@/config/constants";
 import { MeetingRecords } from "@/types/UserProfileTypes";
@@ -52,9 +51,8 @@ function DelegateInfo({
   const [loadingOpAgora, setLoadingOpAgora] = useState(false);
   const [loadingKarma, setLoadingKarma] = useState(false);
   const [convertedDescription, setConvertedDescription] = useState<string>("");
-  const { address, isConnected } = useAccount();
+  const { address } = useAccount();
   const { user, ready, getAccessToken, authenticated } = usePrivy();
-  const { walletAddress } = useWalletAddress();
 
   useEffect(() => {
     if (activeButton === "onchain") {
@@ -63,7 +61,7 @@ function DelegateInfo({
       fetchAttestation("offchain");
     }
   }, [
-    walletAddress,
+    address,
     activeButton,
     props.individualDelegate,
     props.daoDelegates,
@@ -271,7 +269,7 @@ function DelegateInfo({
         onBlockClick={(ref: string) => router.push(ref)}
       />
 
-      <div
+      {/* <div
         style={{ boxShadow: "0px 4px 30.9px 0px rgba(0, 0, 0, 0.12)" }}
         className={`rounded-xl my-7 py-6 px-7 text-sm ${
           desc && loadingKarma && loadingOpAgora ? "" : "min-h-52"
@@ -304,7 +302,7 @@ function DelegateInfo({
             Delegate has not provided a description
           </div>
         )}
-      </div>
+      </div> */}
     </div>
   );
 }

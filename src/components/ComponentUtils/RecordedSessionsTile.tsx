@@ -1,8 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useRouter } from "next-nprogress-bar";
 import styles from "./RecordedSessionsTile.module.css";
-import oplogo from "@/assets/images/daos/op.png";
-import arblogo from "@/assets/images/daos/arbitrum.jpg";
 import Image, { StaticImageData } from "next/image";
 import { Tooltip } from "@nextui-org/react";
 import { IoCopy } from "react-icons/io5";
@@ -10,7 +8,6 @@ import copy from "copy-to-clipboard";
 import toast, { Toaster } from "react-hot-toast";
 import user1 from "@/assets/images/user/user1.svg";
 import user2 from "@/assets/images/user/user2.svg";
-import posterImage from "@/assets/images/daos/thumbnail1.png";
 import { fetchEnsName } from "@/utils/ENSUtils";
 import logo from "@/assets/images/daos/CCLogo.png";
 import ClaimButton from "./ClaimButton";
@@ -22,9 +19,7 @@ import { BiLinkExternal } from "react-icons/bi";
 import buttonStyles from "./Button.module.css";
 import { formatTimeAgo } from "@/utils/getRelativeTime";
 import { usePrivy } from "@privy-io/react-auth";
-import { useWalletAddress } from "@/app/hooks/useWalletAddress";
-import { DAOLogo } from "../DAOs/DAOlogos";
-import { daoConfigs } from "@/config/daos";
+import { useConnection } from "@/app/hooks/useConnection";
 
 interface meeting {
   meetingData: any;
@@ -41,16 +36,6 @@ interface GTMEvent {
   value?: number;
 }
 
-type DaoName = "optimism" | "arbitrum";
-const daoLogos: Record<DaoName, StaticImageData> = {
-  optimism: oplogo,
-  arbitrum: arblogo,
-};
-const getDaoLogo = (daoName: string): StaticImageData => {
-  const normalizedName = daoName.toLowerCase() as DaoName;
-  return daoLogos[normalizedName] || arblogo;
-};
-
 function RecordedSessionsTile({
   meetingData,
   showClaimButton,
@@ -61,10 +46,8 @@ function RecordedSessionsTile({
   const videoRefs = useRef<any>([]);
   const [videoDurations, setVideoDurations] = useState<any>({});
   const router = useRouter();
-  const { address, isConnected } = useAccount();
-  const { ready, authenticated, login, logout, user } = usePrivy();
-  const { walletAddress } = useWalletAddress();
-  // const address = "0xc622420AD9dE8E595694413F24731Dd877eb84E1";
+  const { address } = useAccount();
+  const { isConnected } = useConnection();
   const [ensHostNames, setEnsHostNames] = useState<any>({});
   const [ensGuestNames, setEnsGuestNames] = useState<any>({});
   const [loadingHostNames, setLoadingHostNames] = useState<boolean>(true);
@@ -75,7 +58,7 @@ function RecordedSessionsTile({
   const [copiedStates, setCopiedStates] = useState<Record<string, boolean>>({});
   const renderStartTime = useRef<number | null>(null);
 
-  
+
 
   useEffect(() => {
     // Capture the start time
@@ -91,11 +74,7 @@ function RecordedSessionsTile({
     }
   }, [meetingData]);
 
-  const pushToGTM = (eventData: GTMEvent) => {
-    if (typeof window !== "undefined" && window.dataLayer) {
-      window.dataLayer.push(eventData);
-    }
-  };
+
 
   const handleCopy = (addr: string, buttonId: string) => {
     copy(addr);
@@ -141,11 +120,6 @@ function RecordedSessionsTile({
     // For less than 1000 views, return as is
     return Math.floor(views).toString();
   }
-
-  // const daoLogos = {
-  //   optimism: oplogo,
-  //   arbitrum: arblogo,
-  // };
 
   useEffect(() => {
     if (hoveredVideo !== null && videoRefs.current[hoveredVideo]) {
@@ -259,12 +233,6 @@ function RecordedSessionsTile({
             onClick={(e) => {
               e.stopPropagation();
               e.preventDefault();
-              pushToGTM({
-                event: "recorded_session_click",
-                category: "Recorded Session Engagement",
-                action: "Recorded Session Click",
-                label: `Recorded Session Click - Meeting ID: ${data.meetingId}`,
-              });
               router.push(`/watch/${data.meetingId}`);
             }}
             onMouseEnter={() => setHoveredVideo(index)}
@@ -295,11 +263,10 @@ function RecordedSessionsTile({
                 </div>
               ) : (
                 <video
-                  poster={`https://gateway.lighthouse.storage/ipfs/${
-                    updatedSessionDetails[index]?.thumbnail_image
-                      ? updatedSessionDetails[index].thumbnail_image
-                      : data.thumbnail_image
-                  }`}
+                  poster={`https://gateway.lighthouse.storage/ipfs/${updatedSessionDetails[index]?.thumbnail_image
+                    ? updatedSessionDetails[index].thumbnail_image
+                    : data.thumbnail_image
+                    }`}
                   ref={(el: any) => (videoRefs.current[index] = el)}
                   loop
                   muted
@@ -334,29 +301,6 @@ function RecordedSessionsTile({
                   {updatedSessionDetails[index]?.title || data.title}
                 </div>
                 <div className="flex items-center text-sm gap-0.5 sm:gap-1 py-1">
-                  <div className=" flex items-center ">
-                    <div>
-                      <Image
-                        src={daoConfigs[data.dao_name.toLowerCase()].logo}
-                        alt="image"
-                        width={100}
-                        height={100}
-                        className="rounded-full size-4 sm:size-6"
-                      />
-                      {/* <DAOLogo
-                        daoName={data.dao_name}
-                        width={100}
-                        height={100}
-                        className="rounded-full size-4 sm:size-6"
-                      />
-                       */}
-                    </div>
-                    {/* <div className="capitalize">
-                      
-                    </div> */}
-                    {/* <div className="capitalize hidden sm:flex">{data.dao_name}</div> */}
-                  </div>
-                  <LuDot />
                   <div className="text-xs sm:text-sm capitalize">
                     {formatViews(data?.views ?? 0)} views
                   </div>
@@ -383,7 +327,7 @@ function RecordedSessionsTile({
                     <div>
                       <span className="font-medium">Host: </span>
                       <Link
-                        href={`/${data.dao_name}/${data.host_address}?active=info`}
+                        href={`/arbitrum/${data.host_address}?active=info`}
                         onClick={(event: any) => {
                           event.stopPropagation();
                         }}
@@ -391,8 +335,8 @@ function RecordedSessionsTile({
                       >
                         {loadingHostNames
                           ? data.host_address.slice(0, 4) +
-                            "..." +
-                            data.host_address.slice(-4)
+                          "..." +
+                          data.host_address.slice(-4)
                           : ensHostNames[data.host_address]}
                       </Link>
                     </div>
@@ -403,6 +347,7 @@ function RecordedSessionsTile({
                             ? "Copied!"
                             : "Copy"
                         }
+                        className="bg-gray-700"
                         placement="right"
                         closeDelay={1}
                         showArrow
@@ -416,11 +361,10 @@ function RecordedSessionsTile({
                                 `host-${index}-${data.host_address}`
                               );
                             }}
-                            className={`transition-colors duration-300 ${
-                              copiedStates[`host-${index}-${data.host_address}`]
-                                ? "text-blue-500"
-                                : ""
-                            }`}
+                            className={`transition-colors duration-300 ${copiedStates[`host-${index}-${data.host_address}`]
+                              ? "text-blue-500"
+                              : ""
+                              }`}
                           />
                         </span>
                       </Tooltip>
@@ -446,15 +390,16 @@ function RecordedSessionsTile({
                         <span>
                           {loadingGuestNames
                             ? data.attendees[0]?.attendee_address.slice(0, 4) +
-                              "..." +
-                              data.attendees[0]?.attendee_address.slice(-4)
+                            "..." +
+                            data.attendees[0]?.attendee_address.slice(-4)
                             : ensGuestNames[
-                                data.attendees[0]?.attendee_address
-                              ]}
+                            data.attendees[0]?.attendee_address
+                            ]}
                         </span>
                       </div>
                       <div className="">
                         <Tooltip
+                          className="bg-gray-700"
                           content={
                             copiedStates[
                               `guest-${index}-${data.attendees[0]?.attendee_address}`
@@ -475,13 +420,12 @@ function RecordedSessionsTile({
                                   `guest-${index}-${data.attendees[0]?.attendee_address}`
                                 );
                               }}
-                              className={`transition-colors duration-300 ${
-                                copiedStates[
-                                  `guest-${index}-${data.attendees[0]?.attendee_address}`
-                                ]
-                                  ? "text-blue-500"
-                                  : ""
-                              }`}
+                              className={`transition-colors duration-300 ${copiedStates[
+                                `guest-${index}-${data.attendees[0]?.attendee_address}`
+                              ]
+                                ? "text-blue-500"
+                                : ""
+                                }`}
                             />
                           </span>
                         </Tooltip>
@@ -497,7 +441,7 @@ function RecordedSessionsTile({
                   <div className="flex gap-2 w-full">
                     <Link
                       href={
-                        data.uid_host?`${daoConfigs[data.dao_name.toLowerCase()].attestationUrl}/${data.uid_host}`:"#"
+                        data.uid_host ? `https://arbitrum.easscan.org/offchain/attestation/view/${data.uid_host}` : "#"
                       }
                       target="_blank"
                       rel="noopener noreferrer"
@@ -518,8 +462,7 @@ function RecordedSessionsTile({
                       meetingType={data.session_type === "session" ? 2 : 1}
                       startTime={data.attestations[0]?.startTime}
                       endTime={data.attestations[0]?.endTime}
-                      dao={data.dao_name}
-                      address={walletAddress || ""}
+                      address={address || ""}
                       onChainId={
                         session === "hosted" ? data.onchain_host_uid : ""
                       }
@@ -535,20 +478,20 @@ function RecordedSessionsTile({
                 {session === "attended" &&
                   data.attendees.some(
                     (attendee: any) =>
-                      attendee.attendee_address === walletAddress &&
+                      attendee.attendee_address === address &&
                       attendee.attendee_uid
                   ) && (
                     <div className="flex gap-2 w-full">
                       {(() => {
                         const matchingAttendee = data.attendees.find(
                           (attendee: any) =>
-                            attendee.attendee_address === walletAddress
+                            attendee.attendee_address === address
                         );
                         const attendeeUid = matchingAttendee?.attendee_uid;
 
                         let href = "#";
                         if (attendeeUid) {
-                          href=`${daoConfigs[data.dao_name.toLowerCase()].attestationUrl}/${attendeeUid}`;
+                          href = `https://arbitrum.easscan.org/offchain/attestation/view/${attendeeUid}`;
                           // if (data.dao_name.toLowerCase() === "optimism") {
                           //   href = `https://optimism.easscan.org/offchain/attestation/view/${attendeeUid}`;
                           // } else if (
@@ -582,8 +525,7 @@ function RecordedSessionsTile({
                         meetingType={data.session_type === "session" ? 2 : 1}
                         startTime={data.attestations[0]?.startTime}
                         endTime={data.attestations[0]?.endTime}
-                        dao={data.dao_name}
-                        address={walletAddress || ""}
+                        address={address || ""}
                         disabled={
                           claimInProgress &&
                           claimingMeetingId !== data.meetingId
@@ -594,9 +536,9 @@ function RecordedSessionsTile({
                         onChainId={
                           session === "attended"
                             ? data.attendees.find(
-                                (attendee: any) =>
-                                  attendee.attendee_address === walletAddress
-                              )?.onchain_attendee_uid
+                              (attendee: any) =>
+                                attendee.attendee_address === address
+                            )?.onchain_attendee_uid
                             : ""
                         }
                       />
@@ -604,9 +546,8 @@ function RecordedSessionsTile({
                   )}
                 {session === "hosted" && (
                   <div
-                    className={`flex justify-end ${
-                      data.uid_host ? "" : "w-full"
-                    } `}
+                    className={`flex justify-end ${data.uid_host ? "" : "w-full"
+                      } `}
                     onClick={(e) => {
                       e.stopPropagation();
                     }}

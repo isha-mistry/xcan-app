@@ -61,12 +61,6 @@ const Homepage = () => {
   const [loadingFeature, setLoadingFeature] = useState<number | null>(null);
   const { authenticated } = usePrivy();
 
-  const pushToGTM = (eventData: GTMEvent) => {
-    if (typeof window !== 'undefined' && window.dataLayer) {
-      window.dataLayer.push(eventData);
-    }
-  };
-
   const features = [
     {
       title: "Share on Warpcast",
@@ -75,14 +69,7 @@ const Homepage = () => {
       buttonText: "Generate Link",
       image: feature1,
       onclick: () => {
-        pushToGTM({
-          event: 'feature_button_click',
-          category: 'Feature Engagement',
-          action: 'Button Click',
-          label: 'Generate Link',
-          value: 1
-        });
-          setShowDaoSelectionFeature(true);
+        setShowDaoSelectionFeature(true);
       },
     },
     {
@@ -91,13 +78,6 @@ const Homepage = () => {
       buttonText: "Book Session",
       image: feature2,
       onclick: async () => {
-        pushToGTM({
-          event: 'feature_button_click',
-          category: 'Feature Engagement',
-          action: 'Button Click',
-          label: 'Book Session',
-          value: 2
-        });
         setLoadingFeature(1);
         try {
           if (!isConnected) {
@@ -123,14 +103,7 @@ const Homepage = () => {
       image: feature3,
       // onclick: handleSchedule,
       onclick: () => {
-        pushToGTM({
-          event: 'feature_button_click',
-          category: 'Feature Engagement',
-          action: 'Button Click',
-          label: 'Schedule Now',
-          value: 3
-        });
-          setShowDaoSelectionSchedule(true);
+        setShowDaoSelectionSchedule(true);
       },
     },
     {
@@ -140,13 +113,7 @@ const Homepage = () => {
       buttonText: "Learn How to Earn",
       image: feature4,
       onclick: () => {
-        pushToGTM({
-          event: 'feature_button_click',
-          category: 'Feature Engagement',
-          action: 'Button Click',
-          label: 'Learn How to Earn',
-          value: 4
-        });
+
         router.push(
           "https://docs.chora.club/earn-rewards/create-referral-reward"
         );
@@ -173,8 +140,8 @@ const Homepage = () => {
       network === "optimism"
         ? "0x4200000000000000000000000000000000000042"
         : network === "arbitrum"
-        ? "0x912CE59144191C1204E64559FE8253a0e49E6548"
-        : "";
+          ? "0x912CE59144191C1204E64559FE8253a0e49E6548"
+          : "";
 
     try {
       let delegateTx;
@@ -251,13 +218,6 @@ const Homepage = () => {
 
   const handleGetStarted = () => {
     setIsLoading(true);
-    pushToGTM({
-      event: 'get_started_click',
-      category: 'User Flow',
-      action: 'Button Click',
-      label: 'Join As a User',
-      value: 1
-    });
     if (!isConnected) {
       setShowConnectWallet(true);
       setIsLoading(false);
@@ -269,14 +229,7 @@ const Homepage = () => {
     }
   };
   const handleGetStartedDelegate = () => {
-    pushToGTM({
-      event: 'get_started_click',
-      category: 'User Flow',
-      action: 'Button Click',
-      label: 'Join As a Delegate',
-      value: 2
-    });
-      setShowDaoSelection(true);
+    setShowDaoSelection(true);
   };
 
   return (
@@ -285,11 +238,11 @@ const Homepage = () => {
       <div className="md:h-[calc(100vh-60px)] flex flex-col overflow-hidden">
         <PageBackgroundPattern />
         <div className="flex flex-col justify-between h-full">
-          <div className="flex-grow w-full bg-gradient-to-br from-gray-50 to-white flex items-center justify-center p-4 0.7xs:p-6 ">
+          <div className="flex-grow w-full bg-gradient-to-br from-dark-secondary to-dark-primary flex items-center justify-center p-4 0.7xs:p-6">
             <div className="flex flex-col md:flex-row items-center max-w-4xl 0.7xs:max-w-6xl mx-auto gap-4 0.7xs:gap-8 h-full">
               {/* Left Card - Join as Delegate */}
-              <div className="flex items-center justify-center group relative overflow-hidden rounded-2xl bg-white shadow-lg h-full transition-all duration-700 ease-in-out hover:shadow-2xl hover:transform hover:scale-105 p-4 md:p-3 max-h-[290px] 1.5md:max-h-[230px]">
-                <div className="absolute inset-0 bg-gradient-to-br from-blue-100 to-transparent transition-opacity duration-500"></div>
+              <div className="flex items-center justify-center group relative overflow-hidden rounded-2xl bg-dark-secondary shadow-lg h-full transition-all duration-700 ease-in-out hover:shadow-2xl hover:transform hover:scale-105 p-4 md:p-3 max-h-[290px] 1.5md:max-h-[230px]">
+                <div className="absolute inset-0 bg-gradient-to-br from-dark-accent to-transparent transition-opacity duration-500"></div>
                 <div className="relative z-10 flex items-center gap-3 text-left justify-between">
                   <Image
                     src={delegate}
@@ -297,10 +250,10 @@ const Homepage = () => {
                     className="size-24 0.7xs:size-28"
                   />
                   <div className="gap-1 flex flex-col">
-                    <h2 className="text-2xl font-bold text-gray-800">
+                    <h2 className="text-2xl font-bold text-dark-text-primary">
                       Join as a Delegate
                     </h2>
-                    <p className="text-gray-600 max-w-sm text-sm 0.7xs:text-base">
+                    <p className="text-dark-text-secondary max-w-sm text-sm 0.7xs:text-base">
                       Engage with your community—host meaningful sessions, grow
                       your influence, and lead with purpose as a delegate today!
                     </p>
@@ -335,15 +288,15 @@ const Homepage = () => {
               </div>
 
               {/* Right Card - Join as User */}
-              <div className="flex items-center group relative overflow-hidden rounded-2xl bg-white justify-center shadow-lg h-full transition-all duration-700 ease-in-out hover:shadow-2xl hover:transform hover:scale-105 p-4 md:p-3 max-h-[290px] 1.5md:max-h-[230px]">
-                <div className="absolute inset-0 bg-gradient-to-br from-blue-100 to-transparent transition-opacity duration-500"></div>
+              <div className="flex items-center group relative overflow-hidden rounded-2xl bg-dark-secondary justify-center shadow-lg h-full transition-all duration-700 ease-in-out hover:shadow-2xl hover:transform hover:scale-105 p-4 md:p-3 max-h-[290px] 1.5md:max-h-[230px]">
+                <div className="absolute inset-0 bg-gradient-to-br from-dark-accent to-transparent transition-opacity duration-500"></div>
                 <div className="relative z-10 flex items-center gap-3 text-left justify-between">
                   <Image src={user} alt="" className="size-24 0.7xs:size-28" />
                   <div className="gap-1 flex flex-col">
-                    <h2 className="text-2xl font-bold text-gray-800">
+                    <h2 className="text-2xl font-bold text-dark-text-primary">
                       Join as a User
                     </h2>
-                    <p className="text-gray-600 max-w-sm text-sm 0.7xs:text-base">
+                    <p className="text-dark-text-secondary max-w-sm text-sm 0.7xs:text-base">
                       Connect with delegates—master the basics, start
                       participating, and make an impact in DAOs from day one!
                     </p>
@@ -559,11 +512,10 @@ const Homepage = () => {
                 <motion.button
                   key={index}
                   onClick={() => handleDotClick(index)}
-                  className={`h-3 rounded-full transition-all duration-300 ${
-                    index === currentIndex
-                      ? "bg-blue-600 w-8"
-                      : "bg-gray-300 hover:bg-gray-400 w-3"
-                  }`}
+                  className={`h-3 rounded-full transition-all duration-300 ${index === currentIndex
+                    ? "bg-blue-600 w-8"
+                    : "bg-gray-300 hover:bg-gray-400 w-3"
+                    }`}
                   whileHover={{ scale: 1.2 }}
                   whileTap={{ scale: 0.9 }}
                   aria-label={`Go to slide ${index + 1}`}

@@ -73,8 +73,8 @@ function NotificationTile({ data, index, length }: NotificationTileProps) {
     <>
       <div
         className={`flex flex-col md:flex-row justify-between items-start md:items-center rounded-lg transition-all duration-200 ease-in-out hover:shadow-sm p-3 md:p-5 cursor-pointer hover:scale-[100.3%] mb-[6px]
-          shadow-lg space-y-3 md:space-y-0 border border-gray-100
-           text-black ${readStatus ? "bg-white" : "bg-gray-200"}`}
+          shadow-lg space-y-3 md:space-y-0 border border-dark-accent
+          text-dark-text-primary ${readStatus ? "bg-dark-secondary" : "bg-dark-tertiary"}`}
         onClick={handleTileRedirection}
       >
         <div className="flex flex-col md:flex-row gap-3 md:gap-5 w-full md:w-auto">
@@ -86,36 +86,36 @@ function NotificationTile({ data, index, length }: NotificationTileProps) {
               {getIcon(tileData)}
             </div>
             <div
-              className={`text-xs text-black font-semibold min-w-24 flex md:hidden items-center justify-end md:justify-center `}
+              className={`text-xs text-dark-text-secondary font-semibold min-w-24 flex md:hidden items-center justify-end md:justify-center`}
             >
               {formatTimestampOrDate(data.createdAt)}
             </div>
           </div>
           <div className="flex flex-col gap-1 justify-center">
             <h1
-              className={`font-semibold text-sm flex gap-2 items-center text-black `}
+              className={`font-semibold text-sm flex gap-2 items-center text-dark-text-primary`}
             >
               {data.notification_title}
               {renderTitleContent()}
             </h1>
-            <p className="font-normal text-sm text-[#414141]">
+            <p className="font-normal text-sm text-dark-text-secondary">
               {data.content.includes("Reason:")
                 ? data.content.split("Reason:").map((part, index) =>
-                    index === 0 ? (
-                      <span key={index}>{part.trim()}</span>
-                    ) : (
-                      <span key={index}>
-                        <br />
-                        <strong>Reason:</strong> {part.trim()}
-                      </span>
-                    )
+                  index === 0 ? (
+                    <span key={index}>{part.trim()}</span>
+                  ) : (
+                    <span key={index}>
+                      <br />
+                      <strong>Reason:</strong> {part.trim()}
+                    </span>
                   )
+                )
                 : data.content}
             </p>
           </div>
         </div>
         <div
-          className={`text-xs text-black font-semibold min-w-24 hidden md:flex items-center justify-start md:justify-center`}
+          className={`text-xs text-dark-text-secondary font-semibold min-w-24 hidden md:flex items-center justify-start md:justify-center`}
         >
           {formatTimestampOrDate(data.createdAt)}
         </div>

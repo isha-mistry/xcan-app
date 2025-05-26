@@ -7,12 +7,11 @@ export async function GET(req: NextRequest) {
     // Get query parameters
     const searchParams = req.nextUrl.searchParams;
     const host_address = searchParams.get("host_address");
-    const dao_name = searchParams.get("dao_name");
 
     // Validate required parameters
-    if (!host_address || !dao_name) {
+    if (!host_address) {
       return NextResponse.json(
-        { error: "Both host_address and dao_name are required parameters" },
+        { error: "host_address is a required parameter" },
         { status: 400 }
       );
     }
@@ -22,35 +21,22 @@ export async function GET(req: NextRequest) {
     const db = client.db();
     const collection = db.collection("office_hours");
 
-    // Updated query to include status filter
+    // Updated query to work with simplified schema
     const query = {
       host_address: host_address,
-      "dao.name": dao_name,
-      "dao.meetings.startTime": { $gt: currentDate.toISOString() },
-      "dao.meetings.status": "active" // Add status filter
+      "meetings.startTime": { $gt: currentDate.toISOString() },
+      "meetings.status": "active", // Add status filter
     };
 
-    const projection = {
-      dao: {
-        $filter: {
-          input: "$dao",
-          as: "dao",
-          cond: { $eq: ["$$dao.name", dao_name] },
-        },
-      },
-      host_address: 1,
-    };
-
-    const result = await collection.findOne(query, { projection });
+    const result = await collection.findOne(query);
     await client.close();
 
-    if (!result || !result.dao.length) {
+    if (!result || !result.meetings?.length) {
       return NextResponse.json(
         {
           success: true,
           data: {
             host_address: host_address,
-            dao_name: dao_name,
             meetings: [],
           },
         },
@@ -60,7 +46,7 @@ export async function GET(req: NextRequest) {
 
     // Filter for upcoming and active meetings
     const upcomingMeetings =
-      result.dao[0].meetings?.filter(
+      result.meetings?.filter(
         (meeting: Meeting) =>
           new Date(meeting.startTime) > currentDate &&
           meeting.meeting_status === "Upcoming" &&
@@ -72,7 +58,6 @@ export async function GET(req: NextRequest) {
         success: true,
         data: {
           host_address: result.host_address,
-          dao_name: dao_name,
           meetings: upcomingMeetings,
         },
       },

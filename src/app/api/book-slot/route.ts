@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
     const client = await connectDB();
 
     const db = client.db();
-    const collection = db.collection("meetings");
+    const collection = db.collection("sessions");
 
     const randomImage = getRandomElementFromArray(imageCIDs);
 
@@ -61,7 +61,7 @@ export async function POST(req: NextRequest) {
         _id: result.insertedId,
       });
 
-      const delegateCollection = db.collection("delegates");
+      const delegateCollection = db.collection("users");
       const documentsForHostEmail = await delegateCollection
         .find({ address: host_address })
         .toArray();
@@ -86,7 +86,7 @@ export async function POST(req: NextRequest) {
 
         const notificationToGuest = {
           receiver_address: guestAddress,
-          content: `Congratulations! 🎉 Your session on ${dao_name} titled "${title}" has been successfully booked with ${hostENSNameOrAddress}. The session will take place on ${localSlotTime} UTC.`,
+          content: `Congratulations! 🎉 Your session titled "${title}" has been successfully booked with ${hostENSNameOrAddress}. The session will take place on ${localSlotTime} UTC.`,
           createdAt: Date.now(),
           read_status: false,
           notification_name: "newBookingForGuest",
@@ -177,7 +177,7 @@ export async function POST(req: NextRequest) {
                   notificationToGuest.content
                 ),
               });
-              if(cacheWrapper.isAvailable){
+              if (cacheWrapper.isAvailable) {
                 const cacheKey1 = `Notification:${guestAddress}`;
                 const cacheKey2 = `Notification:${host_address}`;
                 await cacheWrapper.delete(cacheKey1);

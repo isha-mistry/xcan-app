@@ -25,10 +25,10 @@ import {
 import { Oval } from "react-loader-spinner";
 import { Tooltip } from "@nextui-org/react";
 import { usePrivy } from "@privy-io/react-auth";
-import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 import { MEETING_BASE_URL } from "@/config/constants";
 import { fetchApi } from "@/utils/api";
 import InstantMeetForm from "./InstantMeetForm";
+import { useAccount } from "wagmi";
 
 interface instantMeetProps {
   isDelegate: boolean;
@@ -38,7 +38,7 @@ interface instantMeetProps {
 
 function InstantMeet({ isDelegate, selfDelegate, daoName }: instantMeetProps) {
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const { walletAddress } = useWalletAddress();
+  const { address } = useAccount()
   const { getAccessToken } = usePrivy();
   const [confirmSave, setConfirmSave] = useState(false);
   const [modalData, setModalData] = useState({
@@ -70,8 +70,8 @@ function InstantMeet({ isDelegate, selfDelegate, daoName }: instantMeetProps) {
 
     let getHeaders = new Headers();
     getHeaders.append("Content-Type", "application/json");
-    if (walletAddress) {
-      getHeaders.append("x-wallet-address", walletAddress);
+    if (address) {
+      getHeaders.append("x-wallet-address", address);
     }
 
     let roomId = null;
@@ -100,7 +100,7 @@ function InstantMeet({ isDelegate, selfDelegate, daoName }: instantMeetProps) {
         slot_time: dateInfo,
         title: modalData.title,
         description: modalData.description,
-        host_address: walletAddress,
+        host_address: address,
         session_type: "instant-meet",
         meetingId: roomId,
         meeting_status: "Ongoing",
@@ -109,8 +109,8 @@ function InstantMeet({ isDelegate, selfDelegate, daoName }: instantMeetProps) {
       const token = await getAccessToken();
       const myHeaders: HeadersInit = {
         "Content-Type": "application/json",
-        ...(walletAddress && {
-          "x-wallet-address": walletAddress,
+        ...(address && {
+          "x-wallet-address": address,
           Authorization: `Bearer ${token}`,
         }),
       };
@@ -132,16 +132,14 @@ function InstantMeet({ isDelegate, selfDelegate, daoName }: instantMeetProps) {
       } else {
         console.error("Booking failed:", bookingResult.error);
         alert(
-          `Failed to save meeting details: ${
-            bookingResult.error || "Unknown error"
+          `Failed to save meeting details: ${bookingResult.error || "Unknown error"
           }`
         );
       }
     } catch (error) {
       console.error("Error during instant meet creation:", error);
       alert(
-        `An error occurred: ${
-          error instanceof Error ? error.message : String(error)
+        `An error occurred: ${error instanceof Error ? error.message : String(error)
         }`
       );
     } finally {
@@ -248,7 +246,7 @@ function InstantMeet({ isDelegate, selfDelegate, daoName }: instantMeetProps) {
           <div className="grid gris-cols-4 2md:grid-cols-7 rounded-3xl border-solid border-2 border-[#F9F9F9]-900">
             <div className="col-span-4 border-solid border-b-2 2md:border-b-0 2md:border-r-2 border-[#F9F9F9]-900">
               <div className="p-6 xs:p-10 xm:p-14">
-                <div className="text-[#3E3D3D] text-2xl xs:text-3xl font-semibold font-poppins text-center">
+                <div className="text-white text-2xl xs:text-3xl font-semibold font-poppins text-center">
                   Start an Instant Meeting
                 </div>
                 <div className="grid grid-cols-2 xm:grid-cols-3 xm:grid-rows-2 text-xs xs:text-sm gap-6 xs:gap-11 font-semibold pt-8 text-[#3E3D3D] text-center">
@@ -263,7 +261,7 @@ function InstantMeet({ isDelegate, selfDelegate, daoName }: instantMeetProps) {
                         </div>
                       }
                       placement="top"
-                      className="group w-fit"
+                      className="group w-fit bg-gray-700"
                       motionProps={{
                         variants: {
                           exit: {
@@ -299,7 +297,7 @@ function InstantMeet({ isDelegate, selfDelegate, daoName }: instantMeetProps) {
                           />
                         </div>
                         <div className="p-2">
-                          <span className="">{data.title}</span>
+                          <span className="text-slate-300">{data.title}</span>
                         </div>
                       </div>
                     </Tooltip>
@@ -353,11 +351,10 @@ function InstantMeet({ isDelegate, selfDelegate, daoName }: instantMeetProps) {
           <ModalBody className="relative overflow-hidden min-h-[280px]">
             {/* Step 1: Form View */}
             <div
-              className={`absolute top-0 left-0 w-full transition-all duration-300 ease-in-out transform px-6 ${
-                modalStep === 1
+              className={`absolute top-0 left-0 w-full transition-all duration-300 ease-in-out transform px-6 ${modalStep === 1
                   ? "translate-x-0 opacity-100"
                   : "-translate-x-full opacity-0 pointer-events-none"
-              }`}
+                }`}
             >
               <InstantMeetForm
                 key="instant-meet-form"
@@ -369,11 +366,10 @@ function InstantMeet({ isDelegate, selfDelegate, daoName }: instantMeetProps) {
 
             {/* Step 2: Confirmation View */}
             <div
-              className={`absolute top-0 left-0 w-full transition-all duration-300 ease-in-out transform ${
-                modalStep === 2
+              className={`absolute top-0 left-0 w-full transition-all duration-300 ease-in-out transform ${modalStep === 2
                   ? "translate-x-0 opacity-100"
                   : "translate-x-full opacity-0 pointer-events-none"
-              }`}
+                }`}
             >
               <ModalConfirmationContent />
             </div>

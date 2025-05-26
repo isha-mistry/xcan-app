@@ -1,8 +1,6 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import text1 from "@/assets/images/daos/texture1.png";
-import text2 from "@/assets/images/daos/texture2.png";
 import Image from "next/image";
 import { Tooltip } from "@nextui-org/react";
 import EventTile from "../../ComponentUtils/EventTile";
@@ -14,19 +12,20 @@ import SessionTileSkeletonLoader from "@/components/SkeletonLoader/SessionTileSk
 import ErrorDisplay from "@/components/ComponentUtils/ErrorDisplay";
 import RecordedSessionsSkeletonLoader from "@/components/SkeletonLoader/RecordedSessionsSkeletonLoader";
 import { usePrivy } from "@privy-io/react-auth";
-import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 import { fetchApi } from "@/utils/api";
 import NoResultsFound from "@/utils/Noresult";
+import { useConnection } from "@/app/hooks/useConnection";
 
-function AttendingUserSessions({ daoName }: { daoName: string }) {
+function AttendingUserSessions() {
   const router = useRouter();
   const path = usePathname();
   const searchParams = useSearchParams();
   const [sessionDetails, setSessionDetails] = useState<any[]>([]);
   const [pageLoading, setPageLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { address } = useAccount()
+  const { isConnected } = useConnection()
   const { user, ready, getAccessToken, authenticated } = usePrivy();
-  const { walletAddress } = useWalletAddress();
   const handleRetry = () => {
     setError(null);
     getUserMeetingData();
@@ -36,20 +35,17 @@ function AttendingUserSessions({ daoName }: { daoName: string }) {
   const getUserMeetingData = async () => {
     try {
       setPageLoading(true);
-      const token=await getAccessToken();
+      const token = await getAccessToken();
       const myHeaders: HeadersInit = {
         "Content-Type": "application/json",
-        ...(walletAddress && {
-          "x-wallet-address": walletAddress,
+        ...(address && {
+          "x-wallet-address": address,
           Authorization: `Bearer ${token}`,
         }),
       };
-      const response = await fetchApi(`/get-session-data/${walletAddress}`, {
-        method: "POST",
+      const response = await fetchApi(`/get-session-data/${address}`, {
+        method: "GET",
         headers: myHeaders,
-        body: JSON.stringify({
-          dao_name: daoName,
-        }),
       });
 
       const result = await response.json();
@@ -66,7 +62,7 @@ function AttendingUserSessions({ daoName }: { daoName: string }) {
   };
 
   useEffect(() => {
-    if (walletAddress != null) {
+    if (address) {
       getUserMeetingData();
     }
   }, [searchParams.get("session")]);
@@ -102,7 +98,7 @@ function AttendingUserSessions({ daoName }: { daoName: string }) {
           <div className="pt-4 font-semibold text-lg">
             Oops, no such result available!
           </div> */}
-          <NoResultsFound/>
+          <NoResultsFound />
         </div>
       )}
     </div>

@@ -17,9 +17,9 @@ export async function GET(req: NextRequest, context: { params: Params }) {
   try {
     const client = await connectDB();
     const db = client.db();
-    const meetingsCollection = db.collection("meetings");
+    const meetingsCollection = db.collection("sessions");
     const officeHoursCollection = db.collection("office_hours");
-    const delegatesCollection = db.collection("delegates");
+    const delegatesCollection = db.collection("users");
 
     // First try to find in meetings collection
     const meetingsDocuments = await meetingsCollection

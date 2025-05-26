@@ -15,7 +15,6 @@ import { BiLinkExternal } from "react-icons/bi";
 import buttonStyles from "./Button.module.css";
 import { Attendee, OfficeHoursProps, TimeSlot } from "@/types/OfficeHoursTypes";
 import EditOfficeHoursModal from "./EditOfficeHoursModal";
-import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 import { getAccessToken } from "@privy-io/react-auth";
 import { fetchApi } from "@/utils/api";
 import toast from "react-hot-toast";
@@ -32,6 +31,8 @@ import arblogo from "@/assets/images/daos/arbitrum.jpg";
 import OffchainAttestationButton from "./OffchainAttestationButton";
 import { DAOLogo } from "../DAOs/DAOlogos";
 import { daoConfigs } from "@/config/daos";
+import { useAccount } from "wagmi";
+import { useConnection } from "@/app/hooks/useConnection";
 interface CopyStates {
   [key: number]: boolean;
 }
@@ -64,9 +65,6 @@ const OfficeHourTile = ({
 }: OfficeHoursTileProps) => {
   const [localData, setLocalData] = useState<OfficeHoursProps[]>(data);
   const [copyStates, setCopyStates] = useState<CopyStates>({});
-  const { walletAddress } = useWalletAddress();
-  const [loadingButton, setLoadingButton] = useState("");
-  const [AttestationURL, setAttestationURL] = useState("");
   const [claimInProgress, setClaimInProgress] = useState(false);
   const [claimingMeetingId, setClaimingMeetingId] = useState(null);
   const [editModalData, setEditModalData] = useState<{
@@ -87,6 +85,8 @@ const OfficeHourTile = ({
     Object.fromEntries(data.map((item) => [item.meetingId, false]))
   );
   const router = useRouter();
+  const { address } = useAccount();
+  const { isConnected } = useConnection()
 
   useEffect(() => {
     setLocalData(data);
@@ -198,39 +198,14 @@ const OfficeHourTile = ({
       setLoadingStates((prev: any) => ({ ...prev, [meetingId]: false }));
     }, 500);
   };
-  //   const handleJoinMeeting = (meetingId: string) => {
-  //     window.open(`${MEETING_BASE_URL}/meeting/officehours/${meetingId}/lobby`, '_blank');
-  // };
 
-  type DaoName = "optimism" | "arbitrum";
-  const daoLogos: Record<DaoName, StaticImageData> = {
-    optimism: oplogo,
-    arbitrum: arblogo,
-  };
-  const getDaoLogo = (daoName: string): StaticImageData => {
-    const normalizedName = daoName.toLowerCase() as DaoName;
-    return daoLogos[normalizedName] || arblogo;
-  };
-
-  const getAttendeeUid = (address: string | null, attendees?: Attendee[]) => {
+  const getAttendeeUid = (address: `0x${string}` | null | undefined, attendees?: Attendee[]) => {
     if (!attendees || !address) return null;
     const attendee = attendees.find(
       (a) => a.attendee_address.toLowerCase() === address.toLowerCase()
     );
     return attendee?.attendee_uid;
   };
-
-  // const getAttestationUrl = (daoName: string, uid?: string | null): string => {
-  //   if (!uid) return "#";
-  //   const baseUrl =
-  //     daoName.toLowerCase() === "optimism"
-  //       ? "https://optimism.easscan.org/offchain/attestation/view/"
-  //       : daoName.toLowerCase() === "arbitrum"
-  //       ? "https://arbitrum.easscan.org/offchain/attestation/view/"
-  //       : "#";
-
-  //   return `${baseUrl}${uid}`;
-  // };
 
   const handleAttestationSuccess = (
     uid: string,
@@ -245,7 +220,7 @@ const OfficeHourTile = ({
               attendees:
                 item.attendees?.map((attendee) =>
                   attendee.attendee_address.toLowerCase() ===
-                    walletAddress?.toLowerCase()
+                    address?.toLowerCase()
                     ? { ...attendee, attendee_uid: uid }
                     : attendee
                 ) || [],
@@ -262,12 +237,6 @@ const OfficeHourTile = ({
     );
   };
 
-  const pushToGTM = (eventData: GTMEvent) => {
-    if (typeof window !== 'undefined' && window.dataLayer) {
-      window.dataLayer.push(eventData);
-    }
-  };
-
 
   return (
     <div
@@ -280,13 +249,6 @@ const OfficeHourTile = ({
           key={index}
           onClick={() => {
             isRecorded && router.push(`/watch/${data.meetingId}`);
-            pushToGTM({
-              event: 'office_hours_video_click',
-              category: 'Office Hours Video Engagement',
-              action: 'Video Click',
-              label: `Office Hours Video - ${data.title} clicked in Library}`,
-            });
-
           }}
         >
           <div
@@ -307,21 +269,6 @@ const OfficeHourTile = ({
                 height={100}
                 className="w-7 h-7"
               />
-            </div>
-            <div className={`absolute top-2 left-2 bg-black rounded-full`}>
-              <Image
-                src={daoConfigs[data.dao_name.toLowerCase()]?.logo}
-                alt="image"
-                width={100}
-                height={100}
-                className="size-4 sm:size-6 rounded-full"
-              />
-              {/* <DAOLogo
-                daoName={data.dao_name}
-                width={100}
-                height={100}
-                className="size-4 sm:size-6 rounded-full"
-              /> */}
             </div>
           </div>
           <div className="px-5 py-4 space-y-2">
@@ -376,7 +323,7 @@ const OfficeHourTile = ({
               />
               <span className="font-medium text-sm">Host:</span>
               <Link
-                href={`/${data.dao_name}/${data.host_address}?active=info`}
+                href={`/arbitrum/${data.host_address}?active=info`}
                 passHref
                 onClick={(event: any) => {
                   event.stopPropagation();
@@ -394,6 +341,7 @@ const OfficeHourTile = ({
                 placement="right"
                 closeDelay={0}
                 showArrow
+                className="bg-gray-700"
               >
                 <span className="cursor-pointer text-xs sm:text-sm">
                   <IoCopy
@@ -402,8 +350,8 @@ const OfficeHourTile = ({
                       handleCopy(data.host_address, index, e);
                     }}
                     className={`transition-colors duration-300 ${copyStates[index]
-                        ? "text-blue-500"
-                        : "hover:text-blue-500"
+                      ? "text-blue-500"
+                      : "hover:text-blue-500"
                       }`}
                   />
                 </span>
@@ -419,8 +367,8 @@ const OfficeHourTile = ({
                   meetingType={data.meetingType}
                   startTime={data.meeting_starttime}
                   endTime={data.meeting_endtime}
-                  uid={getAttendeeUid(walletAddress, data.attendees)}
-                  attendeeAddress={walletAddress}
+                  uid={getAttendeeUid(address, data.attendees)}
+                  attendeeAddress={address}
                   onSuccess={(uid) =>
                     handleAttestationSuccess(uid, data.meetingId)
                   }
@@ -428,14 +376,14 @@ const OfficeHourTile = ({
                 />
 
                 {/* ClaimButton Component */}
-                <Tooltip content="Claim Onchain" placement="top" showArrow>
+                <Tooltip content="Claim Onchain" placement="top" showArrow className="bg-gray-700">
                   <ClaimButton
                     meetingId={data.meetingId as string}
                     meetingType={data.meetingType}
                     startTime={data.meeting_starttime}
                     endTime={data.meeting_endtime}
-                    dao={data.dao_name}
-                    address={walletAddress || ""}
+                    // dao={data.dao_name}
+                    address={address || ""}
                     onChainId={
                       data.onchain_host_uid ? data.onchain_host_uid : ""
                     }
@@ -474,14 +422,14 @@ const OfficeHourTile = ({
                     />
 
                     {/* ClaimButton Component */}
-                    <Tooltip content="Claim Onchain" placement="top" showArrow>
+                    <Tooltip content="Claim Onchain" placement="top" showArrow className="bg-gray-700">
                       <ClaimButton
                         meetingId={data.meetingId as string}
                         meetingType={data.meetingType}
                         startTime={data.meeting_starttime}
                         endTime={data.meeting_endtime}
-                        dao={data.dao_name}
-                        address={walletAddress || ""}
+                        // dao={data.dao_name}
+                        address={address || ""}
                         onChainId={
                           data.onchain_host_uid ? data.onchain_host_uid : ""
                         }
@@ -498,7 +446,7 @@ const OfficeHourTile = ({
                   </div>
                 )}
                 <div className="flex justify-end ms-2">
-                  <Tooltip content="Edit Details" placement="top" showArrow>
+                  <Tooltip content="Edit Details" placement="top" showArrow className="bg-gray-700">
                     <div
                       onClick={(e) => {
                         e.stopPropagation();
@@ -512,22 +460,6 @@ const OfficeHourTile = ({
                 </div>
               </div>
             )}
-
-            {/* {isHosted && (
-              <div className="flex justify-end w-full">
-                <Tooltip content="Edit Details" placement="top" showArrow>
-                  <div
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleEditModalOpen(data);
-                    }}
-                    className={`bg-gradient-to-r from-[#8d949e] to-[#555c6629] rounded-full p-1 py-3 cursor-pointer w-10 flex items-center justify-center font-semibold text-sm text-black`}
-                  >
-                    <FaPencil color="black" size={14} />
-                  </div>
-                </Tooltip>
-              </div>
-            )} */}
 
             {(isUpcoming || isOngoing) && (
               <>
@@ -637,12 +569,6 @@ const OfficeHourTile = ({
                   e.stopPropagation();
                   data.meetingId && handleStartSession(data.meetingId);
                   // data.meetingId && handleJoinMeeting(data.meetingId);
-                  pushToGTM({
-                    event: 'office_hours_video_click',
-                    category: 'Office Hours Video Engagement',
-                    action: 'Video Click',
-                    label: `Office Hours Video - ${data.title} clicked in Live}`,
-                  });
                 }}
                 className="flex items-center justify-center gap-2 w-full px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-indigo-500 to-blue-500 rounded-full hover:from-indigo-600 hover:to-blue-600 transition-all duration-300 transform hover:scale-[1.02]"
               >
@@ -685,7 +611,6 @@ const OfficeHourTile = ({
           onClose={handleEditModalClose}
           onUpdate={handleUpdate}
           hostAddress={editModalData.itemData.host_address}
-          daoName={editModalData.itemData.dao_name}
         />
       )}
       {deleteModalData.isOpen && deleteModalData.itemData && (
@@ -694,7 +619,6 @@ const OfficeHourTile = ({
           onClose={handleDeleteModalClose}
           onSuccess={handleDeleteSuccess}
           hostAddress={deleteModalData.itemData.host_address}
-          daoName={deleteModalData.itemData.dao_name}
           slotId={deleteModalData.itemData.reference_id}
         />
       )}

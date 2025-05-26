@@ -5,27 +5,20 @@ import { useRouter } from "next-nprogress-bar";
 import NotificationAll from "./NotificationAll";
 import SessionBookings from "./SessionBookings";
 import RecordedSessions from "./RecordedSessions";
-import ProposalVote from "./ProposalVote";
-import Followers from "./Followers";
 import Attestation from "./Attestation";
 import OfficeHours from "./OfficeHours";
-import ConnectWalletWithENS from "../ConnectWallet/ConnectWalletWithENS";
 import { Notification } from "./NotificationTypeUtils";
 import { useAccount } from "wagmi";
 import { useSocket } from "@/app/hooks/useSocket";
 import { PiEnvelopeOpen } from "react-icons/pi";
 import { useSession } from "next-auth/react";
 import { MagnifyingGlass } from "react-loader-spinner";
-import { Session } from "next-auth";
 import toast, { Toaster } from "react-hot-toast";
 import { useNotificationStudioState } from "@/store/notificationStudioState";
-import MobileResponsiveMessage from "../MobileResponsiveMessage/MobileResponsiveMessage";
 import Heading from "../ComponentUtils/Heading";
 import NotificationSkeletonLoader from "../SkeletonLoader/NotificationSkeletonLoader";
 import { usePrivy, useWallets } from "@privy-io/react-auth";
 import { useConnection } from "@/app/hooks/useConnection";
-import { useWalletAddress } from "@/app/hooks/useWalletAddress";
-
 import { fetchApi } from "@/utils/api";
 import { BellOff, ChevronDownIcon, Wallet } from "lucide-react";
 
@@ -39,18 +32,14 @@ function NotificationMain() {
   const path = usePathname();
   const socket = useSocket();
   const {
-    notifications,
-    newNotifications,
     combinedNotifications,
     canFetch,
     hasAnyUnreadNotification,
     setNotifications,
-    setNewNotifications,
     addNotification,
     updateCombinedNotifications,
     markAllAsRead,
     setCanFetch,
-    setHasAnyUnreadNotification,
   } = useNotificationStudioState();
 
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -58,22 +47,18 @@ function NotificationMain() {
   const [buttonText, setButtonText] = useState("Mark all as read");
   const [markAllReadCalling, setMarkAllReadCalling] = useState<boolean>(false);
   const [isPageLoading, setIsPageLoading] = useState<boolean>(true);
-  const { walletAddress } = useWalletAddress();
   const { wallets } = useWallets();
-
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [selectedTab, setSelectedTab] = useState("Info");
   const dropdownRef = useRef<HTMLDivElement | null>(null);
 
   const tabs = [
     { name: "All", value: "all" },
-    // { name: "Past Votes", value: "votes" },
     { name: "Meetings", value: "sessionBookings" },
     { name: "Recorded Sessions", value: "recordedSessions" },
-    { name: "Followers", value: "followers" },
+    // { name: "Followers", value: "followers" },
     { name: "Attestations", value: "attestations" },
-    // { name: "Instant Meet", value: "instant-meet" }
-    { name: "Proposal Vote", value: "proposalVote" },
+    // { name: "Proposal Vote", value: "proposalVote" },
     { name: "Office Hours", value: "officeHours" }
   ];
 
@@ -103,13 +88,9 @@ function NotificationMain() {
         router.push(path + `?active=${tabValue}`);
       } else if (tabValue === "recordedSessions") {
         toast("Coming Soon 🚀");
-      } else if (tabValue === "followers") {
-        toast("Coming Soon 🚀");
       } else if (tabValue === "attestations") {
         router.push(path + `?active=${tabValue}`);
       } else if (tabValue === "officeHours") {
-        router.push(path + `?active=${tabValue}`);
-      } else if (tabValue === "proposalVote") {
         router.push(path + `?active=${tabValue}`);
       } else {
         router.push(path + `?active=${tabValue}`);
@@ -171,8 +152,8 @@ function NotificationMain() {
 
   useEffect(() => {
     // Set canFetch based on address and session
-    setCanFetch(!!walletAddress && !!authenticated);
-  }, [address, walletAddress, session, setCanFetch]);
+    setCanFetch(!!address && !!authenticated);
+  }, [address, address, session, setCanFetch]);
 
   const fetchNotifications = useCallback(async () => {
     if (!canFetch) return;
@@ -181,13 +162,13 @@ function NotificationMain() {
       const token = await getAccessToken();
       const myHeaders: HeadersInit = {
         "Content-Type": "application/json",
-        ...(walletAddress && {
-          "x-wallet-address": walletAddress,
+        ...(address && {
+          "x-wallet-address": address,
           Authorization: `Bearer ${token}`,
         }),
       };
 
-      const raw = JSON.stringify({ address: walletAddress });
+      const raw = JSON.stringify({ address: address });
 
       const requestOptions: RequestInit = {
         method: "POST",
@@ -208,7 +189,7 @@ function NotificationMain() {
       setIsLoading(false);
     }
   }, [
-    walletAddress,
+    address,
     address,
     canFetch,
     setNotifications,
@@ -246,9 +227,9 @@ function NotificationMain() {
     };
 
     // Socket connection and event binding
-    if (socket && walletAddress && socketId) {
+    if (socket && address && socketId) {
       // Register host
-      socket.emit("register_host", { hostAddress: walletAddress, socketId });
+      socket.emit("register_host", { hostAddress: address, socketId });
 
       // Listen for new notifications
       socket.on("new_notification", handleNewNotification);
@@ -262,7 +243,7 @@ function NotificationMain() {
     };
   }, [
     socket,
-    walletAddress,
+    address,
     socketId,
     addNotification,
     hasAnyUnreadNotification,
@@ -277,9 +258,9 @@ function NotificationMain() {
     const typeMap = {
       sessionBookings: "newBooking",
       recordedSessions: "recordedSession",
-      followers: "newFollower",
+      // followers: "newFollower",
       attestations: "attestation",
-      proposalVote: "proposalVote",
+      // proposalVote: "proposalVote",
       officeHours: "officeHours",
     };
     return combinedNotifications.filter(
@@ -288,7 +269,6 @@ function NotificationMain() {
   }, [combinedNotifications, searchParams]);
 
   const handleMarkAllAsRead = async () => {
-    // if (!walletAddress || !session) return;
 
     const hasUnreadNotifications = combinedNotifications.some(
       (notification) => notification.read_status === false
@@ -305,15 +285,15 @@ function NotificationMain() {
       const token = await getAccessToken();
       const myHeaders: HeadersInit = {
         "Content-Type": "application/json",
-        ...(walletAddress && {
-          "x-wallet-address": walletAddress,
+        ...(address && {
+          "x-wallet-address": address,
           Authorization: `Bearer ${token}`,
         }),
       };
 
       const raw = JSON.stringify({
         markAll: true,
-        receiver_address: walletAddress,
+        receiver_address: address,
       });
 
       const requestOptions: RequestInit = {
@@ -429,10 +409,8 @@ function NotificationMain() {
       return (
         <div className="flex flex-col justify-center items-center min-h-[16rem] px-4 py-8">
           <div
-            className="bg-white/80 backdrop-blur-lg rounded-3xl p-8 sm:p-10 
-        shadow-[0_20px_50px_rgba(59,130,246,0.15)] 
-        border border-blue-100 
-        transform transition-all duration-500 hover:shadow-[0_25px_60px_rgba(59,130,246,0.2)]"
+            className="bg-white/80 backdrop-blur-lg rounded-3xl p-8 sm:p-10 shadow-[0_20px_50px_rgba(59,130,246,0.15)] 
+        border border-blue-100 transform transition-all duration-500 hover:shadow-[0_25px_60px_rgba(59,130,246,0.2)]"
           >
             <div className="flex flex-col items-center space-y-6">
               <div className="relative group">
@@ -451,8 +429,7 @@ function NotificationMain() {
 
               <div className="text-center space-y-2">
                 <h3
-                  className="text-xl sm:text-2xl font-semibold 
-              bg-gradient-to-r from-blue-500 to-blue-400 bg-clip-text text-transparent"
+                  className="text-xl sm:text-2xl font-semibold bg-gradient-to-r from-blue-500 to-blue-400 bg-clip-text text-transparent"
                 >
                   No New Notifications
                 </h3>
@@ -467,9 +444,7 @@ function NotificationMain() {
       all: NotificationAll,
       sessionBookings: SessionBookings,
       recordedSessions: RecordedSessions,
-      followers: Followers,
       attestations: Attestation,
-      proposalVote: ProposalVote,
       officeHours: OfficeHours,
     };
     const Component =
@@ -561,16 +536,6 @@ function NotificationMain() {
               Recorded Sessions
             </button>
             <button
-              className={`py-4 px-2 outline-none ${searchParams.get("active") === "followers"
-                ? "text-blue-shade-200 font-semibold border-b-2 border-blue-shade-200"
-                : "border-transparent"
-                }`}
-              // onClick={() => router.push(path + "?active=followers")}
-              onClick={() => toast("Coming Soon 🚀")}
-            >
-              Followers
-            </button>
-            <button
               className={`py-4 px-2 outline-none ${searchParams.get("active") === "attestations"
                 ? "text-blue-shade-200 font-semibold border-b-2 border-blue-shade-200"
                 : "border-transparent"
@@ -578,15 +543,6 @@ function NotificationMain() {
               onClick={() => router.push(path + "?active=attestations")}
             >
               Attestations
-            </button>
-            <button
-              className={`py-4 px-2 outline-none ${searchParams.get("active") === "proposalVote"
-                ? "text-blue-shade-200 font-semibold border-b-2 border-blue-shade-200"
-                : "border-transparent"
-                }`}
-              onClick={() => router.push(path + "?active=proposalVote")}
-            >
-              Proposal Vote
             </button>
             <button
               className={`py-4 px-2 outline-none ${searchParams.get("active") === "officeHours"

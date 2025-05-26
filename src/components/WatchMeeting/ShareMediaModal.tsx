@@ -14,7 +14,6 @@ import { RiTwitterXLine } from "react-icons/ri";
 import { useAccount } from "wagmi";
 import { SiFarcaster } from "react-icons/si";
 import { usePrivy } from "@privy-io/react-auth";
-import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 
 function ShareMediaModal({
   isOpen,
@@ -32,13 +31,12 @@ function ShareMediaModal({
   const [link, setLink] = useState("");
   const [copySuccess, setCopySuccess] = useState(false);
   const { ready, authenticated, login, logout, user } = usePrivy();
-  const { address,isConnected } = useAccount();
-  const {walletAddress}=useWalletAddress();
+  const { address } = useAccount();
 
 
   useEffect(() => {
-    setLink(`${window.location.href}${walletAddress ? `?referrer=${walletAddress}` : ""}`);
-  }, [address || walletAddress]);
+    setLink(`${window.location.href}${address ? `?referrer=${address}` : ""}`);
+  }, [address]);
 
   useEffect(() => {
     // Lock scrolling when the modal is open

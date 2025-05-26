@@ -20,19 +20,19 @@ import { all } from "axios";
 import { fetchEnsNameAndAvatar } from "@/utils/ENSUtils";
 import { headers } from "next/headers";
 import { usePrivy } from "@privy-io/react-auth";
-import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 import { fetchApi } from "@/utils/api";
+import { useConnection } from "@/app/hooks/useConnection";
 
 interface dataToStore {
   userAddress: `0x${string}` | undefined | null;
   timeSlotSizeMinutes: number;
   allowedDates: any;
   dateAndRanges: any;
-  dao_name: string;
 }
 
-function ScheduledUserSessions({ daoName }: { daoName: string }) {
-  const { address, isConnected } = useAccount();
+function ScheduledUserSessions() {
+  const { address } = useAccount();
+  const { isConnected } = useConnection();
   const [timeSlotSizeMinutes, setTimeSlotSizeMinutes] = useState(30);
   const [selectedDate, setSelectedDate] = useState<any>("");
   const [dateAndRanges, setDateAndRanges] = useState<any>([]);
@@ -44,14 +44,10 @@ function ScheduledUserSessions({ daoName }: { daoName: string }) {
   const [createSessionLoading, setCreateSessionLoading] = useState<any>();
   const [startTimeOptions, setStartTimeOptions] = useState([]);
   const [endTimeOptions, setEndTimeOptions] = useState([]);
-  const [selectedStartTime, setSelectedStartTime] = useState("");
-  const [selectedEndTime, setSelectedEndTime] = useState("");
   const [successModalOpen, setSuccessModalOpen] = useState(false);
   const [finalData, setFinalData] = useState<dataToStore>();
   const { ready, authenticated, login, logout, getAccessToken, user } =
     usePrivy();
-  const { walletAddress } = useWalletAddress();
-
   const [mailId, setMailId] = useState<string>();
   const [hasEmailID, setHasEmailID] = useState<Boolean>();
   const [showGetMailModal, setShowGetMailModal] = useState<Boolean>();
@@ -159,15 +155,14 @@ function ScheduledUserSessions({ daoName }: { daoName: string }) {
       const token = await getAccessToken();
       const myHeaders: HeadersInit = {
         "Content-Type": "application/json",
-        ...(walletAddress && {
-          "x-wallet-address": walletAddress,
+        ...(address && {
+          "x-wallet-address": address,
           Authorization: `Bearer ${token}`,
         }),
       };
 
       const raw = JSON.stringify({
-        address: walletAddress,
-        // daoName: daoName,
+        address: address,
       });
 
       const requestOptions: any = {
@@ -177,7 +172,7 @@ function ScheduledUserSessions({ daoName }: { daoName: string }) {
         redirect: "follow",
       };
       const response = await fetchApi(
-        `/profile/${walletAddress}`,
+        `/profile/${address}`,
         requestOptions
       );
       const result = await response.json();
@@ -185,7 +180,7 @@ function ScheduledUserSessions({ daoName }: { daoName: string }) {
         // Iterate over each item in the response data array
         for (const item of result.data) {
           // Check if address and daoName match
-          if (item.address === walletAddress) {
+          if (item.address === address) {
             if (item.emailId === null || item.emailId === "") {
               setHasEmailID(false);
               return false;
@@ -220,7 +215,7 @@ function ScheduledUserSessions({ daoName }: { daoName: string }) {
   useEffect(() => {
     const fetchEnsName = async () => {
       const ensName = await fetchEnsNameAndAvatar(
-        walletAddress ? walletAddress : ""
+        address ? address : ""
       );
       if (ensName) {
         setDisplayEnsName(ensName?.ensName);
@@ -228,10 +223,10 @@ function ScheduledUserSessions({ daoName }: { daoName: string }) {
         setDisplayEnsName("");
       }
     };
-    if (walletAddress != null) {
+    if (address && isConnected) {
       fetchEnsName();
     }
-  }, [chain, walletAddress, address]);
+  }, [chain, address, address]);
 
   useEffect(() => {
     const hasRejected = JSON.parse(
@@ -273,18 +268,17 @@ function ScheduledUserSessions({ daoName }: { daoName: string }) {
 
   const handleApplyButtonClick = async () => {
     const dataToStore: dataToStore = {
-      userAddress: walletAddress as `0x${string}`,
+      userAddress: address as `0x${string}`,
       timeSlotSizeMinutes: timeSlotSizeMinutes,
       allowedDates: allowedDates,
       dateAndRanges: dateAndRanges,
-      dao_name: daoName,
     };
     setFinalData(dataToStore);
     const token = await getAccessToken();
     const myHeaders: HeadersInit = {
       "Content-Type": "application/json",
-      ...(walletAddress && {
-        "x-wallet-address": walletAddress,
+      ...(address && {
+        "x-wallet-address": address,
         Authorization: `Bearer ${token}`,
       }),
     };
@@ -305,36 +299,6 @@ function ScheduledUserSessions({ daoName }: { daoName: string }) {
         setContinueAPICalling(false);
         setScheduledSuccess(true);
         setSessionCreated(true);
-
-        //calling api endpoint for sending mail to user who follow this delegate
-        try {
-          const token = await getAccessToken();
-          const myHeaders: HeadersInit = {
-            "Content-Type": "application/json",
-            ...(walletAddress && {
-              "x-wallet-address": walletAddress,
-              Authorization: `Bearer ${token}`,
-            }),
-          };
-          const response = await fetchApi("/delegate-follow/send-mails", {
-            method: "PUT",
-            headers: myHeaders,
-            body: JSON.stringify({
-              // Add any necessary data
-              address: walletAddress,
-              daoName: daoName,
-              ensName: displayEnsName,
-            }),
-          });
-
-          if (!response.ok) {
-            throw new Error("Failed to send mails");
-          }
-
-          const data = await response.json();
-        } catch (error) {
-          console.error("Something going wrong!", error);
-        }
       } else {
         setScheduledSuccess(false);
       }
@@ -553,7 +517,7 @@ function ScheduledUserSessions({ daoName }: { daoName: string }) {
   };
 
   const handleSubmit = async () => {
-    if (walletAddress) {
+    if (address && isConnected) {
       if (mailId && (mailId !== "" || mailId !== undefined)) {
         if (isValidEmail) {
           try {
@@ -561,16 +525,15 @@ function ScheduledUserSessions({ daoName }: { daoName: string }) {
             const token = await getAccessToken();
             const myHeaders: HeadersInit = {
               "Content-Type": "application/json",
-              ...(walletAddress && {
-                "x-wallet-address": walletAddress,
+              ...(address && {
+                "x-wallet-address": address,
                 Authorization: `Bearer ${token}`,
               }),
             };
 
             const raw = JSON.stringify({
-              address: walletAddress,
+              address: address,
               emailId: mailId,
-              // daoName: daoName,
             });
 
             const requestOptions: any = {
@@ -621,35 +584,10 @@ function ScheduledUserSessions({ daoName }: { daoName: string }) {
       <div className="flex flex-col md:flex-row justify-center gap-8 md:gap-10 1.5lg:gap-20 sm:p-4">
         {/* First box- left side */}
         <div
-          className={`w-full md:w-auto p-6 xs:p-8 bg-white rounded-2xl ${styles.boxshadow} basis-1/2`}
+          className={`w-full md:w-auto p-6 xs:p-8 bg-gray-900 bg-opacity-70 rounded-2xl ${styles.boxshadow} basis-1/2`}
         >
           <div className="mb-4">
-            <label className="text-gray-700 font-semibold flex items-center">
-              Select DAO Name:
-              <Tooltip
-                content={
-                  <div className="font-poppins p-2 max-w-80 text-black rounded-md">
-                    DAO for which the session is to be created. The attestations
-                    will be issued for the selected DAO. The attendees of this
-                    session will seek questions related to the selected DAO.
-                  </div>
-                }
-                showArrow
-                placement="right"
-                delay={1}
-              >
-                <span className="px-2">
-                  <FaCircleInfo className="cursor-pointer text-blue-500" />
-                </span>
-              </Tooltip>
-            </label>
-            <div className="border border-gray-300 rounded px-3 py-2 mt-1 w-full capitalize">
-              {daoName}
-            </div>
-          </div>
-
-          <div className="mb-4">
-            <label className="text-gray-700 font-semibold flex items-center">
+            <label className="text-gray-500 font-semibold flex items-center">
               Select Time Slot Size:
               <Tooltip
                 content={
@@ -660,6 +598,7 @@ function ScheduledUserSessions({ daoName }: { daoName: string }) {
                     dates of your sessions.
                   </div>
                 }
+                className="bg-gray-700"
                 showArrow
                 placement="right"
                 delay={1}
@@ -672,7 +611,7 @@ function ScheduledUserSessions({ daoName }: { daoName: string }) {
             <select
               value={timeSlotSizeMinutes}
               onChange={(e: any) => setTimeSlotSizeMinutes(e.target.value)}
-              className="border border-gray-300 rounded px-3 py-2 mt-1 w-full cursor-pointer"
+              className="border border-gray-300 rounded px-3 py-2 mt-1 w-full cursor-pointer bg-transparent"
             >
               {/* <option value={15}>15 minutes</option> */}
               <option value={30}>30 minutes</option>
@@ -684,7 +623,7 @@ function ScheduledUserSessions({ daoName }: { daoName: string }) {
           </div>
 
           <div className="mb-4">
-            <label className="text-gray-700 font-semibold flex items-center">
+            <label className="text-gray-500 font-semibold flex items-center">
               Select Date:
               <Tooltip
                 content={
@@ -695,6 +634,7 @@ function ScheduledUserSessions({ daoName }: { daoName: string }) {
                 showArrow
                 placement="right"
                 delay={1}
+                className="bg-gray-700"
               >
                 <span className="px-2">
                   <FaCircleInfo className="cursor-pointer text-blue-500" />
@@ -705,14 +645,14 @@ function ScheduledUserSessions({ daoName }: { daoName: string }) {
               type="date"
               value={selectedDate}
               onChange={(e) => setSelectedDate(e.target.value)}
-              className="border border-gray-300 rounded px-3 py-2 mt-1 w-full cursor-pointer hover:border-gray-300 focus:border-gray-300 focus:ring-1 focus:ring-gray-300 outline-none transition-colors duration-200 [&::-webkit-calendar-picker-indicator]:cursor-pointer"
+              className="border border-gray-300 rounded px-3 py-2 mt-1 w-full bg-transparent cursor-pointer hover:border-gray-300 focus:border-gray-300 focus:ring-1 focus:ring-gray-300 outline-none transition-colors duration-200 [&::-webkit-calendar-picker-indicator]:cursor-pointer"
               min={formattedDate}
               onClick={(e) => e.currentTarget.showPicker()}
             />
           </div>
 
           <div className="flex flex-col mb-4">
-            <label className="text-gray-700 font-semibold flex items-center">
+            <label className="text-gray-500 font-semibold flex items-center">
               Select Available Time:
               <Tooltip
                 content={
@@ -723,6 +663,7 @@ function ScheduledUserSessions({ daoName }: { daoName: string }) {
                 showArrow
                 placement="right"
                 delay={1}
+                className="bg-gray-700"
               >
                 <span className="px-2">
                   <FaCircleInfo className="cursor-pointer text-blue-500" />
@@ -736,7 +677,7 @@ function ScheduledUserSessions({ daoName }: { daoName: string }) {
                 <div className="rounded-md flex items-center space-x-2">
                   <select
                     value={startTime.hour}
-                    className="p-2 border rounded cursor-pointer"
+                    className="p-2 border rounded cursor-pointer bg-slate-900"
                     onChange={(e) =>
                       handleTimeChange("start", "hour", e.target.value)
                     }
@@ -750,7 +691,7 @@ function ScheduledUserSessions({ daoName }: { daoName: string }) {
                   <span>:</span>
                   <select
                     value={startTime.minute}
-                    className="p-2 border rounded cursor-pointer"
+                    className="p-2 border rounded cursor-pointer bg-slate-900"
                     onChange={(e) =>
                       handleTimeChange("start", "minute", e.target.value)
                     }
@@ -760,7 +701,7 @@ function ScheduledUserSessions({ daoName }: { daoName: string }) {
                   </select>
                   <select
                     value={startTime.ampm}
-                    className="p-2 border rounded cursor-pointer"
+                    className="p-2 border rounded cursor-pointer bg-slate-900"
                     onChange={(e) =>
                       handleTimeChange("start", "ampm", e.target.value)
                     }
@@ -775,7 +716,7 @@ function ScheduledUserSessions({ daoName }: { daoName: string }) {
                 <div className="rounded-md flex items-center space-x-2">
                   <select
                     value={endTime.hour}
-                    className="p-2 border rounded cursor-pointer"
+                    className="p-2 border rounded cursor-pointer bg-slate-900"
                     onChange={(e) =>
                       handleTimeChange("end", "hour", e.target.value)
                     }
@@ -789,7 +730,7 @@ function ScheduledUserSessions({ daoName }: { daoName: string }) {
                   <span>:</span>
                   <select
                     value={endTime.minute}
-                    className="p-2 border rounded cursor-pointer"
+                    className="p-2 border rounded cursor-pointer bg-slate-900"
                     onChange={(e) =>
                       handleTimeChange("end", "minute", e.target.value)
                     }
@@ -799,7 +740,7 @@ function ScheduledUserSessions({ daoName }: { daoName: string }) {
                   </select>
                   <select
                     value={endTime.ampm}
-                    className="p-2 border rounded cursor-pointer"
+                    className="p-2 border rounded cursor-pointer bg-slate-900"
                     onChange={(e) =>
                       handleTimeChange("end", "ampm", e.target.value)
                     }
@@ -812,7 +753,7 @@ function ScheduledUserSessions({ daoName }: { daoName: string }) {
             </div>
 
             <div className="mt-4">
-              <label className="text-gray-700 font-semibold flex items-center">
+              <label className="text-gray-500 font-semibold flex items-center">
                 Total Session Count:
                 <Tooltip
                   content={
@@ -825,6 +766,7 @@ function ScheduledUserSessions({ daoName }: { daoName: string }) {
                   showArrow
                   placement="right"
                   delay={1}
+                  className="bg-gray-700"
                 >
                   <span className="px-2">
                     <FaCircleInfo className="cursor-pointer text-blue-500" />
@@ -851,16 +793,15 @@ function ScheduledUserSessions({ daoName }: { daoName: string }) {
                       });
                       const isPast =
                         selectedDate ===
-                          new Date().toISOString().split("T")[0] &&
+                        new Date().toISOString().split("T")[0] &&
                         isTimeslotInPast(selectedDate, slotTime);
                       return (
                         <div
                           key={index}
-                          className={`shadow p-1.5 rounded-md flex flex-col items-center text-left basis-1/3 text-sm font-poppins ${
-                            isPast
-                              ? "bg-red-100 text-red-500"
-                              : "bg-[#f5f5f5] hover:bg-gray-50"
-                          }`}
+                          className={`shadow p-1.5 rounded-md flex flex-col items-center text-left basis-1/3 text-sm font-poppins ${isPast
+                            ? "bg-red-100 text-red-500"
+                            : "bg-slate-800 hover:bg-slate-700"
+                            }`}
                         >
                           {slot.toLocaleTimeString("en-US", {
                             hour: "numeric",
@@ -880,11 +821,10 @@ function ScheduledUserSessions({ daoName }: { daoName: string }) {
           <button
             onClick={handleAddSelectedDate}
             disabled={areAllSlotsPast()}
-            className={`bg-blue-shade-400 hover:bg-blue-shade-500 text-[#0500FF] font-semibold py-2 px-4 rounded-md shadow-md transition duration-300 ease-in-out ${
-              areAllSlotsPast()
-                ? "opacity-50 cursor-not-allowed"
-                : "cursor-pointer"
-            }`}
+            className={`bg-blue-shade-300 hover:bg-blue-shade-500 text-white font-semibold py-2 px-4 rounded-md shadow-md transition duration-300 ease-in-out ${areAllSlotsPast()
+              ? "opacity-50 cursor-not-allowed"
+              : "cursor-pointer"
+              }`}
           >
             <span className="flex items-center gap-3">
               <FaPlus className="" />
@@ -903,7 +843,7 @@ function ScheduledUserSessions({ daoName }: { daoName: string }) {
                   className="bg-white p-4 rounded-lg shadow-md flex justify-between items-center"
                 >
                   <div>
-                    <p className="font-semibold text-gray-700">{item.date}</p>
+                    <p className="font-semibold text-gray-500">{item.date}</p>
                     <p className="text-gray-600">
                       {item.timeRanges
                         .map((time: any) => {
@@ -918,11 +858,10 @@ function ScheduledUserSessions({ daoName }: { daoName: string }) {
                   <button
                     disabled={createSessionLoading}
                     onClick={() => handleRemoveDate(item.date, item.timeRanges)}
-                    className={`text-red-600 ml-2 px-3 py-1 rounded-full ${
-                      createSessionLoading
-                        ? "opacity-50 cursor-not-allowed"
-                        : "hover:bg-red-100"
-                    }`}
+                    className={`text-red-600 ml-2 px-3 py-1 rounded-full ${createSessionLoading
+                      ? "opacity-50 cursor-not-allowed"
+                      : "hover:bg-red-100"
+                      }`}
                   >
                     Remove
                   </button>
@@ -933,11 +872,10 @@ function ScheduledUserSessions({ daoName }: { daoName: string }) {
 
           <button
             onClick={() => handleApplyWithCheck()}
-            className={`${
-              createSessionLoading
-                ? "bg-green-400 cursor-not-allowed"
-                : "bg-green-600 hover:bg-green-700"
-            } text-white font-bold py-3 px-4 rounded-3xl mt-4 w-[160px] flex justify-center items-center`}
+            className={`${createSessionLoading
+              ? "bg-green-400 cursor-not-allowed"
+              : "bg-green-600 hover:bg-green-700"
+              } text-white font-bold py-3 px-4 rounded-3xl mt-4 w-[160px] flex justify-center items-center`}
             disabled={createSessionLoading}
           >
             {createSessionLoading ? (
@@ -958,10 +896,9 @@ function ScheduledUserSessions({ daoName }: { daoName: string }) {
 
         {/* Second box- right side */}
         <div
-          className={`w-full md:w-auto p-6 xs:p-8 bg-white rounded-2xl ${styles.boxshadow} basis-1/2`}
+          className={`w-full md:w-auto p-6 xs:p-8 bg-gray-900 bg-opacity-70 rounded-2xl ${styles.boxshadow} basis-1/2`}
         >
           <AvailableUserSessions
-            daoName={daoName}
             scheduledSuccess={scheduledSuccess}
             setScheduledSuccess={setScheduledSuccess}
             sessionCreated={sessionCreated}

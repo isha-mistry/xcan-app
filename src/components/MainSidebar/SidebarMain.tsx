@@ -9,39 +9,29 @@ import { Badge, Tooltip, VisuallyHidden } from "@nextui-org/react";
 import { IoClose } from "react-icons/io5";
 import Link from "next/link";
 import { ConnectWallet } from "../ConnectWallet/ConnectWallet";
-import { useSession } from "next-auth/react";
-import { useAccount } from "wagmi";
 import { useRouter } from "next-nprogress-bar";
-import ButtonWithCircle from "../Circle/ButtonWithCircle";
-import Tour from "reactour";
 import "@/components/ConnectWallet/ConnectWalletWithENS";
 import "./tour.css";
 import Joyride from "react-joyride";
-import { title } from "process";
 import { Placement } from "react-joyride";
-import { IoMdNotifications } from "react-icons/io";
-import dummy from "@/assets/images/daos/user2.png";
-
-import { Poppins } from "next/font/google";
-import { MdImportantDevices } from "react-icons/md";
 import NotificationIconComponent from "../Notification/NotificationIconComponent";
 import { IoIosRocket } from "react-icons/io";
-import { FaBusinessTime, FaS, FaUser } from "react-icons/fa6";
-import { SiGitbook, SiGoogleclassroom } from "react-icons/si";
+import { FaBusinessTime, FaUser } from "react-icons/fa6";
+import { SiGitbook } from "react-icons/si";
 import { PiUsersThreeFill } from "react-icons/pi";
 import { useSidebar } from "../../app/hooks/useSidebar";
 import { BiSolidMessageSquareAdd } from "react-icons/bi";
 import { usePrivy } from "@privy-io/react-auth";
+import { useAccount } from "wagmi";
 // import { useMediaQuery } from 'next/media-query';
 
 
 function Sidebar() {
   const [isTourOpen, setIsTourOpen] = useState(false);
   // const [isClient, setIsClient] = useState(false);
+  const { address } = useAccount();
   const [hasSeenTour, setHasSeenTour] = useState(true);
-  const [notificationCount, setNotificationCount] = useState(1);
-  const [isHovering, setIsHovering] = useState(false);
-  const {authenticated, login,user,connectWallet } = usePrivy();
+  const { authenticated, login, user, connectWallet } = usePrivy();
   const {
     storedDao,
     handleMouseOver,
@@ -51,7 +41,6 @@ function Sidebar() {
     isPageLoading,
     session,
     status,
-    walletAddress,
     isConnected,
   } = useSidebar();
   const [isLgScreen, setIsLgScreen] = useState(false);
@@ -285,20 +274,20 @@ function Sidebar() {
   //   }
   // };
 
-  const HandleRedirect=async()=>{
+  const HandleRedirect = async () => {
     if (!authenticated) {
       login();
     } else {
       if (!user?.google && !user?.farcaster) {
-        if(isConnected==false){
+        if (isConnected == false) {
           connectWallet();
         }
-        else{
-          router.push(`/profile/${walletAddress}?active=info`)
+        else {
+          router.push(`/profile/${address}?active=info`)
         }
       }
-      else{
-        router.push(`/profile/${walletAddress}?active=info`)
+      else {
+        router.push(`/profile/${address}?active=info`)
       }
     }
   }
@@ -346,19 +335,17 @@ function Sidebar() {
               // content="DAOs"
               content={<div className={`${styles.customTooltip}`}>DAOs</div>}
               placement="right"
-              className="rounded-md bg-opacity-90"
+              className="rounded-md bg-opacity-90 bg-gray-700"
               closeDelay={1}
             >
               {/* <Link href={"/"}> */}
               <Link
                 href={"/"}
-                className={`dao cursor-pointer xl:w-11 xl:h-11 2xl:w-12 2xl:h-12 2.5xl:w-14 2.5xl:h-14 rounded-full flex items-center justify-center border border-white bg-blue-shade-800 w-10 h-10 ${
-                  styles.icon3d
-                } ${
-                  pathname.endsWith(`/`)
+                className={`dao cursor-pointer xl:w-11 xl:h-11 2xl:w-12 2xl:h-12 2.5xl:w-14 2.5xl:h-14 rounded-full flex items-center justify-center border border-white bg-blue-shade-800 w-10 h-10 ${styles.icon3d
+                  } ${pathname.endsWith(`/`)
                     ? "border-white border-2 rounded-full"
                     : ""
-                }`}
+                  }`}
               >
                 <IoIosRocket
                   className={`size-5 text-white ${styles.iconInner}`}
@@ -371,19 +358,17 @@ function Sidebar() {
                 <div className={`${styles.customTooltip}`}>Office Hours</div>
               }
               placement="right"
-              className="rounded-md bg-opacity-90"
+              className="rounded-md bg-opacity-90 bg-gray-700"
               closeDelay={1}
             >
               {/* <Link href={"/office-hours?hours=ongoing"}> */}
               <Link
                 href={"/office-hours?hours=ongoing"}
-                className={`office cursor-pointer xl:w-11 xl:h-11 2xl:w-12 2xl:h-12 2.5xl:w-14 2.5xl:h-14 rounded-full flex items-center justify-center border border-white bg-blue-shade-800 w-10 h-10 ${
-                  styles.icon3d
-                } ${
-                  pathname.includes(`/office-hours`)
+                className={`office cursor-pointer xl:w-11 xl:h-11 2xl:w-12 2xl:h-12 2.5xl:w-14 2.5xl:h-14 rounded-full flex items-center justify-center border border-white bg-blue-shade-800 w-10 h-10 ${styles.icon3d
+                  } ${pathname.includes(`/office-hours`)
                     ? "border-white border-2 rounded-full"
                     : ""
-                }`}
+                  }`}
               >
                 <FaBusinessTime
                   className={`size-5 text-white ${styles.iconInner}`}
@@ -396,19 +381,17 @@ function Sidebar() {
                 <div className={`${styles.customTooltip}`}>Sessions</div>
               }
               placement="right"
-              className="rounded-md bg-opacity-90"
+              className="rounded-md bg-opacity-90 bg-gray-700"
               closeDelay={1}
             >
               {/* <Link href={"/sessions?active=recordedSessions"}> */}
               <Link
                 href={"/sessions?active=availableDelegates"}
-                className={`session cursor-pointer xl:w-11 xl:h-11 2xl:w-12 2xl:h-12 2.5xl:w-14 2.5xl:h-14 rounded-full flex items-center justify-center border border-white bg-blue-shade-800 w-10 h-10 ${
-                  styles.icon3d
-                } ${
-                  pathname.includes(`/sessions`)
+                className={`session cursor-pointer xl:w-11 xl:h-11 2xl:w-12 2xl:h-12 2.5xl:w-14 2.5xl:h-14 rounded-full flex items-center justify-center border border-white bg-blue-shade-800 w-10 h-10 ${styles.icon3d
+                  } ${pathname.includes(`/sessions`)
                     ? "border-white border-2 rounded-full"
                     : ""
-                }`}
+                  }`}
               >
                 <PiUsersThreeFill
                   className={`size-5 text-white ${styles.iconInner}`}
@@ -419,19 +402,17 @@ function Sidebar() {
             <Tooltip
               content={<div className={`${styles.customTooltip}`}>Invite</div>}
               placement="right"
-              className="rounded-md bg-opacity-90"
+              className="rounded-md bg-opacity-90 bg-gray-700"
               closeDelay={1}
             >
               {/* <Link href={"/sessions?active=recordedSessions"}> */}
               <Link
                 href={"/invite"}
-                className={`cursor-pointer xl:w-11 xl:h-11 2xl:w-12 2xl:h-12 2.5xl:w-14 2.5xl:h-14 rounded-full flex items-center justify-center border border-white bg-blue-shade-800 w-10 h-10 ${
-                  styles.icon3d
-                } ${
-                  pathname.includes(`/invite`)
+                className={`cursor-pointer xl:w-11 xl:h-11 2xl:w-12 2xl:h-12 2.5xl:w-14 2.5xl:h-14 rounded-full flex items-center justify-center border border-white bg-blue-shade-800 w-10 h-10 ${styles.icon3d
+                  } ${pathname.includes(`/invite`)
                     ? "border-white border-2 rounded-full"
                     : ""
-                }`}
+                  }`}
               >
                 <BiSolidMessageSquareAdd
                   className={`size-5 text-white ${styles.iconInner}`}
@@ -467,7 +448,7 @@ function Sidebar() {
                           </div>
                         }
                         placement="right"
-                        className="rounded-md bg-opacity-90"
+                        className="rounded-md bg-opacity-90 bg-gray-700"
                         closeDelay={1}
                       >
                         <Link href={`/${data[0]}?active=about`}>
@@ -477,13 +458,11 @@ function Sidebar() {
                             width={300}
                             height={300}
                             alt="image"
-                            className={`w-10 h-10 xl:w-11 xl:h-11 2xl:w-12 2xl:h-12 2.5xl:w-14 2.5xl:h-14 rounded-full cursor-pointer ${
-                              styles.icon3d
-                            } ${
-                              pathname.includes(`/${data[0]}`)
+                            className={`w-10 h-10 xl:w-11 xl:h-11 2xl:w-12 2xl:h-12 2.5xl:w-14 2.5xl:h-14 rounded-full cursor-pointer ${styles.icon3d
+                              } ${pathname.includes(`/${data[0]}`)
                                 ? "border-white border-[2.5px]"
                                 : ""
-                            }`}
+                              }`}
                             priority={true}
                           ></Image>
                         </Link>
@@ -503,7 +482,7 @@ function Sidebar() {
                 <div className={`${styles.customTooltip}`}>Docs</div>
               }
               placement="right"
-              className="rounded-md bg-opacity-90"
+              className="rounded-md bg-opacity-90 bg-gray-700"
               closeDelay={1}
             >
               {/* <Link href={"https://docs.chora.club/"} target="_blank"> */}
@@ -519,13 +498,13 @@ function Sidebar() {
               {/* </Link> */}
             </Tooltip>
 
-            {!authenticated  ? (
+            {!authenticated ? (
               <Tooltip
                 content={
                   <div className={`${styles.customTooltip}`}>Wallet</div>
                 }
                 placement="right"
-                className="rounded-md bg-opacity-90"
+                className="rounded-md bg-opacity-90 bg-gray-700"
                 closeDelay={1}
               >
                 {isPageLoading || sessionLoading ? (
@@ -546,7 +525,7 @@ function Sidebar() {
                   <div className={`${styles.customTooltip}`}>Profile</div>
                 }
                 placement="right"
-                className="rounded-md bg-opacity-90"
+                className="rounded-md bg-opacity-90 bg-gray-700"
                 closeDelay={1}
               >
                 <div

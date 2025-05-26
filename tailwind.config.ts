@@ -22,10 +22,10 @@ const config: Config = {
         "1.3lg": "1100px",
         xm: "550px",
         xs: "470px",
-        "1.2xs":"500px",
+        "1.2xs": "500px",
         "2md": "950px",
         "2sm": "670px",
-        "2.3sm":"700px",
+        "2.3sm": "700px",
         "1.5md": "830px",
       },
       backgroundImage: {
@@ -44,14 +44,27 @@ const config: Config = {
           "linear-gradient(to bottom, transparent, rgba(255, 255, 255, 0.8)), url('../assets/images/daos/arb.png')",
       },
       colors: {
-        "blue-shade-100": "#004DFF",
-        "blue-shade-200": "#0500FF",
-        "blue-shade-300": "#0238B3",
-        "blue-shade-400": "#F1F6FF",
-        "blue-shade-500": "#C6D7FF",
-        "blue-shade-600": "#DDE7FF",
-        "blue-shade-700": "#F5F5FF",
-        "blue-shade-800": "#0040d4",
+        // Dark theme colors
+        dark: {
+          primary: "#272727",
+          secondary: "#1a1a1a",
+          tertiary: "#242424",
+          accent: "#2d2d2d",
+          text: {
+            primary: "#ffffff",
+            secondary: "#a0a0a0",
+            tertiary: "#707070",
+          },
+        },
+        // Updated blue shades for dark theme
+        "blue-shade-100": "#3B82F6", // Lighter blue for better contrast
+        "blue-shade-200": "#60A5FA", // Even lighter for hover states
+        "blue-shade-300": "#2563EB", // Darker blue for active states
+        "blue-shade-400": "#1E40AF", // Very dark blue for backgrounds
+        "blue-shade-500": "#93C5FD", // Light blue for text
+        "blue-shade-600": "#DBEAFE", // Very light blue for backgrounds
+        "blue-shade-700": "#EFF6FF", // Lightest blue for hover states
+        "blue-shade-800": "#1D4ED8", // Dark blue for borders
         "black-shade-100": "#7C7C7C",
         "black-shade-200": "#DEDEDE",
         "black-shade-300": "#F6F6F6",
@@ -68,8 +81,9 @@ const config: Config = {
         "gradient-end": "#06b6d4", // cyan-500
       },
       fontFamily: {
-        quanty: ["var(--font-quanty)"],
+        // quanty: ["var(--font-quanty)"],
         poppins: ["var(--font-poppins)"],
+        tektur: ["var(--font-tektur)"],
       },
       keyframes: {
         fadeIn: {
@@ -82,15 +96,14 @@ const config: Config = {
           "100%": { transform: "rotate(360deg) scale(1)" },
         },
         slideDown: {
-          '0%': { opacity: "0", transform: 'translateY(-20px)' },
-          '100%': { opacity: "1", transform: 'translateY(0)' },
+          "0%": { opacity: "0", transform: "translateY(-20px)" },
+          "100%": { opacity: "1", transform: "translateY(0)" },
         },
-        
       },
       animation: {
         fadeIn: "fadeIn 1s ease-out",
         "spin-subtle": "spin-subtle 3s ease-in-out infinite",
-        'slide-down': 'slideDown 0.5s ease-out',
+        "slide-down": "slideDown 0.5s ease-out",
       },
     },
   },

@@ -3,7 +3,6 @@ import PageNotFound from "@/components/PageNotFound/PageNotFound";
 import React from "react";
 import type { Metadata, ResolvingMetadata } from "next";
 import { DEFAULT_METADATA } from "@/utils/metadataUtils";
-import { ApiDataProvider } from "@/contexts/ApiDataContext";
 import WalletWrapper from "@/components/WalletWrapper";
 
 const metadataConfig: any = {

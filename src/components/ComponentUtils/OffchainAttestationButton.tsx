@@ -4,12 +4,13 @@ import { FaGift, FaCheck } from "react-icons/fa6";
 import { Oval } from "react-loader-spinner";
 import { Tooltip } from "@nextui-org/react";
 import Link from "next/link";
-import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 import { getAccessToken } from "@privy-io/react-auth";
 import { fetchApi } from "@/utils/api";
 import toast from "react-hot-toast";
 import styles from "./Button.module.css";
 import { daoConfigs } from "@/config/daos";
+import { useAccount } from "wagmi";
+import { useConnection } from "@/app/hooks/useConnection";
 
 interface AttestationButtonProps {
   meetingId: string | undefined;
@@ -38,7 +39,8 @@ function OffchainAttestationButton({
 }: AttestationButtonProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [localUid, setLocalUid] = useState<string | null>(uid || null);
-  const { walletAddress } = useWalletAddress();
+  const { address } = useAccount();
+  const { isConnected } = useConnection()
 
   useEffect(() => {
     if (uid) {
@@ -47,9 +49,9 @@ function OffchainAttestationButton({
   }, [uid]);
 
   const getAttestationUrl = (daoName: string, uid: string): string => {
-    let currentDAO=daoConfigs[daoName.toLowerCase()];
-    const baseUrl=currentDAO?`${currentDAO.attestationUrl}`:"#";
-     
+    let currentDAO = daoConfigs[daoName.toLowerCase()];
+    const baseUrl = currentDAO ? `${currentDAO.attestationUrl}` : "#";
+
     // const baseUrl =
     //   daoName.toLowerCase() === "optimism"
     //     ? "https://optimism.easscan.org/offchain/attestation/view/"
@@ -61,7 +63,7 @@ function OffchainAttestationButton({
   };
 
   const handleClaimOffchain = async () => {
-    if (!walletAddress) {
+    if (!address || !isConnected) {
       toast.error("Please connect your wallet first!");
       return;
     }
@@ -74,15 +76,15 @@ function OffchainAttestationButton({
       setIsLoading(true);
       const token = await getAccessToken();
 
-      let currentDAO=daoConfigs[daoName.toLowerCase()]
+      let currentDAO = daoConfigs[daoName.toLowerCase()]
 
       // const tokenforAttestation =
       //   daoName.toLowerCase() === "optimism" ? "OP" : "ARB";
 
-      const tokenforAttestation=currentDAO.tokenSymbol;
+      const tokenforAttestation = currentDAO.tokenSymbol;
 
       const requestBody = {
-        recipient: isHost ? walletAddress : attendeeAddress,
+        recipient: isHost ? address : attendeeAddress,
         meetingId: `${meetingId}/${tokenforAttestation}`,
         meetingType,
         startTime,
@@ -95,7 +97,7 @@ function OffchainAttestationButton({
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "x-wallet-address": walletAddress,
+          "x-wallet-address": address,
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(requestBody),
@@ -121,7 +123,7 @@ function OffchainAttestationButton({
   };
 
   const renderClaimedButton = () => (
-    <Tooltip content="View Attestation" placement="top" showArrow>
+    <Tooltip content="View Attestation" placement="top" showArrow className="bg-gray-700">
       <Link
         href={getAttestationUrl(daoName, localUid!)}
         target="_blank"
@@ -146,6 +148,7 @@ function OffchainAttestationButton({
           ? "Claiming Offchain Attestation"
           : "Claim Offchain Attestation"
       }
+      className="bg-gray-700"
       placement="top"
       showArrow
     >

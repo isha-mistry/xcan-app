@@ -1,8 +1,6 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import text1 from "@/assets/images/daos/texture1.png";
-import text2 from "@/assets/images/daos/texture2.png";
 import Image from "next/image";
 import { FaCircleCheck, FaCircleXmark, FaCirclePlay } from "react-icons/fa6";
 import { Tooltip } from "@nextui-org/react";
@@ -12,18 +10,18 @@ import ErrorDisplay from "@/components/ComponentUtils/ErrorDisplay";
 import RecordedSessionsSkeletonLoader from "@/components/SkeletonLoader/RecordedSessionsSkeletonLoader";
 import { SessionInterface } from "@/types/MeetingTypes";
 import { usePrivy } from "@privy-io/react-auth";
-import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 import { fetchApi } from "@/utils/api";
 import NoResultsFound from "@/utils/Noresult";
+import { useConnection } from "@/app/hooks/useConnection";
 
-function BookedUserSessions({ daoName }: { daoName: string }) {
-  const { address, isConnected } = useAccount();
+function BookedUserSessions() {
+  const { address } = useAccount();
+  const { isConnected } = useConnection()
   const { user, ready, getAccessToken, authenticated } = usePrivy();
   // const address = "0xB351a70dD6E5282A8c84edCbCd5A955469b9b032";
   const [sessionDetails, setSessionDetails] = useState([]);
   const [pageLoading, setPageLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { walletAddress } = useWalletAddress();
 
   const handleRetry = () => {
     setError(null);
@@ -33,17 +31,17 @@ function BookedUserSessions({ daoName }: { daoName: string }) {
 
   const getMeetingData = async () => {
     try {
-      const token=await getAccessToken();
+      const token = await getAccessToken();
       const myHeaders: HeadersInit = {
         "Content-Type": "application/json",
-        ...(walletAddress && {
-          "x-wallet-address": walletAddress,
+        ...(address && {
+          "x-wallet-address": address,
           Authorization: `Bearer ${token}`,
         }),
       };
 
       const raw = JSON.stringify({
-        address: walletAddress,
+        address: address,
       });
 
       const requestOptions: any = {
@@ -53,7 +51,7 @@ function BookedUserSessions({ daoName }: { daoName: string }) {
         redirect: "follow",
       };
       const response = await fetchApi(
-        `/get-meeting/${walletAddress}?dao_name=${daoName}`,
+        `/get-meeting/${address}`,
         requestOptions
       );
       const result = await response.json();
@@ -64,7 +62,6 @@ function BookedUserSessions({ daoName }: { daoName: string }) {
 
         filteredData = result.data.filter(
           (session: SessionInterface) =>
-            session.dao_name === daoName &&
             session.meeting_status !== "Recorded"
         );
 
@@ -81,10 +78,10 @@ function BookedUserSessions({ daoName }: { daoName: string }) {
   };
 
   useEffect(() => {
-    if (walletAddress != null) {
+    if (address) {
       getMeetingData();
     }
-  }, [walletAddress]);
+  }, [address]);
 
   if (error) {
     return (
@@ -118,7 +115,7 @@ function BookedUserSessions({ daoName }: { daoName: string }) {
             <div className="pt-4 font-semibold text-lg">
               Oops, no such result available!
             </div> */}
-            <NoResultsFound/>
+            <NoResultsFound />
           </div>
         )}
       </div>

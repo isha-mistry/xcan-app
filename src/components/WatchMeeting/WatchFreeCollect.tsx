@@ -39,8 +39,8 @@ import {
   ChevronDown,
 } from "lucide-react";
 import { getAccessToken, usePrivy } from "@privy-io/react-auth";
-import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 import { fetchApi } from "@/utils/api";
+import { useConnection } from "@/app/hooks/useConnection";
 
 interface Attendee extends DynamicAttendeeInterface {
   profileInfo: UserProfileInterface;
@@ -68,8 +68,8 @@ const WatchFreeCollect = ({
   const { ready, authenticated, login, logout, user } = usePrivy();
   const { switchChain } = useSwitchChain();
   const publicClient = usePublicClient()!;
-  const { chain, isConnected } = useAccount();
-  const { walletAddress } = useWalletAddress();
+  const { chain, address } = useAccount();
+  const { isConnected } = useConnection()
   const { data: session } = useSession();
   const searchParams = useSearchParams();
   const { writeContractAsync, writeContract } = useWriteContract();
@@ -105,7 +105,7 @@ const WatchFreeCollect = ({
       setHasDeployedContractAddress(true);
     }
     setMintReferral(searchParams.get("referrer") || "");
-  }, [data, searchParams, walletAddress, session]);
+  }, [data, searchParams, address, session]);
 
   useEffect(() => {
     const fetchEthToUsdRate = async () => {
@@ -189,7 +189,7 @@ const WatchFreeCollect = ({
   };
 
   const handleMint = async () => {
-    if (!walletAddress && !authenticated) {
+    if (!address && !isConnected && !authenticated) {
       toast("Wallet not connected");
       // openConnectModal?.();
       login();
@@ -218,7 +218,7 @@ const WatchFreeCollect = ({
         quantityToMint: BigInt(number),
         mintComment,
         mintReferral: mintReferralAddress,
-        minterAccount: walletAddress as `0x${string}`,
+        minterAccount: address as `0x${string}`,
       });
 
       const txHash = await writeContractAsync(parameters);
@@ -233,8 +233,8 @@ const WatchFreeCollect = ({
     const token = await getAccessToken();
     const myHeaders: HeadersInit = {
       "Content-Type": "application/json",
-      ...(walletAddress && {
-        "x-wallet-address": walletAddress,
+      ...(address && {
+        "x-wallet-address": address,
         Authorization: `Bearer ${token}`,
       }),
     };
@@ -353,7 +353,7 @@ const WatchFreeCollect = ({
         }
       );
 
-      
+
       const tokenMetadataJsonUploadResponse = await lighthouse.upload(
         [tokenMetadataJsonFile],
         API_KEY
@@ -375,7 +375,7 @@ const WatchFreeCollect = ({
       return;
     }
 
-    if (data.host_address.toLowerCase() !== walletAddress?.toLowerCase()) {
+    if (data.host_address.toLowerCase() !== address?.toLowerCase()) {
       toast("Only the host can deploy the contract");
       return;
     }
@@ -395,7 +395,7 @@ const WatchFreeCollect = ({
         token: {
           tokenMetadataURI: tokenMetadataURI || tokenDataURI,
         },
-        account: walletAddress as `0x${string}`,
+        account: address as `0x${string}`,
       });
 
       const txHash: `0x${string}` = await writeContractAsync(parameters);
@@ -473,9 +473,8 @@ const WatchFreeCollect = ({
         </div>
 
         <div
-          className={`bg-gradient-to-r from-blue-100 to-purple-100 overflow-hidden transition-all duration-300 ${
-            isOpen ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"
-          }`}
+          className={`bg-gradient-to-r from-blue-100 to-purple-100 overflow-hidden transition-all duration-300 ${isOpen ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"
+            }`}
         >
           <div className="p-6">
             {isLoading ? (

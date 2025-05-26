@@ -20,7 +20,6 @@ import {
   useDisclosure,
 } from "@nextui-org/react";
 import toast, { Toaster } from "react-hot-toast";
-// import { useConnectModal } from "@rainbow-me/rainbowkit";
 import SchedulingSuccessModal from "@/components/UserProfile/UserAllSessions/SchedulingSuccessModal";
 import BookingSuccessModal from "./BookingSuccessModal";
 import AddEmailModal from "@/components/ComponentUtils/AddEmailModal";
@@ -28,21 +27,156 @@ import { RxCross2 } from "react-icons/rx";
 import { MdCancel } from "react-icons/md";
 import { useRouter } from "next-nprogress-bar";
 import { usePrivy } from "@privy-io/react-auth";
-import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 import { fetchApi } from "@/utils/api";
 import { daoConfigs } from "@/config/daos";
+import { useConnection } from "@/app/hooks/useConnection";
 interface Type {
   daoDelegates: string;
   individualDelegate: string;
 }
 
+const StyledCalendarContainer = styled.div`
+  .calendar-container {
+    background-color: #1a1a1a;
+    color: #ffffff;
+    border-radius: 16px;
+    padding: 20px;
+  }
+
+  .calendar-container > div > ul {
+    height: auto;
+    min-height: 300px;
+    max-height: 400px;
+    overflow-y: auto;
+    background-color: #1a1a1a;
+    color: #ffffff;
+  }
+
+  /* Style for the calendar header */
+  .calendar-container > div > div:first-child {
+    background-color: #1a1a1a;
+    color: #ffffff;
+    border-bottom: 1px solid #333;
+  }
+
+  /* Style for the time slots */
+  .calendar-container > div > ul > li {
+    background-color: #2a2a2a;
+    color: #ffffff;
+    border: 1px solid #333;
+    margin: 4px 0;
+  }
+
+  /* Style for selected time slot */
+  .calendar-container > div > ul > li.selected {
+    background-color: #0500FF;
+    color: #ffffff;
+  }
+
+  /* Style for disabled time slot */
+  .calendar-container > div > ul > li.disabled {
+    background-color: #333;
+    color: #666;
+  }
+
+  /* Style for the calendar navigation buttons */
+  .calendar-container button {
+    background-color: #2a2a2a;
+    color: #ffffff;
+    border: 1px solid #333;
+  }
+
+  /* Style for the calendar days */
+  .calendar-container .calendar-day {
+    background-color: #2a2a2a;
+    color: #ffffff;
+  }
+
+  /* Style for the current day */
+  .calendar-container .calendar-day.today {
+    background-color: #0500FF;
+    color: #ffffff;
+  }
+
+  /* Styles for the time slot selection view */
+  .calendar-container > div > div:nth-child(2) {
+    background-color: #1a1a1a;
+    color: #ffffff;
+  }
+
+  /* Style for the time slot selection header */
+  .calendar-container > div > div:nth-child(2) > div:first-child {
+    background-color: #1a1a1a;
+    color: #ffffff;
+    border-bottom: 1px solid #333;
+  }
+
+  /* Style for the time slot selection list */
+  .calendar-container > div > div:nth-child(2) > div:nth-child(2) {
+    background-color: #1a1a1a;
+    color: #ffffff;
+  }
+
+  /* Style for individual time slots in selection view */
+  .calendar-container > div > div:nth-child(2) > div:nth-child(2) > div {
+    background-color: #2a2a2a;
+    color: #ffffff;
+    border: 1px solid #333;
+    margin: 4px 0;
+  }
+
+  /* Style for selected time slot in selection view */
+  .calendar-container > div > div:nth-child(2) > div:nth-child(2) > div.selected {
+    background-color: #0500FF;
+    color: #ffffff;
+  }
+
+  /* Style for disabled time slot in selection view */
+  .calendar-container > div > div:nth-child(2) > div:nth-child(2) > div.disabled {
+    background-color: #333;
+    color: #666;
+  }
+
+  /* Style for the back button in time slot selection */
+  .calendar-container > div > div:nth-child(2) > div:first-child > button {
+    background-color: #2a2a2a;
+    color: #ffffff;
+    border: 1px solid #333;
+  }
+
+  /* Style for the confirm button in time slot selection */
+  .calendar-container > div > div:nth-child(2) > div:last-child > button {
+    background-color: #0500FF;
+    color: #ffffff;
+    border: none;
+  }
+
+  /* Style for the confirm button when disabled */
+  .calendar-container > div > div:nth-child(2) > div:last-child > button:disabled {
+    background-color: #333;
+    color: #666;
+  }
+
+  @media (max-width: 640px) {
+    .calendar-container > div > ul {
+      min-height: 250px;
+      max-height: 350px;
+    }
+  }
+
+  @media (max-width: 380px) {
+    .calendar-container > div > ul {
+      min-height: 200px;
+      max-height: 300px;
+    }
+  }
+`;
+
 function BookSession({ props }: { props: Type }) {
   const router = useRouter();
-  // const { openConnectModal } = useConnectModal();
-  // const host_address = "0x3013bb4E03a7B81106D69C10710EaE148C8410E1";
   const daoName = props.daoDelegates;
   const host_address = props.individualDelegate;
-  // const { isConnected, address } = useAccount();
+  const { address } = useAccount();
   const { data: session, status } = useSession();
   const loading = status === "loading";
   const [isScheduling, setIsScheduling] = useState(false);
@@ -77,31 +211,7 @@ function BookSession({ props }: { props: Type }) {
   const [isApiCallInProgress, setIsApiCallInProgress] = useState(false);
   const { ready, authenticated, login, logout, getAccessToken, user } =
     usePrivy();
-  const { walletAddress } = useWalletAddress();
-  const { chain } = useAccount();
-  const { switchChain } = useSwitchChain();
-  const styles = `
-  .calendar-container > div > ul {
-    height: auto;
-    min-height: 300px;
-    max-height: 400px;
-    overflow-y: auto;
-  }
-
-  @media (max-width: 640px) {
-    .calendar-container > div > ul {
-      min-height: 250px;
-      max-height: 350px;
-    }
-  }
-
-  @media (max-width: 380px) {
-    .calendar-container > div > ul {
-      min-height: 200px;
-      max-height: 300px;
-    }
-  }
-`;
+  const { isConnected } = useConnection()
 
   useEffect(() => {
     if (isOpen) {
@@ -114,73 +224,6 @@ function BookSession({ props }: { props: Type }) {
       document.body.style.overflow = "auto";
     };
   }, [isOpen]);
-
-  // useEffect(() => {
-  //   const loadingTimeout = setTimeout(() => {
-  //     setIsLoading(false);
-  //   }, 2000);
-
-  //   getAvailability();
-  //   getSlotTimeAvailability();
-  //   return () => {
-  //     clearTimeout(loadingTimeout);
-  //   };
-  // }, [walletAddress, authenticated, session]);
-
-  // const getAvailability = async () => {
-  //   try {
-  //     const response = await fetch(
-  //       `/api/get-availability/${host_address}?dao_name=${daoName}`,
-  //       {
-  //         method: "GET",
-  //         headers: {
-  //           "Content-Type": "application/json",
-  //         },
-  //       }
-  //     );
-
-  //     const result = await response.json();
-  //     if (result.success) {
-  //       setAPIData(result.data);
-  //       setIsLoading(false);
-  //     }
-  //   } catch (error) {}
-  // };
-
-  // const getSlotTimeAvailability = async () => {
-  //   try {
-  //     const response = await fetchApi(
-  //       `/get-meeting/${host_address}?dao_name=${daoName}`,
-  //       {
-  //         method: "GET",
-  //         headers: {
-  //           "Content-Type": "application/json",
-  //         },
-  //       }
-  //     );
-
-  //     const result = await response.json();
-  //     if (result.success) {
-  //       setAPIBookings(result.data);
-  //       const extractedSlotTimes = result.data.map(
-  //         (item: any) => new Date(item.slot_time)
-  //       );
-  //       setSlotTimes(extractedSlotTimes);
-  //       setIsPageLoading(false);
-
-  //       // Assuming bookedSlots is an array of Date objects
-  //       const newBookedSlots: any = [
-  //         ...bookedSlots,
-  //         ...extractedSlotTimes, // Spread the extractedSlotTimes array
-  //       ];
-
-  //       setBookedSlots(newBookedSlots);
-  //       setIsLoading(false);
-  //     }
-  //   } catch (error) {
-  //     setIsPageLoading(false);
-  //   }
-  // };
 
   const dataRequest = async (data: any) => {
     setIsScheduling(true);
@@ -204,8 +247,8 @@ function BookSession({ props }: { props: Type }) {
     const loadData = async () => {
       try {
         const [availabilityResponse, slotTimeResponse] = await Promise.all([
-          fetch(`/api/get-availability/${host_address}?dao_name=${daoName}`),
-          fetchApi(`/get-meeting/${host_address}?dao_name=${daoName}`),
+          fetch(`/api/get-availability/${host_address}`),
+          fetchApi(`/get-meeting/${host_address}`),
         ]);
 
         const availabilityResult = await availabilityResponse.json();
@@ -238,7 +281,7 @@ function BookSession({ props }: { props: Type }) {
     return () => {
       clearTimeout(loadingTimeout);
     };
-  }, [walletAddress, authenticated, session]);
+  }, [address, authenticated, session]);
 
   const handleModalInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -252,7 +295,7 @@ function BookSession({ props }: { props: Type }) {
 
   const handleScheduled = async (data: any) => {
     if (authenticated) {
-      if (host_address === walletAddress) {
+      if (host_address === address) {
         toast("Delegates can not book their own sessions!");
       } else {
         setIsScheduling(true);
@@ -287,14 +330,14 @@ function BookSession({ props }: { props: Type }) {
         const token = await getAccessToken();
         const myHeaders: HeadersInit = {
           "Content-Type": "application/json",
-          ...(walletAddress && {
-            "x-wallet-address": walletAddress,
+          ...(address && {
+            "x-wallet-address": address,
             Authorization: `Bearer ${token}`,
           }),
         };
 
         const raw = JSON.stringify({
-          address: walletAddress,
+          address: address,
         });
 
         const requestOptions: any = {
@@ -304,13 +347,13 @@ function BookSession({ props }: { props: Type }) {
           redirect: "follow",
         };
         const response = await fetchApi(
-          `/profile/${walletAddress}`,
+          `/profile/${address}`,
           requestOptions
         );
         const result = await response.json();
         if (Array.isArray(result.data) && result.data.length > 0) {
           for (const item of result.data) {
-            if (item.address === walletAddress) {
+            if (item.address === address) {
               if (item.emailId === null || item.emailId === "") {
                 setHasEmailID(false);
                 return false;
@@ -341,7 +384,7 @@ function BookSession({ props }: { props: Type }) {
     };
 
     runCheck(); // Call the async function inside the effect
-  }, [walletAddress]); // Include walletAddress or other dependencies
+  }, [address]); // Include walletAddress or other dependencies
 
   const checkBeforeApiCall = async () => {
     if (isApiCallInProgress || confirmSave) {
@@ -364,7 +407,6 @@ function BookSession({ props }: { props: Type }) {
           }
         }
       } catch (error) {
-        console.log("Line 360:", error);
         setConfirmSave(false);
       }
     } else {
@@ -392,32 +434,18 @@ function BookSession({ props }: { props: Type }) {
     setIsApiCallInProgress(true);
 
     try {
-      // const ChainName = chain?.name === "OP Mainnet" ? "optimism" : "arbitrum";
-      const ChainName = daoConfigs[props.daoDelegates].chainName;
-      // const CHAIN_ID = props.daoDelegates == "optimism" ? 10 : 42161;
 
-      const CHAIN_ID = daoConfigs[props.daoDelegates].chainId;
-
-      if (props.daoDelegates !== ChainName) {
-        await switchChain({ chainId: CHAIN_ID });
-        // setIsLoading(false);
-        // setConfirmSave(false);
-        // setIsScheduling(false);
-        // setContinueAPICalling(false);
-        // return;
-      }
 
       let roomId = await createRandomRoom();
 
       const requestData = {
-        dao_name: props.daoDelegates,
         slot_time: dateInfo,
         title: modalData.title,
         description: modalData.description,
         host_address: host_address,
         attendees: [
           {
-            attendee_address: walletAddress,
+            attendee_address: address,
             attendee_joined_status: "Pending",
           },
         ],
@@ -431,8 +459,8 @@ function BookSession({ props }: { props: Type }) {
       const token = await getAccessToken();
       const myHeaders: HeadersInit = {
         "Content-Type": "application/json",
-        ...(walletAddress && {
-          "x-wallet-address": walletAddress,
+        ...(address && {
+          "x-wallet-address": address,
           Authorization: `Bearer ${token}`,
         }),
       };
@@ -570,7 +598,7 @@ function BookSession({ props }: { props: Type }) {
 
   const handleModalClose = () => {
     setModalOpen(false);
-    router.push(`/profile/${walletAddress}?active=sessions&session=attending`);
+    router.push(`/profile/${address}?active=sessions&session=attending`);
   };
 
   const handleEmailChange = (email: string) => {
@@ -584,7 +612,7 @@ function BookSession({ props }: { props: Type }) {
   };
 
   const handleSubmit = async () => {
-    if (walletAddress) {
+    if (address && isConnected) {
       if (mailId && (mailId !== "" || mailId !== undefined)) {
         if (isValidEmail) {
           try {
@@ -592,13 +620,13 @@ function BookSession({ props }: { props: Type }) {
             const token = await getAccessToken();
             const myHeaders: HeadersInit = {
               "Content-Type": "application/json",
-              ...(walletAddress && {
-                "x-wallet-address": walletAddress,
+              ...(address && {
+                "x-wallet-address": address,
                 Authorization: `Bearer ${token}`,
               }),
             };
             const raw = JSON.stringify({
-              address: walletAddress,
+              address: address,
               emailId: mailId,
             });
 
@@ -654,33 +682,22 @@ function BookSession({ props }: { props: Type }) {
         </div>
       ) : (
         <div className="flex justify-center w-full px-4 sm:px-6 md:px-8">
-          {/* <Toaster
-            toastOptions={{
-              style: {
-                fontSize: "14px",
-                backgroundColor: "#3E3D3D",
-                color: "#fff",
-                boxShadow: "none",
-                borderRadius: "50px",
-                padding: "3px 5px",
-                marginTop: "64px",
-              },
-            }}
-          /> */}
-          <div className="w-full max-w-md mx-auto mt-8 rounded-2xl shadow-lg bg-white">
-            <div className="calendar-container">
-              <DayTimeScheduler
-                allowedDates={allowedDates}
-                timeSlotSizeMinutes={timeSlotSizeMinutes}
-                isLoading={isScheduling}
-                isDone={isScheduled}
-                err={scheduleErr}
-                onConfirm={handleScheduled}
-                timeSlotValidator={(slotTime: any) =>
-                  timeSlotValidator(slotTime, dateAndRanges, bookedSlots)
-                }
-              />
-            </div>
+          <div className="w-full max-w-md mx-auto mt-8 rounded-2xl shadow-lg">
+            <StyledCalendarContainer>
+              <div className="calendar-container">
+                <DayTimeScheduler
+                  allowedDates={allowedDates}
+                  timeSlotSizeMinutes={timeSlotSizeMinutes}
+                  isLoading={isScheduling}
+                  isDone={isScheduled}
+                  err={scheduleErr}
+                  onConfirm={handleScheduled}
+                  timeSlotValidator={(slotTime: any) =>
+                    timeSlotValidator(slotTime, dateAndRanges, bookedSlots)
+                  }
+                />
+              </div>
+            </StyledCalendarContainer>
           </div>
         </div>
       )}
@@ -691,26 +708,11 @@ function BookSession({ props }: { props: Type }) {
           style={{ boxShadow: " 0px 0px 45px -17px rgba(0,0,0,0.75)" }}
         >
           <div className="bg-white rounded-[41px] overflow-hidden shadow-lg w-full max-w-lg mx-4">
-            {/* <Toaster
-              toastOptions={{
-                style: {
-                  fontSize: "14px",
-                  backgroundColor: "#3E3D3D",
-                  color: "#fff",
-                  boxShadow: "none",
-                  borderRadius: "50px",
-                  padding: "3px 5px",
-                  marginTop: "64px",
-                },
-              }}
-            /> */}
             <div className="relative">
               <div className="flex flex-col gap-1 text-white bg-[#292929] p-4 py-7">
                 <div className="flex items-center justify-between mx-4">
                   <h2 className="text-base sm:text-lg font-semibold pr-8 break-words">
-                    Book your slot for{" "}
-                    {props.daoDelegates.charAt(0).toUpperCase() +
-                      props.daoDelegates.slice(1)}
+                    Book your slot
                   </h2>
                   <button
                     className="flex-shrink-0"
@@ -724,7 +726,7 @@ function BookSession({ props }: { props: Type }) {
                   </button>
                 </div>
               </div>
-              <div className="px-4 sm:px-8 py-4">
+              <div className="px-4 sm:px-8 py-4 bg-[#343536]">
                 <div className="mt-4">
                   <label className="block mb-2 font-semibold text-sm sm:text-base">
                     Title:
@@ -755,7 +757,7 @@ function BookSession({ props }: { props: Type }) {
                   />
                 </div>
               </div>
-              <div className="flex justify-center px-4 sm:px-8 py-4">
+              <div className="flex justify-center px-4 sm:px-8 py-4 bg-[#343536]">
                 <button
                   className="bg-blue-shade-200 text-white px-6 sm:px-8 py-2 sm:py-3 font-semibold rounded-full text-sm sm:text-base w-full sm:w-auto disabled:bg-gray-400"
                   onClick={checkBeforeApiCall}
@@ -786,67 +788,6 @@ function BookSession({ props }: { props: Type }) {
           </div>
         </div>
       )}
-
-      {/* {showGetMailModal && (
-        <div
-        className="font-poppins z-[70] fixed inset-0 flex items-center justify-center backdrop-blur-md"
-        style={{ boxShadow: " 0px 0px 45px -17px rgba(0,0,0,0.75)" }}
-      >
-        <div className="bg-white rounded-[41px] overflow-hidden shadow-lg w-full max-w-lg mx-4">
-        <div className="mt-4 border rounded-xl p-3 sm:p-4 relative">
-          <button
-            className="absolute top-2 right-2 sm:top-3 sm:right-3"
-            onClick={handleGetMailModalClose}
-            disabled={addingEmail || isApiCallInProgress}
-          >
-            <MdCancel className="w-5 h-5 sm:w-6 sm:h-6" />
-          </button>
-          <h2 className="text-blue-shade-200 font-semibold text-sm sm:text-base pr-8">
-            Get Notified About Your Session Request
-          </h2>
-          <p className="text-gray-500 text-xs sm:text-sm mt-2">
-            Add your email address to get notified when the delegate approves or
-            rejects your session request.
-          </p>
-          <div className="mt-3 sm:mt-4 flex flex-col sm:flex-row gap-2">
-            <input
-              type="text"
-              value={mailId || ""}
-              placeholder="Enter email address"
-              onChange={(e) => handleEmailChange(e.target.value)}
-              className="flex-1 px-4 py-2 rounded-3xl bg-[#D9D9D945] text-sm sm:text-base"
-            />
-            <button
-              onClick={handleSubmit}
-              className="w-full sm:w-auto bg-black text-white px-6 sm:px-8 py-2 sm:py-3 rounded-3xl hover:bg-gray-900 text-sm sm:text-base"
-              disabled={addingEmail || isApiCallInProgress}
-            >
-              {addingEmail ? (
-                <div className="flex items-center justify-center ">
-                  <ThreeDots
-                    visible={true}
-                    height="20"
-                    width="50"
-                    color="#ffffff"
-                    radius="9"
-                    ariaLabel="three-dots-loading"
-                    wrapperStyle={{}}
-                    wrapperClass=""
-                  />
-                </div>
-              ) : (
-                <>Notify Me</>
-              )}
-            </button>
-          </div>
-          <div className="text-blue-shade-100 text-xs italic mt-2 ps-3">
-            You can also add your email address later from your profile. Cancel
-            or submit email to continue booking.
-          </div>
-        </div>
-       </div>
-       </div> 
-      )} */}
 
       {showGetMailModal && (
         <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/40 backdrop-blur-md transition-opacity duration-300">
@@ -912,17 +853,6 @@ function BookSession({ props }: { props: Type }) {
       {modalOpen && (
         <BookingSuccessModal isOpen={modalOpen} onClose={handleModalClose} />
       )}
-
-      {/* {showGetMailModal && (
-        <AddEmailModal
-          isOpen={showGetMailModal}
-          onClose={handleGetMailModalClose}
-          onEmailChange={handleEmailChange}
-          onSubmit={handleSubmit}
-          mailId={mailId}
-          isValidEmail={isValidEmail}
-        />
-      )} */}
     </>
   );
 }

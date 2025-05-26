@@ -49,15 +49,15 @@ export async function POST(req: NextRequest, res: NextResponse) {
 
   // console.log("Line 47:",requestData);
 
-  const currentDAO=daoConfigs[requestData.daoName];
+  const currentDAO = daoConfigs[requestData.daoName];
 
   try {
-    const atstUrl = currentDAO?currentDAO.alchemyAttestationUrl:"";
-      // requestData.daoName === "optimism"
-      //   ? ATTESTATION_OP_URL
-      //   : requestData.daoName === "arbitrum"
-      //   ? ATTESTATION_ARB_URL
-      //   : "";
+    const atstUrl = currentDAO ? currentDAO.alchemyAttestationUrl : "";
+    // requestData.daoName === "optimism"
+    //   ? ATTESTATION_OP_URL
+    //   : requestData.daoName === "arbitrum"
+    //   ? ATTESTATION_ARB_URL
+    //   : "";
 
     const provider2 = new ethers.JsonRpcProvider(ATTESTATION_ARB_URL);
     try {
@@ -77,12 +77,12 @@ export async function POST(req: NextRequest, res: NextResponse) {
 
     // console.log("Line 67:",signer);
 
-    const EASContractAddress = currentDAO?currentDAO.eascontracAddress:"";
-      // requestData.daoName === "optimism"
-      //   ? "0x4200000000000000000000000000000000000021"
-      //   : requestData.daoName === "arbitrum"
-      //   ? "0xbD75f629A22Dc1ceD33dDA0b68c546A1c035c458"
-      //   : "";
+    const EASContractAddress = currentDAO ? currentDAO.eascontracAddress : "";
+    // requestData.daoName === "optimism"
+    //   ? "0x4200000000000000000000000000000000000021"
+    //   : requestData.daoName === "arbitrum"
+    //   ? "0xbD75f629A22Dc1ceD33dDA0b68c546A1c035c458"
+    //   : "";
     const eas = new EAS(EASContractAddress);
 
     // console.log('Line 77:',EASContractAddress,eas);
@@ -134,7 +134,7 @@ export async function POST(req: NextRequest, res: NextResponse) {
 
     let baseUrl = "";
 
-    baseUrl=currentDAO.offchainAttestationUrl;
+    baseUrl = currentDAO.offchainAttestationUrl;
 
     // if (requestData.daoName === "optimism") {
     //   baseUrl = OFFCHAIN_OP_ATTESTATION_BASE_URL;
@@ -165,7 +165,7 @@ export async function POST(req: NextRequest, res: NextResponse) {
         const client = await connectDB();
 
         const db = client.db();
-        const collection = db.collection("meetings");
+        const collection = db.collection("sessions");
         await collection.findOneAndUpdate(
           { meetingId: requestData.meetingId.split("/")[0] },
           {
@@ -175,7 +175,7 @@ export async function POST(req: NextRequest, res: NextResponse) {
           }
         );
 
-        const usersCollection = db.collection("delegates");
+        const usersCollection = db.collection("users");
         await usersCollection.findOneAndUpdate(
           { address: requestData.recipient },
           {
@@ -185,17 +185,17 @@ export async function POST(req: NextRequest, res: NextResponse) {
           }
         );
 
-        if(cacheWrapper.isAvailable){
+        if (cacheWrapper.isAvailable) {
           const cacheKey = `profile:${requestData.recipient}`;
           await cacheWrapper.delete(cacheKey);
         }
-    
+
         client.close();
       } else if (requestData.meetingType === 2) {
         const client = await connectDB();
 
         const db = client.db();
-        const collection = db.collection("meetings");
+        const collection = db.collection("sessions");
         await collection.findOneAndUpdate(
           {
             meetingId: requestData.meetingId.split("/")[0],
@@ -210,8 +210,7 @@ export async function POST(req: NextRequest, res: NextResponse) {
           }
         );
 
-        
-        const usersCollection = db.collection("delegates");
+        const usersCollection = db.collection("users");
         await usersCollection.findOneAndUpdate(
           { address: requestData.recipient },
           {
@@ -221,7 +220,7 @@ export async function POST(req: NextRequest, res: NextResponse) {
           }
         );
 
-        if(cacheWrapper.isAvailable){
+        if (cacheWrapper.isAvailable) {
           const cacheKey = `profile:${requestData.recipient}`;
           await cacheWrapper.delete(cacheKey);
         }
@@ -262,7 +261,7 @@ export async function POST(req: NextRequest, res: NextResponse) {
           }
         );
 
-        const usersCollection = db.collection("delegates");
+        const usersCollection = db.collection("users");
         await usersCollection.findOneAndUpdate(
           { address: requestData.recipient },
           {
@@ -271,7 +270,7 @@ export async function POST(req: NextRequest, res: NextResponse) {
             },
           }
         );
-        if(cacheWrapper.isAvailable){
+        if (cacheWrapper.isAvailable) {
           const cacheKey = `profile:${requestData.recipient}`;
           await cacheWrapper.delete(cacheKey);
         }
@@ -316,7 +315,7 @@ export async function POST(req: NextRequest, res: NextResponse) {
           }
         );
 
-        const usersCollection = db.collection("delegates");
+        const usersCollection = db.collection("users");
         await usersCollection.findOneAndUpdate(
           { address: requestData.recipient },
           {
@@ -326,7 +325,7 @@ export async function POST(req: NextRequest, res: NextResponse) {
           }
         );
 
-        if(cacheWrapper.isAvailable){
+        if (cacheWrapper.isAvailable) {
           const cacheKey = `profile:${requestData.recipient}`;
           await cacheWrapper.delete(cacheKey);
         }
@@ -345,8 +344,8 @@ export async function POST(req: NextRequest, res: NextResponse) {
     // Rest of your code remains the same
 
     let offchainAttestationLink = "";
-    offchainAttestationLink=`${currentDAO.attestationUrl}/${offchainAttestation.uid}`;
-    
+    offchainAttestationLink = `${currentDAO.attestationUrl}/${offchainAttestation.uid}`;
+
     // if (requestData.daoName === "optimism") {
     //   offchainAttestationLink = `https://optimism.easscan.org/offchain/attestation/view/${offchainAttestation.uid}`;
     // } else if (requestData.daoName === "arbitrum") {
@@ -420,7 +419,7 @@ export async function POST(req: NextRequest, res: NextResponse) {
       console.error("WebSocket error:", err);
     });
     await client.close();
-    if(cacheWrapper.isAvailable){
+    if (cacheWrapper.isAvailable) {
       const cacheKey = `Notification:${requestData.recipient}`;
       await cacheWrapper.delete(cacheKey);
     }

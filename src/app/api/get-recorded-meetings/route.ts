@@ -12,8 +12,8 @@ export async function GET(req: NextRequest, res: NextResponse) {
 
     // Access the collections
     const db = client.db();
-    const meetingsCollection = db.collection("meetings");
-    const delegatesCollection = db.collection("delegates");
+    const meetingsCollection = db.collection("sessions");
+    const delegatesCollection = db.collection("users");
 
     // Parse query parameters
     const url = new URL(req.url);
@@ -77,8 +77,8 @@ export async function GET(req: NextRequest, res: NextResponse) {
       return { ...meeting, hostInfo, attendees };
     });
 
-    if(cacheWrapper.isAvailable){
-      await cacheWrapper.set(cacheKey,JSON.stringify(mergedData),300);
+    if (cacheWrapper.isAvailable) {
+      await cacheWrapper.set(cacheKey, JSON.stringify(mergedData), 300);
     }
 
     await client.close();

@@ -5,9 +5,7 @@ import { letsgrowdao } from "./daos/letsGrowDAO";
 
 
 export const dao_details: Record<string, any> = {
-  optimism,
   arbitrum,
-  letsgrowdao
 };
 
 // function to add more DAOs dynamically

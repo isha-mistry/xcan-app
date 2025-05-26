@@ -18,7 +18,7 @@ export async function POST(req: NextRequest, res: NextResponse) {
 
     // Access the collection
     const db = client.db();
-    const collection = db.collection("meetings");
+    const collection = db.collection("sessions");
 
     // Find documents based on user_address
     // console.log("Finding documents for user:", user_address);

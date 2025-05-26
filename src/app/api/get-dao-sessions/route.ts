@@ -3,7 +3,7 @@ import { connectDB } from "@/config/connectDB";
 
 export async function POST(req: NextRequest, res: NextResponse) {
   try {
-    const { dao_name, address } = await req.json(); 
+    const { dao_name, address } = await req.json();
 
     // Check if dao_name is provided
     if (!dao_name) {
@@ -15,8 +15,8 @@ export async function POST(req: NextRequest, res: NextResponse) {
 
     const client = await connectDB();
     const db = client.db();
-    const meetingsCollection = db.collection("meetings");
-    const delegatesCollection = db.collection("delegates");
+    const meetingsCollection = db.collection("sessions");
+    const delegatesCollection = db.collection("users");
 
     // Build the query for meetings
     let query: any = { dao_name };
@@ -26,7 +26,7 @@ export async function POST(req: NextRequest, res: NextResponse) {
     //   query.host_address = { $regex: new RegExp(`^${address}$`, "i") };
     // }
     const meetings = await meetingsCollection
-      .find(query) 
+      .find(query)
       .sort({ slot_time: -1 })
       .toArray();
 

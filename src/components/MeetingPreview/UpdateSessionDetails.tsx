@@ -14,7 +14,6 @@ import PageNotFound from "../PageNotFound/PageNotFound";
 import { IoClose } from "react-icons/io5";
 import SessionHostedModal from "../ComponentUtils/SessionHostedModal";
 import { usePrivy } from "@privy-io/react-auth";
-import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 import { fetchApi } from "@/utils/api";
 
 function UpdateSessionDetails({ roomId }: { roomId: string }) {
@@ -39,12 +38,11 @@ function UpdateSessionDetails({ roomId }: { roomId: string }) {
   const [viewMode, setViewMode] = useState<"edit" | "preview">("edit");
   const [loading, setLoading] = useState(false);
   const [dataLoading, setDataLoading] = useState(true);
-  const { address, isConnected } = useAccount();
+  const { address } = useAccount();
   const router = useRouter();
   const [showPopup, setShowPopup] = useState(true);
   const [showHostPopup, setShowHostPopup] = useState(false);
   const { user, ready, getAccessToken, authenticated } = usePrivy();
-  const { walletAddress } = useWalletAddress();
 
   useEffect(() => {
     async function fetchData() {
@@ -93,13 +91,13 @@ function UpdateSessionDetails({ roomId }: { roomId: string }) {
 
   const handleUpdate = async () => {
     try {
-      if (walletAddress?.toLowerCase() === data.host_address.toLowerCase()) {
+      if (address?.toLowerCase() === data.host_address.toLowerCase()) {
         setLoading(true);
         const token=await getAccessToken();
         const myHeaders: HeadersInit = {
           "Content-Type": "application/json",
-          ...(walletAddress && {
-            "x-wallet-address": walletAddress,
+          ...(address && {
+            "x-wallet-address": address,
             Authorization: `Bearer ${token}`,
           }),
         };
@@ -140,7 +138,7 @@ function UpdateSessionDetails({ roomId }: { roomId: string }) {
   return (
     <div className="font-poppins">
       {!dataLoading ? (
-        walletAddress?.toLowerCase() === data?.host_address.toLowerCase() ? (
+        address?.toLowerCase() === data?.host_address.toLowerCase() ? (
           <div className="py-5 px-16 ">
             {showPopup && (
               <div
@@ -207,7 +205,7 @@ function UpdateSessionDetails({ roomId }: { roomId: string }) {
                       className="bg-blue-shade-200 rounded-full font-semibold px-10 text-white"
                       onClick={() =>
                         router.push(
-                          `/profile/${walletAddress}?active=sessions&session=hosted`
+                          `/profile/${address}?active=sessions&session=hosted`
                         )
                       }
                     >
@@ -239,7 +237,7 @@ function UpdateSessionDetails({ roomId }: { roomId: string }) {
                       className="bg-blue-shade-200 rounded-full font-semibold px-10 text-white"
                       onClick={() =>
                         router.push(
-                          `/profile/${walletAddress}?active=sessions&session=hosted`
+                          `/profile/${address}?active=sessions&session=hosted`
                         )
                       }
                     >

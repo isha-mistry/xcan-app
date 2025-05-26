@@ -3,14 +3,13 @@ import { X, Loader2, ChevronDown } from "lucide-react";
 import { fetchApi } from "@/utils/api";
 import toast from "react-hot-toast";
 import { getAccessToken, usePrivy } from "@privy-io/react-auth";
-import { useWalletAddress } from "@/app/hooks/useWalletAddress";
+import { useAccount } from "wagmi";
 
 interface DeleteOfficeHoursModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
   hostAddress: string;
-  daoName: string;
   slotId?: string;
 }
 
@@ -28,7 +27,6 @@ const DeleteOfficeHoursModal: React.FC<DeleteOfficeHoursModalProps> = ({
   onClose,
   onSuccess,
   hostAddress,
-  daoName,
   slotId,
 }) => {
   const [isDeleting, setIsDeleting] = React.useState(false);
@@ -36,24 +34,24 @@ const DeleteOfficeHoursModal: React.FC<DeleteOfficeHoursModalProps> = ({
     ""
   );
   const [otherReason, setOtherReason] = React.useState("");
-  const { walletAddress } = useWalletAddress();
+  const { address } = useAccount();
   const [isAuthorized, setIsAuthorized] = useState(true);
   const { authenticated } = usePrivy();
 
    useEffect(() => {
-      if (walletAddress && hostAddress) {
-        const authorized = walletAddress.toLowerCase() === hostAddress.toLowerCase();
+      if (address && hostAddress) {
+        const authorized = address.toLowerCase() === hostAddress.toLowerCase();
         setIsAuthorized(authorized);
         
         if (!authorized) {
           toast.error("You are not authorized to delete this office hours slot");
         }
         
-        if (!authenticated || !walletAddress) {
+        if (!authenticated || !address) {
           toast.error("Please connect your wallet to delete this meeting");
         }
       }
-    }, [walletAddress, hostAddress, authenticated]);
+    }, [address, hostAddress, authenticated]);
 
   const handleDelete = async () => {
     const finalReason =
@@ -61,21 +59,21 @@ const DeleteOfficeHoursModal: React.FC<DeleteOfficeHoursModalProps> = ({
 
     setIsDeleting(true);
     try {
-      if (!authenticated || !walletAddress) {
+      if (!authenticated || !address) {
         toast.error("Please connect your wallet to delete this meeting");
         return null;
       }
 
       // Check if the current user is the host
-      if (walletAddress.toLowerCase() !== hostAddress.toLowerCase()) {
+      if (address.toLowerCase() !== hostAddress.toLowerCase()) {
         toast.error("You are not authorized to delete this office hours slot");
         return null;
       }
       const token = await getAccessToken();
       const myHeaders: HeadersInit = {
         "Content-Type": "application/json",
-        ...(walletAddress && {
-          "x-wallet-address": walletAddress,
+        ...(address && {
+          "x-wallet-address": address,
           Authorization: `Bearer ${token}`,
         }),
       };
@@ -84,7 +82,6 @@ const DeleteOfficeHoursModal: React.FC<DeleteOfficeHoursModalProps> = ({
         headers: myHeaders,
         body: JSON.stringify({
           host_address: hostAddress,
-          dao_name: daoName,
           reference_id: slotId,
           delete_reason: finalReason.trim(),
         }),

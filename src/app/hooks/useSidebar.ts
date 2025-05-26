@@ -4,7 +4,6 @@ import { usePathname } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { useAccount } from 'wagmi';
 import { usePrivy } from '@privy-io/react-auth';
-import { useWalletAddress } from './useWalletAddress';
 
 export const useSidebar = () => {
     const [storedDao, setStoredDao] = useState<string[]>([]);
@@ -19,7 +18,6 @@ export const useSidebar = () => {
   const pathname = usePathname();
   const { data: session, status } = useSession();
   const { address, isConnected } = useAccount();
-  const {walletAddress}=useWalletAddress();
 
 
   useEffect(() => {
@@ -83,7 +81,7 @@ export const useSidebar = () => {
     hasSeenTour,
     session,
     status,
-    walletAddress,
+    address,
     isConnected,
     handleBadgeClick,
     handleMouseOver,

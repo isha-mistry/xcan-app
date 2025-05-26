@@ -2,59 +2,49 @@ import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/config/connectDB";
 import { cacheWrapper } from "@/utils/cacheWrapper";
 
-
-type network_details = {
-  dao_name: string;
-  network: string;
-  discourse: string;
-  description: string;
-};
-
-interface DelegateRequestBody {
+interface ProfileRequestBody {
   address: string;
   image: string;
-  isDelegate: boolean;
   displayName: string;
   emailId: string;
+  description: string;
   isEmailVisible: boolean;
   socialHandles: {
     twitter: string;
     discord: string;
     github: string;
   };
-  networks: network_details[];
 }
 
-interface DelegateResponseBody {
+interface ProfileResponseBody {
   success: boolean;
   data?: {
     id: string;
     address: string;
     image: string;
-    isDelegate: boolean;
     displayName: string;
     emailId: string;
     isEmailVisible: boolean;
+    description: string;
     createdAt: Date;
     socialHandles: {
       twitter: string;
       discord: string;
       github: string;
     };
-    networks: network_details[];
   } | null;
   error?: string;
 }
 
 export async function GET(
   req: Request,
-  res: NextResponse<DelegateResponseBody>
+  res: NextResponse<ProfileResponseBody>
 ) {
   try {
     const client = await connectDB();
     // console.log("Get API called!");
     const db = client.db();
-    const collection = db.collection("delegates");
+    const collection = db.collection("users");
     const address = req.url.split("profile/")[1];
 
     const documents = await collection
@@ -89,10 +79,8 @@ export async function GET(
 
 export async function POST(
   req: Request,
-  res: NextResponse<DelegateResponseBody>
+  res: NextResponse<ProfileResponseBody>
 ) {
-  const { address }: DelegateRequestBody = await req.json();
-
   try {
     // Connect to MongoDB
     const address = req.url.split("profile/")[1];
@@ -114,7 +102,7 @@ export async function POST(
 
     // Access the collection
     const db = client.db();
-    const collection = db.collection("delegates");
+    const collection = db.collection("users");
 
     // Find documents based on address
     const documents = await collection
@@ -122,7 +110,6 @@ export async function POST(
         address: { $regex: `^${address}$`, $options: "i" },
       })
       .toArray();
-
 
     // Try to cache the result if Redis is available
     if (cacheWrapper.isAvailable) {

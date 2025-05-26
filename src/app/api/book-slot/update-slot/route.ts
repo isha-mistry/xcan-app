@@ -29,7 +29,6 @@ export async function PUT(
       host_address,
       title,
       slot_time,
-      dao_name,
       attendee_address,
       attendee_joined_status,
       host_joined_status,
@@ -55,7 +54,7 @@ export async function PUT(
 
     // Access the collection
     const db = client.db();
-    const collection = db.collection("meetings");
+    const collection = db.collection("sessions");
 
     // Update the booking status of the meeting with the provided ID
     // console.log(`Updating booking status for meeting with ID ${id}...`);
@@ -108,7 +107,7 @@ export async function PUT(
       const hostENSNameOrAddress = await getDisplayNameOrAddr(host_address);
       const notificationToGuest = {
         receiver_address: attendeeAddress,
-        content: `The session titled "${title}" on ${dao_name}, scheduled on ${localSlotTime} UTC, has been rejected by the delegate ${hostENSNameOrAddress}.`,
+        content: `The session titled "${title}", scheduled on ${localSlotTime} UTC, has been rejected by the user ${hostENSNameOrAddress}.`,
         createdAt: Date.now(),
         read_status: false,
         notification_name: "sessionRejectionForGuest",
@@ -165,7 +164,7 @@ export async function PUT(
       });
     }
 
-    const delegateCollection = db.collection("delegates");
+    const delegateCollection = db.collection("users");
     const documentsForUserEmail = await delegateCollection
       .find({ address: attendeeAddress })
       .toArray();
@@ -181,7 +180,7 @@ export async function PUT(
               body: `The session you have booked has been rejected by the delegate due to following reason: ${rejectionReason}`,
             });
 
-            if(cacheWrapper.isAvailable){
+            if (cacheWrapper.isAvailable) {
               const cacheKey1 = `Notification:${attendeeAddress}`;
               const cacheKey2 = `Notification:${host_address}`;
               await cacheWrapper.delete(cacheKey1);

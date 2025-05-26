@@ -24,8 +24,6 @@ import { CiSearch } from "react-icons/ci";
 import { FaChevronDown } from "react-icons/fa";
 import { MdOutlineHourglassDisabled } from "react-icons/md";
 import { usePrivy } from "@privy-io/react-auth";
-import { useWalletAddress } from "@/app/hooks/useWalletAddress";
-// import { useConnectModal } from "@rainbow-me/rainbowkit";
 import Link from "next/link";
 import op from "@/assets/images/daos/op.png";
 import arb from "@/assets/images/daos/arb.png";
@@ -83,17 +81,12 @@ function AvailableSessions() {
   const [showFilterOptions, setShowFilterOptions] = useState(false);
   // const { openConnectModal } = useConnectModal();
   const { ready, authenticated, login, logout, user } = usePrivy();
-  const { walletAddress } = useWalletAddress();
-
   const [tooltipContent, setTooltipContent] = useState("Copy");
   const [animatingButtons, setAnimatingButtons] = useState<{
     [key: string]: boolean;
   }>({});
   const [isTextTruncated, setIsTextTruncated] = useState(false);
   const textRef = useRef(null);
-
-  const excludedDaos = ["arbitrumSepolia"]; // in order to exclude testnet
-
   const getDefaultUserImage = (address: string) => {
     const defaultImages = [user1, user2, user3, user4, user5];
     // Use the last character of the address to determine the image
@@ -104,19 +97,6 @@ function AvailableSessions() {
     const imageIndex = num % defaultImages.length;
     return defaultImages[imageIndex];
   };
-  // const scrollContainerRef = useRef<HTMLDivElement>(null)
-
-  // const scroll = (direction: "left" | "right") => {
-  //   if (scrollContainerRef.current) {
-  //     const scrollAmount = 200
-  //     const newScrollLeft =
-  //       scrollContainerRef.current.scrollLeft + (direction === "left" ? -scrollAmount : scrollAmount)
-  //     scrollContainerRef.current.scrollTo({
-  //       left: newScrollLeft,
-  //       behavior: "smooth",
-  //     })
-  //   }
-  // }
 
   const isTruncated = (element: HTMLElement | null) => {
     if (!element) return false;
@@ -139,10 +119,10 @@ function AvailableSessions() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const handleBookSession = (daoName: string, userAddress: string) => {
+  const handleBookSession = (userAddress: string) => {
     if (authenticated) {
       router.push(
-        `/${daoName}/${userAddress}?active=delegatesSession&session=book`
+        `/arbitrum/${userAddress}?active=delegatesSession&session=book`
       );
     } else if (!authenticated) {
       // openConnectModal();
@@ -477,7 +457,7 @@ function AvailableSessions() {
             showArrow
             content={<div className="font-poppins">More Options</div>}
             placement="bottom"
-            className="rounded-md bg-opacity-90"
+            className="rounded-md bg-opacity-90 bg-gray-700"
             closeDelay={1}
           >
             <div
@@ -485,53 +465,18 @@ function AvailableSessions() {
               onClick={() => setShowFilterOptions(!showFilterOptions)}
             >
               <FaChevronDown
-                className={`transition-transform duration-300 text-sm sm:text-base ${
-                  showFilterOptions ? "rotate-180" : ""
-                }`}
+                className={`transition-transform duration-300 text-sm sm:text-base ${showFilterOptions ? "rotate-180" : ""
+                  }`}
               />
             </div>
           </Tooltip>
         </div>
 
         <div
-          className={`lg:flex gap-3 ${
-            showFilterOptions ? "flex" : "hidden"
-          } flex-col md:flex-row md:flex-wrap  mt-3 lg:mt-0 transition-all duration-300 ease-in-out`}
+          className={`lg:flex gap-3 ${showFilterOptions ? "flex" : "hidden"
+            } flex-col md:flex-row md:flex-wrap  mt-3 lg:mt-0 transition-all duration-300 ease-in-out`}
         >
           <div className="flex gap-3">
-            <div className="flex items-center">
-              <Tooltip
-                showArrow
-                content={
-                  <div className="font-poppins">
-                    Select a DAO option to view available Delegates of that DAO.
-                  </div>
-                }
-                placement="bottom"
-                className="rounded-md bg-opacity-90"
-                closeDelay={1}
-              >
-                <select
-                  value={selectedDao}
-                  onChange={handleDaoChange}
-                  className="2xl:px-3 2xl:py-2 p-1.5 sm:p-2 rounded-full shadow-lg bg-white cursor-pointer text-xs sm:text-sm lg:text-xs xl:text-sm"
-                >
-                  <option value="All-DAOS">All DAOs</option>
-                  {/* {Object.entries(daoConfigs).map(([key, dao]) => (
-                    <option key={key} value={key}>
-                      {dao.name}
-                    </option>
-                  ))} */}
-                  {Object.entries(daoConfigs)
-                    .filter(([key]) => !excludedDaos.includes(key)) // Exclude unwanted DAOs
-                    .map(([key, dao]) => (
-                      <option key={key} value={key}>
-                        {dao.name}
-                      </option>
-                    ))}
-                </select>
-              </Tooltip>
-            </div>
 
             <div className="flex items-center">
               <Tooltip
@@ -542,7 +487,7 @@ function AvailableSessions() {
                   </div>
                 }
                 placement="bottom"
-                className="rounded-md bg-opacity-90"
+                className="rounded-md bg-opacity-90 bg-gray-700"
                 closeDelay={1}
               >
                 <input
@@ -565,7 +510,7 @@ function AvailableSessions() {
               </div>
             }
             placement="bottom"
-            className="rounded-md bg-opacity-90"
+            className="rounded-md bg-opacity-90 bg-gray-700"
             closeDelay={1}
           >
             <div className="flex items-center select-container text-xs sm:text-sm lg:text-xs xl:text-sm">
@@ -656,7 +601,7 @@ function AvailableSessions() {
                   showArrow
                   content={<div className="">Clear Time</div>}
                   placement="bottom"
-                  className="rounded-md bg-opacity-90"
+                  className="rounded-md bg-opacity-90 bg-gray-700"
                   closeDelay={1}
                 >
                   <button
@@ -698,12 +643,7 @@ function AvailableSessions() {
                           src={
                             daos?.userInfo[0]?.image
                               ? `https://gateway.lighthouse.storage/ipfs/${daos?.userInfo[0]?.image}`
-                              : // : daos.session.dao_name === "optimism"
-                                // ? OPLogo
-                                // : daos.session.dao_name === "arbitrum"
-                                // ? ArbLogo
-                                // : ccLogo
-                                getDefaultUserImage(daos.session.userAddress)
+                              : getDefaultUserImage(daos.session.userAddress)
                           }
                           alt="user"
                           width={48}
@@ -730,6 +670,7 @@ function AvailableSessions() {
                                 placement="top"
                                 isDisabled={!isTextTruncated}
                                 showArrow
+                                className="bg-gray-700"
                               >
                                 <div
                                   className="text-[#3E3D3D] hover:text-blue-shade-100 text-base sm:text-lg font-semibold truncate truncate-text"
@@ -742,8 +683,8 @@ function AvailableSessions() {
                                   {ensNames[daos?.userInfo[0]?.address] ||
                                     daos.userInfo[0]?.displayName ||
                                     daos.session.userAddress.slice(0, 6) +
-                                      "..." +
-                                      daos.session.userAddress.slice(-4)}
+                                    "..." +
+                                    daos.session.userAddress.slice(-4)}
                                 </div>
                               </Tooltip>
                             </Link>
@@ -758,6 +699,7 @@ function AvailableSessions() {
                                   placement="top"
                                   closeDelay={1}
                                   showArrow
+                                  className="bg-gray-700"
                                 >
                                   <div className="flex justify-center items-center px-[2px] rounded-full border-[1.5px] border-blue-shade-100">
                                     <BsLink45Deg className="size-4 text-blue-shade-100" />
@@ -774,6 +716,7 @@ function AvailableSessions() {
                                   placement="top"
                                   closeDelay={1}
                                   showArrow
+                                  className="bg-gray-700"
                                 >
                                   <div className="p-1 rounded-full border-[1.5px] border-blue-shade-100">
                                     <FaDatabase className="size-3 text-blue-shade-100" />
@@ -799,13 +742,13 @@ function AvailableSessions() {
                                 placement="right"
                                 closeDelay={1}
                                 showArrow
+                                className="bg-gray-700"
                               >
                                 <div
-                                  className={`pl-2 pt-[2px] cursor-pointer  ${
-                                    animatingButtons[daos.session.userAddress]
+                                  className={`pl-2 pt-[2px] cursor-pointer  ${animatingButtons[daos.session.userAddress]
                                       ? "text-blue-500"
                                       : "text-[#3E3D3D]"
-                                  }`}
+                                    }`}
                                 >
                                   <IoCopy
                                     onClick={() =>
@@ -871,32 +814,6 @@ function AvailableSessions() {
                       </div>
                     </div>
                   </div>
-                  <div className="absolute top-3 right-3 gap-1 flex items-start">
-                    <Tooltip
-                      content={
-                        daos.session.dao_name === "optimism"
-                          ? "Delegate of Optimism Collective"
-                          : "Delegate of Arbitrum DAO"
-                      }
-                      placement="left"
-                      closeDelay={1}
-                      showArrow
-                    >
-                      <Image
-                        src={
-                          daos.session.dao_name === "optimism"
-                            ? op
-                            : daos.session.dao_name === "arbitrum"
-                            ? arb
-                            : ""
-                        }
-                        alt=""
-                        height={32}
-                        width={32}
-                        className="size-6"
-                      />
-                    </Tooltip>
-                  </div>
                 </div>
 
                 <div className="sm:border-t-2 flex items-center sm:pt-4 px-3 sm:px-5 pb-2 sm:pb-3">
@@ -918,7 +835,6 @@ function AvailableSessions() {
                     <button
                       onClick={() =>
                         handleBookSession(
-                          daos.session.dao_name,
                           daos.session.userAddress
                         )
                       }
@@ -939,7 +855,7 @@ function AvailableSessions() {
           </div>
         ) : (
           <div className="flex flex-col justify-center items-center">
-           <NoResultsFound/>
+            <NoResultsFound />
           </div>
         )}
       </div>

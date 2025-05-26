@@ -26,8 +26,8 @@ export async function POST(req: NextRequest, res: NextResponse<Type[]>) {
 
     const db = client.db();
     const collection = db.collection("scheduling");
-    const delegatesCollection = db.collection("delegates");
-    const meetingsCollection = db.collection("meetings");
+    const delegatesCollection = db.collection("users");
+    const meetingsCollection = db.collection("sessions");
 
     // const newDate = new Date().toISOString().split("T")[0];
 
@@ -77,7 +77,6 @@ export async function POST(req: NextRequest, res: NextResponse<Type[]>) {
     if (date !== null) query["dateAndRanges.date"] = date;
 
     const sessionData = await collection.find(query).toArray();
-
 
     sessionData.forEach((session: any) => {
       session.dateAndRanges = session.dateAndRanges.filter((dateRange: any) => {
@@ -185,7 +184,7 @@ export async function POST(req: NextRequest, res: NextResponse<Type[]>) {
       `Error fetching filtered Session Data in availability:`,
       error
     );
-    
+
     return NextResponse.json(
       { error: "Internal Server Error" },
       { status: 500 }

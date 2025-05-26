@@ -18,8 +18,8 @@ function TopNavbar() {
   const { authenticated } = usePrivy();
   const { status, walletAddress, isConnected } = useSidebar();
   const sessionLoading = status === "loading";
-  const { 
-    hasAnyUnreadNotification, 
+  const {
+    hasAnyUnreadNotification,
     setHasAnyUnreadNotification,
     setNotifications,
     updateCombinedNotifications
@@ -63,7 +63,7 @@ function TopNavbar() {
 
             // Set notifications
             setNotifications(notificationsData);
-            
+
             // Update combined notifications
             updateCombinedNotifications();
 
@@ -80,10 +80,10 @@ function TopNavbar() {
 
     fetchNotifications();
   }, [
-    isConnected, 
-    authenticated, 
-    walletAddress, 
-    setNotifications, 
+    isConnected,
+    authenticated,
+    walletAddress,
+    setNotifications,
     setHasAnyUnreadNotification,
     updateCombinedNotifications,
     getAccessToken
@@ -93,7 +93,7 @@ function TopNavbar() {
     <>
       <div className="flex justify-between items-center w-screen px-4">
         <div className="flex gap-2 items-center">
-          <Link href={isConnected? "/":""} target="_blank">
+          <Link href={isConnected ? "/" : ""} target="_blank">
             <Image
               src={logo}
               alt={"image"}
@@ -104,7 +104,7 @@ function TopNavbar() {
           </Link>
           <Link
             className="text-black font-semibold text-[28px] font-poppins flex items-center mt-[4px]"
-            href={isConnected? "/":""}
+            href={isConnected ? "/" : ""}
           >
             Chora{" "}
             <span className="ml-1 text-white flex items-center">Club</span>
@@ -112,90 +112,75 @@ function TopNavbar() {
         </div>
 
         <div className="flex gap-3 items-center">
-          {isConnected && authenticated ? (
-            <>
-              <div className="flex gap-4">
-                <Link
-                  href={"/"}
-                  className={`${styles.item} text-blue-shade-500 font-medium ${
-                    isHomePage
-                      ? `text-white ${styles.activeitem}`
-                      : ""
+
+          <>
+            <div className="flex gap-4">
+              <Link
+                href={"/"}
+                className={`${styles.item} text-blue-shade-500 font-medium ${isHomePage
+                  ? `text-white ${styles.activeitem}`
+                  : ""
                   }`}
-                >
-                  DAOs
-                </Link>
-                <Link
-                  href={"/office-hours?hours=ongoing"}
-                  className={`${styles.item} text-blue-shade-500 font-medium ${
-                    pathname.includes(`/office-hours`)
-                      ? `text-white ${styles.activeitem}`
-                      : ""
+              >
+                DAOs
+              </Link>
+              <Link
+                href={"/office-hours?hours=ongoing"}
+                className={`${styles.item} text-blue-shade-500 font-medium ${pathname.includes(`/office-hours`)
+                  ? `text-white ${styles.activeitem}`
+                  : ""
                   }`}
-                >
-                  Office Hours
-                </Link>
-                <Link
-                  href={"/sessions?active=availableDelegates"}
-                  className={`${styles.item} text-blue-shade-500 font-medium ${
-                    pathname.includes(`/sessions`)
-                      ? `text-white ${styles.activeitem}`
-                      : ""
+              >
+                Office Hours
+              </Link>
+              <Link
+                href={"/sessions?active=availableDelegates"}
+                className={`${styles.item} text-blue-shade-500 font-medium ${pathname.includes(`/sessions`)
+                  ? `text-white ${styles.activeitem}`
+                  : ""
                   }`}
-                >
-                  Sessions
-                </Link>
-                <Link
-                  href={"/invite"}
-                  className={`${styles.item} text-blue-shade-500 font-medium  ${
-                    pathname.includes(`/invite`)
-                      ? `text-white ${styles.activeitem}`
-                      : ""
+              >
+                Sessions
+              </Link>
+              <Link
+                href={"/invite"}
+                className={`${styles.item} text-blue-shade-500 font-medium  ${pathname.includes(`/invite`)
+                  ? `text-white ${styles.activeitem}`
+                  : ""
                   }`}
-                >
-                  Invite
-                </Link>
-                <Badge
-                  isInvisible={!hasAnyUnreadNotification}
-                  content={""}
-                  color="danger"
-                  shape="circle"
-                  className={hasAnyUnreadNotification ? style.pulseBadge : ""}
-                >
+              >
+                Invite
+              </Link>
+              <Badge
+                isInvisible={!hasAnyUnreadNotification}
+                content={""}
+                color="danger"
+                shape="circle"
+                className={hasAnyUnreadNotification ? style.pulseBadge : ""}
+              >
                 <Link
                   href={"/notifications?active=all"}
-                  className={`${styles.item} text-blue-shade-500 font-medium ${
-                    pathname.includes(`/notifications`)
-                      ? `text-white ${styles.activeitem}`
-                      : ""
-                  }`}
+                  className={`${styles.item} text-blue-shade-500 font-medium ${pathname.includes(`/notifications`)
+                    ? `text-white ${styles.activeitem}`
+                    : ""
+                    }`}
                 >
                   Notification
                 </Link>
-                </Badge>
-                <Link
-                  href={"https://docs.chora.club/"}
-                  target="_blank"
-                  className={`${styles.item} text-blue-shade-500 font-medium`}
-                >
-                  Docs
-                </Link>
-                <Link
-                  href={`/profile/${walletAddress}?active=info`}
-                  className={`${styles.item} text-blue-shade-500 font-medium ${
-                    pathname.includes(`/profile`)
-                      ? `text-white ${styles.activeitem}`
-                      : ""
+              </Badge>
+              <Link
+                href={`/profile/${walletAddress}?active=info`}
+                className={`${styles.item} text-blue-shade-500 font-medium ${pathname.includes(`/profile`)
+                  ? `text-white ${styles.activeitem}`
+                  : ""
                   }`}
-                >
-                  Profile
-                </Link>
-              </div>
-              {<ConnectWalletWithENS />}
-            </>
-          ) : (
-            (isLoginPage && isConnected && authenticated) && <ConnectWalletWithENS />
-          )}
+              >
+                Profile
+              </Link>
+            </div>
+            <ConnectWalletWithENS />
+          </>
+
         </div>
       </div>
     </>

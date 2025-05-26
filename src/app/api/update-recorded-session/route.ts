@@ -25,13 +25,11 @@ export async function PUT(req: NextRequest, res: NextResponse) {
   try {
     const client = await connectDB();
     const db = client.db();
-    const collection = db.collection("meetings");
+    const collection = db.collection("sessions");
 
-    if(cacheWrapper.isAvailable){
+    if (cacheWrapper.isAvailable) {
       await cacheWrapper.delete("meetings");
     }
-
-    
 
     // Prepare the update object
     const updateObject: { [key: string]: any } = {};

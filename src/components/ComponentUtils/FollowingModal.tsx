@@ -42,8 +42,8 @@ function FollowingModal({
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedDao, setSelectedDao] = useState("all");
   const [tooltipContent, setTooltipContent] = useState("");
-  const [displayedFollowings, setDisplayedFollowings] =useState(userFollowings);
-  const [animatingAddresses, setAnimatingAddresses] = useState<{[key: string]: boolean;}>({});
+  const [displayedFollowings, setDisplayedFollowings] = useState(userFollowings);
+  const [animatingAddresses, setAnimatingAddresses] = useState<{ [key: string]: boolean; }>({});
   const [loader, setLoader] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -225,13 +225,12 @@ function FollowingModal({
                                 6
                               )}...${user.follower_address.slice(-4)}`}
                           </div>
-                          <Tooltip content={tooltipContent}>
+                          <Tooltip content={tooltipContent} className="bg-gray-700">
                             <IoCopy
-                              className={`${
-                                animatingAddresses[user.follower_address]
+                              className={`${animatingAddresses[user.follower_address]
                                   ? "text-blue-500"
                                   : "text-gray-400 hover:text-gray-600"
-                              } size-3 xs:size-4 hover:text-blue-shade-100 cursor-pointer`}
+                                } size-3 xs:size-4 hover:text-blue-shade-100 cursor-pointer`}
                               onClick={(e) => {
                                 e.stopPropagation();
                                 handleCopy(user.follower_address);
@@ -266,17 +265,17 @@ function FollowingModal({
                             : "Follow this delegate to receive their latest updates."
                         }
                         placement="top"
+                        className="bg-gray-700"
                         closeDelay={1}
                         showArrow
                       >
                         <button
                           className={`font-semibold rounded-full justify-center text-xs xs:text-sm xm:text-base 
                                     py-1 xs:py-2 xm:py-[10px] flex items-center w-[80px] xs:w-[90px] xm:w-[127.68px]
-                                    ${
-                                      user.isFollowing
-                                        ? "bg-white text-blue-shade-100 border border-blue-shade-100 hover:bg-blue-shade-400"
-                                        : "bg-blue-shade-200 text-white"
-                                    }`}
+                                    ${user.isFollowing
+                              ? "bg-white text-blue-shade-100 border border-blue-shade-100 hover:bg-blue-shade-400"
+                              : "bg-blue-shade-200 text-white"
+                            }`}
                           onClick={(e) => {
                             e.stopPropagation();
                             toggleFollowing(index, user, user.dao);
@@ -292,6 +291,7 @@ function FollowingModal({
                             ? "Click to mute delegate activity alerts."
                             : "Don't miss out! Click to get alerts on delegate activity."
                         }
+                        className="bg-gray-700"
                         placement="top"
                         closeDelay={1}
                         showArrow

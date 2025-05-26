@@ -255,7 +255,7 @@ function RecordedSessions() {
               )}
             </div>
           </div>
-          <div className="flex items-center gap-2 sm:gap-3 md:gap-4">
+          {/* <div className="flex items-center gap-2 sm:gap-3 md:gap-4">
             <button
               className={` px-3 md:px-5 py-1 sm:py-1.5 rounded-lg text-sm lg:text-base ${
                 activeButton === "all"
@@ -288,7 +288,7 @@ function RecordedSessions() {
                   />
                 </button>
               ))}
-          </div>
+          </div> */}
         </div>
 
         {isLoading ? (

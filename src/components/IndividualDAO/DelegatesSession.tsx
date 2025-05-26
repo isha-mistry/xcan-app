@@ -9,9 +9,9 @@ import ErrorDisplay from "../ComponentUtils/ErrorDisplay";
 import { SessionInterface } from "@/types/MeetingTypes";
 import { CiSearch } from "react-icons/ci";
 import { usePrivy } from "@privy-io/react-auth";
-import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 import { fetchApi } from "@/utils/api";
 import { BookOpen } from "lucide-react";
+import { useAccount } from "wagmi";
 
 function DelegatesSession({ props }: { props: string }) {
   const [searchQuery, setSearchQuery] = useState("");
@@ -24,16 +24,16 @@ function DelegatesSession({ props }: { props: string }) {
   const [dataLoading, setDataLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { user, ready, getAccessToken, authenticated } = usePrivy();
-  const { walletAddress } = useWalletAddress();
+  const { address } = useAccount()
 
   const fetchData = async () => {
     try {
       setDataLoading(true);
-      const token=await getAccessToken();
+      const token = await getAccessToken();
       const myHeaders: HeadersInit = {
         "Content-Type": "application/json",
-        ...(walletAddress && {
-          "x-wallet-address": walletAddress,
+        ...(address && {
+          "x-wallet-address": address,
           Authorization: `Bearer ${token}`,
         }),
       };
@@ -88,9 +88,6 @@ function DelegatesSession({ props }: { props: string }) {
     }
   };
   useEffect(() => {
-    // if (walletAddress != null) {
-    //   fetchData();
-    // }
     fetchData();
   }, [searchParams.get("session")]);
 
@@ -108,11 +105,11 @@ function DelegatesSession({ props }: { props: string }) {
           dao_name: dao_name,
         });
 
-        const token=await getAccessToken();
+        const token = await getAccessToken();
         const myHeaders: HeadersInit = {
           "Content-Type": "application/json",
-          ...(walletAddress && {
-            "x-wallet-address": walletAddress,
+          ...(address && {
+            "x-wallet-address": address,
             Authorization: `Bearer ${token}`,
           }),
         };
@@ -202,17 +199,16 @@ function DelegatesSession({ props }: { props: string }) {
           <Image src={search} alt="search" width={20} />
         </span>
       </div> */}
-      
+
 
       <div className=" pt-3">
-     
+
         <div className="flex gap-2 0.5xs:gap-4 rounded-xl text-sm flex-wrap">
           <button
-            className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md ${
-              searchParams.get("session") === "recorded"
-                  ? "text-[#0500FF] font-semibold bg-[#f5f5f5]"
+            className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md ${searchParams.get("session") === "recorded"
+                ? "text-[#0500FF] font-semibold bg-[#f5f5f5]"
                 : "text-[#3E3D3D] bg-white"
-            }`}
+              }`}
             onClick={() =>
               router.push(path + "?active=delegatesSession&session=recorded")
             }
@@ -223,19 +219,19 @@ function DelegatesSession({ props }: { props: string }) {
         </div>
 
         <div
-        className={`flex items-center rounded-full shadow-lg bg-gray-100 text-black cursor-pointer mt-10 mb-4 w-[300px] xs:w-[365px]`}
-      >
-        <CiSearch
-          className={`text-base transition-all duration-700 ease-in-out ml-3`}
-        />
-        <input
-          type="text"
-          placeholder="Search by title and host address"
-          className="w-[100%] pl-2 pr-4 py-1.5 font-poppins md:py-2 text-sm bg-transparent outline-none"
-          value={searchQuery}
-          onChange={(e) => handleSearchChange(e.target.value)}
-        />
-      </div>
+          className={`flex items-center rounded-full shadow-lg bg-gray-100 text-black cursor-pointer mt-10 mb-4 w-[300px] xs:w-[365px]`}
+        >
+          <CiSearch
+            className={`text-base transition-all duration-700 ease-in-out ml-3`}
+          />
+          <input
+            type="text"
+            placeholder="Search by title and host address"
+            className="w-[100%] pl-2 pr-4 py-1.5 font-poppins md:py-2 text-sm bg-transparent outline-none"
+            value={searchQuery}
+            onChange={(e) => handleSearchChange(e.target.value)}
+          />
+        </div>
 
         <div className="">
           {searchParams.get("session") === "recorded" &&

@@ -28,7 +28,7 @@ const Calendar: React.FC<CalendarProps> = ({
   };
 
   return (
-    <div className="w-full xs:w-[350px] h-fit md:sticky md:top-6 bg-white rounded-2xl shadow-md border border-gray-200 p-4">
+    <div className="w-full xs:w-[350px] h-fit md:sticky md:top-6 bg-slate-800 rounded-2xl shadow-md border border-gray-200 p-4">
       <div className="mb-6 flex justify-between items-center">
         <button
           onClick={() =>
@@ -40,7 +40,7 @@ const Calendar: React.FC<CalendarProps> = ({
         >
           <ChevronLeft className="w-5 h-5 text-gray-600" />
         </button>
-        <h2 className="text-lg font-semibold text-gray-900">
+        <h2 className="text-lg font-semibold text-gray-200">
           {new Date(currentDate).toLocaleDateString("en-US", {
             month: "long",
             year: "numeric",

@@ -9,26 +9,15 @@ import RecordedSessionsSkeletonLoader from "../SkeletonLoader/RecordedSessionsSk
 import { usePathname, useSearchParams } from "next/navigation";
 import { useRouter } from "next-nprogress-bar";
 import { useAccount } from "wagmi";
-import { Calendar, CalendarCheck, CheckCircle,UserCheck, Users } from "lucide-react";
+import { Calendar, CalendarCheck, CheckCircle, UserCheck, Users } from "lucide-react";
 import { usePrivy } from "@privy-io/react-auth";
-import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 import { fetchApi } from "@/utils/api";
+import { useConnection } from "@/app/hooks/useConnection";
 
-interface UserSessionsProps {
-  isDelegate: boolean | undefined;
-  selfDelegate: boolean;
-  daoName: string;
-}
-
-function UserSessions({
-  isDelegate,
-  selfDelegate,
-  daoName,
-}: UserSessionsProps) {
-
-  const {getAccessToken} = usePrivy();
-  const { chain } = useAccount();
-  const { walletAddress } = useWalletAddress();
+function UserSessions() {
+  const { getAccessToken } = usePrivy();
+  const { chain, address } = useAccount();
+  const { isConnected } = useConnection()
   const [dataLoading, setDataLoading] = useState(true);
   const [attendedDetails, setAttendedDetails] = useState([]);
   const [hostedDetails, setHostedDetails] = useState([]);
@@ -62,8 +51,8 @@ function UserSessions({
       const token = await getAccessToken();
       const myHeaders: HeadersInit = {
         "Content-Type": "application/json",
-        ...(walletAddress && {
-          "x-wallet-address": walletAddress,
+        ...(address && {
+          "x-wallet-address": address,
           Authorization: `Bearer ${token}`,
         }),
       };
@@ -71,8 +60,7 @@ function UserSessions({
         method: "POST",
         headers: myHeaders,
         body: JSON.stringify({
-          address: walletAddress,
-          dao_name: daoName,
+          address: address,
         }),
       });
 
@@ -105,24 +93,15 @@ function UserSessions({
     window.addEventListener("resize", checkForOverflow);
     return () => window.removeEventListener("resize", checkForOverflow);
   }, []);
-  
+
   useEffect(() => {
-    if (walletAddress) {
+    if (address && isConnected) {
       getUserMeetingData();
     }
   }, [
-    walletAddress,
+    address,
     searchParams.get("session"),
-    chain,
-    chain?.name,
-    daoName,
   ]);
-
-  useEffect(() => {
-    if (selfDelegate === false && searchParams.get("session") === "schedule") {
-      router.replace(path + "?active=sessions&session=attending&dao="+daoName);
-    }
-  }, [selfDelegate]);
 
   if (error) {
     return (
@@ -140,76 +119,67 @@ function UserSessions({
           ref={scrollContainerRef}
           onScroll={handleScroll}
         >
-          {(selfDelegate === true || isDelegate===true)&& (
-            <button
-              className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md  ${
-                searchParams.get("session") === "schedule"
-                  ? "text-[#0500FF] font-semibold bg-[#f5f5f5]"
-                  : "text-[#3E3D3D] bg-white"
-              }`}
-              onClick={() =>
-                router.push(path + "?active=sessions&session=schedule")
-              }
-            >
-               <Calendar size={16} className="drop-shadow-lg" />
-              Calendar
-            </button>
-          )}
 
-          {(selfDelegate === true || isDelegate===true)&& (
-            <button
-              className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md  ${
-                searchParams.get("session") === "book"
-                  ? "text-[#0500FF] font-semibold bg-[#f5f5f5]"
-                  : "text-[#3E3D3D] bg-white"
-              }`}
-              onClick={() =>
-                router.push(path + "?active=sessions&session=book")
-              }
-            >
-               <CalendarCheck size={16} className="drop-shadow-lg" />
-              Booked
-            </button>
-          )}
           <button
-            className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md ${
-              searchParams.get("session") === "attending"
-                ? "text-[#0500FF] font-semibold bg-[#f5f5f5]"
-                : "text-[#3E3D3D] bg-white"
-            }`}
+            className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md  ${searchParams.get("session") === "schedule"
+              ? "text-[#0500FF] font-semibold bg-[#f5f5f5]"
+              : "text-[#3E3D3D] bg-white"
+              }`}
             onClick={() =>
-              router.push(path + "?active=sessions&session=attending&dao="+daoName) 
+              router.push(path + "?active=sessions&session=schedule")
+            }
+          >
+            <Calendar size={16} className="drop-shadow-lg" />
+            Calendar
+          </button>
+
+
+          <button
+            className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md  ${searchParams.get("session") === "book"
+              ? "text-[#0500FF] font-semibold bg-[#f5f5f5]"
+              : "text-[#3E3D3D] bg-white"
+              }`}
+            onClick={() =>
+              router.push(path + "?active=sessions&session=book")
+            }
+          >
+            <CalendarCheck size={16} className="drop-shadow-lg" />
+            Booked
+          </button>
+          <button
+            className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md ${searchParams.get("session") === "attending"
+              ? "text-[#0500FF] font-semibold bg-[#f5f5f5]"
+              : "text-[#3E3D3D] bg-white"
+              }`}
+            onClick={() =>
+              router.push(path + "?active=sessions&session=attending")
             }
           >
             <UserCheck size={16} className="drop-shadow-lg" />
             Attending
           </button>
-          {(selfDelegate === true || isDelegate===true) && (
-            <button
-              className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md ${
-                searchParams.get("session") === "hosted"
-                  ? "text-[#0500FF] font-semibold bg-[#f5f5f5]"
-                  : "text-[#3E3D3D] bg-white"
-              }`}
-              onClick={() =>
-                router.push(path + "?active=sessions&session=hosted&dao="+daoName)
-              }
-            >
-              <Users size={16} className="drop-shadow-lg" />
-              Hosted
-            </button>
-          )}
           <button
-            className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md ${
-              searchParams.get("session") === "attended"
-                ? "text-[#0500FF] font-semibold bg-[#f5f5f5]"
-                : "text-[#3E3D3D] bg-white"
-            }`}
+            className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md ${searchParams.get("session") === "hosted"
+              ? "text-[#0500FF] font-semibold bg-[#f5f5f5]"
+              : "text-[#3E3D3D] bg-white"
+              }`}
             onClick={() =>
-              router.push(path + "?active=sessions&session=attended&dao="+daoName)
+              router.push(path + "?active=sessions&session=hosted")
             }
           >
-             <CheckCircle size={16} className="drop-shadow-lg" />
+            <Users size={16} className="drop-shadow-lg" />
+            Hosted
+          </button>
+          <button
+            className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md ${searchParams.get("session") === "attended"
+              ? "text-[#0500FF] font-semibold bg-[#f5f5f5]"
+              : "text-[#3E3D3D] bg-white"
+              }`}
+            onClick={() =>
+              router.push(path + "?active=sessions&session=attended")
+            }
+          >
+            <CheckCircle size={16} className="drop-shadow-lg" />
             Attended
           </button>
         </div>
@@ -223,25 +193,25 @@ function UserSessions({
         )}
 
         <div className="py-6 sm:py-10 sm:px-20 md:px-6 lg:px-14">
-          {(selfDelegate === true || isDelegate===true) &&
+          {
             searchParams.get("session") === "schedule" && (
               <div className="px-3">
-                <ScheduledUserSessions daoName={daoName} />
+                <ScheduledUserSessions />
               </div>
             )}
-          {(selfDelegate === true || isDelegate===true)&& searchParams.get("session") === "book" && (
-            <BookedUserSessions daoName={daoName} />
+          {searchParams.get("session") === "book" && (
+            <BookedUserSessions/>
           )}
           {searchParams.get("session") === "attending" && (
-            <AttendingUserSessions daoName={daoName} />
+            <AttendingUserSessions />
           )}
-          {(selfDelegate === true || isDelegate===true) &&
+          {
             searchParams.get("session") === "hosted" &&
             (dataLoading ? (
               <RecordedSessionsSkeletonLoader />
             ) : hostedDetails.length === 0 ? (
               <div className="flex flex-col justify-center items-center">
-                <NoResultsFound/>
+                <NoResultsFound />
               </div>
             ) : (
               <RecordedSessionsTile
@@ -256,7 +226,7 @@ function UserSessions({
               <RecordedSessionsSkeletonLoader />
             ) : attendedDetails.length === 0 ? (
               <div className="flex flex-col justify-center items-center">
-                <NoResultsFound/>
+                <NoResultsFound />
               </div>
             ) : (
               <RecordedSessionsTile

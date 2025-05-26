@@ -10,7 +10,6 @@ import { dao_details } from "@/config/daoDetails";
 import SidebarMainMobile from "../MainSidebar/SidebarMainMobile";
 import RewardButton from "../ClaimReward/RewardButton";
 import { useSearchParams } from "next/navigation";
-// import { useConnectModal } from "@rainbow-me/rainbowkit";
 import { useConnection } from "@/app/hooks/useConnection";
 import { useAccount } from "wagmi";
 import Link from "next/link";
@@ -66,16 +65,16 @@ const ExploreDAOs = () => {
     setDaoInfo(filtered);
   };
 
-  
+
 
   const handleClick = (name: string, img: StaticImageData) => {
     const formatted = name.toLowerCase();
-    const localData = JSON.parse(localStorage.getItem("visitedDao") || "{}");
-    localStorage.setItem(
-      "visitedDao",
-      JSON.stringify({ ...localData, [formatted]: [formatted, img] })
-    );
-    router.push(`/${formatted}?active=about`);
+    // const localData = JSON.parse(localStorage.getItem("visitedDao") || "{}");
+    // localStorage.setItem(
+    //   "visitedDao",
+    //   JSON.stringify({ ...localData, [formatted]: [formatted, img] })
+    // );
+    router.push(`/arbitrum?active=about`);
   };
 
   useEffect(() => {
@@ -98,7 +97,7 @@ const ExploreDAOs = () => {
   }, [searchParams]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-200 relative overflow-hidden">
+    <div className="min-h-screen bg-dark-primary relative overflow-hidden">
       <PageBackgroundPattern />
       <div className="pt-2 xs:pt-4 sm:pt-6 px-4 md:px-6 lg:px-14">
         <Heading />
@@ -111,10 +110,10 @@ const ExploreDAOs = () => {
           transition={{ duration: 0.5, delay: 0.2 }}
           className="mt-8 mb-12 text-center"
         >
-          <h2 className="text-3xl font-bold text-gray-800 mb-4">
+          <h2 className="text-3xl font-bold text-dark-text-primary mb-4">
             Explore Decentralized Autonomous Organizations
           </h2>
-          <p className="text-xl text-gray-600">
+          <p className="text-xl text-dark-text-secondary">
             Discover, connect, and engage with innovative DAOs across various
             domains
           </p>
@@ -126,12 +125,12 @@ const ExploreDAOs = () => {
           transition={{ duration: 0.5, delay: 0.4 }}
           className="flex justify-center mb-8"
         >
-          <div className="flex items-center rounded-full shadow-lg bg-white text-black cursor-pointer w-full max-w-md">
-            <CiSearch className="text-xl text-gray-500 ml-4" />
+          <div className="flex items-center rounded-full shadow-lg bg-dark-secondary text-white cursor-pointer w-full max-w-md border border-dark-accent">
+            <CiSearch className="text-xl text-dark-text-secondary ml-4" />
             <input
               type="text"
               placeholder="Search DAOs"
-              className="w-full pl-3 pr-4 py-3 font-poppins text-base bg-transparent outline-none"
+              className="w-full pl-3 pr-4 py-3 font-poppins text-base bg-transparent outline-none text-dark-text-primary placeholder-dark-text-tertiary"
               value={searchQuery}
               onChange={(e) => handleSearchChange(e.target.value)}
             />
@@ -145,7 +144,7 @@ const ExploreDAOs = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="grid grid-cols-1 sm:grid-cols-2 md:w-[80%] 1.3lg:w-[60%] 1.7xl:w-[50%] gap-6 2xl:w-[45%] mx-auto"
+            className="grid grid-cols-none sm:w-[50%] md:w-[45%] 1.3lg:w-[35%] 1.7xl:w-[32%] gap-6 2xl:w-[30%] mx-auto"
           >
             {daoInfo.length > 0 ? (
               daoInfo.map((dao: any) => (
@@ -153,7 +152,7 @@ const ExploreDAOs = () => {
                   key={dao.name}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  className="bg-white rounded-xl shadow-lg overflow-hidden cursor-pointer"
+                  className="bg-dark-secondary rounded-xl shadow-lg overflow-hidden cursor-pointer border border-dark-accent"
                   onClick={() => handleClick(dao.redirection, dao.img)}
                 >
                   <div className="p-6">
@@ -168,21 +167,21 @@ const ExploreDAOs = () => {
                         loading="lazy"
                       />
                     </div>
-                    <h3 className="font-semibold text-lg text-center mb-2 capitalize">
+                    <h3 className="font-semibold text-lg text-center mb-2 capitalize text-dark-text-primary">
                       {dao.name}
                     </h3>
-                    <div className="text-sm text-center bg-gray-100 py-2 px-3 rounded-full">
+                    <div className="text-sm text-center bg-dark-tertiary py-2 px-3 rounded-full text-dark-text-secondary">
                       {dao.value} Participants
                     </div>
                   </div>
                 </motion.div>
               ))
             ) : (
-              <div className="col-span-full text-center text-xl font-semibold text-gray-600">
+              <div className="col-span-full text-center text-xl font-semibold text-dark-text-tertiary">
                 No DAOs available for the selected category
               </div>
             )}
-            {daoInfo.length >0 ? (
+            {/* {daoInfo.length >0 ? (
             <motion.div
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
@@ -210,11 +209,11 @@ const ExploreDAOs = () => {
                 </span>
               </Link>
             </motion.div>
-            ): (<></>)}
+            ): (<></>)} */}
           </motion.div>
         )}
       </div>
-      <FeaturedArticles />
+      {/* <FeaturedArticles /> */}
     </div>
   );
 };

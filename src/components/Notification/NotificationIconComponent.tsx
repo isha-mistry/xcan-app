@@ -17,8 +17,8 @@ import {
 import { useNotificationStudioState } from "@/store/notificationStudioState";
 import { useSession } from "next-auth/react";
 import { usePrivy } from "@privy-io/react-auth";
-import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 import { fetchApi } from "@/utils/api";
+import { useConnection } from "@/app/hooks/useConnection";
 
 function NotificationIconComponent() {
   const router = useRouter();
@@ -29,13 +29,9 @@ function NotificationIconComponent() {
   const { user, ready, getAccessToken, authenticated } = usePrivy();
   const [socketId, setSocketId] = useState<string | null>(null);
   const [isAPILoading, setIsAPILoading] = useState<boolean>();
-  // const { data: session } = useSession();
-  const { walletAddress } = useWalletAddress();
-  const {isConnected,address}=useAccount();
+  const { address } = useAccount();
+  const { isConnected } = useConnection();
   const {
-    notifications,
-    newNotifications,
-    canFetch,
     combinedNotifications,
     addNotification,
     setNotifications,
@@ -49,8 +45,8 @@ function NotificationIconComponent() {
   const cacheDuration = 60000; // 1 minute cache
 
   useEffect(() => {
-    setCanFetch(!!walletAddress);
-  }, [walletAddress, setCanFetch]);
+    setCanFetch(!!address);
+  }, [address, setCanFetch]);
 
   useEffect(() => {
     return () => {
@@ -69,15 +65,15 @@ function NotificationIconComponent() {
     if (now - lastFetchTime.current > cacheDuration) {
       setIsAPILoading(true);
       try {
-        const token=await getAccessToken();
+        const token = await getAccessToken();
         const myHeaders: HeadersInit = {
           "Content-Type": "application/json",
-          ...(walletAddress && {
-            "x-wallet-address": walletAddress,
+          ...(address && {
+            "x-wallet-address": address,
             Authorization: `Bearer ${token}`,
           }),
         };
-        const raw = JSON.stringify({ address: walletAddress });
+        const raw = JSON.stringify({ address: address });
 
         const requestOptions: RequestInit = {
           method: "POST",
@@ -116,7 +112,7 @@ function NotificationIconComponent() {
         setIsAPILoading(false);
       }
     }
-  }, [ walletAddress, setNotifications, setHasAnyUnreadNotification]);
+  }, [address, setNotifications, setHasAnyUnreadNotification]);
 
   const handleMouseEnter = useCallback(() => {
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
@@ -137,8 +133,8 @@ function NotificationIconComponent() {
   }, [socket]);
 
   useEffect(() => {
-    if (socket && walletAddress != null && socketId) {
-      socket.emit("register_host", { hostAddress: walletAddress, socketId });
+    if (socket && address && isConnected && socketId) {
+      socket.emit("register_host", { hostAddress: address, socketId });
 
       socket.on("new_notification", (message: Notification) => {
         const notificationData: Notification = {
@@ -164,7 +160,8 @@ function NotificationIconComponent() {
     };
   }, [
     socket,
-    walletAddress,
+    address,
+    isConnected,
     socketId,
     addNotification,
     hasAnyUnreadNotification,
@@ -194,9 +191,9 @@ function NotificationIconComponent() {
         </div>
       );
     }
-    
 
-    if (!authenticated ||!isConnected && !address ) {
+
+    if (!authenticated || !isConnected && !address) {
       return (
         <div className="flex justify-center items-center p-4">
           <p className="text-sm text-gray-500">
@@ -210,11 +207,10 @@ function NotificationIconComponent() {
       return combinedNotifications.slice(0, 3).map((data, index) => (
         <React.Fragment key={data._id || index}>
           <div
-            className={`flex items-center p-4 justify-between cursor-pointer ${
-              data.read_status
-                ? "bg-white text-gray-500"
-                : "bg-gray-200 text-black"
-            }`}
+            className={`flex items-center p-4 justify-between cursor-pointer ${data.read_status
+              ? "bg-white text-gray-500"
+              : "bg-gray-200 text-black"
+              }`}
             onClick={() => handleMarkAndRedirection({ data })}
           >
             <div className="flex gap-3">
@@ -228,25 +224,22 @@ function NotificationIconComponent() {
               </span>
               <div>
                 <p
-                  className={`text-xs font-semibold mb-1 line-clamp-1 ${
-                    data.read_status ? "text-gray-500" : "text-black"
-                  }`}
+                  className={`text-xs font-semibold mb-1 line-clamp-1 ${data.read_status ? "text-gray-500" : "text-black"
+                    }`}
                 >
                   {data.notification_title}
                 </p>
                 <p
-                  className={`text-xs line-clamp-2 ${
-                    data.read_status ? "text-gray-500" : "text-[#414141]"
-                  }`}
+                  className={`text-xs line-clamp-2 ${data.read_status ? "text-gray-500" : "text-[#414141]"
+                    }`}
                 >
                   {data.content}
                 </p>
               </div>
             </div>
             <div
-              className={`text-xs min-w-12 font-semibold flex items-center justify-center ${
-                data.read_status ? "text-gray-500 font-normal" : "text-black"
-              }`}
+              className={`text-xs min-w-12 font-semibold flex items-center justify-center ${data.read_status ? "text-gray-500 font-normal" : "text-black"
+                }`}
             >
               {formatTimestampOrDate(data.createdAt)}
             </div>

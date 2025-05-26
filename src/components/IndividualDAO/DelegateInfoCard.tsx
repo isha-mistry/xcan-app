@@ -45,12 +45,6 @@ const DelegateInfoCard: React.FC<DelegateInfoCardProps> = ({
 
 console.log("delegate",delegate)  
 
-  const pushToGTM = (eventData: GTMEvent) => {
-    if (typeof window !== "undefined" && window.dataLayer) {
-      window.dataLayer.push(eventData);
-    }
-  };
-
   useEffect(() => {
     const fetchEnsData = async () => {
       setIsLoading(true);
@@ -99,13 +93,6 @@ console.log("delegate",delegate)
     e.stopPropagation();
     onDelegateClick(delegate);
 
-    pushToGTM({
-      event: "delegate_button_click",
-      category: "Delegate Engagement",
-      action: "Delegate Button Click",
-      label: `Delegate Button Click - Delegate List - ${getDaoNameFromUrl()}`,
-      delegateFrom: "delegateList",
-    });
   };
 
   return (
@@ -167,8 +154,8 @@ console.log("delegate",delegate)
                 className={` ${
                   isAnimating
                     ? "text-blue-500"
-                    : "text-gray-400 hover:text-gray-600"
-                }  transition-colors duration-200`}
+                    : "text-gray-400 hover:text-gray-600 "
+                }  transition-colors duration-200 bg-gray-700`}
               >
                 <IoCopy size={16} />
               </button>

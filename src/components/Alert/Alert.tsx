@@ -9,23 +9,23 @@ interface AlertProps {
 }
 
 const Alert: React.FC<AlertProps> = ({ message, type = 'warning', onClose }) => {
-  let backgroundColor = 'bg-yellow-100';
-  let textColor = 'text-yellow-700';
+  let backgroundColor = 'bg-dark-tertiary';
+  let textColor = 'text-yellow-400';
   let borderColor = 'border-yellow-500';
 
   if (type === 'error') {
-    backgroundColor = 'bg-red-100';
-    textColor = 'text-red-700';
+    backgroundColor = 'bg-dark-tertiary';
+    textColor = 'text-red-400';
     borderColor = 'border-red-500';
   } else if (type === 'success') {
-        backgroundColor = 'bg-green-100';
-        textColor = 'text-green-700';
-        borderColor = 'border-green-500';
-    } else if (type === 'info') {
-        backgroundColor = 'bg-blue-100';
-        textColor = 'text-blue-700';
-        borderColor = 'border-blue-500';
-    }
+    backgroundColor = 'bg-dark-tertiary';
+    textColor = 'text-green-400';
+    borderColor = 'border-green-500';
+  } else if (type === 'info') {
+    backgroundColor = 'bg-dark-tertiary';
+    textColor = 'text-blue-400';
+    borderColor = 'border-blue-500';
+  }
 
   return (
     <div className={`${backgroundColor} ${textColor} border-l-4 ${borderColor} p-4 my-4 rounded-md shadow-md relative`}>
@@ -38,7 +38,7 @@ const Alert: React.FC<AlertProps> = ({ message, type = 'warning', onClose }) => 
           {message}
         </div>
         {onClose && (
-          <button onClick={onClose} className="absolute top-2 right-2 text-gray-500 hover:text-gray-700">
+          <button onClick={onClose} className="absolute top-2 right-2 text-dark-text-secondary hover:text-dark-text-primary">
             <span className="sr-only">Close</span>
             <XCircle className="h-4 w-4" aria-hidden="true" />
           </button>

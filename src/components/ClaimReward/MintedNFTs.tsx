@@ -10,7 +10,6 @@ import { useConnection } from "@/app/hooks/useConnection";
 import { CustomDropdown } from "./CustomDropdown";
 import toast from "react-hot-toast";
 import { usePrivy } from "@privy-io/react-auth";
-import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 import { Calendar, Clock, Loader2 } from "lucide-react";
 
 const MINTED_NFTS = gql`
@@ -43,20 +42,19 @@ function MintedNFTs() {
   const [mintedNFTs, setMintedNFTs] = useState<any[]>([]);
   const [dataLoading, setDataLoading] = useState<boolean>(false);
   const { ready, authenticated, login, logout, user } = usePrivy();
-  const { walletAddress } = useWalletAddress();
   const [active, setActive] = useState("Sessions");
 
   useEffect(() => {
-    if (walletAddress != null) {
+    if (isConnected && address) {
       fetchNFTs();
     }
-  }, [address, walletAddress]);
+  }, [address]);
 
   const fetchNFTs = async () => {
     try {
       setDataLoading(true);
       const result = await nft_client
-        .query(MINTED_NFTS, { address: walletAddress })
+        .query(MINTED_NFTS, { address: address })
         .toPromise();
 
       const nfts = await Promise.all(

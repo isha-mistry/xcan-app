@@ -1,12 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/config/connectDB";
 
-export async function POST(req: NextRequest, res: NextResponse) {
+export async function GET(req: NextRequest, res: NextResponse) {
   // console.log("GET req call");
   const user_address = req.url.split("get-session-data/")[1];
-  // console.log(user_address);
-
-  const { dao_name } = await req.json();
 
   try {
     // Connect to MongoDB
@@ -16,7 +13,7 @@ export async function POST(req: NextRequest, res: NextResponse) {
 
     // Access the collection
     const db = client.db();
-    const collection = db.collection("meetings");
+    const collection = db.collection("sessions");
 
     const currentTimeISO = new Date().toISOString();
 
@@ -30,8 +27,7 @@ export async function POST(req: NextRequest, res: NextResponse) {
       .find({
         "attendees.attendee_address": {
           $regex: new RegExp(`^${user_address}$`, "i"),
-        },
-        dao_name: dao_name,
+        }
       })
       .sort({ slot_time: -1 })
       .toArray();

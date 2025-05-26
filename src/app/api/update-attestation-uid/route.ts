@@ -13,7 +13,7 @@ interface AddAttendeeRequestBody {
   meetingType: number;
   uidOnchain: string;
   address: string;
-  daoName:string;
+  daoName: string;
   attendees: Attendee[]; // Array of attendees
 }
 
@@ -22,8 +22,7 @@ export async function PUT(req: NextRequest, res: NextResponse) {
     meetingId,
     meetingType,
     uidOnchain,
-    address,
-    daoName
+    address
   }: AddAttendeeRequestBody = await req.json();
 
   try {
@@ -32,8 +31,8 @@ export async function PUT(req: NextRequest, res: NextResponse) {
     console.log("Connected to MongoDB");
 
     const db = client.db();
-    const collection = db.collection("meetings");
-    const usersCollection = db.collection("delegates");
+    const collection = db.collection("sessions");
+    const usersCollection = db.collection("users");
 
     console.log("Fetching session document by meeting ID...");
     let existingDocument: any;
@@ -50,7 +49,9 @@ export async function PUT(req: NextRequest, res: NextResponse) {
       await usersCollection.findOneAndUpdate(
         { address: address },
         {
-          $inc: { [`meetingRecords.${daoName}.sessionHosted.onchainCounts`]: 1 },
+          $inc: {
+            [`meetingRecords.sessionHosted.onchainCounts`]: 1,
+          },
         }
       );
     } else if (meetingType === 2) {
@@ -64,7 +65,9 @@ export async function PUT(req: NextRequest, res: NextResponse) {
       await usersCollection.findOneAndUpdate(
         { address: address },
         {
-          $inc: { [`meetingRecords.${daoName}.sessionAttended.onchainCounts`]: 1 },
+          $inc: {
+            [`meetingRecords.sessionAttended.onchainCounts`]: 1,
+          },
         }
       );
     }

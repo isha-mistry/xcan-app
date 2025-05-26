@@ -11,7 +11,6 @@ import {
 
 interface UpdateMeetingRequestBody {
   host_address: string;
-  dao_name: string;
   reference_id: string;
   delete_reason: string;
 }
@@ -19,7 +18,6 @@ interface UpdateMeetingRequestBody {
 async function sendMeetingDeletionNotification({
   db,
   title,
-  dao_name,
   startTime,
   host_address,
   additionalData,
@@ -27,14 +25,13 @@ async function sendMeetingDeletionNotification({
 }: {
   db: any;
   title: string;
-  dao_name: string;
   startTime: string;
   host_address: string;
   additionalData: any;
   deleteReason: string;
 }) {
   try {
-    const usersCollection = db.collection("delegates");
+    const usersCollection = db.collection("users");
     const notificationCollection = db.collection("notifications");
     const normalizedHostAddress = host_address.toLowerCase();
 
@@ -46,7 +43,6 @@ async function sendMeetingDeletionNotification({
       })
       .toArray();
 
-    // const allUsers = [{address: "0x92DDc071cC4337b08e"}]
     if (!allUsers || allUsers.length === 0) {
       console.log("No users found to notify");
       return;
@@ -58,9 +54,9 @@ async function sendMeetingDeletionNotification({
     });
     const hostENSNameOrAddress = await getDisplayNameOrAddr(host_address);
 
-    // Updated notification content to include deletion reason
+    // Updated notification content without DAO name
     const baseNotification = {
-      content: `Office hours "${title}" for ${dao_name}, previously scheduled for ${localSlotTime} UTC and hosted by ${hostENSNameOrAddress}, has been cancelled. We apologize for any inconvenience. ${
+      content: `Office hours "${title}" previously scheduled for ${localSlotTime} UTC and hosted by ${hostENSNameOrAddress}, has been cancelled. We apologize for any inconvenience. ${
         deleteReason && `Reason: ${deleteReason}.`
       }`,
       createdAt: Date.now(),
@@ -69,9 +65,8 @@ async function sendMeetingDeletionNotification({
       notification_title: "Office Hours Cancelled",
       notification_type: "officeHours",
       additionalData: {
-        additionalData,
+        ...additionalData,
         host_address,
-        dao_name,
         delete_reason: deleteReason,
       },
     };
@@ -132,12 +127,11 @@ async function sendMeetingDeletionNotification({
   }
 }
 
-// Rename the function to PATCH since we're updating, not deleting
 export async function PUT(req: Request) {
   try {
     const walletAddress = req.headers.get("x-wallet-address");
     const updateData: UpdateMeetingRequestBody = await req.json();
-    const { host_address, dao_name, reference_id, delete_reason } = updateData;
+    const { host_address, reference_id, delete_reason } = updateData;
 
     if (!walletAddress) {
       return NextResponse.json(
@@ -159,12 +153,11 @@ export async function PUT(req: Request) {
     }
 
     // Validate required fields
-    if (!host_address || !dao_name || !reference_id) {
+    if (!host_address || !reference_id) {
       return NextResponse.json(
         {
           success: false,
-          error:
-            "Missing required fields: host_address, dao_name, reference_id, or delete_reason",
+          error: "Missing required fields: host_address or reference_id",
         },
         { status: 400 }
       );
@@ -179,11 +172,10 @@ export async function PUT(req: Request) {
     const db = client.db();
     const collection = db.collection("office_hours");
 
-    // First, check if the document exists
+    // First, check if the document exists with the simplified schema
     const existingDoc = await collection.findOne({
       host_address,
-      "dao.name": dao_name,
-      "dao.meetings.reference_id": reference_id,
+      "meetings.reference_id": reference_id,
     });
 
     if (!existingDoc) {
@@ -197,10 +189,20 @@ export async function PUT(req: Request) {
       );
     }
 
-    const existingDAO = existingDoc.dao.find((d: any) => d.name === dao_name);
-    const existingMeeting = existingDAO?.meetings.find(
+    const existingMeeting = existingDoc.meetings?.find(
       (m: any) => m.reference_id === reference_id
     );
+
+    if (!existingMeeting) {
+      await client.close();
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Meeting not found",
+        },
+        { status: 404 }
+      );
+    }
 
     try {
       if (cacheWrapper.isAvailable) {
@@ -210,7 +212,6 @@ export async function PUT(req: Request) {
       await sendMeetingDeletionNotification({
         db,
         title: existingMeeting.title,
-        dao_name,
         startTime: existingMeeting.startTime,
         host_address,
         additionalData: existingMeeting,
@@ -224,21 +225,17 @@ export async function PUT(req: Request) {
     const result = await collection.updateOne(
       {
         host_address,
-        "dao.name": dao_name,
-        "dao.meetings.reference_id": reference_id,
+        "meetings.reference_id": reference_id,
       },
       {
         $set: {
-          "dao.$[daoElem].meetings.$[meetingElem].status": "deleted",
-          "dao.$[daoElem].meetings.$[meetingElem].delete_reason": delete_reason,
+          "meetings.$[meetingElem].status": "deleted",
+          "meetings.$[meetingElem].delete_reason": delete_reason,
           updated_at: new Date(),
         },
       },
       {
-        arrayFilters: [
-          { "daoElem.name": dao_name },
-          { "meetingElem.reference_id": reference_id },
-        ],
+        arrayFilters: [{ "meetingElem.reference_id": reference_id }],
       }
     );
 

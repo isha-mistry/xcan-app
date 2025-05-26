@@ -12,11 +12,8 @@ import {
   isBefore,
   startOfDay,
   addWeeks,
-  addHours,
-  parse,
 } from "date-fns";
 import { getAccessToken } from "@privy-io/react-auth";
-import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 import TimeSlotSection from "@/components/ComponentUtils/TimeSlotSection";
 import Calendar from "@/components/ComponentUtils/Calendar";
 import {
@@ -26,17 +23,13 @@ import {
 } from "@/types/OfficeHoursTypes";
 import { toast } from "react-hot-toast";
 import { fetchApi } from "@/utils/api";
-import { AlertCircle, CalendarIcon, Clock } from "lucide-react";
-import Image from "next/image";
+import { AlertCircle, CalendarIcon, Clock, Loader2 } from "lucide-react";
 import { useAccount, useSwitchChain } from "wagmi";
-import OPLogo from "@/assets/images/daos/op.png";
-import ArbLogo from "@/assets/images/daos/arb.png";
-import { daoConfigs } from "@/config/daos";
 
 const UserScheduledHours: React.FC<{
-  daoName: string;
   onScheduleSave?: () => void;
-}> = ({ daoName, onScheduleSave }) => {
+}> = ({ onScheduleSave }) => {
+  const { address } = useAccount()
   const [selectedDates, setSelectedDates] = useState<DateSchedule[]>([]);
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
   const [title, setTitle] = useState("");
@@ -45,21 +38,11 @@ const UserScheduledHours: React.FC<{
     ExistingSchedule[]
   >([]);
   const [isSaving, setIsSaving] = useState(false);
+  const [isLoadingSchedules, setIsLoadingSchedules] = useState(true);
+  const [initialLoad, setInitialLoad] = useState(true);
   const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-  const { walletAddress } = useWalletAddress();
-  const { switchChain, chains } = useSwitchChain();
-  const { chain } = useAccount();
-  const [isOpen, setIsOpen] = useState(false);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const hoverDelay = 300;
 
-  let currentDAO=daoConfigs[daoName];
-
-  const handleMouseLeave = () => {
-    timeoutRef.current = setTimeout(() => {
-      setIsOpen(false);
-    }, hoverDelay);
-  };
 
   useEffect(() => {
     return () => {
@@ -169,48 +152,51 @@ const UserScheduledHours: React.FC<{
       }
 
       setSelectedDates((prevDates) => {
-        // If date is already selected, remove it
-        if (isDateSelected(date)) {
-          return prevDates.filter(
-            (schedule) => schedule.date.toDateString() !== date.toDateString()
-          );
+        const dateString = format(date, "yyyy-MM-dd");
+
+        // Check if date is already selected
+        const existingScheduleIndex = prevDates.findIndex(
+          (schedule) => format(schedule.date, "yyyy-MM-dd") === dateString
+        );
+
+        if (existingScheduleIndex !== -1) {
+          // Remove the date if it's already selected
+          const newDates = [...prevDates];
+          newDates.splice(existingScheduleIndex, 1);
+          return newDates;
         }
 
         // Get existing schedules for the selected date
-        const dateString = format(date, "YYYY-MM-DD");
         const existingTimeSlotsForDate = existingSchedules
           .filter((schedule) => {
             const scheduleDate = format(
               new Date(schedule.startTime),
-              "YYYY-MM-DD"
+              "yyyy-MM-dd"
             );
-            // return scheduleDate === dateString;
-            const isMatchingDate = scheduleDate === dateString;
-         return isMatchingDate;
+            return scheduleDate === dateString;
           })
           .map((schedule) => ({
             startTime: format(new Date(schedule.startTime), "HH:mm"),
             endTime: format(new Date(schedule.endTime), "HH:mm"),
-            id: Math.random().toString(36).substr(2, 9),
+            id: schedule.reference_id || Math.random().toString(36).substr(2, 9),
             bookedTitle: schedule.title,
             bookedDescription: schedule.description,
             reference_id: schedule.reference_id,
           }))
-          .sort((a, b) => a.startTime.localeCompare(b.startTime)); // Sort by start time
+          .sort((a, b) => a.startTime.localeCompare(b.startTime));
 
         // Determine initial time slots
         let initialTimeSlots: TimeSlot[] = [];
 
         if (existingTimeSlotsForDate.length > 0) {
-          // If there are booked slots, only use those
+          // If there are booked slots, use those
           initialTimeSlots = existingTimeSlotsForDate;
         } else {
           // If no booked slots, create a default time slot
           const defaultStartTime = isToday(date)
             ? generateTimeOptions(date, true)[0]
             : "09:00";
-          
-          // Only create a time slot if we have a valid start time
+
           if (defaultStartTime) {
             const timeSlot = createTimeSlot(date, defaultStartTime);
             if (timeSlot) {
@@ -241,7 +227,6 @@ const UserScheduledHours: React.FC<{
     },
     [
       isDateDisabled,
-      isDateSelected,
       generateTimeOptions,
       createTimeSlot,
       existingSchedules,
@@ -250,6 +235,12 @@ const UserScheduledHours: React.FC<{
       isTooLateForToday,
     ]
   );
+
+  const removeExistingSchedule = useCallback((referenceId: string) => {
+    setExistingSchedules((prevSchedules) =>
+      prevSchedules.filter((schedule) => schedule.reference_id !== referenceId)
+    );
+  }, []);
 
   useEffect(() => {
     if (selectedDates.length > 0) {
@@ -273,10 +264,16 @@ const UserScheduledHours: React.FC<{
           const recurringDates = generateRecurringDates(schedule.date);
           const newRecurringSchedules = recurringDates.map((date) => ({
             date,
-            timeSlots: schedule.timeSlots.map((slot) => ({
-              ...slot,
-              id: Math.random().toString(36).substr(2, 9),
-            })),
+            timeSlots: schedule.timeSlots
+              .filter((slot) => !slot.bookedTitle && !slot.reference_id) // Only copy unbooked slots
+              .map((slot) => ({
+                ...slot,
+                id: Math.random().toString(36).substr(2, 9),
+                // Remove any booked properties
+                bookedTitle: undefined,
+                bookedDescription: undefined,
+                reference_id: undefined,
+              })),
             isRecurring: true,
             title: schedule.title,
             description: schedule.description,
@@ -300,38 +297,38 @@ const UserScheduledHours: React.FC<{
       setSelectedDates((prevDates) => {
         const newSchedules = [...prevDates];
         const schedule = newSchedules[dateIndex];
-        
+
         // Check if it's too late to add slots for today
         if (isToday(schedule.date) && isTooLateForToday()) {
           toast.error("You cannot add slots for today, today's time is up. Please book slots for future dates.");
           return newSchedules;
         }
-        
+
         const lastSlot = schedule.timeSlots[schedule.timeSlots.length - 1];
 
         // Check if we can create a new time slot
         const newTimeSlot = createTimeSlot(schedule.date, lastSlot.endTime);
-        
+
         if (!newTimeSlot) {
           toast.error("Cannot add more time slots for this date.");
           return newSchedules;
         }
 
-        const conflictingSlot = existingSchedules.find((existingSlot) => {
-          const dateString = format(schedule.date, "YYYY-MM-DD");
-          const newSlotStart = new Date(
-            `${dateString}T${newTimeSlot.startTime}:00`
-          );
-          const newSlotEnd = new Date(
-            `${dateString}T${newTimeSlot.endTime}:00`
-          );
-          const existingStart = new Date(existingSlot.startTime);
-          const existingEnd = new Date(existingSlot.endTime);
+        // Check for overlap with existing booked slots
+        const conflictingSlot = schedule.timeSlots.find((existingSlot) => {
+          // Only check against booked slots
+          if (!existingSlot.bookedTitle && !existingSlot.reference_id) return false;
+
+          const newSlotStart = new Date(`${format(schedule.date, "yyyy-MM-dd")}T${newTimeSlot.startTime}:00`);
+          const newSlotEnd = new Date(`${format(schedule.date, "yyyy-MM-dd")}T${newTimeSlot.endTime}:00`);
+          const existingStart = new Date(`${format(schedule.date, "yyyy-MM-dd")}T${existingSlot.startTime}:00`);
+          const existingEnd = new Date(`${format(schedule.date, "yyyy-MM-dd")}T${existingSlot.endTime}:00`);
 
           return newSlotStart < existingEnd && newSlotEnd > existingStart;
         });
 
         if (conflictingSlot) {
+          toast.error("Cannot add time slot. It overlaps with an existing booked slot.");
           return newSchedules;
         }
 
@@ -339,7 +336,7 @@ const UserScheduledHours: React.FC<{
         return newSchedules;
       });
     },
-    [createTimeSlot, existingSchedules, isTooLateForToday]
+    [createTimeSlot, isTooLateForToday]
   );
 
   const removeTimeSlot = useCallback((dateIndex: number, slotIndex: number) => {
@@ -474,18 +471,14 @@ const UserScheduledHours: React.FC<{
     []
   );
 
-  const removeExistingSchedule = useCallback((referenceId: string) => {
-    setExistingSchedules((prevSchedules) =>
-      prevSchedules.filter((schedule) => schedule.reference_id !== referenceId)
-    );
-  }, []);
+
 
   const convertToUTC = useCallback(() => {
     return selectedDates.flatMap((schedule) => {
       const scheduleDate = schedule.date;
 
       return schedule.timeSlots
-        .filter((slot) => !slot.bookedTitle)
+        .filter((slot) => !slot.bookedTitle && !slot.reference_id) // Only include new, unbooked slots
         .map((slot) => {
           const [startHours, startMinutes] = slot.startTime
             .split(":")
@@ -505,7 +498,7 @@ const UserScheduledHours: React.FC<{
           };
         });
     });
-  }, [selectedDates, title, description]);
+  }, [selectedDates]);
 
   const resetState = useCallback(() => {
     setSelectedDates([]);
@@ -513,6 +506,8 @@ const UserScheduledHours: React.FC<{
     setDescription("");
     setCurrentDate(new Date());
   }, []);
+
+
 
   const handleSave = useCallback(async () => {
     setIsSaving(true);
@@ -522,15 +517,14 @@ const UserScheduledHours: React.FC<{
     const token = await getAccessToken();
     const myHeaders: HeadersInit = {
       "Content-Type": "application/json",
-      ...(walletAddress && {
-        "x-wallet-address": walletAddress,
+      ...(address && {
+        "x-wallet-address": address,
         Authorization: `Bearer ${token}`,
       }),
     };
 
     const raw = JSON.stringify({
-      host_address: walletAddress,
-      dao_name: daoName,
+      host_address: address,
       meetings: utcSchedule,
     });
 
@@ -554,14 +548,77 @@ const UserScheduledHours: React.FC<{
     } finally {
       setIsSaving(false);
     }
-  }, [convertToUTC, walletAddress, daoName, getAccessToken, resetState]);
+  }, [convertToUTC, address, getAccessToken, resetState]);
+
+  const processExistingSchedules = useCallback((schedules: ExistingSchedule[]) => {
+    if (!schedules || schedules.length === 0) {
+      return;
+    }
+
+    // Group schedules by date
+    const schedulesByDate = schedules.reduce((acc, schedule) => {
+      const startDate = new Date(schedule.startTime);
+      const dateKey = format(startDate, "yyyy-MM-dd");
+
+      if (!acc[dateKey]) {
+        acc[dateKey] = {
+          date: startDate,
+          slots: [],
+          title: schedule.title || title,
+          description: schedule.description || description,
+        };
+      }
+
+      acc[dateKey].slots.push({
+        startTime: format(startDate, "HH:mm"),
+        endTime: format(new Date(schedule.endTime), "HH:mm"),
+        id: schedule.reference_id || Math.random().toString(36).substr(2, 9),
+        bookedTitle: schedule.title,
+        bookedDescription: schedule.description,
+        reference_id: schedule.reference_id,
+      });
+
+      return acc;
+    }, {} as Record<string, { date: Date; slots: TimeSlot[]; title: string; description: string }>);
+
+    // Convert to DateSchedule format and add to selected dates
+    const newSchedules: DateSchedule[] = Object.values(schedulesByDate).map(({ date, slots, title: scheduleTitle, description: scheduleDesc }) => ({
+      date: new Date(date.getFullYear(), date.getMonth(), date.getDate()), // Normalize to start of day
+      timeSlots: slots.sort((a, b) => a.startTime.localeCompare(b.startTime)), // Sort by start time
+      isRecurring: false,
+      title: scheduleTitle,
+      description: scheduleDesc,
+    }));
+
+    // Update selected dates without duplicating existing dates
+    setSelectedDates(prevDates => {
+      const existingDateStrings = prevDates.map(schedule =>
+        format(schedule.date, "yyyy-MM-dd")
+      );
+
+      const filteredNewSchedules = newSchedules.filter(newSchedule =>
+        !existingDateStrings.includes(format(newSchedule.date, "yyyy-MM-dd"))
+      );
+
+      return [...prevDates, ...filteredNewSchedules];
+    });
+
+    // Set title and description from the first schedule if not already set
+    if (!title && schedules.length > 0 && schedules[0].title) {
+      setTitle(schedules[0].title);
+    }
+    if (!description && schedules.length > 0 && schedules[0].description) {
+      setDescription(schedules[0].description);
+    }
+  }, [title, description]);
 
   const getOfficeHours = useCallback(async () => {
+    setIsLoadingSchedules(true);
     const token = await getAccessToken();
     const myHeaders: HeadersInit = {
       "Content-Type": "application/json",
-      ...(walletAddress && {
-        "x-wallet-address": walletAddress,
+      ...(address && {
+        "x-wallet-address": address,
         Authorization: `Bearer ${token}`,
       }),
     };
@@ -573,15 +630,25 @@ const UserScheduledHours: React.FC<{
 
     try {
       const response = await fetchApi(
-        `/get-upcoming-officehours?host_address=${walletAddress}&dao_name=${daoName}`,
+        `/get-upcoming-officehours?host_address=${address}`,
         requestOptions
       );
       const result = await response.json();
-      setExistingSchedules(result.data.meetings || []);
+      const meetings = result.data.meetings || [];
+
+      setExistingSchedules(meetings);
+
+      // Process existing schedules and add to selected dates
+      processExistingSchedules(meetings);
+
     } catch (error) {
       console.error("Error fetching office hours:", error);
+      toast.error("Failed to load existing schedules");
+    } finally {
+      setIsLoadingSchedules(false);
+      setInitialLoad(false);
     }
-  }, [walletAddress, daoName]);
+  }, [address, processExistingSchedules]);
 
   useEffect(() => {
     getOfficeHours();
@@ -606,11 +673,11 @@ const UserScheduledHours: React.FC<{
       isDateSelected,
     ]
   );
+
   const memoizedTimeSlotSection = useMemo(
     () => (
       <TimeSlotSection
-        hostAddress={walletAddress}
-        daoName={daoName}
+        hostAddress={address}
         selectedDates={selectedDates}
         setSelectedDates={setSelectedDates}
         generateTimeOptions={generateTimeOptions}
@@ -621,6 +688,7 @@ const UserScheduledHours: React.FC<{
         updateBookedSlot={updateBookedSlot}
         deleteBookedSlot={deleteBookedSlot}
         removeExistingSchedule={removeExistingSchedule}
+        isLoadingSchedules={isLoadingSchedules}
       />
     ),
     [
@@ -633,6 +701,8 @@ const UserScheduledHours: React.FC<{
       updateBookedSlot,
       deleteBookedSlot,
       removeExistingSchedule,
+      isLoadingSchedules,
+      existingSchedules
     ]
   );
 
@@ -645,37 +715,17 @@ const UserScheduledHours: React.FC<{
   }, [selectedDates, title, description, isSaving]);
 
   return (
-    <div className="min-h-screen  rounded-2xl">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen rounded-2xl">
+      {/* <div className="max-w-7xl mx-auto"> */}
         {/* Header Section */}
         <div className="mb-8">
-          <div className="mr-2 sm:mr-3 md:mr-4 lg:mr-5 flex items-center truncate mb-6">
-            <Image
-              src={currentDAO.logo}
-              alt="Current Chain"
-              width={48}
-              height={48}
-              className="size-12 mr-4"
-            />
-            {/* {daoName.charAt(0).toUpperCase() + daoName.slice(1)} */}
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
-                {/* {daoName.charAt(0).toUpperCase() + daoName.slice(1)} */}
-                {currentDAO.name}
-              </h1>
-              <p className="text-sm text-gray-500 mt-1">
-                Schedule your Office Hours
-              </p>
-            </div>
-          </div>
-
           {/* Schedule Details Card */}
-          <div className="bg-gradient-to-br from-blue-50 to-transparent rounded-2xl shadow-md p-3 0.2xs:p-4 sm:p-6 mb-8 transition-all hover:shadow-lg">
+          <div className="bg-gradient-to-br from-slate-700 to-transparent rounded-2xl shadow-md p-3 0.2xs:p-4 sm:p-6 mb-8 transition-all hover:shadow-lg">
             <div className="space-y-6">
               <div className="space-y-4">
                 <label htmlFor="title" className="block">
-                  <span className="text-lg font-semibold text-gray-900 mb-2 flex items-center">
-                    <CalendarIcon className="w-5 h-5 mr-2 text-blue-600" />
+                  <span className="text-lg font-semibold text-gray-100 mb-2 flex items-center">
+                    <CalendarIcon className="w-5 h-5 mr-2 text-gray-100" />
                     Title
                   </span>
                   <input
@@ -684,15 +734,16 @@ const UserScheduledHours: React.FC<{
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                     placeholder="Enter a title for your schedule"
-                    className="w-full px-4 py-3 text-gray-900 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-200 focus:border-blue-500 transition-all"
+                    className="w-full px-4 py-3 text-gray-100 bg-slate-800 bg-opacity-20 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-200 focus:border-blue-500 transition-all"
+                    disabled={isLoadingSchedules}
                   />
                 </label>
               </div>
 
               <div className="space-y-4">
                 <label htmlFor="description" className="block">
-                  <span className="text-lg font-semibold text-gray-900 mb-2 flex items-center">
-                    <AlertCircle className="w-5 h-5 mr-2 text-blue-600" />
+                  <span className="text-lg font-semibold text-gray-100 mb-2 flex items-center">
+                    <AlertCircle className="w-5 h-5 mr-2 text-gray-100" />
                     Description
                   </span>
                   <textarea
@@ -701,7 +752,8 @@ const UserScheduledHours: React.FC<{
                     onChange={(e) => setDescription(e.target.value)}
                     placeholder="Describe the purpose of this schedule..."
                     rows={3}
-                    className="w-full px-4 py-3 text-gray-900 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-200 focus:border-blue-500 transition-all"
+                    className="w-full px-4 py-3 text-gray-100 bg-slate-800 bg-opacity-20 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-200 focus:border-blue-500 transition-all"
+                    disabled={isLoadingSchedules}
                   />
                 </label>
               </div>
@@ -709,14 +761,15 @@ const UserScheduledHours: React.FC<{
           </div>
 
           {/* Schedule Availability Section */}
-          <div className="bg-gradient-to-br from-blue-50 to-transparent rounded-2xl shadow-md p-3 0.2xs:p-4 sm:p-6 transition-all hover:shadow-lg">
+          <div className="bg-gradient-to-br from-slate-700 to-transparent rounded-2xl shadow-md p-3 0.2xs:p-4 sm:p-6 transition-all hover:shadow-lg relative">
+
             <div className="flex items-center mb-6">
-              <Clock className="w-6 h-6 text-blue-600 mr-3" />
+              <Clock className="w-6 h-6 text-blue-100 mr-3" />
               <div>
-                <h3 className="text-xl font-semibold text-gray-900">
+                <h3 className="text-xl font-semibold text-gray-100">
                   Schedule Availability
                 </h3>
-                <p className="text-sm text-gray-500 mt-1">
+                <p className="text-sm text-gray-200 mt-1">
                   All times shown in {timezone}
                 </p>
               </div>
@@ -734,23 +787,22 @@ const UserScheduledHours: React.FC<{
         {/* Save Button */}
         <button
           onClick={handleSave}
-          disabled={!isScheduleValid}
-          className={`w-full sm:w-auto sm:min-w-[200px] mt-4 py-4 px-6 rounded-2xl text-base font-medium transition-all ${
-            !isScheduleValid
-              ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-              : "bg-blue-600 text-white hover:bg-blue-700 shadow-md hover:shadow-lg active:transform active:scale-95"
-          } relative bottom-auto left-auto right-auto`}
+          disabled={!isScheduleValid || isLoadingSchedules}
+          className={`w-full sm:w-auto sm:min-w-[200px] mt-4 py-4 px-6 rounded-2xl text-base font-medium transition-all ${!isScheduleValid || isLoadingSchedules
+            ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+            : "bg-blue-600 text-white hover:bg-blue-700 shadow-md hover:shadow-lg active:transform active:scale-95"
+            } relative bottom-auto left-auto right-auto`}
         >
           {isSaving ? (
             <div className="flex items-center justify-center">
-              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-gray-400 mr-2"></div>
+              <Loader2 className="w-5 h-5 text-white animate-spin mr-2" />
               Saving...
             </div>
           ) : (
             "Save Schedule"
           )}
         </button>
-      </div>
+      {/* </div> */}
     </div>
   );
 };

@@ -2,22 +2,18 @@ import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/config/connectDB";
 
 export async function POST(req: NextRequest, res: NextResponse) {
-  const { address, dao_name } = await req.json();
-
-  //   console.log("address", address);
-  //   console.log("dao_name", dao_name);
+  const { address } = await req.json();
 
   try {
     const client = await connectDB();
 
     try {
       const db = client.db();
-      const meetingsCollection = db.collection("meetings");
+      const meetingsCollection = db.collection("sessions");
       const attestationsCollection = db.collection("attestation");
 
       const hostedMeetings = await meetingsCollection
         .find({
-          dao_name,
           host_address: address,
           meeting_status: "Recorded",
         })
@@ -45,7 +41,6 @@ export async function POST(req: NextRequest, res: NextResponse) {
 
       const attendedMeetings = await meetingsCollection
         .find({
-          dao_name,
           meeting_status: "Recorded",
           "attendees.attendee_address": address,
         })

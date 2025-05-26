@@ -1,12 +1,11 @@
-// import { useConnectModal } from "@rainbow-me/rainbowkit";
 import React, { useEffect, useState } from "react";
 import { RxCross2 } from "react-icons/rx";
 import { v4 as uuidv4 } from "uuid";
 import { useAccount } from "wagmi";
 import { Toaster, toast } from "react-hot-toast";
 import { usePrivy } from "@privy-io/react-auth";
-import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 import { fetchApi } from "@/utils/api";
+import { useConnection } from "@/app/hooks/useConnection";
 
 function ReportAdditionalDetailsModal({
   data,
@@ -19,12 +18,12 @@ function ReportAdditionalDetailsModal({
   category: string;
   onClose: () => void;
 }) {
-  // const { openConnectModal } = useConnectModal();
+  const { address } = useAccount();
+  const { isConnected } = useConnection();
   const [details, setDetails] = useState("");
   const [isLoading, setIsLoading] = useState<boolean>();
   const { ready, authenticated, login, logout, getAccessToken, user } =
     usePrivy();
-  const { walletAddress } = useWalletAddress();
   const toggleModal = () => {
     onClose();
   };
@@ -47,8 +46,8 @@ function ReportAdditionalDetailsModal({
     const token = await getAccessToken();
     const myHeaders: HeadersInit = {
       "Content-Type": "application/json",
-      ...(walletAddress && {
-        "x-wallet-address": walletAddress,
+      ...(address && {
+        "x-wallet-address": address,
         Authorization: `Bearer ${token}`,
       }),
     };
@@ -84,7 +83,7 @@ function ReportAdditionalDetailsModal({
       reports: [
         {
           report_id: unique_id,
-          user_wallet_address: walletAddress,
+          user_wallet_address: address,
           report_type: category,
           description: details,
           timestamp: unixEpochTime,
@@ -94,7 +93,7 @@ function ReportAdditionalDetailsModal({
       ],
     };
 
-    if (walletAddress && authenticated) {
+    if (address && isConnected && authenticated) {
       try {
         const result = await submitReport(
           meetingId,

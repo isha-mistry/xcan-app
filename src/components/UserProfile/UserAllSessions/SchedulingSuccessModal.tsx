@@ -99,7 +99,7 @@ function SchedulingSuccessModal({
                     showArrow
                     content={<div className="font-poppins">Copied</div>}
                     placement="bottom"
-                    className="rounded-md bg-opacity-90 bg-black text-white"
+                    className="rounded-md bg-opacity-90 bg-black text-white bg-gray-700"
                     closeDelay={1}
                     isOpen={isToolTip} // Set isOpen based on the isToolTip state
                   >

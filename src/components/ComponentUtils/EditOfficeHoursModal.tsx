@@ -4,12 +4,13 @@ import { X } from "lucide-react";
 import toast from "react-hot-toast";
 import { fetchApi } from "@/utils/api";
 import { usePrivy } from "@privy-io/react-auth";
-import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 import { LuDot } from "react-icons/lu";
 import { CgAttachment } from "react-icons/cg";
 import { LIGHTHOUSE_BASE_API_KEY } from "@/config/constants";
 import lighthouse from "@lighthouse-web3/sdk";
 import Image from "next/image";
+import { useAccount } from "wagmi";
+import { useConnection } from "@/app/hooks/useConnection";
 
 interface EditOfficeHoursModalProps {
   slot: TimeSlot;
@@ -17,7 +18,6 @@ interface EditOfficeHoursModalProps {
   onClose: () => void;
   onUpdate: (updatedSlot: TimeSlot) => void;
   hostAddress: string;
-  daoName: string;
 }
 
 const EditOfficeHoursModal: React.FC<EditOfficeHoursModalProps> = ({
@@ -26,52 +26,52 @@ const EditOfficeHoursModal: React.FC<EditOfficeHoursModalProps> = ({
   onClose,
   onUpdate,
   hostAddress,
-  daoName,
 }) => {
   // Initialize state with the title from slot.title instead of slot.bookedTitle
   const [title, setTitle] = useState(slot.bookedTitle || "");
   const [description, setDescription] = useState(slot.bookedDescription || "");
   const [isLoading, setIsLoading] = useState(false);
   const { user, ready, getAccessToken, authenticated } = usePrivy();
-  const { walletAddress } = useWalletAddress();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [thumbnailImage, setThumbnailImage] = useState<string | null>(slot.thumbnail_image !== undefined ? slot.thumbnail_image : null);
   const [isAuthorized, setIsAuthorized] = useState(true);
+  const { address } = useAccount();
+  const { isConnected } = useConnection()
 
 
   useEffect(() => {
-    if (walletAddress && hostAddress) {
-      const authorized = walletAddress.toLowerCase() === hostAddress.toLowerCase();
+    if (address && hostAddress && isConnected) {
+      const authorized = address.toLowerCase() === hostAddress.toLowerCase();
       setIsAuthorized(authorized);
-      
+
       if (!authorized) {
         toast.error("You are not authorized to edit this office hours slot");
       }
-      
-      if (!authenticated || !walletAddress) {
+
+      if (!authenticated || !address || !isConnected) {
         toast.error("Please connect your wallet to edit this meeting");
       }
     }
-  }, [walletAddress, hostAddress, authenticated]);
-  
+  }, [address, hostAddress, authenticated,  isConnected]);
+
   const updateMeeting = async () => {
     try {
 
-      if (!authenticated || !walletAddress) {
+      if (!authenticated || !address || !isConnected) {
         toast.error("Please connect your wallet to edit this meeting");
         return null;
       }
 
       // Check if the current user is the host
-      if (walletAddress.toLowerCase() !== hostAddress.toLowerCase()) {
+      if (address.toLowerCase() !== hostAddress.toLowerCase()) {
         toast.error("You are not authorized to edit this office hours slot");
         return null;
       }
       const token = await getAccessToken();
       const myHeaders: HeadersInit = {
         "Content-Type": "application/json",
-        ...(walletAddress && {
-          "x-wallet-address": walletAddress,
+        ...(address && {
+          "x-wallet-address": address,
           Authorization: `Bearer ${token}`,
         }),
       };
@@ -81,15 +81,14 @@ const EditOfficeHoursModal: React.FC<EditOfficeHoursModalProps> = ({
         headers: myHeaders,
         body: JSON.stringify({
           host_address: hostAddress,
-          dao_name: daoName,
           reference_id: slot.reference_id,
           title,
           description,
-          thumbnail_image:thumbnailImage
+          thumbnail_image: thumbnailImage
         }),
       });
 
-      
+
       if (!response.ok) {
         const data = await response.json();
         if (response.status === 401) {
@@ -116,8 +115,8 @@ const EditOfficeHoursModal: React.FC<EditOfficeHoursModalProps> = ({
       toast.error("You are not authorized to edit this office hours slot");
       return;
     }
-    
-    if (!authenticated || !walletAddress) {
+
+    if (!authenticated || !address || !isConnected) {
       toast.error("Please connect your wallet to edit this meeting");
       return;
     }
@@ -126,7 +125,7 @@ const EditOfficeHoursModal: React.FC<EditOfficeHoursModalProps> = ({
 
     try {
       const result = await updateMeeting();
-      
+
       // If updateMeeting returned null, it means an auth error was displayed
       if (!result) {
         setIsLoading(false);
@@ -155,23 +154,23 @@ const EditOfficeHoursModal: React.FC<EditOfficeHoursModalProps> = ({
       toast.error("You are not authorized to edit this office hours slot");
       return;
     }
-      const apiKey = LIGHTHOUSE_BASE_API_KEY ? LIGHTHOUSE_BASE_API_KEY : "";
-      if (selectedImage) {
-        setIsLoading(true);
-        try {
+    const apiKey = LIGHTHOUSE_BASE_API_KEY ? LIGHTHOUSE_BASE_API_KEY : "";
+    if (selectedImage) {
+      setIsLoading(true);
+      try {
         const output = await lighthouse.upload([selectedImage], apiKey);
         const imageCid = output.data.Hash;
-        setThumbnailImage(imageCid); 
-        }catch(error:any){
-          setThumbnailImage(slot.thumbnail_image !== undefined ? slot.thumbnail_image : null)
-          console.log(error, "error response")
-        }finally{
-          setIsLoading(false)
-        }
-      }else{
+        setThumbnailImage(imageCid);
+      } catch (error: any) {
         setThumbnailImage(slot.thumbnail_image !== undefined ? slot.thumbnail_image : null)
+        console.log(error, "error response")
+      } finally {
+        setIsLoading(false)
       }
-    };
+    } else {
+      setThumbnailImage(slot.thumbnail_image !== undefined ? slot.thumbnail_image : null)
+    }
+  };
 
   return (
     <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
@@ -201,36 +200,36 @@ const EditOfficeHoursModal: React.FC<EditOfficeHoursModalProps> = ({
               <div className="flex gap-3 items-end">
                 <div className="w-40 h-24 bg-gray-100 rounded-lg flex items-center justify-center">
                   {thumbnailImage ? (
-                              <Image
-                                src={`https://gateway.lighthouse.storage/ipfs/${thumbnailImage}`}
-                                alt="Profile"
-                                className="w-full h-full object-cover rounded-md"
-                                width={100}
-                                height={100}
-                              />
-                            ) : (
-                  <div className="text-gray-400">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-12 w-12"
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                  </div>
-                  )} 
+                    <Image
+                      src={`https://gateway.lighthouse.storage/ipfs/${thumbnailImage}`}
+                      alt="Profile"
+                      className="w-full h-full object-cover rounded-md"
+                      width={100}
+                      height={100}
+                    />
+                  ) : (
+                    <div className="text-gray-400">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-12 w-12"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                    </div>
+                  )}
                 </div>
                 <div className="flex bg-[#EEF8FF] items-center gap-6 rounded-lg p-3">
                   <label className="bg-[#EEF8FF]  text-blue-shade-100 font-medium text-sm py-3 px-4 rounded-full border cursor-pointer border-blue-shade-100 cursor-point flex gap-2 items-center ">
                     <CgAttachment />
                     <span>Upload Image</span>
                     <input
-                       type="file"
+                      type="file"
                       name="image"
                       ref={fileInputRef}
                       accept="image/*"

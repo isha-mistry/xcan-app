@@ -28,7 +28,6 @@ import UpdateHostedSessionModal from "./UpdateHostedSessionModal";
 import { SessionInterface } from "@/types/MeetingTypes";
 import { LIGHTHOUSE_BASE_API_KEY } from "@/config/constants";
 import { usePrivy } from "@privy-io/react-auth";
-import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 import { fetchApi } from "@/utils/api";
 import NoResultsFound from "@/utils/Noresult";
 
@@ -40,7 +39,7 @@ type Attendee = {
 
 interface Participant {
   displayName: string;
-  walletAddress: string | null;
+  address: string | null;
   joinedAt: string;
   exitedAt: string;
   attestation: string;
@@ -108,8 +107,6 @@ SessionTileProps) {
     image: "",
   });
   const { user, ready, getAccessToken, authenticated } = usePrivy();
-  const { walletAddress } = useWalletAddress();
-  const [pageLoading, setPageLoading] = useState(true);
   const [applyStyles, setApplyStyles] = useState(true);
   const [expanded, setExpanded] = useState<{ [index: number]: boolean }>({});
 
@@ -189,8 +186,8 @@ SessionTileProps) {
     const token=await getAccessToken();
     const myHeaders: HeadersInit = {
       "Content-Type": "application/json",
-      ...(walletAddress && {
-        "x-wallet-address": walletAddress,
+      ...(address && {
+        "x-wallet-address": address,
         Authorization: `Bearer ${token}`,
       }),
     };
@@ -242,8 +239,8 @@ SessionTileProps) {
           const token=await getAccessToken();
           const myHeaders: HeadersInit = {
             "Content-Type": "application/json",
-            ...(walletAddress && {
-              "x-wallet-address": walletAddress,
+            ...(address && {
+              "x-wallet-address": address,
               Authorization: `Bearer ${token}`,
             }),
           };
@@ -251,7 +248,7 @@ SessionTileProps) {
             meetingId: meetingId,
             meetingType: meetingType,
             uidOnchain: newAttestationUID,
-            address: walletAddress,
+            address: address,
           });
           const requestOptions: any = {
             method: "PUT",
@@ -341,8 +338,8 @@ SessionTileProps) {
       const token=await getAccessToken();
       const myHeaders: HeadersInit = {
         "Content-Type": "application/json",
-        ...(walletAddress && {
-          "x-wallet-address": walletAddress,
+        ...(address && {
+          "x-wallet-address": address,
           Authorization: `Bearer ${token}`,
         }),
       };
@@ -449,6 +446,7 @@ SessionTileProps) {
                             placement="right"
                             closeDelay={1}
                             showArrow
+                            className="bg-gray-700"
                           >
                             <div
                               className="pl-2 pt-[2px] cursor-pointer"
@@ -478,6 +476,7 @@ SessionTileProps) {
                           placement="right"
                           closeDelay={1}
                           showArrow
+                          className="bg-gray-700"
                         >
                           <div
                             className="pl-2 pt-[2px] cursor-pointer"
@@ -530,6 +529,7 @@ SessionTileProps) {
                         }
                         placement="top"
                         showArrow
+                        className="bg-gray-700"
                       >
                         <button
                           className={`${style.button}`}
@@ -590,6 +590,7 @@ SessionTileProps) {
                         content="Edit Details"
                         placement="right"
                         showArrow
+                        className="bg-gray-700"
                       >
                         <span
                           className="border-[0.5px] border-[#8E8E8E] rounded-full h-fit p-1 cursor-pointer w-6"
@@ -616,6 +617,7 @@ SessionTileProps) {
                       }
                       placement="top"
                       showArrow
+                      className="bg-gray-700"
                     >
                       {/* <button
                       className="bg-blue-shade-100 text-white text-sm py-2 px-4 rounded-full font-semibold outline-none flex gap-1 items-center justify-center"

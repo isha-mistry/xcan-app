@@ -4,13 +4,14 @@ import { useRouter } from "next-nprogress-bar";
 import ErrorDisplay from "../ComponentUtils/ErrorDisplay";
 import { CiSearch } from "react-icons/ci";
 import { usePrivy } from "@privy-io/react-auth";
-import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 import { fetchApi } from "@/utils/api";
 import { OfficeHoursProps } from "@/types/OfficeHoursTypes";
 import RecordedSessionsSkeletonLoader from "../SkeletonLoader/RecordedSessionsSkeletonLoader";
 import OfficeHourTile from "../ComponentUtils/OfficeHourTile";
-import { Clock, Play, Calendar, BookOpen } from "lucide-react"; 
+import { Clock, Play, Calendar, BookOpen } from "lucide-react";
 import NoResultsFound from "@/utils/Noresult";
+import { useAccount } from "wagmi";
+import { useConnection } from "@/app/hooks/useConnection";
 
 function OfficeHours({ props }: { props: string }) {
   const [searchInput, setSearchInput] = useState("");
@@ -18,7 +19,8 @@ function OfficeHours({ props }: { props: string }) {
   const path = usePathname();
   const searchParams = useSearchParams();
   const { getAccessToken } = usePrivy();
-  const { walletAddress } = useWalletAddress();
+  const { address } = useAccount();
+  const { isConnected } = useConnection()
 
   // Original data from API
   const [originalData, setOriginalData] = useState({
@@ -41,7 +43,7 @@ function OfficeHours({ props }: { props: string }) {
   const fetchOfficeHours = async () => {
     try {
       setDataLoading(true);
-      const response = await fetchApi(`/get-office-hours?dao_name=${props}`, {
+      const response = await fetchApi(`/get-office-hours`, {
         headers: {
           Authorization: `Bearer ${await getAccessToken()}`,
         },
@@ -65,10 +67,10 @@ function OfficeHours({ props }: { props: string }) {
   };
 
   useEffect(() => {
-    if (walletAddress) {
+    if (address || isConnected) {
       fetchOfficeHours();
     }
-  }, [walletAddress]);
+  }, [address]);
 
   // Filter data based on search term
   const filterData = (searchTerm: string) => {
@@ -145,11 +147,10 @@ function OfficeHours({ props }: { props: string }) {
       <div className="pt-3">
         <div className="flex gap-2 0.5xs:gap-4 rounded-xl text-sm flex-wrap">
           <button
-            className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md ${
-              searchParams.get("hours") === "ongoing"
-                ? "text-[#0500FF] font-semibold bg-[#f5f5f5]"
-                : "text-[#3E3D3D] bg-white"
-            }`}
+            className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md ${searchParams.get("hours") === "ongoing"
+              ? "text-[#0500FF] font-semibold bg-[#f5f5f5]"
+              : "text-[#3E3D3D] bg-white"
+              }`}
             onClick={() =>
               router.push(`${path}?active=officeHours&hours=ongoing`)
             }
@@ -158,11 +159,10 @@ function OfficeHours({ props }: { props: string }) {
             Live
           </button>
           <button
-            className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md ${
-              searchParams.get("hours") === "upcoming"
-                ? "text-[#0500FF] font-semibold bg-[#f5f5f5]"
-                : "text-[#3E3D3D] bg-white"
-            }`}
+            className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md ${searchParams.get("hours") === "upcoming"
+              ? "text-[#0500FF] font-semibold bg-[#f5f5f5]"
+              : "text-[#3E3D3D] bg-white"
+              }`}
             onClick={() =>
               router.push(`${path}?active=officeHours&hours=upcoming`)
             }
@@ -171,31 +171,30 @@ function OfficeHours({ props }: { props: string }) {
             Scheduled
           </button>
           <button
-            className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md ${
-              searchParams.get("hours") === "recorded"
-                ? "text-[#0500FF] font-semibold bg-[#f5f5f5]"
-                : "text-[#3E3D3D] bg-white"
-            }`}
+            className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md ${searchParams.get("hours") === "recorded"
+              ? "text-[#0500FF] font-semibold bg-[#f5f5f5]"
+              : "text-[#3E3D3D] bg-white"
+              }`}
             onClick={() =>
               router.push(`${path}?active=officeHours&hours=recorded`)
             }
           >
-             <BookOpen size={16} className="drop-shadow-lg" />
+            <BookOpen size={16} className="drop-shadow-lg" />
             Library
           </button>
         </div>
 
         <div className="flex items-center rounded-full shadow-lg mt-10 mb-4 bg-gray-100 text-black cursor-pointer w-[300px] xs:w-[365px]">
-        <CiSearch className="text-base transition-all duration-700 ease-in-out ml-3" />
-        <input
-          type="text"
-          placeholder="Search by title and host address"
-          className="w-[100%] pl-2 pr-4 py-1.5 font-poppins md:py-2 text-sm bg-transparent outline-none"
-          value={searchInput}
-          onChange={handleSearchChange}
-          onKeyPress={handleKeyPress}
-        />
-      </div>
+          <CiSearch className="text-base transition-all duration-700 ease-in-out ml-3" />
+          <input
+            type="text"
+            placeholder="Search by title and host address"
+            className="w-[100%] pl-2 pr-4 py-1.5 font-poppins md:py-2 text-sm bg-transparent outline-none"
+            value={searchInput}
+            onChange={handleSearchChange}
+            onKeyPress={handleKeyPress}
+          />
+        </div>
 
         <div className="py-10">
           {dataLoading ? (
@@ -206,7 +205,7 @@ function OfficeHours({ props }: { props: string }) {
               <div className="pt-4 font-semibold text-lg">
                 Oops, no such result available!
               </div> */}
-              <NoResultsFound/>
+              <NoResultsFound />
             </div>
           ) : (
             <OfficeHourTile

@@ -9,12 +9,12 @@ import text1 from "@/assets/images/daos/texture1.png";
 import SessionTile from "../ComponentUtils/SessionTiles";
 import { Oval } from "react-loader-spinner";
 import SessionTileSkeletonLoader from "../SkeletonLoader/SessionTileSkeletonLoader";
-import { useAccount } from "wagmi";
+import { useAccount, useConnections } from "wagmi";
 import { SessionInterface } from "@/types/MeetingTypes";
 import { getAccessToken, usePrivy } from "@privy-io/react-auth";
-import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 import { CalendarCheck, CheckCircle, Users } from "lucide-react";
 import NoResultsFound from "@/utils/Noresult";
+import { useConnection } from "@/app/hooks/useConnection";
 
 interface Type {
   daoDelegates: string;
@@ -29,9 +29,8 @@ function DelegateSessions({ props }: { props: Type }) {
   const [sessionDetails, setSessionDetails] = useState([]);
   const dao_name = props.daoDelegates;
   const [error, setError] = useState<string | null>(null);
-  const { address, isConnected } = useAccount();
+  const { address } = useAccount();
   const { ready, authenticated, login, logout, user } = usePrivy();
-  const { walletAddress } = useWalletAddress();
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
   const [showLeftShadow, setShowLeftShadow] = useState(false);
   const [showRightShadow, setShowRightShadow] = useState(false);
@@ -67,8 +66,8 @@ function DelegateSessions({ props }: { props: Type }) {
       const token = await getAccessToken();
       const myHeaders: HeadersInit = {
         "Content-Type": "application/json",
-        ...(walletAddress && {
-          "x-wallet-address": walletAddress,
+        ...(address && {
+          "x-wallet-address": address,
           Authorization: `Bearer ${token}`,
         }),
       };
@@ -129,9 +128,6 @@ function DelegateSessions({ props }: { props: Type }) {
   };
 
   useEffect(() => {
-    // if (walletAddress != null) {
-    //   getMeetingData();
-    // }
     getMeetingData();
   }, [
     props.daoDelegates,

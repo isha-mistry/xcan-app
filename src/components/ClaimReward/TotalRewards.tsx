@@ -24,7 +24,6 @@ import { useConnection } from "@/app/hooks/useConnection";
 import Link from "next/link";
 import { Gift, Loader2 } from "lucide-react";
 import { usePrivy } from "@privy-io/react-auth";
-import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 import toast from "react-hot-toast";
 
 interface NetworkBalance {
@@ -66,7 +65,6 @@ function TotalRewards() {
   const { writeContractAsync } = useWriteContract();
   const [claimingReward, setClaimingReward] = useState<boolean>(false);
   const [fetchingReward, setFetchingReward] = useState<boolean>(false);
-  const { walletAddress } = useWalletAddress();
   const { switchChainAsync } = useSwitchChain();
 
   // Network configurations
@@ -93,7 +91,7 @@ function TotalRewards() {
     abi: protocolRewardsABI,
     address: protocolRewardsAddress[NETWORKS.ARBITRUM.chainId as keyof typeof protocolRewardsAddress],
     functionName: "balanceOf",
-    args: [walletAddress as Address],
+    args: [address as Address],
     chainId:NETWORKS.ARBITRUM.chainId
   });
 
@@ -101,7 +99,7 @@ function TotalRewards() {
     abi: protocolRewardsABI,
     address: protocolRewardsAddress[NETWORKS.ARBITRUM_SEPOLIA.chainId as keyof typeof protocolRewardsAddress],
     functionName: "balanceOf",
-    args: [walletAddress as Address],
+    args: [address as Address],
     chainId: NETWORKS.ARBITRUM_SEPOLIA.chainId,
   });
 
@@ -109,7 +107,7 @@ function TotalRewards() {
     abi: protocolRewardsABI,
     address: protocolRewardsAddress[NETWORKS.OPTIMISM.chainId as keyof typeof protocolRewardsAddress],
     functionName: "balanceOf",
-    args: [walletAddress as Address],
+    args: [address as Address],
     chainId: NETWORKS.OPTIMISM.chainId,
   });
 
@@ -130,7 +128,7 @@ function TotalRewards() {
     try {
       setFetchingReward(true);
       const data = await nft_client
-        .query(REWARD_QUERY, { address: walletAddress })
+        .query(REWARD_QUERY, { address: address })
         .toPromise();
 
       const response = await fetch(
@@ -174,35 +172,19 @@ function TotalRewards() {
   }, [chainId]);
 
   useEffect(() => {
-    if (walletAddress) {
+    if (address && isUserConnected) {
       fetchReward();
       const fetchEnsName = async () => {
-        const ensName = await fetchEnsNameAndAvatar(walletAddress);
-        const truncatedAddress = truncateAddress(walletAddress);
+        const ensName = await fetchEnsNameAndAvatar(address);
+        const truncatedAddress = truncateAddress(address);
         setDisplayEnsName(ensName?.ensName ? ensName.ensName : truncatedAddress);
       };
       fetchEnsName();
     }
-  }, [walletAddress]);
-
-  // Calculate total rewards across all networks
-  // useEffect(() => {
-  //   const totalETH = Number(formatEther(
-  //     (arbitrumBalance || BigInt(0)) +
-  //     (arbitrumSepoliaBalance || BigInt(0)) +
-  //     (optimismBalance || BigInt(0))
-  //   )).toFixed(5);
-
-  //   const totalUSD = (Number(totalETH) * ethToUsdConversionRate).toFixed(2);
-
-  //   setTotalRewards({
-  //     amount: totalETH,
-  //     value: `$${totalUSD}`
-  //   });
-  // }, [arbitrumBalance, arbitrumSepoliaBalance, optimismBalance, ethToUsdConversionRate]);
+  }, [address, isUserConnected]);
 
   async function handleClaim(chain: number, balance: bigint) {
-    if (!walletAddress) {
+    if (!address) {
       console.error("Recipient address is undefined.");
       return;
     }
@@ -227,7 +209,7 @@ function TotalRewards() {
         abi: protocolRewardsABI,
         address: protocolRewardsAddress[chain as keyof typeof protocolRewardsAddress],
         functionName: "withdraw",
-        args: [walletAddress as `0x${string}`, withdrawAmount],
+        args: [address as `0x${string}`, withdrawAmount],
       });
     } catch (error) {
       console.error("Error claiming reward:", error);

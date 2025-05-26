@@ -26,7 +26,7 @@ const EditButton: React.FC<EditButtonProps> = ({
 
   return (
     <>
-      <Tooltip content="Edit Details" placement="top" showArrow>
+      <Tooltip content="Edit Details" placement="top" showArrow className="bg-gray-700">
         <div
           className={`bg-gradient-to-r from-[#8d949e] to-[#555c6629] rounded-full p-1 py-3 cursor-pointer w-10 flex items-center justify-center font-semibold text-sm text-black`}
           //   style={{ backgroundColor: "rgba(217, 217, 217, 0.42)" }}

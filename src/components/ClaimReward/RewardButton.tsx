@@ -1,14 +1,12 @@
 "use client";
 import React, { useCallback, useState, useRef, useEffect } from "react";
 import { useRouter } from "next-nprogress-bar";
-import {useChainId,useReadContract,useWriteContract} from "wagmi";
+import { useAccount, useChainId, useReadContract, useWriteContract } from "wagmi";
 import { Address, formatEther } from "viem";
-import {protocolRewardsABI,protocolRewardsAddress} from "chora-protocol-deployments";
-import { useWalletAddress } from "@/app/hooks/useWalletAddress";
+import { protocolRewardsABI, protocolRewardsAddress } from "chora-protocol-deployments";
 
 function RewardButton() {
- 
-  const {walletAddress}=useWalletAddress();
+
   const [showTooltip, setShowTooltip] = useState(false);
   const [ethToUsdConversionRate, setEthToUsdConversionRate] = useState(0);
 
@@ -16,12 +14,13 @@ function RewardButton() {
   const chainId = useChainId();
   const hoverRef = useRef<HTMLDivElement>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const { address } = useAccount()
   const { data: accountBalance, isLoading } = useReadContract({
     abi: protocolRewardsABI,
     address:
       protocolRewardsAddress[chainId as keyof typeof protocolRewardsAddress],
     functionName: "balanceOf",
-    args: [walletAddress as Address],
+    args: [address as Address],
   });
   // withdraw amount is half of the balance
   const rewardBalanceInETH: any = Number(
@@ -69,7 +68,7 @@ function RewardButton() {
     };
   }, []);
 
- 
+
   return (
     <>
       <div className="relative hidden md:inline-block ">

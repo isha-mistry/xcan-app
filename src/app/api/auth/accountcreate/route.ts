@@ -35,7 +35,7 @@ export async function POST(req: NextRequest, res: NextResponse) {
       );
 
       const verifiedUserId = verifiedUser.userId;
-      
+
       // Get full user details
       const userDetails = await privyClient.getUser(verifiedUserId);
 
@@ -50,15 +50,14 @@ export async function POST(req: NextRequest, res: NextResponse) {
 
       // Check all linked wallets for a match
       const linkedWallets = userDetails.linkedAccounts.filter(
-        account => account.type === 'wallet'
+        (account) => account.type === "wallet"
       );
 
       const verifiedWallet = linkedWallets.find(
-        wallet => wallet.address === requestWalletAddress
+        (wallet) => wallet.address === requestWalletAddress
       );
 
       if (!verifiedWallet) {
-        
         return NextResponse.json(
           { error: "Wallet address not found in user's linked accounts" },
           { status: 401 }
@@ -76,7 +75,7 @@ export async function POST(req: NextRequest, res: NextResponse) {
       // Connect to database
       client = await connectDB();
       const db = client.db();
-      const collection = db.collection("delegates");
+      const collection = db.collection("users");
 
       // Check if delegate already exists
       const existingDocument = await collection.findOne({

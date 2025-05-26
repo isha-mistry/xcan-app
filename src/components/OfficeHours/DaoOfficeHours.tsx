@@ -8,8 +8,6 @@ import { useRouter } from "next-nprogress-bar";
 import text1 from "@/assets/images/daos/texture1.png";
 import text2 from "@/assets/images/daos/texture2.png";
 import { StaticImageData } from "next/image";
-import Tile from "../ComponentUtils/Tile";
-// import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { Oval } from "react-loader-spinner";
 import { Tooltip } from "@nextui-org/react";
 import ConnectWalletWithENS from "../ConnectWallet/ConnectWalletWithENS";
@@ -21,7 +19,6 @@ import MobileResponsiveMessage from "../MobileResponsiveMessage/MobileResponsive
 import Heading from "../ComponentUtils/Heading";
 import { CiSearch } from "react-icons/ci";
 import { usePrivy } from "@privy-io/react-auth";
-import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 import { fetchApi } from "@/utils/api";
 import OfficeHoursAlertMessage from "../AlertMessage/OfficeHoursAlertMessage";
 import { OfficeHoursProps } from "@/types/OfficeHoursTypes";
@@ -29,9 +26,6 @@ import OfficeHourTile from "../ComponentUtils/OfficeHourTile";
 import RecordedSessionsSkeletonLoader from "../SkeletonLoader/RecordedSessionsSkeletonLoader";
 import { BookOpen, Calendar, Clock } from "lucide-react";
 import NoResultsFound from "@/utils/Noresult";
-import oplogo from "@/assets/images/daos/op.png";
-import arbcir from "@/assets/images/daos/arb.png";
-import { daoConfigs } from "@/config/daos";
 import useSWR from 'swr'
 interface Type {
   img: StaticImageData;
@@ -57,10 +51,9 @@ function DaoOfficeHours() {
   const path = usePathname();
   const searchParams = useSearchParams();
   const { getAccessToken } = usePrivy();
-  const { walletAddress } = useWalletAddress();
   const [dataLoading, setDataLoading] = useState(true);
   const [activeButton, setActiveButton] = useState("all");
-  const excludedDaos = ["arbitrumSepolia"]
+  const { address } = useAccount()
 
   // Original data from API
   const [originalData, setOriginalData] = useState({
@@ -109,38 +102,38 @@ function DaoOfficeHours() {
   //   }
   // }, [walletAddress]);
 
-// In your DaoOfficeHours component
-const { data, error, mutate } = useSWR(
-  walletAddress ? '/get-office-hours' : null,
-  async () => {
-    const response = await fetchApi(`/get-office-hours`, {
-      headers: {
-        Authorization: `Bearer ${await getAccessToken()}`,
-      },
-    });
-    return response.json();
-  },
-  {
-    revalidateOnFocus: true,  // Revalidate when user comes back to the tab
-    revalidateOnMount: true,  // Revalidate when component mounts
-    dedupingInterval: 10000,  // Don't make duplicate requests within 10 seconds
-  }
-);
+  // In your DaoOfficeHours component
+  const { data, error, mutate } = useSWR(
+    address ? '/get-office-hours' : null,
+    async () => {
+      const response = await fetchApi(`/get-office-hours`, {
+        headers: {
+          Authorization: `Bearer ${await getAccessToken()}`,
+        },
+      });
+      return response.json();
+    },
+    {
+      revalidateOnFocus: true,  // Revalidate when user comes back to the tab
+      revalidateOnMount: true,  // Revalidate when component mounts
+      dedupingInterval: 10000,  // Don't make duplicate requests within 10 seconds
+    }
+  );
 
-// Process data when it arrives
-useEffect(() => {
-  if (data) {
-    const processedData = {
-      ongoing: data.data.ongoing,
-      upcoming: data.data.upcoming,
-      recorded: data.data.recorded,
-    };
-    
-    setOriginalData(processedData);
-    setFilteredData(processedData);
-    setDataLoading(false);
-  }
-}, [data]);
+  // Process data when it arrives
+  useEffect(() => {
+    if (data) {
+      const processedData = {
+        ongoing: data.data.ongoing,
+        upcoming: data.data.upcoming,
+        recorded: data.data.recorded,
+      };
+
+      setOriginalData(processedData);
+      setFilteredData(processedData);
+      setDataLoading(false);
+    }
+  }, [data]);
 
   // Search function
   const handleSearch = (searchTerm: string) => {
@@ -215,164 +208,91 @@ useEffect(() => {
     return filteredData[currentTab] || [];
   };
 
-  const pushToGTM = (eventData: GTMEvent) => {
-    if (typeof window !== 'undefined' && window.dataLayer) {
-      window.dataLayer.push(eventData);
+  const handleNavigation = (url: string, category: string, action: string, label: string) => {
+
+    router.push(url);
+    const tab = url.includes('?hours=') ? url.split('?hours=')[1] : '';
+
+    // Force revalidate data when switching to certain tabs
+    if (tab === 'ongoing' || tab === 'upcoming' || tab === 'recorded') {
+      mutate(); // This will re-fetch fresh data from the API
     }
   };
 
-  const handleNavigation = (url: string, category: string, action: string, label: string) => {
-    //setIsNavigating(true); // If you still want to use this in your loading state
-    pushToGTM({
-      event: 'tab_selection',
-      category: category,
-      action: action,
-      label: label,
-    });
-    router.push(url);
-   const tab = url.includes('?hours=') ? url.split('?hours=')[1] : '';
-  
-  // Force revalidate data when switching to certain tabs
-  if (tab === 'ongoing' || tab === 'upcoming' || tab==='recorded') {
-    mutate(); // This will re-fetch fresh data from the API
-   }
-  };
-
-  // const handleTabChange = (tab:string,  category: string, action: string, label: string) => {
-  //   router.push(path + "?hours=" + tab);
-  //   pushToGTM({
-  //     event: 'tab_selection',
-  //     category: category,
-  //     action: action,
-  //     label: label,
-  //   });
-    
-  //   // Force revalidate data when switching to certain tabs
-  //   if (tab === 'ongoing' || tab === 'upcoming') {
-  //     mutate(); // This will re-fetch fresh data from the API
-  //   }
-  // };
-
   return (
-    <>
-      {/* For Mobile Screen */}
-      <MobileResponsiveMessage />
-
-      {/* For Desktop Screen */}
-      <div className="hidden md:block pt-2 xs:pt-4 sm:pt-6 px-4 md:px-6 lg:px-14">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 relative overflow-hidden">
+      <div className="pt-2 xs:pt-4 sm:pt-6 px-4 md:px-6 lg:px-14">
         <Heading />
+      </div>
 
-        <div className="pt-4 font-poppins">
-          {/* Tab buttons */}
-          <div className="flex gap-2 0.5xs:gap-4 rounded-xl text-sm flex-wrap">
-            <button
-              className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md ${
-                searchParams.get("hours") === "ongoing"
-                  ? "text-[#0500FF] font-semibold bg-[#f5f5f5]"
-                  : "text-[#3E3D3D] bg-white"
-              }`}
-              onClick={() => handleNavigation(path + '?hours=ongoing', 'Office Hours Navigation', 'Live Tab Clicked', 'Live')}
-            >
-              <Clock size={16} className="drop-shadow-lg" />
-              Live
-            </button>
-            <button
-              className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md ${
-                searchParams.get("hours") === "upcoming"
-                  ? "text-[#0500FF] font-semibold bg-[#f5f5f5]"
-                  : "text-[#3E3D3D] bg-white"
-              }`}
-              // onClick={() => router.push(path + "?hours=upcoming")}
-              onClick={() => handleNavigation(path + "?hours=upcoming", 'Office Hours Navigation', 'Scheduled Tab Clicked', 'Scheduled')}
-            >
-              <Calendar size={16} className="drop-shadow-lg" />
-              Scheduled
-            </button>
-            <button
-              className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md ${
-                searchParams.get("hours") === "recorded"
-                  ? "text-[#0500FF] font-semibold bg-[#f5f5f5]"
-                  : "text-[#3E3D3D] bg-white"
-              }`}
-              // onClick={() => router.push(path + "?hours=recorded")}
-              onClick={() => handleNavigation(path + "?hours=recorded", 'Office Hours Navigation', 'Library Tab Clicked', 'Library')}
-            >
-              <BookOpen size={16} className="drop-shadow-lg" />
-              Library
-            </button>
-          </div>
-          <div className="flex gap-2 sm:gap-3 md:gap-4">
-            {/* Search input */}
-            <div className="flex items-center my-8 rounded-full shadow-lg bg-gray-100 text-black cursor-pointer w-[300px] xs:w-[365px]">
-              <CiSearch className="text-base transition-all duration-700 ease-in-out ml-3" />
+      <div className="relative w-full px-4 md:px-6 lg:px-14 pb-8 font-poppins">
+        {/* <div className="max-w-7xl mx-auto"> */}
+          <div className="bg-gray-800 rounded-xl shadow-lg p-6 mb-8 border border-gray-700">
+            {/* Tab buttons */}
+            <div className="flex gap-2 0.5xs:gap-4 rounded-xl text-sm flex-wrap mb-6">
+              <button
+                className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-gray-700 shadow-md ${searchParams.get("hours") === "ongoing"
+                  ? "text-blue-400 font-semibold bg-gray-700"
+                  : "text-gray-300 bg-gray-800"
+                  }`}
+                onClick={() => handleNavigation(path + '?hours=ongoing', 'Office Hours Navigation', 'Live Tab Clicked', 'Live')}
+              >
+                <Clock size={16} className="drop-shadow-lg" />
+                Live
+              </button>
+              <button
+                className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-gray-700 shadow-md ${searchParams.get("hours") === "upcoming"
+                  ? "text-blue-400 font-semibold bg-gray-700"
+                  : "text-gray-300 bg-gray-800"
+                  }`}
+                onClick={() => handleNavigation(path + "?hours=upcoming", 'Office Hours Navigation', 'Scheduled Tab Clicked', 'Scheduled')}
+              >
+                <Calendar size={16} className="drop-shadow-lg" />
+                Scheduled
+              </button>
+              <button
+                className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-gray-700 shadow-md ${searchParams.get("hours") === "recorded"
+                  ? "text-blue-400 font-semibold bg-gray-700"
+                  : "text-gray-300 bg-gray-800"
+                  }`}
+                onClick={() => handleNavigation(path + "?hours=recorded", 'Office Hours Navigation', 'Recorded Tab Clicked', 'Recorded')}
+              >
+                <BookOpen size={16} className="drop-shadow-lg" />
+                Recorded
+              </button>
+            </div>
+
+            {/* Search bar */}
+            <div className="flex items-center rounded-full shadow-lg bg-gray-700 text-white cursor-pointer w-full max-w-md mb-6">
+              <CiSearch className="text-xl text-gray-400 ml-4" />
               <input
                 type="text"
                 placeholder="Search by title or host address"
-                className="w-[100%] pl-2 pr-4 py-1.5 font-poppins md:py-2 text-sm bg-transparent outline-none"
+                className="w-full pl-3 pr-4 py-3 font-poppins text-base bg-transparent outline-none text-gray-100 placeholder-gray-400"
                 value={searchQuery}
                 onChange={(e) => handleSearch(e.target.value)}
               />
             </div>
-            <div className="flex items-center gap-2 sm:gap-3 md:gap-4">
-              <button
-                className={` px-3 md:px-5 py-1 sm:py-1.5 rounded-lg text-sm lg:text-base ${
-                  activeButton === "all"
-                    ? "bg-[#8E8E8E] text-white"
-                    : "bg-[#F5F5F5] text-[#3E3D3D]"
-                }`}
-                onClick={() => handleFilters("")}
-              >
-                All
-              </button>
 
-              {Object.entries(daoConfigs)
-                .filter(([key]) => !excludedDaos.includes(key)) // Exclude unwanted DAOs
-                .map(([key, dao]) => (
-                  <button
-                    key={key}
-                    className="flex items-center justify-center size-[26px] sm:size-[29px] md:size-[29px]"
-                    onClick={() => handleFilters(dao.name.toLocaleLowerCase())}
-                  >
-                    <Image
-                      src={dao.logo}
-                      width={100}
-                      height={100}
-                      alt={`${dao.name} logo`}
-                      className={`size-full rounded-full ${
-                        activeButton === dao.name.toLocaleLowerCase()
-                          ? "opacity-100"
-                          : "opacity-50"
-                      }`}
-                    />
-                  </button>
-                ))}
+            {/* Content */}
+            <div className="mt-6">
+              {dataLoading ? (
+                <RecordedSessionsSkeletonLoader />
+              ) : getCurrentData().length > 0 ? (
+                <OfficeHourTile
+                  isOngoing={searchParams.get("hours") === "ongoing"}
+                  isUpcoming={searchParams.get("hours") === "upcoming"}
+                  isRecorded={searchParams.get("hours") === "recorded"}
+                  data={getCurrentData()}
+                />
+              ) : (
+                <NoResultsFound />
+              )}
             </div>
           </div>
-
-          {/* Content area */}
-          <div className="py-5">
-            {dataLoading ? (
-              <RecordedSessionsSkeletonLoader />
-            ) : getCurrentData().length === 0 ? (
-              <div className="flex flex-col justify-center items-center">
-                {/* <div className="text-5xl">☹️</div>
-                <div className="pt-4 font-semibold text-lg">
-                  Oops, no such result available!
-                </div> */}
-                <NoResultsFound />
-              </div>
-            ) : (
-              <OfficeHourTile
-                isOngoing={searchParams.get("hours") === "ongoing"}
-                isUpcoming={searchParams.get("hours") === "upcoming"}
-                isRecorded={searchParams.get("hours") === "recorded"}
-                data={getCurrentData()}
-              />
-            )}
-          </div>
-        </div>
+        {/* </div> */}
       </div>
-    </>
+    </div>
   );
 }
 

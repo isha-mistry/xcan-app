@@ -6,9 +6,17 @@
   width: 0px;
 }
 
+:root {
+  background-color: #272727;
+  color: #ffffff;
+}
+
+body {
+  background-color: #272727;
+  color: #ffffff;
+}
+
 .maskAvatar {
-  /* -webkit-mask-image: url("/images/Mask.svg"); */
-  /* mask-image: url("/images/Mask.svg"); */
   -webkit-mask-size: contain;
   mask-size: contain;
   -webkit-mask-repeat: no-repeat;
@@ -24,10 +32,10 @@ body::-webkit-scrollbar {
 }
 
 body::-webkit-scrollbar-track {
-  background-color: #e3e5e9;
+  background-color: #1a1a1a;
 }
 
 body::-webkit-scrollbar-thumb {
-  background-color: #5d6069;
+  background-color: #333333;
   border-radius: 5rem;
 }

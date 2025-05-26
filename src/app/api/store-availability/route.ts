@@ -4,7 +4,6 @@ import { NextResponse, NextRequest } from "next/server";
 
 // Define the request body type
 interface StoreAvailabilityRequestBody {
-  dao_name: string;
   userAddress: string;
   timeSlotSizeMinutes: number;
   allowedDates: string[];
@@ -23,7 +22,6 @@ interface StoreAvailabilityResponseBody {
   success: boolean;
   data?: {
     _id: string;
-    dao_name: string;
     userAddress: string;
     timeSlotSizeMinutes: number;
     allowedDates: string[];
@@ -46,7 +44,6 @@ export async function POST(
   res: NextResponse<StoreAvailabilityResponseBody>
 ) {
   const {
-    dao_name,
     userAddress,
     timeSlotSizeMinutes,
     allowedDates,
@@ -63,7 +60,6 @@ export async function POST(
 
     // Check if a document with the same dao_name, userAddress, and timeSlotSizeMinutes exists
     const existingDocument = await collection.findOne({
-      dao_name,
       userAddress,
       timeSlotSizeMinutes,
     });
@@ -93,7 +89,7 @@ export async function POST(
         _id: existingDocument._id,
       });
 
-      const delegateCollection = db.collection("delegates");
+      const delegateCollection = db.collection("users");
       const documentsForEmail = await delegateCollection
         .find({ address: userAddress })
         .toArray();
@@ -135,7 +131,6 @@ export async function POST(
     } else {
       // Insert new data
       const result = await collection.insertOne({
-        dao_name,
         userAddress,
         timeSlotSizeMinutes,
         allowedDates,
@@ -152,7 +147,7 @@ export async function POST(
           _id: result.insertedId,
         });
 
-        const delegateCollection = db.collection("delegates");
+        const delegateCollection = db.collection("users");
         const documentsForEmail = await delegateCollection
           .find({ address: userAddress })
           .toArray();

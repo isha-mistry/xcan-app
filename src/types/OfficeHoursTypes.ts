@@ -27,10 +27,7 @@ export interface Attendee {
 }
 export interface OfficeHoursDocument {
   host_address: string;
-  dao: {
-    name: string;
-    meetings: Meeting[];
-  }[];
+  meetings: Meeting[];
   created_at: Date;
   updated_at: Date;
 }
@@ -48,7 +45,7 @@ export interface TimeSlot {
   bookedTitle?: string;
   bookedDescription?: string;
   reference_id?: string;
-  thumbnail_image?:string;
+  thumbnail_image?: string;
 }
 
 export interface DateSchedule {
@@ -59,9 +56,9 @@ export interface DateSchedule {
   description: string;
 }
 
-export interface UserScheduledHoursProps {
-  daoName: string;
-}
+// export interface UserScheduledHoursProps {
+//   daoName: string;
+// }
 
 export interface CalendarProps {
   currentDate: Date;
@@ -73,8 +70,7 @@ export interface CalendarProps {
 }
 
 export interface TimeSlotSectionProps {
-  hostAddress: string | null;
-  daoName: string;
+  hostAddress: `0x${string}` | null | undefined;
   selectedDates: DateSchedule[];
   setSelectedDates: React.Dispatch<React.SetStateAction<DateSchedule[]>>;
   generateTimeOptions: (
@@ -98,6 +94,8 @@ export interface TimeSlotSectionProps {
   ) => void;
   deleteBookedSlot: (dateIndex: number, slotIndex: number) => void;
   removeExistingSchedule: (referenceId: string) => void;
+  isLoadingSchedules?: boolean;
+  existingSchedules?: ExistingSchedule;
 }
 
 export interface AlertProps {

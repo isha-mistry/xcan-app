@@ -161,6 +161,7 @@ function UpdateProfileModal({
                       }
                       placement="right"
                       showArrow
+                      className="bg-gray-700"
                     >
                       <label className="cursor-pointer">
                         <input

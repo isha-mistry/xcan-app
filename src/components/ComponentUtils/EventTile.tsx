@@ -24,10 +24,9 @@ import { SessionInterface } from "@/types/MeetingTypes";
 import { MEETING_BASE_URL } from "@/config/constants";
 import { fetchApi } from "@/utils/api";
 import { usePrivy } from "@privy-io/react-auth";
-import { useWalletAddress } from "@/app/hooks/useWalletAddress";
-import { DAOLogo } from "../DAOs/DAOlogos";
 import { daoConfigs } from "@/config/daos";
 import { Play, Trash2 } from "lucide-react";
+import { useConnection } from "@/app/hooks/useConnection";
 
 type Attendee = {
   attendee_address: string;
@@ -64,9 +63,9 @@ function EventTile({ tileIndex, data: initialData, isEvent }: TileProps) {
   const [ensHostAvatar, setEnsHostAvatar] = useState("");
   const [ensGuestAvatar, setEnsGuestAvatar] = useState("");
   const [loadingEnsData, setLoadingEnsData] = useState(true);
-  const { address, isConnected } = useAccount();
+  const { address } = useAccount();
+  const { isConnected } = useConnection();
   const { user, ready, getAccessToken, authenticated } = usePrivy();
-  const { walletAddress } = useWalletAddress();
   // const address = "0xB351a70dD6E5282A8c84edCbCd5A955469b9b032";
   const [tooltipContent, setTooltipContent] = useState("Copy");
   const [isAnimating, setIsAnimating] = useState(false);
@@ -111,7 +110,7 @@ function EventTile({ tileIndex, data: initialData, isEvent }: TileProps) {
           );
           setEnsGuestName(
             guestEnsData?.ensName ||
-              formatWalletAddress(data.attendees[0].attendee_address)
+            formatWalletAddress(data.attendees[0].attendee_address)
           );
           setEnsGuestAvatar(guestEnsData?.avatar || "");
         }
@@ -122,7 +121,7 @@ function EventTile({ tileIndex, data: initialData, isEvent }: TileProps) {
       }
     };
 
-    if (walletAddress != null) {
+    if (address && isConnected) {
       fetchEnsData();
     }
   }, [data.host_address, data.attendees[0]?.attendee_address]);
@@ -162,8 +161,8 @@ function EventTile({ tileIndex, data: initialData, isEvent }: TileProps) {
       const token = await getAccessToken();
       const myHeaders: HeadersInit = {
         "Content-Type": "application/json",
-        ...(walletAddress && {
-          "x-wallet-address": walletAddress,
+        ...(address && {
+          "x-wallet-address": address,
           Authorization: `Bearer ${token}`,
         }),
       };
@@ -287,13 +286,12 @@ function EventTile({ tileIndex, data: initialData, isEvent }: TileProps) {
               {data.title}
             </div>
             <div
-              className={`rounded-md px-2 py-0.5 w-fit flex items-center text-xs ${
-                data.booking_status === "Approved"
-                  ? "border border-lime-600 text-lime-600"
-                  : data.booking_status === "Rejected"
+              className={`rounded-md px-2 py-0.5 w-fit flex items-center text-xs ${data.booking_status === "Approved"
+                ? "border border-lime-600 text-lime-600"
+                : data.booking_status === "Rejected"
                   ? "border border-red-600 text-red-600"
                   : "border border-yellow-500 text-yellow-500"
-              }`}
+                }`}
             >
               {data.booking_status}
               {/* Approve */}
@@ -307,19 +305,6 @@ function EventTile({ tileIndex, data: initialData, isEvent }: TileProps) {
           </div>
 
           <div className="flex items-center text-sm gap-3 py-1">
-            <Image
-              src={daoConfigs[data.dao_name.toLowerCase()].logo}
-              alt="image"
-              width={24}
-              height={24}
-              className="size-4 sm:size-6 rounded-full"
-            />
-            {/* <DAOLogo
-              daoName={data.dao_name}
-              width={24}
-              height={24}
-              className="size-4 sm:size-6 rounded-full"
-            /> */}
             <div className="bg-[#F5F5F5] text-sm sm:text-base py-0.5 sm:py-1 px-3 rounded-md flex items-center w-fit">
               {formatSlotTimeToLocal(data.slot_time)}
             </div>
@@ -346,13 +331,13 @@ function EventTile({ tileIndex, data: initialData, isEvent }: TileProps) {
                     placement="right"
                     closeDelay={1}
                     showArrow
+                    className="bg-gray-700"
                   >
                     <span
-                      className={`cursor-pointer text-xs sm:text-sm ${
-                        copyStates.guest.isAnimating
-                          ? "text-blue-500"
-                          : "text-gray-400 hover:text-gray-600"
-                      }`}
+                      className={`cursor-pointer text-xs sm:text-sm ${copyStates.guest.isAnimating
+                        ? "text-blue-500"
+                        : "text-gray-400 hover:text-gray-600"
+                        }`}
                     >
                       <IoCopy
                         onClick={(event) => {
@@ -384,7 +369,7 @@ function EventTile({ tileIndex, data: initialData, isEvent }: TileProps) {
                 <span className="font-medium">Host: </span> &nbsp;
                 {isEvent === "Attending" ? (
                   <Link
-                    href={`/${data.dao_name}/${data.host_address}?active=info`}
+                    href={`/arbitrum/${data.host_address}?active=info`}
                   >
                     <span className="hover:text-blue-shade-100 transition-colors duration-200">
                       {loadingEnsData
@@ -405,13 +390,13 @@ function EventTile({ tileIndex, data: initialData, isEvent }: TileProps) {
                   placement="right"
                   closeDelay={1}
                   showArrow
+                  className="bg-gray-700"
                 >
                   <span
-                    className={`cursor-pointer text-xs sm:text-sm ${
-                      copyStates.host.isAnimating
-                        ? "text-blue-500"
-                        : "text-gray-400 hover:text-gray-600"
-                    }`}
+                    className={`cursor-pointer text-xs sm:text-sm ${copyStates.host.isAnimating
+                      ? "text-blue-500"
+                      : "text-gray-400 hover:text-gray-600"
+                      }`}
                   >
                     <IoCopy
                       onClick={(event) => {
@@ -449,16 +434,17 @@ function EventTile({ tileIndex, data: initialData, isEvent }: TileProps) {
                     placement="top"
                     closeDelay={1}
                     showArrow
+                    className="bg-gray-700"
                   >
-                    <div  className={`flex items-center justify-center gap-2 w-full px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-indigo-500 to-blue-500 rounded-full hover:from-indigo-600 hover:to-blue-600 transition-all duration-300 transform hover:scale-[1.02] cursor-pointer`} onClick={() => {
-                          setStartLoading(true); 
-                          const meetingUrl = `${MEETING_BASE_URL}/meeting/session/${data.meetingId}/lobby`;
-                          window.open(meetingUrl, "_blank"); 
-                          setStartLoading(false); 
-                        }}>
-                      <Play className="w-4 h-4"/>
-                        <span >Start</span>
-                       
+                    <div className={`flex items-center justify-center gap-2 w-full px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-indigo-500 to-blue-500 rounded-full hover:from-indigo-600 hover:to-blue-600 transition-all duration-300 transform hover:scale-[1.02] cursor-pointer`} onClick={() => {
+                      setStartLoading(true);
+                      const meetingUrl = `${MEETING_BASE_URL}/meeting/session/${data.meetingId}/lobby`;
+                      window.open(meetingUrl, "_blank");
+                      setStartLoading(false);
+                    }}>
+                      <Play className="w-4 h-4" />
+                      <span >Start</span>
+
                     </div>
                   </Tooltip>
                 )}
@@ -467,10 +453,11 @@ function EventTile({ tileIndex, data: initialData, isEvent }: TileProps) {
                   placement="top"
                   closeDelay={1}
                   showArrow
+                  className="bg-gray-700"
                 >
-                 <div className={`flex items-center justify-center gap-2 w-full px-4 py-2 text-sm font-medium text-red-600 bg-red-50 rounded-full hover:bg-red-100  transition-all  transform hover:scale-[1.02] cursor-pointer`} onClick={onOpen}>
-                 <span>Reject</span>
-                      <Trash2 className="w-4 h-4" />
+                  <div className={`flex items-center justify-center gap-2 w-full px-4 py-2 text-sm font-medium text-red-600 bg-red-50 rounded-full hover:bg-red-100  transition-all  transform hover:scale-[1.02] cursor-pointer`} onClick={onOpen}>
+                    <span>Reject</span>
+                    <Trash2 className="w-4 h-4" />
                   </div>
                 </Tooltip>
                 {isOpen && (
@@ -555,7 +542,7 @@ function EventTile({ tileIndex, data: initialData, isEvent }: TileProps) {
                 ) : (
                   <div
                     className={`flex items-center justify-center gap-2 w-full px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-indigo-500 to-blue-500 rounded-full hover:from-indigo-600 hover:to-blue-600 transition-all duration-300 transform hover:scale-[1.02] cursor-pointer`}
-                    >
+                  >
                     <BsPersonVideo3 className="w-4 h-4" />
                     <span >Join Session</span>
                     {/* <span className={styles.iconWrapper}> */}

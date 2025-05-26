@@ -16,20 +16,18 @@ import {
 } from "@/utils/NotificationUtils";
 import { SOCKET_BASE_URL } from "@/config/constants";
 
-function getRandomElementFromArray(arr: any[]) {
-  const randomIndex = Math.floor(Math.random() * arr.length);
-  return arr[randomIndex];
+function getRandomElementFromArray() {
+  const randomIndex = Math.floor(Math.random() * imageCIDs.length);
+  return imageCIDs[randomIndex];
 }
-const randomImage = getRandomElementFromArray(imageCIDs);
 
 async function sendNotifications(
   db: any,
   hostAddress: string,
-  daoName: string,
   meetings: Meeting[]
 ) {
   try {
-    const usersCollection = db.collection("delegates");
+    const usersCollection = db.collection("users");
     const notificationCollection = db.collection("notifications");
 
     const normalizedHostAddress = hostAddress.toLowerCase();
@@ -64,7 +62,7 @@ async function sendNotifications(
           const hostENSNameOrAddress = await getDisplayNameOrAddr(hostAddress);
           return {
             receiver_address: user.address,
-            content: `New office hours is scheduled on ${daoName} by ${hostENSNameOrAddress} on ${formattedTime} UTC.`,
+            content: `New office hours is scheduled by ${hostENSNameOrAddress} on ${formattedTime} UTC.`,
             createdAt: Date.now(),
             read_status: false,
             notification_name: "officeHoursScheduled",
@@ -73,7 +71,6 @@ async function sendNotifications(
             additionalData: {
               ...meeting,
               host_address: hostAddress,
-              dao_name: daoName,
             },
           };
         })
@@ -83,8 +80,6 @@ async function sendNotifications(
     const resolvedNotifications = await Promise.all(notifications).then(
       (arrays) => arrays.flat()
     );
-
-    // console.log("Resolved notifications:", resolvedNotifications);
 
     if (resolvedNotifications.length > 0) {
       try {
@@ -162,27 +157,26 @@ const getRoomId = async () => {
   }
 };
 
-const addMeetingsToExistingDAO = async (
+const addMeetingsToExistingHost = async (
   collection: Collection<OfficeHoursDocument>,
   hostAddress: string,
-  daoName: string,
   meetings: Meeting[]
 ) => {
   const today = new Date();
   today.setHours(0, 0, 0, 0); // Set to start of day
 
   // Process meetings sequentially using for...of to maintain order
-  const meetingDocument = [];
+  const meetingDocuments: Meeting[] = [];
   for (const meeting of meetings) {
     const meetingDate = new Date(meeting.startTime);
     meetingDate.setHours(0, 0, 0, 0);
 
-    const baseDocument = {
+    const baseDocument: Meeting = {
       reference_id: uuidv4(),
       ...meeting,
-      meeting_status: "Upcoming",
-      status: "active",
-      thumbnail_image: randomImage,
+      meeting_status: "Upcoming" as const,
+      status: "active" as const,
+      thumbnail_image: getRandomElementFromArray(),
       created_at: new Date(),
     };
 
@@ -190,67 +184,16 @@ const addMeetingsToExistingDAO = async (
       try {
         // Direct API call since we're already in the API route
         const result = await getRoomId();
-        meetingDocument.push({
+        meetingDocuments.push({
           ...baseDocument,
           meetingId: result.data.roomId,
         });
       } catch (error) {
         console.error("Error generating meeting ID:", error);
-        meetingDocument.push(baseDocument);
+        meetingDocuments.push(baseDocument);
       }
     } else {
-      meetingDocument.push(baseDocument);
-    }
-  }
-
-  return await collection.updateOne(
-    { host_address: hostAddress, "dao.name": daoName },
-    {
-      $push: {
-        "dao.$.meetings": {
-          $each: meetingDocument,
-        },
-      },
-      $set: { updated_at: new Date() },
-    }
-  );
-};
-const addNewDAOWithMeetings = async (
-  collection: Collection<OfficeHoursDocument>,
-  hostAddress: string,
-  daoName: string,
-  meetings: Meeting[]
-) => {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0); // Set to start of day
-
-  // Process meetings sequentially
-  const meetingDocument = [];
-  for (const meeting of meetings) {
-    const meetingDate = new Date(meeting.startTime);
-    meetingDate.setHours(0, 0, 0, 0);
-
-    const baseDocument = {
-      reference_id: uuidv4(),
-      ...meeting,
-      status: "active" as const,
-      meeting_status: "Upcoming",
-      thumbnail_image: randomImage,
-      created_at: new Date(),
-    };
-    if (meetingDate.getTime() === today.getTime()) {
-      try {
-        const result = await getRoomId();
-        meetingDocument.push({
-          ...baseDocument,
-          meetingId: result.data.roomId,
-        });
-      } catch (error) {
-        console.error("Error generating meeting ID:", error);
-        meetingDocument.push(baseDocument);
-      }
-    } else {
-      meetingDocument.push(baseDocument);
+      meetingDocuments.push(baseDocument);
     }
   }
 
@@ -258,63 +201,57 @@ const addNewDAOWithMeetings = async (
     { host_address: hostAddress },
     {
       $push: {
-        dao: {
-          name: daoName,
-          meetings: meetingDocument,
+        meetings: {
+          $each: meetingDocuments,
         },
       },
       $set: { updated_at: new Date() },
     }
   );
 };
+
 const createNewHostWithMeetings = async (
   collection: Collection<OfficeHoursDocument>,
   hostAddress: string,
-  daoName: string,
   meetings: Meeting[]
 ) => {
   const today = new Date();
   today.setHours(0, 0, 0, 0); // Set to start of day
 
   // Process meetings sequentially
-  const meetingDocument = [];
+  const meetingDocuments: Meeting[] = [];
   for (const meeting of meetings) {
     const meetingDate = new Date(meeting.startTime);
     meetingDate.setHours(0, 0, 0, 0);
 
-    const baseDocument = {
+    const baseDocument: Meeting = {
       reference_id: uuidv4(),
       ...meeting,
-      meeting_status: "Upcoming",
+      meeting_status: "Upcoming" as const,
       status: "active" as const,
-      thumbnail_image: randomImage,
+      thumbnail_image: getRandomElementFromArray(),
       created_at: new Date(),
     };
 
     if (meetingDate.getTime() === today.getTime()) {
       try {
         const result = await getRoomId();
-        meetingDocument.push({
+        meetingDocuments.push({
           ...baseDocument,
           meetingId: result.data.roomId,
         });
       } catch (error) {
         console.error("Error generating meeting ID:", error);
-        meetingDocument.push(baseDocument);
+        meetingDocuments.push(baseDocument);
       }
     } else {
-      meetingDocument.push(baseDocument);
+      meetingDocuments.push(baseDocument);
     }
   }
 
   return await collection.insertOne({
     host_address: hostAddress,
-    dao: [
-      {
-        name: daoName,
-        meetings: meetingDocument,
-      },
-    ],
+    meetings: meetingDocuments,
     created_at: new Date(),
     updated_at: new Date(),
   });
@@ -335,42 +272,19 @@ export async function POST(req: NextRequest) {
       await cacheWrapper.delete(cacheKey);
     }
 
-    const { host_address: hostAddress, dao_name: daoName, meetings } = data;
+    const { host_address: hostAddress, meetings } = data;
 
     const existingHost = await collection.findOne({
       host_address: hostAddress,
     });
 
     if (existingHost) {
-      const existingDAO = existingHost.dao?.find((dao) => dao.name === daoName);
-      if (cacheWrapper.isAvailable) {
-        const cacheKey = `office-hours-all`;
-        await cacheWrapper.delete(cacheKey);
-      }
-      if (existingDAO) {
-        await addMeetingsToExistingDAO(
-          collection,
-          hostAddress,
-          daoName,
-          meetings
-        );
-      } else {
-        await addNewDAOWithMeetings(collection, hostAddress, daoName, meetings);
-      }
+      await addMeetingsToExistingHost(collection, hostAddress, meetings);
     } else {
-      if (cacheWrapper.isAvailable) {
-        const cacheKey = `office-hours-all`;
-        await cacheWrapper.delete(cacheKey);
-      }
-      await createNewHostWithMeetings(
-        collection,
-        hostAddress,
-        daoName,
-        meetings
-      );
+      await createNewHostWithMeetings(collection, hostAddress, meetings);
     }
 
-    await sendNotifications(db, hostAddress, daoName, meetings);
+    await sendNotifications(db, hostAddress, meetings);
 
     const updatedDocument = await collection.findOne({
       host_address: hostAddress,

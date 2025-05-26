@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useRouter } from "next-nprogress-bar";
 import { usePrivy } from "@privy-io/react-auth";
-import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 import { fetchApi } from "@/utils/api";
 import OfficeHoursAlertMessage from "../AlertMessage/OfficeHoursAlertMessage";
 import { OfficeHoursProps } from "@/types/OfficeHoursTypes";
@@ -11,6 +10,8 @@ import OfficeHourTile from "../ComponentUtils/OfficeHourTile";
 import { CiSearch } from "react-icons/ci";
 import { Calendar, CheckCircle, Clock, Users } from "lucide-react";
 import NoResultsFound from "@/utils/Noresult";
+import { useAccount } from "wagmi";
+import { useConnection } from "@/app/hooks/useConnection";
 
 interface Type {
   daoDelegates: string;
@@ -35,12 +36,13 @@ function DelegateOfficeHrs({ props }: { props: Type }) {
   const path = usePathname();
   const searchParams = useSearchParams();
   const { user, ready, getAccessToken, authenticated } = usePrivy();
-  const { walletAddress } = useWalletAddress();
   const [dataLoading, setDataLoading] = useState(true);
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
   const [showLeftShadow, setShowLeftShadow] = useState(false);
   const [showRightShadow, setShowRightShadow] = useState(false);
-  const currentTab = searchParams.get("hours") || ""; 
+  const currentTab = searchParams.get("hours") || "";
+  const { address } = useAccount();
+  const { isConnected } = useConnection()
 
   // Original data from API
   const [originalData, setOriginalData] = useState({
@@ -129,7 +131,7 @@ function DelegateOfficeHrs({ props }: { props: Type }) {
     const fetchUserOfficeHours = async () => {
       try {
         const response = await fetchApi(
-          `/get-office-hours?host_address=${props.individualDelegate}&dao_name=${props.daoDelegates}&type=${currentTab}`,
+          `/get-office-hours?host_address=${props.individualDelegate}&type=${currentTab}`,
           {
             headers: {
               Authorization: `Bearer ${await getAccessToken()}`,
@@ -155,13 +157,13 @@ function DelegateOfficeHrs({ props }: { props: Type }) {
       }
     };
 
-    if (walletAddress != null) {
+    if (address && isConnected) {
       fetchUserOfficeHours();
     }
   }, [
     props.individualDelegate,
     props.daoDelegates,
-    walletAddress,
+    address,
     getAccessToken,
   ]);
 
@@ -174,11 +176,10 @@ function DelegateOfficeHrs({ props }: { props: Type }) {
           onScroll={handleScroll}
         >
           <button
-            className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md ${
-              searchParams.get("hours") === "ongoing"
-                ? "text-[#0500FF] font-semibold bg-[#f5f5f5]"
-                : "text-[#3E3D3D] bg-white"
-            }`}
+            className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md ${searchParams.get("hours") === "ongoing"
+              ? "text-[#0500FF] font-semibold bg-[#f5f5f5]"
+              : "text-[#3E3D3D] bg-white"
+              }`}
             onClick={() =>
               router.push(path + "?active=officeHours&hours=ongoing")
             }
@@ -187,11 +188,10 @@ function DelegateOfficeHrs({ props }: { props: Type }) {
             Live
           </button>
           <button
-            className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md ${
-              searchParams.get("hours") === "upcoming"
-                ? "text-[#0500FF] font-semibold bg-[#f5f5f5]"
-                : "text-[#3E3D3D] bg-white"
-            }`}
+            className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md ${searchParams.get("hours") === "upcoming"
+              ? "text-[#0500FF] font-semibold bg-[#f5f5f5]"
+              : "text-[#3E3D3D] bg-white"
+              }`}
             onClick={() =>
               router.push(path + "?active=officeHours&hours=upcoming")
             }
@@ -200,26 +200,24 @@ function DelegateOfficeHrs({ props }: { props: Type }) {
             Scheduled
           </button>
           <button
-            className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md ${
-              searchParams.get("hours") === "hosted"
-                ? "text-[#0500FF] font-semibold bg-[#f5f5f5]"
-                : "text-[#3E3D3D] bg-white"
-            }`}
+            className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md ${searchParams.get("hours") === "hosted"
+              ? "text-[#0500FF] font-semibold bg-[#f5f5f5]"
+              : "text-[#3E3D3D] bg-white"
+              }`}
             onClick={() =>
-              router.push(path + "?active=officeHours&hours=hosted&dao="+props.daoDelegates)
+              router.push(path + "?active=officeHours&hours=hosted&dao=" + props.daoDelegates)
             }
           >
             <Users size={16} className="drop-shadow-lg" />
             Hosted
           </button>
           <button
-            className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md ${
-              searchParams.get("hours") === "attended"
-                ? "text-[#0500FF] font-semibold bg-[#f5f5f5]"
-                : "text-[#3E3D3D] bg-white"
-            }`}
+            className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md ${searchParams.get("hours") === "attended"
+              ? "text-[#0500FF] font-semibold bg-[#f5f5f5]"
+              : "text-[#3E3D3D] bg-white"
+              }`}
             onClick={() =>
-              router.push(path + "?active=officeHours&hours=attended&dao="+props.daoDelegates)
+              router.push(path + "?active=officeHours&hours=attended&dao=" + props.daoDelegates)
             }
           >
             <CheckCircle size={16} className="drop-shadow-lg" />
@@ -247,7 +245,7 @@ function DelegateOfficeHrs({ props }: { props: Type }) {
               <div className="pt-4 font-semibold text-lg">
                 Oops, no such result available!
               </div> */}
-              <NoResultsFound/>
+              <NoResultsFound />
             </div>
           ) : (
             <OfficeHourTile

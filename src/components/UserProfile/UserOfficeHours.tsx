@@ -6,29 +6,18 @@ import NoResultsFound from "@/utils/Noresult";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useRouter } from "next-nprogress-bar";
 import { usePrivy } from "@privy-io/react-auth";
-import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 import { fetchApi } from "@/utils/api";
 import { OfficeHoursProps } from "@/types/OfficeHoursTypes";
 import { CiSearch } from "react-icons/ci";
-import {Calendar,CalendarCheck,CheckCircle,Clock,Users,} from "lucide-react";
+import { Calendar, CalendarCheck, CheckCircle, Clock, Users, } from "lucide-react";
 import useSWR from "swr";
+import { useAccount } from "wagmi";
+import { useConnection } from "@/app/hooks/useConnection";
 
-
-interface UserOfficeHoursProps {
-  isDelegate: boolean | undefined;
-  selfDelegate: boolean;
-  daoName: string;
-}
-
-function UserOfficeHours({
-  isDelegate,
-  selfDelegate,
-  daoName,
-}: UserOfficeHoursProps) {
-  
-
+function UserOfficeHours() {
   const { getAccessToken } = usePrivy();
-  const { walletAddress } = useWalletAddress();
+  const { address } = useAccount()
+  const { isConnected } = useConnection()
   const [searchQuery, setSearchQuery] = useState("");
   // const [dataLoading, setDataLoading] = useState(true);
   const [showLeftShadow, setShowLeftShadow] = useState(false);
@@ -38,7 +27,7 @@ function UserOfficeHours({
   const path = usePathname();
   const searchParams = useSearchParams();
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
-  const currentTab = searchParams.get("hours") || ""; 
+  const currentTab = searchParams.get("hours") || "";
 
   // SWR fetcher function
   const fetcher = async (url: string) => {
@@ -53,8 +42,8 @@ function UserOfficeHours({
 
   // SWR hook for data fetching
   const { data, error, isLoading, mutate } = useSWR(
-    walletAddress && daoName
-      ? `/get-office-hours?host_address=${walletAddress}&dao_name=${daoName}&type=${currentTab}`
+    address && isConnected
+      ? `/get-office-hours?host_address=${address}&type=${currentTab}`
       : null,
     fetcher,
     {
@@ -142,37 +131,6 @@ function UserOfficeHours({
     }
   };
 
-  // const fetchUserOfficeHours = useCallback(async () => {
-  //   try {
-  //     const token = await getAccessToken();
-  //     const response = await fetchApi(
-  //       `/get-office-hours?host_address=${walletAddress}&dao_name=${daoName}&type=${currentTab}`,
-  //       {
-  //         headers: {
-  //           Authorization: `Bearer ${token}`,
-  //         },
-  //       }
-  //     );
-
-  //     const result = await response.json();
-
-  //     const data = {
-  //       ongoing: result.data.ongoing,
-  //       upcoming: result.data.upcoming,
-  //       hosted: result.data.hosted,
-  //       attended: result.data.attended,
-  //     };
-
-  //     setOriginalData(data);
-  //     setFilteredData(data); // Initially, filtered data is same as original
-  //   } catch (error) {
-  //     console.error("Error fetching office hours:", error);
-  //   } finally {
-  //     setDataLoading(false);
-  //   }
-  // }, [walletAddress, daoName, getAccessToken]);
-
-
   const getCurrentData = () => {
     const currentTab = searchParams.get("hours") as keyof typeof filteredData;
     return filteredData[currentTab] || [];
@@ -191,19 +149,6 @@ function UserOfficeHours({
     return () => window.removeEventListener("resize", checkForOverflow);
   }, []);
 
-  // useEffect(() => {
-  //   fetchUserOfficeHours();
-  // }, [fetchUserOfficeHours]);
-
-  // useEffect(() => {
-  //   setDataLoading(true);
-  // }, [walletAddress]);
-
-  useEffect(() => {
-    if (!selfDelegate && searchParams.get("hours") === "schedule") {
-      router.replace(path + "?active=officeHours&hours=attended&dao="+daoName);
-    }
-  }, [isDelegate, selfDelegate, searchParams.get("hours")]);
 
   return (
     <div>
@@ -213,76 +158,64 @@ function UserOfficeHours({
           ref={scrollContainerRef}
           onScroll={handleScroll}
         >
-          {selfDelegate === true && (
-            <button
-              className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md ${
-                searchParams.get("hours") === "schedule"
-                  ? "text-[#0500FF] font-semibold bg-[#f5f5f5]"
-                  : "text-[#3E3D3D] bg-white"
-              }`}
-              onClick={() =>
-                router.push(path + "?active=officeHours&hours=schedule")
-              }
-            >
-              <CalendarCheck size={16} className="drop-shadow-lg" />
-              Calender
-            </button>
-          )}
-
-          {selfDelegate === true && (
-            <button
-              className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md ${
-                searchParams.get("hours") === "ongoing"
-                  ? "text-[#0500FF] font-semibold bg-[#f5f5f5]"
-                  : "text-[#3E3D3D] bg-white"
-              }`}
-              onClick={() =>
-                router.push(path + "?active=officeHours&hours=ongoing")
-              }
-            >
-              <Clock size={16} className="drop-shadow-lg" />
-              Live
-            </button>
-          )}
-
-          {selfDelegate === true && (
-            <button
-              className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md ${
-                searchParams.get("hours") === "upcoming"
-                  ? "text-[#0500FF] font-semibold bg-[#f5f5f5]"
-                  : "text-[#3E3D3D] bg-white"
-              }`}
-              onClick={() =>
-                router.push(path + "?active=officeHours&hours=upcoming")
-              }
-            >
-              <Calendar size={16} className="drop-shadow-lg" />
-              Scheduled
-            </button>
-          )}
-          {selfDelegate === true && (
-            <button
-              className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md ${
-                searchParams.get("hours") === "hosted"
-                  ? "text-[#0500FF] font-semibold bg-[#f5f5f5]"
-                  : "text-[#3E3D3D] bg-white"
-              }`}
-              onClick={() =>
-                router.push(path + "?active=officeHours&hours=hosted&dao="+daoName)
-              }
-            >
-              <Users size={16} className="drop-shadow-lg" />
-              Hosted
-            </button>
-          )}
           <button
-            className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md ${
-              searchParams.get("hours") === "attended"
-                ? "text-[#0500FF] font-semibold bg-[#f5f5f5]"
-                : "text-[#3E3D3D] bg-white"
-            }`}
+            className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md ${searchParams.get("hours") === "schedule"
+              ? "text-[#0500FF] font-semibold bg-[#f5f5f5]"
+              : "text-[#3E3D3D] bg-white"
+              }`}
             onClick={() =>
-              router.push(path + "?active=officeHours&hours=attended&dao="+daoName)
+              router.push(path + "?active=officeHours&hours=schedule")
+            }
+          >
+            <CalendarCheck size={16} className="drop-shadow-lg" />
+            Calender
+          </button>
+
+          <button
+            className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md ${searchParams.get("hours") === "ongoing"
+              ? "text-[#0500FF] font-semibold bg-[#f5f5f5]"
+              : "text-[#3E3D3D] bg-white"
+              }`}
+            onClick={() =>
+              router.push(path + "?active=officeHours&hours=ongoing")
+            }
+          >
+            <Clock size={16} className="drop-shadow-lg" />
+            Live
+          </button>
+
+          <button
+            className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md ${searchParams.get("hours") === "upcoming"
+              ? "text-[#0500FF] font-semibold bg-[#f5f5f5]"
+              : "text-[#3E3D3D] bg-white"
+              }`}
+            onClick={() =>
+              router.push(path + "?active=officeHours&hours=upcoming")
+            }
+          >
+            <Calendar size={16} className="drop-shadow-lg" />
+            Scheduled
+          </button>
+
+          <button
+            className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md ${searchParams.get("hours") === "hosted"
+              ? "text-[#0500FF] font-semibold bg-[#f5f5f5]"
+              : "text-[#3E3D3D] bg-white"
+              }`}
+            onClick={() =>
+              router.push(path + "?active=officeHours&hours=hosted")
+            }
+          >
+            <Users size={16} className="drop-shadow-lg" />
+            Hosted
+          </button>
+          <button
+            className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md ${searchParams.get("hours") === "attended"
+              ? "text-[#0500FF] font-semibold bg-[#f5f5f5]"
+              : "text-[#3E3D3D] bg-white"
+              }`}
+            onClick={() =>
+              router.push(path + "?active=officeHours&hours=attended")
             }
           >
             <CheckCircle size={16} className="drop-shadow-lg" />
@@ -308,23 +241,21 @@ function UserOfficeHours({
             searchParams.get("hours") === "schedule" ? `py-10` : `pb-10`
           }
         >
-          {selfDelegate === true &&
-            searchParams.get("hours") === "schedule" && (
-              <UserScheduledHours
-                daoName={daoName}
-                // onScheduleSave={fetchUserOfficeHours}
-                onScheduleSave={() => mutate()}
-              />
-            )}
+          {searchParams.get("hours") === "schedule" && (
+            <UserScheduledHours
+              // onScheduleSave={fetchUserOfficeHours}
+              onScheduleSave={() => mutate()}
+            />
+          )}
 
           {searchParams.get("hours") !== "schedule" && (
             <>
-            {/* {dataLoading ? ( */}
+              {/* {dataLoading ? ( */}
               {isLoading ? (
                 <RecordedSessionsSkeletonLoader />
               ) : getCurrentData().length === 0 ? (
                 <div className="flex flex-col justify-center items-center">
-                  <NoResultsFound/>
+                  <NoResultsFound />
                 </div>
               ) : (
                 <OfficeHourTile

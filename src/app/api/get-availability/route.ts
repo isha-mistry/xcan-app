@@ -49,10 +49,9 @@ export async function GET(req: NextRequest, res: NextResponse) {
 
 export async function POST(req: NextRequest, res: NextResponse<Type[]>) {
   try {
-    const { dao_name, userAddress } = await req.json();
+    const { userAddress } = await req.json();
 
     // console.log("Initial Data start=========");
-    // console.log("dao_name", dao_name);
     // console.log("userAddress", userAddress);
     // console.log("Initial Data end=========");
 
@@ -74,7 +73,6 @@ export async function POST(req: NextRequest, res: NextResponse<Type[]>) {
     }
     // console.log("newDate", newDate);
     const query: any = {
-      dao_name: dao_name,
       userAddress: userAddress,
       "dateAndRanges.date": { $gte: newDate },
     };
@@ -134,7 +132,6 @@ export async function POST(req: NextRequest, res: NextResponse<Type[]>) {
 export async function PUT(req: NextRequest, res: NextResponse<Type[]>) {
   try {
     const {
-      dao_name,
       userAddress,
       timeSlotSizeMinutes,
       date,
@@ -143,7 +140,6 @@ export async function PUT(req: NextRequest, res: NextResponse<Type[]>) {
     } = await req.json();
 
     // console.log("Initial Data start=========");
-    // console.log("dao_name", dao_name);
     // console.log("userAddress", userAddress);
     // console.log("timeSlotSizeMinutes", timeSlotSizeMinutes);
     // console.log("date", date);
@@ -155,7 +151,7 @@ export async function PUT(req: NextRequest, res: NextResponse<Type[]>) {
     const db = client.db();
     const collection = db.collection("scheduling");
 
-    const query = { dao_name, userAddress, timeSlotSizeMinutes };
+    const query = { userAddress, timeSlotSizeMinutes };
     const document = await collection.findOne(query);
 
     // console.log("Line 161...",document);

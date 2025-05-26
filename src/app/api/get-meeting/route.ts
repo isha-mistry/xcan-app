@@ -9,7 +9,7 @@ export async function GET(req: NextRequest, res: NextResponse) {
 
     // Access the collection
     const db = client.db();
-    const collection = db.collection("meetings");
+    const collection = db.collection("sessions");
 
     // Fetch all documents from the collection
     const documents = await collection.find().toArray();

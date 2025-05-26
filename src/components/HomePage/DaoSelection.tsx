@@ -54,12 +54,6 @@ function DaoSelection({
   }, [authenticated, selectedDao]);
 
 
-  const pushToGTM = (eventData: GTMEvent) => {
-    if (typeof window !== 'undefined' && window.dataLayer) {
-      window.dataLayer.push(eventData);
-    }
-  };
-
   const handleNavigation = (url: string) => {
     setIsNavigating(true);
     router.push(url);
@@ -68,13 +62,7 @@ function DaoSelection({
 
   // Generic handler for all DAOs
   const handleDaoClick = (daoName: string) => {
-    pushToGTM({
-      event: 'dao_selection',
-      category: 'DAO Selection',
-      action: `${daoName} DAO Selected`,
-      label: daoName,
-      value: joinAsDelegate ? 1 : feature ? 2 : 3
-    });
+    
     handleDaoSelection(daoName);
   };
 
@@ -148,13 +136,6 @@ function DaoSelection({
       }
 
       if (isDelegate) {
-        pushToGTM({
-          event: 'delegate_verification',
-          category: 'Verification',
-          action: 'Delegate Success',
-          label: network,
-          value: 1
-        });
         if (feature) {
           setShowPopup(true);
         } else if (joinAsDelegate || featureSchedule) {
@@ -163,23 +144,9 @@ function DaoSelection({
           );
         }
       } else {
-        pushToGTM({
-          event: 'delegate_verification',
-          category: 'Verification',
-          action: 'Delegate Failed',
-          label: network,
-          value: 0
-        });
         setShowError(true);
       }
     } catch (error) {
-      pushToGTM({
-        event: 'delegate_verification',
-        category: 'Verification',
-        action: 'Delegate Failed',
-        label: error instanceof Error ? error.message : 'Unknown error',
-        value: 0
-      });
       console.error("Error in delegate status check:", error);
       setShowError(true);
     } finally {

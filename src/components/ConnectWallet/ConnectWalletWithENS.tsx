@@ -1,269 +1,217 @@
 "use client";
-import React, { useEffect, useState } from "react";
-import { fetchEnsNameAndAvatar, fetchEnsName } from "@/utils/ENSUtils";
+
+import { useState, useRef, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { BiSolidWallet } from "react-icons/bi";
-import user2 from "@/assets/images/user/user2.svg";
-import { getAccessToken, usePrivy, useWallets } from "@privy-io/react-auth";
-import { useAccount, useChainId, useSwitchChain } from "wagmi";
-import ChainSwitcherHeader from "./ChainSwitcherHeader";
-import MobileChainSwitcher from "./MobileChainSwitcher";
-import { fetchApi } from "@/utils/api";
-import toast, { Toaster } from "react-hot-toast";
-import { disconnect } from "process";
-import { Wallet } from "lucide-react";
+import {
+  FiArrowUpRight,
+  FiCopy,
+  FiExternalLink,
+  FiLogOut,
+} from "react-icons/fi";
+import { usePrivy, useWallets } from "@privy-io/react-auth";
+import { useAccount, useEnsName, useDisconnect } from "wagmi";
+import { CheckIcon } from "lucide-react";
 
-interface GTMEvent {
-  event: string;
-  category: string;
-  action: string;
-  label?: string;
-  value?: number;
-}
-
-function ConnectWalletWithENS() {
-  const [userProfileImage, setUserProfileImage] = useState<string | null>(null);
-  const [ensAvatar, setEnsAvatar] = useState<string | null>(null);
-  const { address, isConnected, isConnecting, isDisconnected, chain } =
-    useAccount();
-  const chainId = useChainId();
-  const { chains, error: switchNetworkError, switchChain } = useSwitchChain();
-  const [walletAddress2, setWalletAddress] = useState<string | null>(null);
-  const { ready, authenticated, login, logout, user, connectWallet } =
+export default function ConnectWalletWithENS() {
+  const { login, authenticated, user, logout, ready, connectWallet } =
     usePrivy();
   const { wallets } = useWallets();
-  const activeWallet = wallets[0]; // Primary wallet
+  const { address, isConnected } = useAccount();
+  const { disconnect: wagmiDisconnect } = useDisconnect();
+  const { data: ensName } = useEnsName({ address });
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [displayAddress, setDisplayAddress] = useState<
+    string | null | `0x${string}` | undefined
+  >(null);
+  const [copiedAddress, setCopiedAddress] = useState(false);
+  const dropdownRef = useRef<any>(null);
 
-  const pushToGTM = (eventData: GTMEvent) => {
-    if (typeof window !== 'undefined' && window.dataLayer) {
-      window.dataLayer.push(eventData);
-    }
-  };
-
-  useEffect(() => {
-
-    if (isDisconnected && !authenticated) {
-      window.walletAuthTracked = false;
-    }
-    
-    if (isConnected && address) {
-      setWalletAddress(address); // External wallet address
-      if (authenticated && !window.walletAuthTracked) {
-        window.walletAuthTracked = true; // Set flag to prevent duplicate tracking
-        pushToGTM({
-          event: 'wallet_auth_success',
-          category: 'Wallet',
-          action: 'Authentication Success',
-          label: address
-        });
-      }
-    } else if (authenticated && user?.wallet?.address) {      
-      // If authenticated with Privy and no external wallet, use embedded wallet address
-      setWalletAddress(user.wallet.address); // Embedded wallet address
-      if(!window.walletAuthTracked){
-        window.walletAuthTracked = true; // Set flag to prevent duplicate tracking
-        pushToGTM({
-          event: 'wallet_auth_success',
-          category: 'Wallet',
-          action: 'Authentication Success',
-          label: user.wallet.address
-        });
-      }
-    }
-  }, [authenticated, user, isConnected, address]);
+  // console.log("------------");
+  // console.log("isConnected", isConnected);
+  // console.log("authenticated", authenticated);
+  // console.log("address", address);
+  // console.log("wallets", wallets);
+  // console.log("ready", ready);
+  // console.log("user", user);
 
   useEffect(() => {
-    const fetchUserProfile = async () => {
-      if (walletAddress2 && authenticated) {
-        try {
-          // Fetch user profile from your API
-          const token = await getAccessToken();
-          const myHeaders: HeadersInit = {
-            "Content-Type": "application/json",
-            ...(walletAddress2 && {
-              "x-wallet-address": walletAddress2,
-              Authorization: `Bearer ${token}`,
-            }),
-          };
+    // Check if there's a social login
+    const hasSocialLogin = user?.google || user?.farcaster;
 
-          const raw = JSON.stringify({ address: walletAddress2 });
+    // If there's a social login, don't modify wallet connection
+    if (hasSocialLogin) {
+      setDisplayAddress(address);
+      return;
+    }
 
-          const requestOptions: any = {
-            method: "POST",
-            headers: myHeaders,
-            body: raw,
-            redirect: "follow",
-          };
+    // Find the first wallet with a matching address from a real wallet provider
+    const realWallet = wallets.find(
+      (wallet) =>
+        wallet.address === address && wallet.walletClientType !== "privy"
+    );
 
-          // Add this debug log
+    if (realWallet) {
+      setDisplayAddress(realWallet.address);
+    } else {
+      setDisplayAddress(null);
+      if (
+        !hasSocialLogin &&
+        wallets.every((wallet) => wallet.walletClientType === "privy")
+      ) {
+        wagmiDisconnect();
+        console.log("LOGOUT::::::::::");
+      }
+    }
+  }, [wallets, address, user]);
 
-          const res = await fetchApi(
-            `/profile/${walletAddress2.toLowerCase()}`,
-            requestOptions
-          );
-          const dbResponse = await res.json();
-
-          if (dbResponse.data.length > 0) {
-            const profileImage = dbResponse.data[0]?.image;
-            setUserProfileImage(
-              profileImage
-                ? `https://gateway.lighthouse.storage/ipfs/${profileImage}`
-                : null
-            );
-          }
-
-          // Fetch ENS data
-          const ensData = await fetchEnsNameAndAvatar(walletAddress2);
-          setEnsAvatar(ensData?.avatar || null);
-
-          // Get ENS name
-          const displayName = await fetchEnsName(walletAddress2);
-        } catch (error) {
-          console.error("Error fetching user profile:", error);
-        }
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef?.current?.contains(event.target as Node)
+      ) {
+        setIsDropdownOpen(false);
       }
     };
 
-    fetchUserProfile();
-  }, [walletAddress2, authenticated]);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
-  const getDisplayImage = () => {
-    if (ensAvatar) {
-      return ensAvatar;
-    } else if (userProfileImage) {
-      return userProfileImage;
-    } else {
-      return user2;
+  const handleCopyAddress = () => {
+    if (displayAddress) {
+      navigator.clipboard.writeText(displayAddress);
+      setCopiedAddress(true);
+      setTimeout(() => setCopiedAddress(false), 2000);
     }
   };
 
-  // const handleChainSwitch = async () => {
-  //   if (activeWallet?.switchChain) {
-  //     try {
-  //       // You can customize which chain to switch to
-  //       await activeWallet.switchChain(1); // Switch to Ethereum mainnet
-  //     } catch (error) {
-  //       console.error("Failed to switch chain:", error);
-  //     }
-  //   }
-  // };
+  const truncateAddress = (addr: any) => {
+    return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
+  };
 
-  if (!ready) {
-    return null; // or loading spinner
-  }
   const handleLogin = async () => {
-    pushToGTM({
-      event: 'wallet_connect_click',
-      category: 'Wallet',
-      action: 'Connect Button Click',
-      label: 'Initial Connect Attempt'
-    });
     if (!authenticated) {
-      try{
-        await login();
-      pushToGTM({
-        event: 'wallet_connect_start',
-        category: 'Wallet',
-        action: 'Connect Flow Started',
-        label: 'Login Modal Opened'
-      });
-      }catch(error){
-        pushToGTM({
-          event: 'wallet_connect_error',
-          category: 'Wallet',
-          action: 'Connect Error',
-          label: error instanceof Error ? error.message : 'Unknown error'
-        });
-      }
-      
+      login();
     } else {
       if (!user?.google && !user?.farcaster) {
-        try{
-          await connectWallet();
-          pushToGTM({
-            event: 'wallet_connected',
-            category: 'Wallet',
-            action: 'Wallet Connected',
-            label: 'Additional Wallet Connected'
-          });
-        }catch(error){
-          pushToGTM({
-            event: 'wallet_connect_error',
-            category: 'Wallet',
-            action: 'Connect Error',
-            label: error instanceof Error ? error.message : 'Unknown error'
-          });
-        }
+        connectWallet();
       }
     }
   };
-  const isValidAuthentication = () => {
-    // Improved authentication check
-    const hasEmbeddedWallet = user?.google || user?.farcaster;
-    const hasWeb3Wallet = wallets.some((wallet) => wallet.address);
 
-    // Return true if authenticated and has either embedded or web3 wallet
-    return (
-      authenticated && (hasEmbeddedWallet || (hasWeb3Wallet && isConnected))
-    );
+  const handleLogout = async () => {
+    await logout();
+    if (!user?.google && !user?.farcaster) {
+      wagmiDisconnect();
+      setDisplayAddress(null);
+    }
+    setIsDropdownOpen(false);
   };
 
-  const canAccessProtectedResources = () => {
-    return isValidAuthentication();
-  };
-
-  const isValid = canAccessProtectedResources();
-
+  const isWalletConnected =
+    user?.google || user?.farcaster || displayAddress !== null;
 
   return (
-    <div className="wallet z-10 font-poppins">
-      {!isValid ? (
-        <>
-          <button
-            onClick={handleLogin}
-            type="button"
-            className="flex md:hidden items-center justify-center text-blue-shade-200 bg-white hover:bg-blue-shade-500 border-white rounded-full p-2 md:px-5 md:py-4 text-xs  font-bold transition-transform transform hover:scale-105"
-          >
-            <BiSolidWallet className="size-5" />
-            {/* <span className="hidden md:block">Connect Wallet</span> */}
-          </button>
-          <button
-            onClick={handleLogin}
-            type="button"
-            className="hidden md:flex items-center justify-center  bg-gradient-to-br from-blue-50 to-blue-100 text-blue-shade-200 px-4 py-3 rounded-full  shadow-lg hover:shadow-xl  transition-all duration-300  group relative overflow-hidden transform-none hover:scale-105 text-xs font-medium"
-          >
-            <Wallet
-              size={16}
-              className="mr-2 size-5  group-hover:rotate-6 transition-transform"
-            />
-            <span className="font-poppins mt-1 ">Connect Wallet</span>
-          </button>
-        </>
+    <div className="relative" ref={dropdownRef}>
+      {!isWalletConnected || !authenticated ? (
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={handleLogin}
+          className="flex items-center justify-center 
+            bg-gradient-to-br from-blue-500 to-[#4e72b1]
+            text-white p-3 sm:px-6 sm:py-3 rounded-full 
+            shadow-lg hover:shadow-xl 
+            transition-all duration-300 
+            group relative overflow-hidden"
+        >
+          <BiSolidWallet className="sm:mr-2 size-5 group-hover:rotate-12 transition-transform" />
+          <span className="hidden sm:block font-semibold">Connect Wallet</span>
+          <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+        </motion.button>
       ) : (
-        <>
-          {/* Desktop View */}
-          <div className="hidden lg:block">
-            <ChainSwitcherHeader
-              address={walletAddress2 ? walletAddress2 : ""}
-              currentChainId={chain?.id}
-              switchChain={switchChain}
-              ensAvatar={ensAvatar}
-            />
-          </div>
+        <div className="relative">
+          <motion.button
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.97 }}
+            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+            className="flex items-center 
+              bg-gradient-to-br from-blue-50 to-blue-100 
+              text-blue-800 px-4 py-2 rounded-full 
+              shadow-md hover:shadow-lg 
+              hover:rounded-full
+              transition-all duration-300 
+              group relative"
+          >
+            <BiSolidWallet className="mr-2 size-6 text-blue-600 group-hover:rotate-6 transition-transform" />
+            <span className="font-medium">
+              {displayAddress && truncateAddress(displayAddress)}
+            </span>
+            <div className="absolute inset-0 bg-blue-500/10 opacity-0 group-hover:opacity-100 transition-opacity hover:rounded-full"></div>
+          </motion.button>
 
-          {/* Mobile View */}
-          <MobileChainSwitcher
-            login={login}
-            getDisplayImage={getDisplayImage}
-            address={walletAddress2 ?? ""}
-            currentChainId={chain?.id}
-            switchChain={switchChain}
-            ensAvatar={ensAvatar}
-            authenticated={authenticated}
-          />
-        </>
+          <AnimatePresence>
+            {isDropdownOpen && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="absolute right-0 mt-2 w-64 bg-white 
+                  rounded-xl shadow-2xl ring-2 ring-blue-100 
+                  overflow-hidden z-50"
+              >
+                <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-4">
+                  <p className="text-sm text-gray-600">Connected as:</p>
+                  <p className="font-bold text-blue-800 truncate">
+                    {user?.google?.email ||
+                      user?.farcaster?.displayName ||
+                      ensName ||
+                      (displayAddress && truncateAddress(displayAddress))}
+                  </p>
+                </div>
+
+                <div className="divide-y divide-blue-100">
+                  {displayAddress && (
+                    <button
+                      onClick={handleCopyAddress}
+                      className="w-full flex items-center justify-between 
+                        px-4 py-3 text-sm text-gray-700 
+                        hover:bg-blue-50 transition-colors 
+                        group relative"
+                    >
+                      <div className="flex items-center">
+                        {copiedAddress ? (
+                          <CheckIcon className="mr-2 size-5 text-green-500" />
+                        ) : (
+                          <FiCopy className="mr-2 size-5 text-blue-500" />
+                        )}
+                        {copiedAddress ? "Copied!" : "Copy Address"}
+                      </div>
+                    </button>
+                  )}
+
+                  <button
+                    onClick={handleLogout}
+                    className="w-full flex items-center justify-between 
+                      px-4 py-3 text-sm text-red-600 
+                      hover:bg-red-50 transition-colors 
+                      group relative"
+                  >
+                    <div className="flex items-center">
+                      <FiLogOut className="mr-2 size-5" />
+                      Logout
+                    </div>
+                  </button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
       )}
     </div>
   );
 }
-
-export default ConnectWalletWithENS;

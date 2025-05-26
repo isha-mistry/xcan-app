@@ -7,11 +7,10 @@ import { useAccount } from "wagmi";
 import { Grid } from "react-loader-spinner";
 import { motion, AnimatePresence } from "framer-motion";
 import { getAccessToken, usePrivy } from "@privy-io/react-auth";
-import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 import { fetchApi } from "@/utils/api";
+import { useConnection } from "@/app/hooks/useConnection";
 
 interface AvailableUserSessionsProps {
-  daoName: string;
   scheduledSuccess: boolean | undefined;
   setScheduledSuccess: React.Dispatch<
     React.SetStateAction<boolean | undefined>
@@ -21,37 +20,32 @@ interface AvailableUserSessionsProps {
 }
 
 function AvailableUserSessions({
-  daoName,
   scheduledSuccess,
   setScheduledSuccess,
   sessionCreated,
   setSessionCreated,
 }: AvailableUserSessionsProps) {
-  const { address, isConnected } = useAccount();
-  const { walletAddress } = useWalletAddress();
-  const { ready, authenticated, login, logout, user } = usePrivy();
-  const { chain } = useAccount();
+  const { address } = useAccount();
+  const { isConnected } = useConnection()
   const [data, setData] = useState([]);
   const [dataLoading, setDataLoading] = useState<Boolean>(false);
   const [updateTrigger, setUpdateTrigger] = useState(0);
 
   useEffect(() => {
     const fetchData = async () => {
-      if (!daoName) return;
       setDataLoading(true);
       try {
-        const token=await getAccessToken();
+        const token = await getAccessToken();
         const myHeaders: HeadersInit = {
           "Content-Type": "application/json",
-          ...(walletAddress && {
-            "x-wallet-address": walletAddress,
+          ...(address && {
+            "x-wallet-address": address,
             Authorization: `Bearer ${token}`,
           }),
         };
 
         const raw = JSON.stringify({
-          dao_name: daoName,
-          userAddress: walletAddress,
+          userAddress: address,
         });
 
         const requestOptions = {
@@ -74,12 +68,11 @@ function AvailableUserSessions({
         toast.error("Failed to fetch data.");
       }
     };
-    if (walletAddress != null) {
+    if (address && isConnected) {
       fetchData();
     }
   }, [
-    daoName,
-    walletAddress,
+    address,
     scheduledSuccess === true,
     sessionCreated,
     updateTrigger,
@@ -108,8 +101,6 @@ function AvailableUserSessions({
             <TimeSlotTable
               title="15 Minutes"
               slotSize={15}
-              // address={walletAddress}
-              dao_name={daoName}
               data={data.filter((item: any) => item.timeSlotSizeMinutes === 15)}
               setData={setData}
               triggerUpdate={() => setUpdateTrigger((prev) => prev + 1)}
@@ -119,8 +110,6 @@ function AvailableUserSessions({
             <TimeSlotTable
               title="30 Minutes"
               slotSize={30}
-              // address={walletAddress}
-              dao_name={daoName}
               data={data.filter((item: any) => item.timeSlotSizeMinutes === 30)}
               setData={setData}
               triggerUpdate={() => setUpdateTrigger((prev) => prev + 1)}
@@ -130,8 +119,6 @@ function AvailableUserSessions({
             <TimeSlotTable
               title="45 Minutes"
               slotSize={45}
-              // address={walletAddress}
-              dao_name={daoName}
               data={data.filter((item: any) => item.timeSlotSizeMinutes === 45)}
               setData={setData}
               triggerUpdate={() => setUpdateTrigger((prev) => prev + 1)}
@@ -143,18 +130,6 @@ function AvailableUserSessions({
           No Scheduled Available Time
         </div>
       )}
-      {/* <Toaster
-        toastOptions={{
-          style: {
-            fontSize: "14px",
-            backgroundColor: "#3E3D3D",
-            color: "#fff",
-            boxShadow: "none",
-            borderRadius: "50px",
-            padding: "3px 5px",
-          },
-        }}
-      /> */}
     </div>
   );
 }
@@ -165,13 +140,11 @@ function TimeSlotTable({
   title,
   data,
   slotSize,
-  // wallletAddres
-  dao_name,
   setData,
   triggerUpdate,
 }: any) {
   const [deleting, setDeleting] = useState<string | null>(null);
-  const { walletAddress } = useWalletAddress();
+  const { address } = useAccount()
 
   const handleButtonClick = () => {
     toast("Coming soon 🚀");
@@ -181,18 +154,17 @@ function TimeSlotTable({
     setDeleting(date);
 
     try {
-      const token=await getAccessToken();
+      const token = await getAccessToken();
       const myHeaders: HeadersInit = {
         "Content-Type": "application/json",
-        ...(walletAddress && {
-          "x-wallet-address": walletAddress,
+        ...(address && {
+          "x-wallet-address": address,
           Authorization: `Bearer ${token}`,
         }),
       };
 
       const raw = JSON.stringify({
-        dao_name: dao_name,
-        userAddress: walletAddress,
+        userAddress: address,
         timeSlotSizeMinutes: slotSize,
         date: date,
         startTime: startTime,
@@ -309,11 +281,10 @@ function TimeSlotTable({
                       <FaPencilAlt />
                     </button>
                     <button
-                      className={`p-2 text-red-600 hover:text-red-800 ${
-                        deleting === dateRange.date
+                      className={`p-2 text-red-600 hover:text-red-800 ${deleting === dateRange.date
                           ? "opacity-50 cursor-not-allowed"
                           : ""
-                      }`}
+                        }`}
                       onClick={() => {
                         handleDeleteButtonClick({
                           date: dateRange.date,

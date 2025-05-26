@@ -9,7 +9,6 @@ import { BsTwitterX } from "react-icons/bs";
 import { useAccount } from "wagmi";
 import StarRating from "../FeedbackPopup/RatingTypes/StarRating";
 import { getAccessToken, usePrivy } from "@privy-io/react-auth";
-import { useWalletAddress } from "@/app/hooks/useWalletAddress";
 import { fetchApi } from "@/utils/api";
 
 function AttestationModal({
@@ -33,7 +32,6 @@ function AttestationModal({
   const [hoverRating, setHoverRating] = useState<number>(0);
   const { address ,isConnected} = useAccount();
   const { ready, authenticated, login, logout, user } = usePrivy();
-  const {walletAddress}=useWalletAddress();
 
   useEffect(() => {
     const storedStatus = sessionStorage.getItem("meetingData");
