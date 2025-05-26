@@ -109,7 +109,7 @@ const Homepage = () => {
     {
       title: "Grow and Earn More",
       description:
-        "Refer creators or users to Chora Club and earn rewards for every mint and engagement.",
+        "Refer creators or users to Stylus University and earn rewards for every mint and engagement.",
       buttonText: "Learn How to Earn",
       image: feature4,
       onclick: () => {

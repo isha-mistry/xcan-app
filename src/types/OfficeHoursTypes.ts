@@ -34,7 +34,6 @@ export interface OfficeHoursDocument {
 
 export interface OfficeHoursRequestBody {
   host_address: string;
-  dao_name: string;
   meetings: Meeting[];
 }
 

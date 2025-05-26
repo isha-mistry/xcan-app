@@ -62,7 +62,7 @@ function Sidebar() {
       target: "body",
       content: (
         <p className="text-black-shade-1000 text-left font-normal text-base font-poppins">
-          Let&apos;s take a quick tour of Chora Club.
+          Let&apos;s take a quick tour of Stylus University.
         </p>
       ),
       disableBeacon: true,
@@ -116,7 +116,7 @@ function Sidebar() {
       target: ".office",
       content: (
         <p className="text-black-shade-1000 text-left font-normal text-base font-poppins">
-          View ongoing, upcoming, and recorded office hours taken on Chora Club.
+          View ongoing, upcoming, and recorded office hours taken on Stylus University.
         </p>
       ),
       disableBeacon: true,

@@ -42,14 +42,14 @@ export async function generateMetadata(
   }
 
   return {
-    metadataBase: new URL("https://app.chora.club/"),
-    title: "Chora Club",
+    metadataBase: new URL("https://stylus-university.vercel.app/"),
+    title: "Stylus University",
     description: "Discover. Learn. Engage.",
     openGraph: {
       title: delegateMetadata.title,
       description: delegateMetadata.description,
-      url: `https://app.chora.club/${daoDelegates}`,
-      siteName: "Chora Club",
+      url: `https://stylus-university.vercel.app/${daoDelegates}`,
+      siteName: "Stylus University",
       images: [
         {
           url: delegateMetadata.image,

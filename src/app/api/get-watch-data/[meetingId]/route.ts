@@ -26,17 +26,17 @@ export async function GET(req: NextRequest, context: { params: Params }) {
       .find({ meetingId, meeting_status: "Recorded" })
       .toArray();
 
-    // Modified query for office hours to search within the dao array's meetings
+    // Modified query for office hours to search within the meetings array directly
     const officeHoursDocuments = (await officeHoursCollection
       .find({
-        "dao.meetings.meetingId": meetingId,
+        "meetings.meetingId": meetingId,
       })
       .toArray()) as unknown as OfficeHoursDocument[];
 
     if (meetingsDocuments.length > 0) {
       const mergedData = await Promise.all(
         meetingsDocuments.map(async (session) => {
-          const { host_address, dao_name, attendees } = session;
+          const { host_address, attendees } = session;
 
           const hostInfo = await delegatesCollection.findOne({
             address: host_address,
@@ -69,17 +69,14 @@ export async function GET(req: NextRequest, context: { params: Params }) {
       );
     } else if (officeHoursDocuments.length > 0) {
       const mergedData = await Promise.all(
-        officeHoursDocuments.flatMap(async (officeHour) => {
-          // Find the specific meeting across all DAOs
-          const matchingMeetings = officeHour.dao.flatMap((daoItem) => {
-            const meeting = daoItem.meetings.find(
-              (meeting) => meeting.meetingId === meetingId
-            );
-            return meeting ? [{ meeting, daoName: daoItem.name }] : [];
-          });
+        officeHoursDocuments.map(async (officeHour) => {
+          // Find the specific meeting in the meetings array
+          const matchingMeeting = officeHour.meetings.find(
+            (meeting) => meeting.meetingId === meetingId
+          );
 
-          if (matchingMeetings.length === 0) {
-            return [];
+          if (!matchingMeeting) {
+            return null;
           }
 
           // Get host info
@@ -87,47 +84,41 @@ export async function GET(req: NextRequest, context: { params: Params }) {
             address: officeHour.host_address,
           });
 
-          // Process each matching meeting
-          return Promise.all(
-            matchingMeetings.map(async ({ meeting, daoName }) => {
-              // Get attendees info if present
-              const attendeesProfileDetails = meeting.attendees
-                ? await Promise.all(
-                    meeting.attendees.map(async (attendee: Attendee) => {
-                      const attendeeInfo = await delegatesCollection.findOne({
-                        address: attendee.attendee_address,
-                      });
-                      return {
-                        ...attendee,
-                        profileInfo: attendeeInfo,
-                      };
-                    })
-                  )
-                : [];
+          // Get attendees info if present
+          const attendeesProfileDetails = matchingMeeting.attendees
+            ? await Promise.all(
+                matchingMeeting.attendees.map(async (attendee: Attendee) => {
+                  const attendeeInfo = await delegatesCollection.findOne({
+                    address: attendee.attendee_address,
+                  });
+                  return {
+                    ...attendee,
+                    profileInfo: attendeeInfo,
+                  };
+                })
+              )
+            : [];
 
-              // Construct response object
-              return {
-                ...meeting,
-                host_address: officeHour.host_address,
-                dao_name: daoName,
-                attendees: attendeesProfileDetails,
-                hostProfileInfo: hostInfo,
-              };
-            })
-          );
+          // Construct response object
+          return {
+            ...matchingMeeting,
+            host_address: officeHour.host_address,
+            attendees: attendeesProfileDetails,
+            hostProfileInfo: hostInfo,
+          };
         })
       );
 
-      // Flatten the array and filter out empty results
-      const flattenedData = mergedData.flat().filter(Boolean);
+      // Filter out null results
+      const filteredData = mergedData.filter(Boolean);
 
       client.close();
-      if (flattenedData.length > 0) {
+      if (filteredData.length > 0) {
         return NextResponse.json(
           {
             success: true,
             collection: "office_hours",
-            data: flattenedData,
+            data: filteredData,
           },
           { status: 200 }
         );

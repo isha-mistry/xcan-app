@@ -102,10 +102,10 @@ export async function generateMetadata({
     const imageApiUrl = await prepareOgImage(watchData);
 
     return {
-      title: "Chora Club",
+      title: "Stylus University",
       description: `Watch this video hosted on ${formattedDaoName} DAO on ${title}`,
       openGraph: {
-        title: "Chora Club",
+        title: "Stylus University",
         description: `Watch this video hosted on ${formattedDaoName} DAO on ${title}`,
         images: [imageApiUrl],
       },

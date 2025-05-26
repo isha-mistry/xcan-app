@@ -21,14 +21,14 @@ export async function generateMetadata(
     "https://gateway.lighthouse.storage/ipfs/bafkreidirbp5rpggihsab76teieq66wnj6lj75pjn2guhkvabfa3z53dzm";
 
   return {
-    metadataBase: new URL("https://app.chora.club/"),
-    title: "Chora Club",
+    metadataBase: new URL("https://stylus-university.vercel.app/"),
+    title: "Stylus University",
     description: "Discover. Learn. Engage.",
     openGraph: {
       title: title,
       description: description,
-      url: `https://app.chora.club/invite/${params.address}`,
-      siteName: "Chora Club",
+      url: `https://stylus-university.vercel.app/invite/${params.address}`,
+      siteName: "Stylus University",
       images: [
         `${BASE_URL}/api/images/og/referral?inviteeName=${encodeURIComponent(
           inviteeDetails?.ensName ||
