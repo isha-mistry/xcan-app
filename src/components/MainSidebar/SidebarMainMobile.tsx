@@ -129,7 +129,23 @@ const SidebarMainMobile = () => {
             <ul className="">
               <li>
                 <Link
-                  href="/"
+                  href="https://speedrun-stylus-games.vercel.app/"
+                  target="_blank"
+                  className="block py-4 pl-6 sm:py-5 hover:bg-blue-shade-100 "
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <IoIosRocket className="size-5 mr-4" />
+                      <span>ArbQuests</span>
+                    </div>
+                    <FiArrowUpRight className="w-5 h-5" />
+                  </div>
+                </Link>
+                <div className="h-[0.1px] w-full bg-white"></div>
+              </li>
+              <li>
+                <Link
+                  href="/explore-daos"
                   className="block py-4 pl-6 sm:py-5 hover:bg-blue-shade-100 "
                 >
                   <div className="flex items-center justify-between">

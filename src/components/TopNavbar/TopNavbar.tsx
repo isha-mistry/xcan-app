@@ -115,6 +115,13 @@ function TopNavbar() {
 
           <>
             <div className="flex gap-4">
+            <Link
+                href={`https://speedrun-stylus-games.vercel.app/`}
+                target="_blank"
+                className={`${styles.item} text-blue-shade-500 font-medium`}
+              >
+                ArbQuests
+              </Link>
               <Link
                 href={"/explore-daos"}
                 className={`${styles.item} text-blue-shade-500 font-medium ${pathname.includes(`/explore-daos`)
