@@ -62,28 +62,28 @@ function UpdateProfileModal({
           event.stopPropagation();
         }}
         isOpen={isOpen}
-        className="font-poppins rounded-3xl max-h-[90vh] overflow-hidden"
+        className="font-poppins rounded-3xl max-h-[90vh] overflow-hidden bg-gray-800"
         size={isMobile ? "full" : "2xl"}
         hideCloseButton
       >
-        <ModalContent className="flex flex-col h-full">
+        <ModalContent className="flex flex-col h-full bg-gray-800">
           <>
-            <ModalHeader className="flex justify-between text-2xl font-semibold items-center bg-blue-shade-100 text-white px-8 py-6 ">
+            <ModalHeader className="flex justify-between text-2xl font-semibold items-center bg-blue-600 text-white px-8 py-6 ">
               Update your Profile
               <button
                 onClick={onClose}
-                className="text-blue-shade-100 bg-white w-5 h-5  rounded-full flex items-center justify-center font-semibold text-xl"
+                className="text-blue-600 bg-white w-5 h-5  rounded-full flex items-center justify-center font-semibold text-xl hover:bg-gray-100 transition-colors"
               >
                 <IoClose className="font-bold size-4" />
               </button>
             </ModalHeader>
-            <ModalBody className="px-4 xm:px-10 pb-4 pt-6 overflow-y-auto flex-grow">
+            <ModalBody className="px-4 xm:px-10 pb-4 pt-6 overflow-y-auto flex-grow bg-gray-800">
               <div className="mb-4">
-                <div className="text-sm font-semibold mb-2">
+                <div className="text-sm font-semibold mb-2 text-gray-200">
                   Upload Profile Image:
                 </div>
                 <div className="flex items-center">
-                  <div className="w-24 h-24 bg-gray-100 rounded-md flex items-center justify-center mr-2 xm:mr-4">
+                  <div className="w-24 h-24 bg-gray-700 rounded-md flex items-center justify-center mr-2 xm:mr-4">
                     {modalData.displayImage ? (
                       <Image
                         src={`https://gateway.lighthouse.storage/ipfs/${modalData.displayImage}`}
@@ -111,11 +111,11 @@ function UpdateProfileModal({
                     )}
                   </div>
                   <div>
-                    <p className="text-xs xs:text-sm text-gray-600 mb-2">
+                    <p className="text-xs xs:text-sm text-gray-400 mb-2">
                       Please upload square image, size less than 100KB
                     </p>
                     <div className="flex items-center">
-                      <label className="bg-white  text-blue-shade-100 font-medium text-sm p-2 xs:py-3 xs:px-4 rounded-full border cursor-pointer border-blue-shade-100 cursor-point flex gap-2 items-center">
+                      <label className="bg-gray-700 text-blue-400 font-medium text-sm p-2 xs:py-3 xs:px-4 rounded-full border cursor-pointer border-blue-400 hover:bg-gray-600 transition-colors flex gap-2 items-center">
                         <CgAttachment />
                         <span>Choose File</span>
                         <input
@@ -125,7 +125,7 @@ function UpdateProfileModal({
                           className="hidden"
                         />
                       </label>
-                      <span className="ml-1.5 xs:ml-3 text-xs xs:text-sm text-gray-600">
+                      <span className="ml-1.5 xs:ml-3 text-xs xs:text-sm text-gray-400">
                         {fileInputRef.current?.files?.[0]?.name ||
                           "No File Chosen"}
                       </span>
@@ -136,21 +136,21 @@ function UpdateProfileModal({
 
               <div className="flex gap-3 xm:gap-6 flex-col xm:flex-row">
                 <div className="flex flex-col basis-1/2 mt-1.5">
-                  <div className="font-semibold text-sm flex px-3 items-center gap-1.5">
+                  <div className="font-semibold text-sm flex px-3 items-center gap-1.5 text-gray-200">
                     <FaUserEdit /> Display name:
                   </div>
                   <input
                     type="text"
                     value={modalData.displayName}
                     placeholder="Enter Name"
-                    className="border border-[#f2eeee] mt-1 bg-white rounded-lg px-3 py-[10px] text-sm text-[#2e2e2e] font-normal"
+                    className="border border-gray-600 mt-1 bg-gray-700 rounded-lg px-3 py-[10px] text-sm text-gray-200 font-normal placeholder-gray-400 focus:border-blue-400 focus:outline-none transition-colors"
                     onChange={(e) =>
                       handleInputChange("displayName", e.target.value)
                     }
                   />
                 </div>
                 <div className="flex flex-col basis-1/2 mt-1.5 ">
-                  <div className="text-sm font-semibold flex px-3 items-center gap-1.5">
+                  <div className="text-sm font-semibold flex px-3 items-center gap-1.5 text-gray-200">
                     <TbMailFilled />
                     Email:
                     <Tooltip
@@ -161,7 +161,7 @@ function UpdateProfileModal({
                       }
                       placement="right"
                       showArrow
-                      className="bg-gray-700"
+                      className="bg-gray-700 text-gray-200"
                     >
                       <label className="cursor-pointer">
                         <input
@@ -184,7 +184,7 @@ function UpdateProfileModal({
                     type="email"
                     value={modalData.emailId}
                     placeholder="abc@gmail.com"
-                    className="border border-[#f2eeee] mt-1 bg-white rounded-lg px-3 py-[10px] text-sm text-[#2e2e2e] font-normal"
+                    className="border border-gray-600 mt-1 bg-gray-700 rounded-lg px-3 py-[10px] text-sm text-gray-200 font-normal placeholder-gray-400 focus:border-blue-400 focus:outline-none transition-colors"
                     onChange={(e) =>
                       handleInputChange("emailId", e.target.value)
                     }
@@ -194,7 +194,7 @@ function UpdateProfileModal({
 
               <div className="flex gap-3 xm:gap-6 flex-col xm:flex-row">
                 <div className="flex flex-col basis-1/2 mt-1.5">
-                  <div className="text-sm font-semibold flex px-3 items-center gap-1.5">
+                  <div className="text-sm font-semibold flex px-3 items-center gap-1.5 text-gray-200">
                     <FaXTwitter />
                     (Formerly Twitter):
                   </div>
@@ -202,14 +202,14 @@ function UpdateProfileModal({
                     type="url"
                     value={modalData.twitter}
                     placeholder="Enter Twitter Name"
-                    className="border border-[#f2eeee] mt-1 bg-white rounded-lg px-3 py-[10px] text-sm text-[#2e2e2e] font-normal "
+                    className="border border-gray-600 mt-1 bg-gray-700 rounded-lg px-3 py-[10px] text-sm text-gray-200 font-normal placeholder-gray-400 focus:border-blue-400 focus:outline-none transition-colors"
                     onChange={(e) =>
                       handleInputChange("twitter", e.target.value)
                     }
                   />
                 </div>
                 <div className="flex flex-col basis-1/2 mt-1.5">
-                  <div className="text-sm font-semibold flex px-3 items-center gap-1.5">
+                  <div className="text-sm font-semibold flex px-3 items-center gap-1.5 text-gray-200">
                     <SiDiscourse />
                     Discourse:
                   </div>
@@ -217,7 +217,7 @@ function UpdateProfileModal({
                     type="url"
                     value={modalData.discourse}
                     placeholder="Enter Discourse Name"
-                    className="border border-[#f2eeee] mt-1 bg-white rounded-lg px-3 py-[10px] text-sm text-[#2e2e2e] font-normal "
+                    className="border border-gray-600 mt-1 bg-gray-700 rounded-lg px-3 py-[10px] text-sm text-gray-200 font-normal placeholder-gray-400 focus:border-blue-400 focus:outline-none transition-colors"
                     onChange={(e) =>
                       handleInputChange("discourse", e.target.value)
                     }
@@ -227,7 +227,7 @@ function UpdateProfileModal({
 
               <div className="flex gap-3 xm:gap-6 flex-col xm:flex-row">
                 <div className="flex flex-col basis-1/2 mt-1.5">
-                  <div className="text-sm font-semibold flex px-3 items-center gap-1.5">
+                  <div className="text-sm font-semibold flex px-3 items-center gap-1.5 text-gray-200">
                     <BsDiscord />
                     Discord:
                   </div>
@@ -235,14 +235,14 @@ function UpdateProfileModal({
                     type="url"
                     value={modalData.discord}
                     placeholder="Enter Discord Name"
-                    className="border border-[#f2eeee] mt-1 bg-white rounded-lg px-3 py-[10px] text-sm text-[#2e2e2e] font-normal "
+                    className="border border-gray-600 mt-1 bg-gray-700 rounded-lg px-3 py-[10px] text-sm text-gray-200 font-normal placeholder-gray-400 focus:border-blue-400 focus:outline-none transition-colors"
                     onChange={(e) =>
                       handleInputChange("discord", e.target.value)
                     }
                   />
                 </div>
                 <div className="flex flex-col basis-1/2 mt-1.5">
-                  <div className="text-sm font-semibold flex px-3 items-center gap-1.5">
+                  <div className="text-sm font-semibold flex px-3 items-center gap-1.5 text-gray-200">
                     <TbBrandGithubFilled />
                     Github:
                   </div>
@@ -250,7 +250,7 @@ function UpdateProfileModal({
                     type="url"
                     value={modalData.github}
                     placeholder="Enter Github Name"
-                    className="border border-[#f2eeee] mt-1 bg-white rounded-lg px-3 py-[10px] text-sm text-[#2e2e2e] font-normal "
+                    className="border border-gray-600 mt-1 bg-gray-700 rounded-lg px-3 py-[10px] text-sm text-gray-200 font-normal placeholder-gray-400 focus:border-blue-400 focus:outline-none transition-colors"
                     onChange={(e) =>
                       handleInputChange("github", e.target.value)
                     }
@@ -258,9 +258,9 @@ function UpdateProfileModal({
                 </div>
               </div>
             </ModalBody>
-            <ModalFooter className="flex justify-center items-center">
+            <ModalFooter className="flex justify-center items-center bg-gray-800">
               <Button
-                className="bg-blue-shade-100 rounded-full text-sm font-semibold text-white px-10 mt-3 mb-7 "
+                className="bg-blue-600 hover:bg-blue-700 rounded-full text-sm font-semibold text-white px-10 mt-3 mb-7 transition-colors"
                 onPress={() => handleSave()}
               >
                 {isLoading ? "Saving" : "Save"}

@@ -255,7 +255,7 @@ function InstantMeet({ isDelegate, selfDelegate, daoName }: instantMeetProps) {
                       key={index}
                       content={
                         <div className="px-1 py-3 w-80 ">
-                          <div className="font-poppins text-[#7C7C7C] text-center">
+                          <div className="font-poppins text-white text-center">
                             {data.description}
                           </div>
                         </div>

@@ -440,7 +440,7 @@ function AvailableSessions() {
         </div> */}
         <div className="flex gap-3 items-center">
           <div
-            className={`flex items-center rounded-full shadow-lg bg-white text-black cursor-pointer w-[300px] xs:w-[365px] lg:w-[150px] 1.5lg:w-[200px] 2xl:w-[365px]`}
+            className={`flex items-center rounded-full shadow-lg bg-[#484e57] text-white cursor-pointer w-[300px] xs:w-[365px] lg:w-[150px] 1.5lg:w-[200px] 2xl:w-[365px]`}
           >
             <CiSearch
               className={`text-base transition-all duration-700 ease-in-out ml-3`}
@@ -457,7 +457,7 @@ function AvailableSessions() {
             showArrow
             content={<div className="font-poppins">More Options</div>}
             placement="bottom"
-            className="rounded-md bg-opacity-90 bg-gray-700"
+            className="rounded-md   bg-gray-700"
             closeDelay={1}
           >
             <div
@@ -487,7 +487,7 @@ function AvailableSessions() {
                   </div>
                 }
                 placement="bottom"
-                className="rounded-md bg-opacity-90 bg-gray-700"
+                className="rounded-md bg-gray-700"
                 closeDelay={1}
               >
                 <input
@@ -495,7 +495,7 @@ function AvailableSessions() {
                   value={selectedDate}
                   onChange={handleDateChange}
                   min={formattedDate}
-                  className="2xl:px-3 2xl:py-2 p-1.5 sm:p-2 shadow-lg rounded-full cursor-pointer text-xs sm:text-sm lg:text-xs xl:text-sm"
+                  className="bg-[#484e57] 2xl:px-3 2xl:py-2 p-1.5 sm:p-2 shadow-lg rounded-full cursor-pointer text-xs sm:text-sm lg:text-xs xl:text-sm"
                 />
               </Tooltip>
             </div>
@@ -510,21 +510,21 @@ function AvailableSessions() {
               </div>
             }
             placement="bottom"
-            className="rounded-md bg-opacity-90 bg-gray-700"
+            className="rounded-md bg-gray-700"
             closeDelay={1}
           >
             <div className="flex items-center select-container text-xs sm:text-sm lg:text-xs xl:text-sm">
               {!showStartTimeSelector ? (
                 <button
                   onClick={() => handleSetStartTime()}
-                  className="2xl:px-3 2xl:py-2 p-1.5 sm:p-2 rounded-full shadow-lg mr-1 cursor-pointer w-[132px] xs:w-[151px]"
+                  className="bg-[#484e57] 2xl:px-3 2xl:py-2 p-1.5 sm:p-2 rounded-full shadow-lg mr-1 cursor-pointer w-[132px] xs:w-[151px]"
                 >
                   Set Start Time
                 </button>
               ) : (
-                <div className="bg-white p-1 sm:p-2 shadow-lg rounded-full">
+                <div className="bg-[#484e57] p-1 sm:p-2 shadow-lg rounded-full">
                   <select
-                    className="cursor-pointer mr-1"
+                    className="cursor-pointer mr-1 bg-[#484e57]"
                     value={startHour}
                     onChange={(e) => setStartHour(e.target.value)}
                   >
@@ -538,13 +538,13 @@ function AvailableSessions() {
                   <select
                     value={startMinute}
                     onChange={(e) => setStartMinute(e.target.value)}
-                    className="ml-1 cursor-pointer"
+                    className="ml-1 cursor-pointer bg-[#484e57]"
                   >
                     <option value="00">00</option>
                     <option value="30">30</option>
                   </select>
                   <select
-                    className="cursor-pointer"
+                    className="cursor-pointer bg-[#484e57]"
                     value={startPeriod}
                     onChange={(e) => setStartPeriod(e.target.value)}
                   >
@@ -559,14 +559,14 @@ function AvailableSessions() {
               {!showEndTimeSelector ? (
                 <button
                   onClick={() => handleSetEndTime()}
-                  className="2xl:px-3 2xl:py-2 p-1.5 sm:p-2 rounded-full shadow-lg ml-1 w-[132px] xs:w-[151px] cursor-pointer"
+                  className="bg-[#484e57] 2xl:px-3 2xl:py-2 p-1.5 sm:p-2 rounded-full shadow-lg ml-1 w-[132px] xs:w-[151px] cursor-pointer"
                 >
                   Set End Time
                 </button>
               ) : (
-                <div className="bg-white p-1 sm:p-2 shadow-lg rounded-full">
+                <div className="bg-[#484e57] p-1 sm:p-2 shadow-lg rounded-full">
                   <select
-                    className="ml-1 cursor-pointer"
+                    className="ml-1 cursor-pointer bg-[#484e57]"
                     value={endHour}
                     onChange={(e) => setEndHour(e.target.value)}
                   >
@@ -578,7 +578,7 @@ function AvailableSessions() {
                   </select>
                   <span>:</span>
                   <select
-                    className="mr-1 cursor-pointer"
+                    className="mr-1 cursor-pointer bg-[#484e57]"
                     value={endMinute}
                     onChange={(e) => setEndMinute(e.target.value)}
                   >
@@ -586,7 +586,7 @@ function AvailableSessions() {
                     <option value="30">30</option>
                   </select>
                   <select
-                    className="cursor-pointer"
+                    className="cursor-pointer bg-[#484e57]"
                     value={endPeriod}
                     onChange={(e) => setEndPeriod(e.target.value)}
                   >
@@ -601,7 +601,7 @@ function AvailableSessions() {
                   showArrow
                   content={<div className="">Clear Time</div>}
                   placement="bottom"
-                  className="rounded-md bg-opacity-90 bg-gray-700"
+                  className="rounded-md bg-gray-700"
                   closeDelay={1}
                 >
                   <button

@@ -5,7 +5,6 @@ import React, { useState, useRef, useEffect } from "react";
 import { Oval } from "react-loader-spinner";
 import search from "@/assets/images/daos/search.png";
 import WatchSession from "./WatchSession";
-import WatchSessionList from "./WatchSessionList";
 // import { ConnectButton } from "@rainbow-me/rainbowkit";
 import styles from "./WatchSession.module.css";
 import WatchSessionVideo from "./WatchSessionVideo";

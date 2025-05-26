@@ -202,15 +202,15 @@ const TimeSlotSection: React.FC<TimeSlotSectionProps> = ({
   };
 
   return (
-    <div className={`flex-1 1.5lg:max-h-[350px] max-h-[600px] overflow-y-auto px-1 mt-6 md:mt-0 1.5lg:mr-6 xl:mr-0 scroll-smooth [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar]:transition-all [&::-webkit-scrollbar]:duration-300  [&::-webkit-scrollbar-track]:rounded-full  [&::-webkit-scrollbar-thumb]:rounded-full  [&::-webkit-scrollbar-thumb]:bg-blue-200  [&::-webkit-scrollbar-track]:bg-blue-50  hover:[&::-webkit-scrollbar-thumb]:bg-blue-100 relative`}>
+    <div className={`flex-1 1.5lg:max-h-[350px] max-h-[600px] overflow-y-auto px-1 mt-6 md:mt-0 1.5lg:mr-6 xl:mr-0 scroll-smooth [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar]:transition-all [&::-webkit-scrollbar]:duration-300  [&::-webkit-scrollbar-track]:rounded-full  [&::-webkit-scrollbar-thumb]:rounded-full  [&::-webkit-scrollbar-thumb]:bg-gray-600  [&::-webkit-scrollbar-track]:bg-gray-800  hover:[&::-webkit-scrollbar-thumb]:bg-gray-500 relative`}>
       {/* Global loading overlay when loading and no dates selected */}
       {isLoadingSchedules && selectedDates.length === 0 && (
         <div className="absolute inset-0 flex items-center justify-center z-20">
           <div className="relative">
             {/* Triple spinning rings */}
-            <div className="w-16 h-16 rounded-full border-4 border-blue-100 border-t-blue-500 animate-spin"></div>
-            <div className="absolute top-2 left-2 w-12 h-12 rounded-full border-4 border-blue-200 border-b-blue-400 animate-spin animate-reverse"></div>
-            <div className="absolute top-4 left-4 w-8 h-8 rounded-full border-4 border-blue-300 border-l-blue-600 animate-spin"></div>
+            <div className="w-16 h-16 rounded-full border-4 border-gray-700 border-t-blue-400 animate-spin"></div>
+            <div className="absolute top-2 left-2 w-12 h-12 rounded-full border-4 border-gray-600 border-b-blue-500 animate-spin animate-reverse"></div>
+            <div className="absolute top-4 left-4 w-8 h-8 rounded-full border-4 border-gray-500 border-l-blue-400 animate-spin"></div>
           </div>
         </div>
       )}
@@ -222,17 +222,17 @@ const TimeSlotSection: React.FC<TimeSlotSectionProps> = ({
             .map((schedule, dateIndex) => (
               <div
                 key={schedule.date.toISOString()}
-                className={`relative group bg-slate-800 bg-opacity-50 rounded-2xl shadow-md border border-gray-600 hover:shadow-lg transition-all
+                className={`relative group bg-gray-800 bg-opacity-90 rounded-2xl shadow-md border border-gray-600 hover:shadow-lg transition-all
                   }`}
               >
 
-                <div className="absolute -left-0.5 top-0 bottom-0 w-1 bg-blue-500 rounded-l-2xl"></div>
+                <div className="absolute -left-0.5 top-0 bottom-0 w-1 bg-blue-400 rounded-l-2xl"></div>
                 <div className="p-3 0.2xs:p-4 md:p-6">
                   <div className="flex flex-col xm:flex-row xm:items-center justify-between mb-6 gap-4">
                     <div className="flex items-center space-x-4">
-                      <CalendarIcon className="text-blue-600 h-5 w-5" />
+                      <CalendarIcon className="text-blue-400 h-5 w-5" />
                       <div className="space-y-1">
-                        <h3 className="font-semibold text-gray-300">
+                        <h3 className="font-semibold text-gray-100">
                           {new Date(schedule.date).toLocaleDateString("en-US", {
                             weekday: "long",
                             year: "numeric",
@@ -240,7 +240,7 @@ const TimeSlotSection: React.FC<TimeSlotSectionProps> = ({
                             day: "numeric",
                           })}
                         </h3>
-                        <p className="text-sm text-gray-500">
+                        <p className="text-sm text-gray-400">
                           {schedule.timeSlots.length} time slot
                           {schedule.timeSlots.length !== 1 ? "s" : ""}
                         </p>
@@ -249,8 +249,8 @@ const TimeSlotSection: React.FC<TimeSlotSectionProps> = ({
                     <button
                       onClick={() => toggleRecurring(dateIndex)}
                       className={`flex items-center space-x-2 px-4 py-2 rounded-xl transition-all ${schedule.isRecurring
-                        ? "bg-blue-100 text-blue-700 hover:bg-blue-200"
-                        : "bg-gray-50 text-gray-600 hover:bg-gray-100"
+                        ? "bg-blue-900 text-blue-300 hover:bg-blue-800"
+                        : "bg-gray-700 text-gray-300 hover:bg-gray-600"
                         }`}
                     >
                       <Repeat className="h-4 w-4" />
@@ -263,19 +263,19 @@ const TimeSlotSection: React.FC<TimeSlotSectionProps> = ({
                       <div
                         key={slot.id}
                         className={`relative flex flex-row items-start sm:items-center gap-1 0.2xs:gap-3 p-3 sm:p-4 rounded-xl transition-all ${slot.bookedTitle
-                          ? "bg-amber-50 border border-amber-200"
-                          : "bg-gradient-to-br from-blue-50 to-transparent hover:bg-blue-50"
+                          ? "bg-amber-900 bg-opacity-30 border border-amber-600"
+                          : "bg-gradient-to-br from-gray-700 to-transparent hover:bg-gray-700"
                           }`}
                       >
                         {slot.bookedTitle && (
-                          <div className="absolute -top-3 left-2 bg-amber-100 text-amber-800 px-2 py-1 rounded-full text-xs font-medium">
+                          <div className="absolute -top-3 left-2 bg-amber-800 text-amber-200 px-2 py-1 rounded-full text-xs font-medium">
                             Booked
                           </div>
                         )}
                         <div className="w-4 h-4 mt-2.5 sm:mt-0">
                           <Clock
                             className={`h-4 w-4 ${slot.bookedTitle
-                              ? "text-amber-500"
+                              ? "text-amber-400"
                               : "text-gray-400"
                               }`}
                           />
@@ -295,15 +295,15 @@ const TimeSlotSection: React.FC<TimeSlotSectionProps> = ({
                                   )
                                 }
                                 disabled={Boolean(slot.bookedTitle)}
-                                className={`rounded-xl px-1 py-1.5 0.5xs:px-3 0.5xs:py-2 text-xs sm:text-sm bg-white border flex-1 sm:flex-none transition-all
+                                className={`rounded-xl px-1 py-1.5 0.5xs:px-3 0.5xs:py-2 text-xs sm:text-sm border flex-1 sm:flex-none transition-all text-gray-200
                                 ${slot.bookedTitle
-                                    ? "border-amber-200 text-amber-900 bg-amber-50"
-                                    : "border-gray-200 hover:border-gray-300"
+                                    ? "border-amber-600 text-amber-200 bg-amber-900 bg-opacity-50"
+                                    : "border-gray-600 hover:border-gray-500 bg-gray-700"
                                   }`}
                               >
                                 {generateTimeOptions(schedule.date, true).map(
                                   (time) => (
-                                    <option key={time} value={time}>
+                                    <option key={time} value={time} className="bg-gray-700 text-gray-200">
                                       {time}
                                     </option>
                                   )
@@ -323,10 +323,10 @@ const TimeSlotSection: React.FC<TimeSlotSectionProps> = ({
                                   )
                                 }
                                 disabled={Boolean(slot.bookedTitle)}
-                                className={`rounded-xl px-1 py-1.5 0.5xs:px-3 0.5xs:py-2 text-xs sm:text-sm bg-white border flex-1 sm:flex-none transition-all
+                                className={`rounded-xl px-1 py-1.5 0.5xs:px-3 0.5xs:py-2 text-xs sm:text-sm border flex-1 sm:flex-none transition-all text-gray-200
                                 ${slot.bookedTitle
-                                    ? "border-amber-200 text-amber-900 bg-amber-50"
-                                    : "border-gray-200 hover:border-gray-300"
+                                    ? "border-amber-600 text-amber-200 bg-amber-900 bg-opacity-50"
+                                    : "border-gray-600 hover:border-gray-500 bg-gray-700"
                                   }`}
                               >
                                 {generateTimeOptions(
@@ -334,7 +334,7 @@ const TimeSlotSection: React.FC<TimeSlotSectionProps> = ({
                                   false,
                                   slot.startTime
                                 ).map((time) => (
-                                  <option key={time} value={time}>
+                                  <option key={time} value={time} className="bg-gray-700 text-gray-200">
                                     {time}
                                   </option>
                                 ))}
@@ -345,7 +345,7 @@ const TimeSlotSection: React.FC<TimeSlotSectionProps> = ({
                                 onClick={() =>
                                   removeTimeSlot(dateIndex, slotIndex)
                                 }
-                                className={`text-gray-400 hover:text-red-500 transition-all p-2 ml-auto`}
+                                className={`text-gray-400 hover:text-red-400 transition-all p-2 ml-auto`}
                               >
                                 <Trash2 className="h-4 w-4" />
                               </button>
@@ -354,11 +354,11 @@ const TimeSlotSection: React.FC<TimeSlotSectionProps> = ({
 
                           {slot.bookedTitle && (
                             <div className="flex items-center gap-2">
-                              <div className={`flex items-center space-x-2 bg-white px-3 py-2 rounded-xl border border-amber-200 w-[180px] 0.5xs:w-[190px]`}>
+                              <div className={`flex items-center space-x-2 bg-gray-800 px-3 py-2 rounded-xl border border-amber-600 w-[180px] 0.5xs:w-[190px]`}>
                                 <div className="size-4">
-                                  <User className="h-4 w-4 text-amber-500" />
+                                  <User className="h-4 w-4 text-amber-400" />
                                 </div>
-                                <span className="text-xs sm:text-sm text-amber-900 font-medium truncate block">
+                                <span className="text-xs sm:text-sm text-amber-200 font-medium truncate block">
                                   {slot.bookedTitle}
                                 </span>
                               </div>
@@ -368,7 +368,7 @@ const TimeSlotSection: React.FC<TimeSlotSectionProps> = ({
                                   onClick={() =>
                                     handleEditClick(dateIndex, slotIndex)
                                   }
-                                  className={`text-amber-600 hover:text-amber-700 p-2 transition-all`}
+                                  className={`text-amber-400 hover:text-amber-300 p-2 transition-all`}
                                   aria-label="Edit booked slot size-4"
                                 >
                                   <Edit className="h-4 w-4" />
@@ -377,7 +377,7 @@ const TimeSlotSection: React.FC<TimeSlotSectionProps> = ({
                                   showEditOptions?.slotIndex === slotIndex && (
                                     <div
                                       ref={editOptionsRef}
-                                      className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg z-10 border border-gray-200"
+                                      className="absolute right-0 mt-2 w-48 bg-gray-800 rounded-xl shadow-lg z-10 border border-gray-600"
                                     >
                                       <div className="py-1">
                                         <button
@@ -388,7 +388,7 @@ const TimeSlotSection: React.FC<TimeSlotSectionProps> = ({
                                               slot
                                             )
                                           }
-                                          className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                          className="block w-full text-left px-4 py-2 text-sm text-gray-200 hover:bg-gray-700"
                                         >
                                           Update
                                         </button>
@@ -399,7 +399,7 @@ const TimeSlotSection: React.FC<TimeSlotSectionProps> = ({
                                               slotIndex
                                             )
                                           }
-                                          className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                                          className="block w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-gray-700"
                                         >
                                           Delete
                                         </button>
@@ -415,7 +415,7 @@ const TimeSlotSection: React.FC<TimeSlotSectionProps> = ({
 
                     <button
                       onClick={() => addTimeSlot(dateIndex)}
-                      className={`flex items-center justify-center space-x-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50 text-sm font-medium p-4 rounded-xl w-full transition-all`}
+                      className={`flex items-center justify-center space-x-2 text-blue-400 hover:text-blue-300 hover:bg-gray-700 text-sm font-medium p-4 rounded-xl w-full transition-all`}
                     >
                       <Plus className="h-4 w-4" />
                       <span>Add time slot</span>
@@ -426,26 +426,26 @@ const TimeSlotSection: React.FC<TimeSlotSectionProps> = ({
             ))}
         </div>
       ) : (
-        <div className={`bg-white border-2 border-dashed border-gray-200 rounded-2xl p-12 text-center relative ${isLoadingSchedules ? 'pointer-events-none' : ''
+        <div className={`bg-gray-800 border-2 border-dashed border-gray-600 rounded-2xl p-12 text-center relative ${isLoadingSchedules ? 'pointer-events-none' : ''
           }`}>
           {isLoadingSchedules ? (
             <div className="flex flex-col items-center">
               <div className="relative mb-4">
                 {/* Animated calendar icon with loading ring */}
-                <CalendarIcon className="w-12 h-12 text-gray-300 opacity-50" />
+                <CalendarIcon className="w-12 h-12 text-gray-500 opacity-50" />
               </div>
               <div className="space-y-2">
-                <div className="h-4 bg-gray-200 rounded animate-pulse w-32 mx-auto"></div>
-                <div className="h-3 bg-gray-100 rounded animate-pulse w-48 mx-auto"></div>
+                <div className="h-4 bg-gray-600 rounded animate-pulse w-32 mx-auto"></div>
+                <div className="h-3 bg-gray-700 rounded animate-pulse w-48 mx-auto"></div>
               </div>
             </div>
           ) : (
             <>
-              <CalendarIcon className="w-12 h-12 mx-auto text-gray-300 mb-4" />
-              <h3 className="text-gray-900 font-semibold mb-2">
+              <CalendarIcon className="w-12 h-12 mx-auto text-gray-500 mb-4" />
+              <h3 className="text-gray-200 font-semibold mb-2">
                 No dates selected
               </h3>
-              <p className="text-gray-500">
+              <p className="text-gray-400">
                 Select dates from the calendar to schedule your availability
               </p>
             </>

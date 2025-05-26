@@ -39,7 +39,7 @@ function Heading() {
       >
         <div className="flex flex-row justify-between items-center mb-6 font-poppins xs:px-4">
           <div className="flex gap-4 items-center">
-            <div className="text-[#5151f5] font-medium text-2xl xs:text-3xl md:text-4xl">
+            <div className="text-[#93c5f3] font-medium text-2xl xs:text-3xl md:text-4xl">
               {title}
             </div>
           </div>

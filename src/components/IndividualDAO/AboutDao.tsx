@@ -247,7 +247,7 @@ const AboutDao = ({ props }: { props: string }) => {
                 return (
                   <li key={index} className="flex items-center">
                     <span className="text-blue-500 mr-2">•</span>
-                    <span className="text-gray-700">{item}</span>
+                    <span className="text-gray-200">{item}</span>
                   </li>
                 );
               }
@@ -261,7 +261,7 @@ const AboutDao = ({ props }: { props: string }) => {
                 return (
                   <li key={index} className="border-l-4 border-blue-500 pl-4">
                     <h4 className="font-semibold text-blue-600">{item.name}</h4>
-                    <p className="text-gray-700">{item.description}</p>
+                    <p className="text-gray-200">{item.description}</p>
                   </li>
                 );
               }
@@ -285,23 +285,23 @@ const AboutDao = ({ props }: { props: string }) => {
       </motion.h1>
 
       <motion.section className="mb-16" {...fadeInUp}>
-        <h2 className="text-3xl font-semibold mb-6 text-blue-800">
+        <h2 className="text-3xl font-semibold mb-6 text-blue-400">
           Mission and Vision
         </h2>
-        <div className="bg-[#D9D9D945] shadow-lg rounded-xl p-5 md:p-8">
+        <div className="bg-[#46464645] shadow-lg rounded-xl p-5 md:p-8">
           <div className="mb-6">
-            <h3 className="text-xl font-semibold mb-3 text-blue-700">
+            <h3 className="text-xl font-semibold mb-3 text-blue-400">
               Mission:
             </h3>
-            <p className="text-gray-700">{text?.mission_and_vision?.mission}</p>
+            <p className="text-gray-200">{text?.mission_and_vision?.mission}</p>
           </div>
           <div>
-            <h3 className="text-xl font-semibold mb-3 text-blue-700">
+            <h3 className="text-xl font-semibold mb-3 text-blue-400">
               Vision:
             </h3>
             <ul className="list-disc pl-6 space-y-2">
               {text?.mission_and_vision?.vision?.map((item, index) => (
-                <li key={index} className="text-gray-700">
+                <li key={index} className="text-gray-200">
                   {item}
                 </li>
               ))}
@@ -312,11 +312,11 @@ const AboutDao = ({ props }: { props: string }) => {
 
       {text?.technology && (
         <motion.section className="mb-16" {...fadeInUp}>
-          <h2 className="text-3xl font-semibold mb-6 text-blue-800">
+          <h2 className="text-3xl font-semibold mb-6 text-blue-400">
             Technology
           </h2>
-          <div className="bg-[#D9D9D945] shadow-lg rounded-xl p-5 md:p-8">
-            <p className="text-gray-700 mb-4">
+          <div className="bg-[#46464645] shadow-lg rounded-xl p-5 md:p-8">
+            <p className="text-gray-200 mb-4">
               {text?.technology?.description}
             </p>
             {renderTechnologyFeatures()}
@@ -326,11 +326,11 @@ const AboutDao = ({ props }: { props: string }) => {
 
       {text?.governance_and_dao_structure && (
         <motion.section className="mb-16" {...fadeInUp}>
-          <h2 className="text-3xl font-semibold mb-6 text-blue-800">
+          <h2 className="text-3xl font-semibold mb-6 text-blue-400">
             Governance and DAO Structure
           </h2>
-          <div className="bg-[#D9D9D945] shadow-lg rounded-xl p-5 md:p-8">
-            <p className="text-gray-700 mb-4">
+          <div className="bg-[#46464645] shadow-lg rounded-xl p-5 md:p-8">
+            <p className="text-gray-200 mb-4">
               {text?.governance_and_dao_structure?.description}
             </p>
             <ul className="space-y-4">
@@ -344,7 +344,7 @@ const AboutDao = ({ props }: { props: string }) => {
                         <h4 className="font-semibold text-purple-600">
                           {item.name}
                         </h4>
-                        <p className="text-gray-700">{item.details}</p>
+                        <p className="text-gray-200">{item.details}</p>
                       </li>
                     )
                   )
@@ -358,7 +358,7 @@ const AboutDao = ({ props }: { props: string }) => {
                         <h4 className="font-semibold text-purple-600">
                           {item.name}
                         </h4>
-                        <p className="text-gray-700">{item.details}</p>
+                        <p className="text-gray-200">{item.details}</p>
                       </li>
                     )
                   )
@@ -382,7 +382,7 @@ const AboutDao = ({ props }: { props: string }) => {
                   <h4 className="font-semibold text-purple-600">
                     {item.title}
                   </h4>
-                  <p className="text-gray-700">{item.description}</p>
+                  <p className="text-gray-200">{item.description}</p>
                 </li>
               ))}
               {/* ) : text?.governance_and_dao_structure?.houses ? (
@@ -399,7 +399,7 @@ const AboutDao = ({ props }: { props: string }) => {
       )}
 
       <motion.section {...fadeInUp}>
-        <h2 className="text-3xl font-semibold mb-6 text-blue-800">
+        <h2 className="text-3xl font-semibold mb-6 text-blue-400">
           Community and Resources
         </h2>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">

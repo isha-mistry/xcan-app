@@ -97,7 +97,7 @@ const ExploreDAOs = () => {
   }, [searchParams]);
 
   return (
-    <div className="min-h-screen bg-dark-primary relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-[#2a2a2b] to-[#1a1a1b] relative overflow-hidden">
       <PageBackgroundPattern />
       <div className="pt-2 xs:pt-4 sm:pt-6 px-4 md:px-6 lg:px-14">
         <Heading />
