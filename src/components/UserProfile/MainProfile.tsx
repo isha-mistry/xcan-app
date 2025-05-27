@@ -690,11 +690,11 @@ function MainProfile() {
             </div>
 
             <div
-              className={`bg-[#D9D9D945] hidden md:flex overflow-x-auto whitespace-nowrap gap-6 xs:gap-8 sm:gap-12 pl-6 xs:pl-8 sm:pl-16 ${style.hideScrollbarColor} ${style.scrollContainter}`}
+              className={`bg-[#c2defd22] hidden md:flex overflow-x-auto whitespace-nowrap gap-6 xs:gap-8 sm:gap-12 pl-6 xs:pl-8 sm:pl-16 ${style.hideScrollbarColor} ${style.scrollContainter}`}
             >
               <button
                 className={`border-b-2 py-3 xs:py-4 px-2 outline-none flex-shrink-0 ${searchParams.get("active") === "info"
-                  ? "text-blue-shade-200 font-semibold border-b-2 border-blue-shade-200"
+                  ? "text-blue-300 font-semibold border-b-2 border-blue-300"
                   : "border-transparent"
                   }`}
                 onClick={() => router.push(path + "?active=info")}
@@ -704,7 +704,7 @@ function MainProfile() {
 
               <button
                 className={`border-b-2 py-3 xs:py-4 px-2 outline-none flex-shrink-0 ${searchParams.get("active") === "sessions"
-                  ? "text-blue-shade-200 font-semibold border-b-2 border-blue-shade-200"
+                  ? "text-blue-300 font-semibold border-b-2 border-blue-300"
                   : "border-transparent"
                   }`}
                 onClick={() =>
@@ -718,7 +718,7 @@ function MainProfile() {
               </button>
               <button
                 className={`border-b-2 py-3 xs:py-4 px-2 outline-none flex-shrink-0 ${searchParams.get("active") === "officeHours"
-                  ? "text-blue-shade-200 font-semibold border-b-2 border-blue-shade-200"
+                  ? "text-blue-300 font-semibold border-b-2 border-blue-300"
                   : "border-transparent"
                   }`}
                 onClick={() =>
@@ -730,7 +730,7 @@ function MainProfile() {
 
               {<button
                 className={`border-b-2 py-3 xs:py-4 px-2 outline-none flex-shrink-0 ${searchParams.get("active") === "instant-meet"
-                  ? "text-blue-shade-200 font-semibold border-b-2 border-blue-shade-200"
+                  ? "text-blue-300 font-semibold border-b-2 border-blue-300"
                   : "border-transparent"
                   }`}
                 onClick={() => router.push(path + "?active=instant-meet")}

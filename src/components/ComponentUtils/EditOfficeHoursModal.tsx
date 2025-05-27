@@ -52,7 +52,7 @@ const EditOfficeHoursModal: React.FC<EditOfficeHoursModalProps> = ({
         toast.error("Please connect your wallet to edit this meeting");
       }
     }
-  }, [address, hostAddress, authenticated,  isConnected]);
+  }, [address, hostAddress, authenticated, isConnected]);
 
   const updateMeeting = async () => {
     try {
@@ -174,14 +174,14 @@ const EditOfficeHoursModal: React.FC<EditOfficeHoursModalProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
-      <div className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md transform transition-all duration-200 ease-out scale-100 mx-2 0.2xs:mx-4 ">
-        <div className="flex justify-between items-center mb-6 border-b border-gray-100 pb-4">
-          <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">
+      <div className="bg-blue-shade-500 rounded-2xl shadow-xl p-6 w-full max-w-md transform transition-all duration-200 ease-out scale-100 mx-2 0.2xs:mx-4">
+        <div className="flex justify-between items-center mb-6 border-b border-blue-shade-200 pb-4">
+          <h2 className="text-2xl font-bold text-blue-shade-100">
             Edit Booked Slot
           </h2>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors p-2 hover:bg-gray-100 rounded-full"
+            className="text-blue-shade-100 hover:text-blue-shade-50 transition-colors p-2 hover:bg-blue-shade-300 rounded-full"
             disabled={isLoading}
           >
             <X className="h-5 w-5" />

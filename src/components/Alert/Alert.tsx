@@ -9,22 +9,22 @@ interface AlertProps {
 }
 
 const Alert: React.FC<AlertProps> = ({ message, type = 'warning', onClose }) => {
-  let backgroundColor = 'bg-dark-tertiary';
+  let backgroundColor = 'bg-blue-shade-400';
   let textColor = 'text-yellow-400';
   let borderColor = 'border-yellow-500';
 
   if (type === 'error') {
-    backgroundColor = 'bg-dark-tertiary';
+    backgroundColor = 'bg-blue-shade-400';
     textColor = 'text-red-400';
     borderColor = 'border-red-500';
   } else if (type === 'success') {
-    backgroundColor = 'bg-dark-tertiary';
+    backgroundColor = 'bg-blue-shade-400';
     textColor = 'text-green-400';
     borderColor = 'border-green-500';
   } else if (type === 'info') {
-    backgroundColor = 'bg-dark-tertiary';
-    textColor = 'text-blue-400';
-    borderColor = 'border-blue-500';
+    backgroundColor = 'bg-blue-shade-400';
+    textColor = 'text-blue-shade-100';
+    borderColor = 'border-blue-shade-100';
   }
 
   return (

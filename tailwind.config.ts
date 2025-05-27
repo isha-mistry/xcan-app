@@ -46,10 +46,10 @@ const config: Config = {
       colors: {
         // Dark theme colors
         dark: {
-          primary: "#272727",
-          secondary: "#1a1a1a",
-          tertiary: "#242424",
-          accent: "#2d2d2d",
+          primary: "#0A142A",
+          secondary: "#0D1527",
+          tertiary: "#0D1A34",
+          accent: "#171D51",
           text: {
             primary: "#ffffff",
             secondary: "#a0a0a0",
@@ -57,14 +57,14 @@ const config: Config = {
           },
         },
         // Updated blue shades for dark theme
-        "blue-shade-100": "#3B82F6", // Lighter blue for better contrast
-        "blue-shade-200": "#60A5FA", // Even lighter for hover states
-        "blue-shade-300": "#2563EB", // Darker blue for active states
-        "blue-shade-400": "#1E40AF", // Very dark blue for backgrounds
-        "blue-shade-500": "#93C5FD", // Light blue for text
-        "blue-shade-600": "#DBEAFE", // Very light blue for backgrounds
-        "blue-shade-700": "#EFF6FF", // Lightest blue for hover states
-        "blue-shade-800": "#1D4ED8", // Dark blue for borders
+        "blue-shade-100": "#123099", // Primary blue
+        "blue-shade-200": "#171D51", // Secondary blue
+        "blue-shade-300": "#02052E", // Dark blue
+        "blue-shade-400": "#050B1A", // Very dark blue
+        "blue-shade-500": "#0D1A34", // Medium blue
+        "blue-shade-600": "#0D1527", // Light blue
+        "blue-shade-700": "#0A142A", // Lightest blue
+        "blue-shade-800": "#02052E", // Dark blue for borders
         "black-shade-100": "#7C7C7C",
         "black-shade-200": "#DEDEDE",
         "black-shade-300": "#F6F6F6",

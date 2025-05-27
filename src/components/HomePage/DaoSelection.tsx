@@ -62,7 +62,7 @@ function DaoSelection({
 
   // Generic handler for all DAOs
   const handleDaoClick = (daoName: string) => {
-    
+
     handleDaoSelection(daoName);
   };
 
@@ -166,40 +166,40 @@ function DaoSelection({
           className="absolute inset-0 backdrop-blur-md"
           onClick={onClose}
         ></div>
-        <div className="flex flex-col items-center justify-center h-screen bg-gradient-to-r from-blue-50 via-blue-100 to-blue-50">
-          <div className="p-4 xs:p-6 bg-white rounded-3xl shadow-2xl text-center max-w-2xl w-full transform transition duration-300 hover:scale-105 mx-2">
-            <div className="bg-black rounded-full size-4 xs:size-8 p-1 flex justify-center items-center absolute top-6 right-6">
+        <div className="flex flex-col items-center justify-center h-screen ">
+          <div className="p-4 xs:p-6 bg-blue-shade-500 rounded-3xl shadow-2xl text-center max-w-2xl w-full transform transition duration-300 hover:scale-105 mx-2">
+            <div className="bg-blue-shade-300 rounded-full size-4 xs:size-8 p-1 flex justify-center items-center absolute top-6 right-6">
               <IoClose
-                className="cursor-pointer size-3 xs:w-6 xs:h-6 text-white"
+                className="cursor-pointer size-3 xs:w-6 xs:h-6 text-dark-text-primary"
                 onClick={onClose}
               />
             </div>
             {joinAsDelegate ? (
               <>
-                <h2 className="font-bold text-3xl text-gray-900 my-6">
+                <h2 className="font-bold text-3xl text-dark-text-primary my-6">
                   Start Your Journey!
                 </h2>
-                <p className="text-gray-700 mb-6 xs:mb-10 text-base">
+                <p className="text-dark-text-secondary mb-6 xs:mb-10 text-base">
                   To kick things off, let us know which DAO you are a delegate
                   for.
                 </p>
               </>
             ) : featureSchedule ? (
               <>
-                <h2 className="font-bold text-3xl text-gray-900 my-6">
+                <h2 className="font-bold text-3xl text-dark-text-primary my-6">
                   Select the DAO you represent!
                 </h2>
-                <p className="text-gray-700 mb-6 xs:mb-10 text-base">
+                <p className="text-dark-text-secondary mb-6 xs:mb-10 text-base">
                   Choose your DAO to set your availability and start hosting
                   sessions.
                 </p>
               </>
             ) : feature ? (
               <>
-                <h2 className="font-bold text-3xl text-gray-900 my-6">
+                <h2 className="font-bold text-3xl text-dark-text-primary my-6">
                   Select the DAO you represent!
                 </h2>
-                <p className="text-gray-700 mb-10 text-base">
+                <p className="text-dark-text-secondary mb-10 text-base">
                   Select a DAO to generate your personalized Farcaster frame
                   link and start sharing.
                 </p>

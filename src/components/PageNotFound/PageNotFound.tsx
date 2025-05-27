@@ -12,7 +12,7 @@ function PageNotFound() {
     // </div>
     <div className="flex flex-col gap-8 justify-center h-screen items-center w-[40%] mx-auto font-tektur">
       <Image alt="image" src={not_found}></Image>
-      <div className="font-bold text-3xl animate-fadeIn bg-gradient-to-r from-blue-400 to-blue-700 bg-clip-text text-transparent">
+      <div className="font-bold text-3xl animate-fadeIn bg-gradient-to-r from-blue-shade-100 to-blue-shade-200 bg-clip-text text-transparent">
         Page not found
       </div>
     </div>

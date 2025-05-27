@@ -37,124 +37,123 @@ interface Type {
 
 const StyledCalendarContainer = styled.div`
   .calendar-container {
-    background-color: #1a1a1a;
+    background-color: #0f172a;
     color: #ffffff;
     border-radius: 16px;
     padding: 20px;
+    border: 1px solid #1e40af;
   }
 
   .calendar-container > div > ul {
-    height: auto;
-    min-height: 300px;
-    max-height: 400px;
+    height: 450px; !important
     overflow-y: auto;
-    background-color: #1a1a1a;
+    background-color: #0f172a;
     color: #ffffff;
   }
 
   /* Style for the calendar header */
   .calendar-container > div > div:first-child {
-    background-color: #1a1a1a;
+    background-color: #0f172a;
     color: #ffffff;
-    border-bottom: 1px solid #333;
+    border-bottom: 1px solid #1e40af;
   }
 
   /* Style for the time slots */
   .calendar-container > div > ul > li {
-    background-color: #2a2a2a;
+    background-color: #1e3a8a;
     color: #ffffff;
-    border: 1px solid #333;
+    border: 1px solid #2563eb;
     margin: 4px 0;
   }
 
   /* Style for selected time slot */
   .calendar-container > div > ul > li.selected {
-    background-color: #0500FF;
+    background-color: #3b82f6;
     color: #ffffff;
   }
 
   /* Style for disabled time slot */
   .calendar-container > div > ul > li.disabled {
-    background-color: #333;
-    color: #666;
+    background-color: #0f172a;
+    color: #93c5fd;
   }
 
   /* Style for the calendar navigation buttons */
   .calendar-container button {
-    background-color: #2a2a2a;
+    background-color: #1e3a8a;
     color: #ffffff;
-    border: 1px solid #333;
+    border: 1px solid #2563eb;
   }
 
   /* Style for the calendar days */
   .calendar-container .calendar-day {
-    background-color: #2a2a2a;
+    background-color: #1e3a8a;
     color: #ffffff;
   }
 
   /* Style for the current day */
   .calendar-container .calendar-day.today {
-    background-color: #0500FF;
+    background-color: #3b82f6;
     color: #ffffff;
   }
 
   /* Styles for the time slot selection view */
   .calendar-container > div > div:nth-child(2) {
-    background-color: #1a1a1a;
+    background-color: #0f172a;
     color: #ffffff;
   }
 
   /* Style for the time slot selection header */
   .calendar-container > div > div:nth-child(2) > div:first-child {
-    background-color: #1a1a1a;
+    background-color: #0f172a;
     color: #ffffff;
-    border-bottom: 1px solid #333;
+    border-bottom: 1px solid #1e40af;
   }
 
   /* Style for the time slot selection list */
   .calendar-container > div > div:nth-child(2) > div:nth-child(2) {
-    background-color: #1a1a1a;
+    background-color: #0f172a;
     color: #ffffff;
   }
 
   /* Style for individual time slots in selection view */
   .calendar-container > div > div:nth-child(2) > div:nth-child(2) > div {
-    background-color: #2a2a2a;
+    background-color: #1e3a8a;
     color: #ffffff;
-    border: 1px solid #333;
+    border: 1px solid #2563eb;
     margin: 4px 0;
   }
 
   /* Style for selected time slot in selection view */
   .calendar-container > div > div:nth-child(2) > div:nth-child(2) > div.selected {
-    background-color: #0500FF;
+    background-color: #3b82f6;
     color: #ffffff;
   }
 
   /* Style for disabled time slot in selection view */
   .calendar-container > div > div:nth-child(2) > div:nth-child(2) > div.disabled {
-    background-color: #333;
-    color: #666;
+    background-color: #0f172a;
+    color: #93c5fd;
   }
 
   /* Style for the back button in time slot selection */
   .calendar-container > div > div:nth-child(2) > div:first-child > button {
-    background-color: #2a2a2a;
+    background-color: #1e3a8a;
     color: #ffffff;
-    border: 1px solid #333;
+    border: 1px solid #2563eb;
   }
 
   /* Style for the confirm button in time slot selection */
   .calendar-container > div > div:nth-child(2) > div:last-child > button {
-    background-color: #0500FF;
+    background-color: #3b82f6;
     color: #ffffff;
     border: none;
   }
 
   /* Style for the confirm button when disabled */
   .calendar-container > div > div:nth-child(2) > div:last-child > button:disabled {
-    background-color: #333;
-    color: #666;
+    background-color: #0f172a;
+    color: #93c5fd;
   }
 
   @media (max-width: 640px) {
@@ -669,18 +668,18 @@ function BookSession({ props }: { props: Type }) {
   return (
     <>
       {isPageLoading ? (
-        <div className="flex items-center justify-center">
+        <div className="flex items-center justify-center min-h-[calc(100vh-200px)]">
           <Oval
             visible={true}
             height="40"
             width="40"
-            color="#0500FF"
-            secondaryColor="#cdccff"
+            color="#3b82f6"
+            secondaryColor="#93c5fd"
             ariaLabel="oval-loading"
           />
         </div>
       ) : (
-        <div className="flex justify-center w-full px-4 sm:px-6 md:px-8">
+        <div className="flex justify-center w-full px-4 sm:px-6 md:px-8 min-h-[calc(100vh-200px)]">
           <div className="w-full max-w-md mx-auto mt-8 rounded-2xl shadow-lg">
             <StyledCalendarContainer>
               <div className="calendar-container">
@@ -706,9 +705,9 @@ function BookSession({ props }: { props: Type }) {
           className="font-tektur z-[70] fixed inset-0 flex items-center justify-center backdrop-blur-md"
           style={{ boxShadow: " 0px 0px 45px -17px rgba(0,0,0,0.75)" }}
         >
-          <div className="bg-white rounded-[41px] overflow-hidden shadow-lg w-full max-w-lg mx-4">
+          <div className="bg-[#0f172a] rounded-[41px] overflow-hidden shadow-lg w-full max-w-lg mx-4">
             <div className="relative">
-              <div className="flex flex-col gap-1 text-white bg-[#292929] p-4 py-7">
+              <div className="flex flex-col gap-1 text-white bg-[#1e3a8a] p-4 py-7">
                 <div className="flex items-center justify-between mx-4">
                   <h2 className="text-base sm:text-lg font-semibold pr-8 break-words">
                     Book your slot
@@ -725,9 +724,9 @@ function BookSession({ props }: { props: Type }) {
                   </button>
                 </div>
               </div>
-              <div className="px-4 sm:px-8 py-4 bg-[#343536]">
+              <div className="px-4 sm:px-8 py-4 bg-[#0f172a]">
                 <div className="mt-4">
-                  <label className="block mb-2 font-semibold text-sm sm:text-base">
+                  <label className="block mb-2 font-semibold text-sm sm:text-base text-white">
                     Title:
                   </label>
                   <input
@@ -737,12 +736,12 @@ function BookSession({ props }: { props: Type }) {
                     value={modalData.title}
                     onChange={handleModalInputChange}
                     placeholder="Explain Governance"
-                    className="w-full px-3 sm:px-4 text-sm sm:text-base py-2 border rounded-xl bg-[#D9D9D945]"
+                    className="w-full px-3 sm:px-4 text-sm sm:text-base py-2 border rounded-xl bg-[#1e3a8a] text-white placeholder-gray-400 border-[#2563eb]"
                     required
                   />
                 </div>
                 <div className="mt-4">
-                  <label className="block mb-2 font-semibold text-sm sm:text-base">
+                  <label className="block mb-2 font-semibold text-sm sm:text-base text-white">
                     Description:
                   </label>
                   <textarea
@@ -751,14 +750,14 @@ function BookSession({ props }: { props: Type }) {
                     value={modalData.description}
                     onChange={handleModalInputChange}
                     placeholder="Please share anything that will help prepare for our meeting."
-                    className="w-full px-3 sm:px-4 py-2 border rounded-xl bg-[#D9D9D945] min-h-[100px] text-sm sm:text-base"
+                    className="w-full px-3 sm:px-4 py-2 border rounded-xl bg-[#1e3a8a] text-white placeholder-gray-400 min-h-[100px] text-sm sm:text-base border-[#2563eb]"
                     required
                   />
                 </div>
               </div>
-              <div className="flex justify-center px-4 sm:px-8 py-4 bg-[#343536]">
+              <div className="flex justify-center px-4 sm:px-8 py-4 bg-[#0f172a]">
                 <button
-                  className="bg-blue-shade-200 text-white px-6 sm:px-8 py-2 sm:py-3 font-semibold rounded-full text-sm sm:text-base w-full sm:w-auto disabled:bg-gray-400"
+                  className="bg-[#3b82f6] text-white px-6 sm:px-8 py-2 sm:py-3 font-semibold rounded-full text-sm sm:text-base w-full sm:w-auto disabled:bg-[#1e3a8a] hover:bg-[#2563eb] transition-colors"
                   onClick={checkBeforeApiCall}
                   disabled={
                     confirmSave ||
@@ -773,8 +772,8 @@ function BookSession({ props }: { props: Type }) {
                         visible={true}
                         height="20"
                         width="20"
-                        color="#0500FF"
-                        secondaryColor="#cdccff"
+                        color="#ffffff"
+                        secondaryColor="#93c5fd"
                         ariaLabel="oval-loading"
                       />
                     </div>

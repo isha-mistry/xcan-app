@@ -6,13 +6,9 @@
   width: 0px;
 }
 
-:root {
-  background-color: #272727;
-  color: #ffffff;
-}
-
 body {
-  background-color: #272727;
+  min-height: 100vh;
+  background-color: "bg-gradient-to-br from-blue-shade-400 to-blue-shade-300";
   color: #ffffff;
 }
 

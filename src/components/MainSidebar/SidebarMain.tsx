@@ -212,34 +212,34 @@ function Sidebar() {
     },
     buttonStyles: {
       primaryButton: {
-        backgroundColor: "#004DFF !important", // Next button background color
+        backgroundColor: "#1E3A8A !important", // Next button background color
         color: "#ffffff", // Next button text color
         borderRadius: "20px", // Next button border radius
         padding: "8px 16px", // Next button padding
         fontSize: "14px", // Next button font size
       },
       secondaryButton: {
-        backgroundColor: "#ffffff", // Back button background color
-        color: "#004DFF", // Back button text color
+        backgroundColor: "#1E40AF", // Back button background color
+        color: "#ffffff", // Back button text color
         borderRadius: "20px", // Back button border radius
-        border: "2px solid #004DFF", // Back button border
+        border: "2px solid #1E3A8A", // Back button border
         padding: "8px 16px", // Back button padding
         fontSize: "14px", // Back button font size
       },
       skipButton: {
-        color: "#004DFF", // Skip button text color
+        color: "#1E40AF", // Skip button text color
         fontSize: "14px", // Skip button font size
         textDecoration: "underline", // Skip button text decoration
       },
     },
     titleStyles: {
-      color: "blue !important",
+      color: "#1E3A8A !important",
       fontSize: "20px",
       fontWeight: "bold",
       textAlign: "left !important",
     },
     tooltipContentStyles: {
-      color: "#808080", // Change the content color to gray
+      color: "#1E40AF", // Change the content color to blue
       fontSize: "16px",
       textAlign: "left", // Add this line to align the content to the left
     },

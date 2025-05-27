@@ -211,7 +211,7 @@ function InstantMeet() {
         Instant Meet Ready!
       </h2>
       <p className="text-base text-gray-200 mb-4 max-w-md px-4">
-        Your instant meeting <strong>{createdMeetingTitle || "..."}</strong> 
+        Your instant meeting <strong>{createdMeetingTitle || "..."}</strong>
         DAO has been created.
       </p>
       <p className="text-xs text-gray-400 mt-2">
@@ -338,18 +338,18 @@ function InstantMeet() {
         placement="center"
         backdrop="blur"
         classNames={{
-          base: "bg-gray-900 border border-gray-700",
+          base: "bg-blue-shade-500 border border-blue-shade-200",
           backdrop: "bg-black/50"
         }}
       >
-        <ModalContent className="bg-gray-900 text-white border border-gray-700">
-          <ModalHeader className="flex flex-col gap-1 bg-gray-900 text-white border-b border-gray-700">
+        <ModalContent className="bg-blue-shade-500 text-white border border-blue-shade-200">
+          <ModalHeader className="flex flex-col gap-1 bg-blue-shade-500 text-white border-b border-blue-shade-200">
             {modalStep === 1
               ? "Provide details for instant meet"
               : "Instant Meet Created"}
           </ModalHeader>
 
-          <ModalBody className="relative overflow-hidden min-h-[280px] bg-gray-900">
+          <ModalBody className="relative overflow-hidden min-h-[280px] bg-blue-shade-500">
             {/* Step 1: Form View */}
             <div
               className={`w-full transition-all duration-300 ease-in-out transform px-6 ${modalStep === 1
@@ -375,14 +375,14 @@ function InstantMeet() {
             </div>
           </ModalBody>
 
-          <ModalFooter className="bg-gray-900 border-t border-gray-700">
+          <ModalFooter className="bg-blue-shade-500 border-t border-blue-shade-200">
             {modalStep === 1 && (
               <>
                 <Button
                   color="default"
                   variant="light"
                   onPress={handleCloseModal}
-                  className="text-gray-300 hover:text-white hover:bg-gray-700"
+                  className="text-blue-shade-100 text-white hover:bg-blue-shade-200"
                 >
                   Cancel
                 </Button>
@@ -390,7 +390,7 @@ function InstantMeet() {
                   color="primary"
                   onPress={startInstantMeet}
                   isDisabled={confirmSave || !modalData.title.trim()}
-                  className="bg-blue-600 hover:bg-blue-700 text-white disabled:bg-gray-600 disabled:text-gray-400"
+                  className="bg-blue-600 hover:bg-blue-700 text-white disabled:bg-blue-600 disabled:text-blue-100"
                 >
                   {confirmSave ? (
                     <Oval
@@ -412,7 +412,7 @@ function InstantMeet() {
               <>
                 <Button
                   color="primary"
-                  className="bg-blue-600 hover:bg-blue-700 text-white disabled:bg-gray-600 disabled:text-gray-400"
+                  className="bg-blue-600 hover:bg-blue-700 text-white disabled:bg-blue-600 disabled:text-blue-400"
                   onPress={() => {
                     openMeetingInNewTab(createdRoomId);
                     handleCloseModal();

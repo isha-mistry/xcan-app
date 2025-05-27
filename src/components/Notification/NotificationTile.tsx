@@ -80,7 +80,7 @@ function NotificationTile({ data, index, length }: NotificationTileProps) {
         <div className="flex flex-col md:flex-row gap-3 md:gap-5 w-full md:w-auto">
           <div className="flex justify-between">
             <div
-              className="flex items-center justify-center rounded-full h-12 w-12 md:h-14 md:w-14 md:min-w-14 shadow-inner transition-colors duration-200"
+              className="flex items-center justify-center rounded-full h-12 w-12 md:h-14 md:w-14 md:min-w-14 shadow-inner transition-colors duration-200 bg-blue-shade-400"
               style={{ backgroundColor: getBackgroundColor(tileData) }}
             >
               {getIcon(tileData)}

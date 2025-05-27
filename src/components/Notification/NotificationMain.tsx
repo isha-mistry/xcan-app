@@ -62,20 +62,6 @@ function NotificationMain() {
     { name: "Office Hours", value: "officeHours" }
   ];
 
-  const isValidAuthentication = () => {
-    // Check if user is authenticated AND has an active wallet
-    const hasActiveWallet = wallets.some((wallet) => wallet.address);
-    return authenticated && isConnected && hasActiveWallet;
-  };
-
-  const canAccessProtectedResources = () => {
-    if (!isValidAuthentication()) {
-      return false;
-    }
-    return true;
-  };
-
-  const Isvalid = canAccessProtectedResources();
 
   const handleTabChange = (tabValue: string) => {
     // console.log(tabValue);
@@ -339,11 +325,11 @@ function NotificationMain() {
       return <NotificationSkeletonLoader />;
     }
 
-    if (Isvalid == false) {
+    if (!address) {
       return (
-        <div className="flex flex-col justify-center items-center min-h-[16rem] px-4 sm:px-6 md:px-8 py-12 sm:py-16 md:py-20 bg-gradient-to-b from-blue-50/50 to-white">
+        <div className="flex flex-col justify-center items-center min-h-[16rem] px-4 sm:px-6 md:px-8 py-12 sm:py-16 md:py-20">
           <div
-            className="bg-white/80 backdrop-blur-lg rounded-3xl p-8 sm:p-10 md:p-12 max-w-md w-full mx-auto 
+            className="backdrop-blur-lg rounded-3xl p-8 sm:p-10 md:p-12 max-w-md w-full mx-auto 
         shadow-[0_20px_50px_rgba(59,130,246,0.15)] hover:shadow-[0_25px_60px_rgba(59,130,246,0.2)]
         border border-blue-100 transition-all duration-500"
           >
@@ -351,7 +337,7 @@ function NotificationMain() {
               {/* Enhanced Animated Icon Container */}
               <div className="relative group">
                 <div
-                  className="absolute inset-0 bg-blue-200 rounded-full blur-2xl opacity-40 group-hover:opacity-60 
+                  className="absolute inset-0 rounded-full blur-2xl opacity-40 group-hover:opacity-60 
               transition-all duration-500 animate-pulse"
                 ></div>
                 <div
@@ -379,7 +365,7 @@ function NotificationMain() {
                 >
                   Connect Your Wallet
                 </h3>
-                <p className="text-sm sm:text-base text-gray-600/90 max-w-sm leading-relaxed">
+                <p className="text-sm sm:text-base text-gray-400/90 max-w-sm leading-relaxed">
                   Please connect your wallet and sign in to view your
                   notifications and activity.
                 </p>
@@ -471,7 +457,7 @@ function NotificationMain() {
           <Heading />
         </div>
         <div
-          className="md:hidden mt-4 px-8 xs:px-4 sm:px-8 py-2 sm:py-[10px] bg-[#D9D9D945]"
+          className="md:hidden mt-4 px-8 xs:px-4 sm:px-8 py-2 sm:py-[10px] bg-[#c2defd22]"
           ref={dropdownRef}
           onMouseLeave={handleMouseLeave}
         >
@@ -505,11 +491,11 @@ function NotificationMain() {
             </div>
           </div>
         </div>
-        <div className="hidden md:flex bg-[#D9D9D945]">
+        <div className="hidden md:flex bg-[#c2defd22]">
           <div className="flex gap-8 1.5lg:gap-12 lg:pl-16 pl-8">
             <button
               className={`py-4 px-2 outline-none ${searchParams.get("active") === "all"
-                ? "text-blue-shade-200 font-semibold border-b-2 border-blue-shade-200"
+                ? "text-blue-300 font-semibold border-b-2 border-blue-300"
                 : "border-transparent"
                 }`}
               onClick={() => router.push(path + "?active=all")}
@@ -518,7 +504,7 @@ function NotificationMain() {
             </button>
             <button
               className={`py-4 px-2 outline-none ${searchParams.get("active") === "sessionBookings"
-                ? "text-blue-shade-200 font-semibold border-b-2 border-blue-shade-200"
+                ? "text-blue-300 font-semibold border-b-2 border-blue-300"
                 : "border-transparent"
                 }`}
               onClick={() => router.push(path + "?active=sessionBookings")}
@@ -527,7 +513,7 @@ function NotificationMain() {
             </button>
             <button
               className={`py-4 px-2 outline-none ${searchParams.get("active") === "recordedSessions"
-                ? "text-blue-shade-200 font-semibold border-b-2 border-blue-shade-200"
+                ? "text-blue-300 font-semibold border-b-2 border-blue-300"
                 : "border-transparent"
                 }`}
               // onClick={() => router.push(path + "?active=recordedSessions")}
@@ -537,7 +523,7 @@ function NotificationMain() {
             </button>
             <button
               className={`py-4 px-2 outline-none ${searchParams.get("active") === "attestations"
-                ? "text-blue-shade-200 font-semibold border-b-2 border-blue-shade-200"
+                ? "text-blue-300 font-semibold border-b-2 border-blue-300"
                 : "border-transparent"
                 }`}
               onClick={() => router.push(path + "?active=attestations")}
@@ -546,7 +532,7 @@ function NotificationMain() {
             </button>
             <button
               className={`py-4 px-2 outline-none ${searchParams.get("active") === "officeHours"
-                ? "text-blue-shade-200 font-semibold border-b-2 border-blue-shade-200"
+                ? "text-blue-300 font-semibold border-b-2 border-blue-300"
                 : "border-transparent"
                 }`}
               onClick={() => router.push(path + "?active=officeHours")}
@@ -556,7 +542,7 @@ function NotificationMain() {
           </div>
           <div className="hidden 2md:block ml-auto 1.5lg:pe-16 pe-8">
             <button
-              className="my-4 py-2 px-4 border w-52 border-blue-shade-100 text-blue-shade-100 rounded-xl flex items-center shadow-md hover:bg-blue-shade-100 hover:text-white transition duration-300 ease-in-out font-bold"
+              className="my-4 py-2 px-4 border w-52 border-blue-300 text-blue-300 rounded-xl flex items-center shadow-md hover:bg-blue-shade-100 hover:text-white transition duration-300 ease-in-out font-bold"
               onClick={handleMarkAllAsRead}
               disabled={markAllReadCalling}
             >
@@ -567,7 +553,7 @@ function NotificationMain() {
         </div>
         <div className="flex justify-end 2md:hidden ml-auto pe-8">
           <button
-            className="my-4 py-2 px-4 border w-52 border-blue-shade-100 text-blue-shade-100 rounded-xl flex items-center shadow-md hover:bg-blue-shade-100 hover:text-white transition duration-300 ease-in-out font-bold"
+            className="my-4 py-2 px-4 border w-52 border-blue-300 text-blue-300 rounded-xl flex items-center shadow-md hover:bg-blue-shade-100 hover:text-white transition duration-300 ease-in-out font-bold"
             onClick={handleMarkAllAsRead}
             disabled={markAllReadCalling}
           >

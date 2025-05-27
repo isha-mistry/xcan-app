@@ -71,8 +71,8 @@ const SidebarMainMobile = () => {
   };
 
   return (
-    <div className="relative">
-      <div className="absolute top-0 left-0 flex items-center justify-between w-full border-b-1 p-1 bg-[#1a1a1a]">
+    <div className="relative z-10">
+      <div className="bg-dark-secondary flex items-center justify-between w-full border-b-1 p-1">
         <div className="flex">
           <div
             className={`bg-blue-shade-200 text-white text-lg font-bold p-1.5 rounded-full cursor-pointer my-4 mx-2 0.2xs:mx-4`}
@@ -82,17 +82,19 @@ const SidebarMainMobile = () => {
           </div>
           <div className={`flex border border-l-0 h-16`}></div>
           <Link
-            className="ml-2 0.2xs:ml-4 mt-[3px] text-black font-semibold text-[32px] font-tektur flex items-center"
+            className="ml-1 xs:ml-2 sm:ml-4 mt-[2px] xs:mt-[3px] text-black font-semibold text-[20px] xs:text-[24px] sm:text-[28px] md:text-[32px] font-tektur flex items-center"
             href={"/"}
           >
             <Image
               src={logo}
-              alt={"image"}
+              alt={"Arbitrum University Logo"}
               width={200}
               height={200}
-              className="h-11 w-11"
-            ></Image>
-            <span className="text-white text-[26px]">Arbitrum University</span>
+              className="h-8 w-8 xs:h-9 xs:w-9 sm:h-10 sm:w-10 md:h-11 md:w-11"
+            />
+            <span className="text-white text-[18px] sm:text-[22px] md:text-[26px] ml-1 xs:ml-2">
+              Arbitrum University
+            </span>
           </Link>
         </div>
         {/* <div className="mr-2 xm:mr-4">
@@ -118,10 +120,10 @@ const SidebarMainMobile = () => {
               <HiArrowSmLeft className="size-6" />
             </button>
             <Link
-              className="ml-5 text-black font-semibold text-[26px] font-tektur"
+              className="ml-5 text-white font-semibold text-[26px] font-tektur"
               href={"https://stylus-university.vercel.app/"}
             >
-              Arbitrum <span className="text-white">University</span>
+              Arbitrum University
             </Link>
           </div>
 
@@ -282,7 +284,7 @@ const SidebarMainMobile = () => {
 
         </div>
       </div>
-    </div>
+    </div >
   );
 };
 

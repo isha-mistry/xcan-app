@@ -306,7 +306,7 @@ function UserInfo({
         <div className="flex gap-2 0.5xs:gap-4 rounded-xl text-sm flex-wrap">
           <button
             className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md ${activeButton === "onchain"
-              ? "text-[#397dcf] font-semibold bg-[#f5f5f5]"
+              ? "text-blue-shade-100 font-semibold bg-[#f5f5f5]"
               : "text-[#3E3D3D] bg-white"
               } `}
             onClick={() => fetchAttestation("onchain")}
@@ -316,7 +316,7 @@ function UserInfo({
           </button>
           <button
             className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md ${activeButton === "offchain"
-              ? "text-[#397dcf] font-semibold bg-[#f5f5f5]"
+              ? "text-blue-shade-100 font-semibold bg-[#f5f5f5]"
               : "text-[#3E3D3D] bg-white"
               }`}
             onClick={() => fetchAttestation("offchain")}

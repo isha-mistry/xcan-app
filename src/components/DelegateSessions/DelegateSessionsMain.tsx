@@ -25,7 +25,7 @@ function DelegateSessionsMain() {
 
       <div className="relative w-full px-4 md:px-6 lg:px-14 pb-8 font-tektur">
         {/* <div className="max-w-7xl mx-auto"> */}
-        <div className="bg-gray-800 rounded-xl shadow-lg p-6 mb-8 border border-gray-700">
+        <div className="bg-blue-shade-500 rounded-xl shadow-lg p-6 mb-8 border border-blue-shade-200">
           <div className="flex gap-2 0.5xs:gap-4 rounded-xl text-sm flex-wrap mb-6">
             <Tooltip
               showArrow
@@ -36,13 +36,13 @@ function DelegateSessionsMain() {
                 </div>
               }
               placement="right"
-              className="rounded-md bg-opacity-90 max-w-96 bg-gray-700"
+              className="rounded-md bg-opacity-90 max-w-96 bg-blue-shade-400"
               closeDelay={1}
             >
               <button
-                className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-gray-700 shadow-md ${searchParams.get("active") === "availableDelegates"
-                  ? "text-blue-400 font-semibold bg-gray-700"
-                  : "text-gray-300 bg-gray-800"
+                className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-blue-shade-300 shadow-md ${searchParams.get("active") === "availableDelegates"
+                  ? "text-blue-shade-100 font-semibold bg-blue-shade-300"
+                  : "text-blue-shade-100 bg-blue-shade-500"
                   }`}
                 onClick={() => router.push(path + "?active=availableDelegates")}
               >

@@ -83,14 +83,14 @@ export default function RootLayout({
         <ProgressBarProvider>
           <Suspense>
             <RootProviders>
-              <div className="flex">
-                <div className="lg:hidden fixed z-10 w-full bg-dark-secondary border border-dark-accent">
+              <div className="">
+                <div className="lg:hidden w-full bg-dark-secondary border border-dark-accent">
                   <SidebarMainMobile />
                 </div>
-                <div className="hidden lg:flex items-center fixed h-[60px] bg-dark-secondary w-screen z-10">
+                <div className="hidden lg:flex items-center bg-dark-secondary ">
                   <TopNavbar />
                 </div>
-                <div className="w-[100%] ml-auto mt-[78px] sm:mt-[64px] lg:mt-[60px] z-0">
+                <div className="pt-6">
                   {children}
                 </div>
               </div>

@@ -13,7 +13,7 @@ export default function Home() {
     <main className="min-h-screen bg-dark-primary font-tektur">
       {/* Hero Section */}
       <section className="relative min-h-[85vh] py-6 flex items-center justify-center overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-dark-secondary to-dark-primary opacity-50"></div>
+        <div className="absolute inset-0  opacity-50"></div>
         <div className="container mx-auto px-4 z-10">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             {/* Left Content */}
@@ -23,7 +23,7 @@ export default function Home() {
               transition={{ duration: 0.8 }}
               className="text-left"
             >
-              <div className="inline-block bg-blue-shade-400/10 px-4 py-2 rounded-full mb-6">
+              <div className="inline-block bg-blue-shade-200/10 px-4 py-2 rounded-full mb-6">
                 <span className="text-blue-shade-100 font-medium">Join Our Growing Community</span>
               </div>
               <h1 className="text-4xl md:text-6xl font-bold text-dark-text-primary mb-6 leading-tight">
@@ -97,7 +97,7 @@ export default function Home() {
             >
               <div className="bg-dark-tertiary p-6 rounded-xl">
                 <div className="flex items-start gap-4">
-                  <div className="bg-blue-shade-400/20 p-3 rounded-lg">
+                  <div className="bg-blue-shade-200/20 p-3 rounded-lg">
                     <Video className="w-6 h-6 text-blue-shade-100" />
                   </div>
                   <div>
@@ -120,7 +120,7 @@ export default function Home() {
               <div className="bg-dark-tertiary p-6 rounded-xl">
                 <div className="flex items-start gap-4">
                   <div className="bg-blue-shade-300/20 p-3 rounded-lg">
-                    <Users className="w-6 h-6 text-blue-shade-300" />
+                    <Users className="w-6 h-6 text-blue-shade-100" />
                   </div>
                   <div>
                     <h3 className="text-xl font-semibold text-dark-text-primary mb-2">Community Learning</h3>
@@ -134,7 +134,7 @@ export default function Home() {
       </section>
 
       {/* Features Section */}
-      <section className="py-20 bg-dark-secondary">
+      <section className="py-20 bg-blue-shade-400">
         <div className="container mx-auto px-4">
           <h2 className="text-3xl font-bold text-dark-text-primary text-center mb-12">
             Key Features
@@ -208,7 +208,7 @@ export default function Home() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-dark-primary">
+      <section className="py-20 bg-blue-shade-300">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-3xl font-bold text-dark-text-primary mb-6">
             Ready to Get Started?

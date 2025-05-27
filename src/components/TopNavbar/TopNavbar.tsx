@@ -91,7 +91,7 @@ function TopNavbar() {
 
   return (
     <>
-      <div className="flex justify-between items-center w-screen px-4 font-tektur">
+      <div className="relative z-10 flex justify-between items-center w-screen px-4 font-tektur py-8">
         <div className="flex gap-2 items-center">
           <Link href="/" className="flex items-center gap-2">
             <Image
@@ -118,42 +118,42 @@ function TopNavbar() {
               <Link
                 href={`https://speedrun-stylus-games.vercel.app/`}
                 target="_blank"
-                className={`${styles.item} text-blue-shade-500 font-medium`}
+                className={`${styles.item} text-blue-200 font-medium`}
               >
                 ArbQuest
               </Link>
               <Link
                 href={"/explore-daos"}
-                className={`${styles.item} text-blue-shade-500 font-medium ${pathname.includes(`/explore-daos`)
+                className={`${styles.item} font-medium ${pathname.includes(`/explore-daos`)
                   ? `text-white ${styles.activeitem}`
-                  : ""
+                  : "text-blue-200"
                   }`}
               >
                 DAOs
               </Link>
               <Link
                 href={"/office-hours?hours=ongoing"}
-                className={`${styles.item} text-blue-shade-500 font-medium ${pathname.includes(`/office-hours`)
+                className={`${styles.item} font-medium ${pathname.includes(`/office-hours`)
                   ? `text-white ${styles.activeitem}`
-                  : ""
+                  : "text-blue-200"
                   }`}
               >
                 Office Hours
               </Link>
               <Link
                 href={"/sessions?active=availableDelegates"}
-                className={`${styles.item} text-blue-shade-500 font-medium ${pathname.includes(`/sessions`)
+                className={`${styles.item} font-medium ${pathname.includes(`/sessions`)
                   ? `text-white ${styles.activeitem}`
-                  : ""
+                  : "text-blue-200"
                   }`}
               >
                 Sessions
               </Link>
               <Link
                 href={"/invite"}
-                className={`${styles.item} text-blue-shade-500 font-medium  ${pathname.includes(`/invite`)
+                className={`${styles.item} font-medium  ${pathname.includes(`/invite`)
                   ? `text-white ${styles.activeitem}`
-                  : ""
+                  : "text-blue-200"
                   }`}
               >
                 Invite
@@ -167,9 +167,9 @@ function TopNavbar() {
               >
                 <Link
                   href={"/notifications?active=all"}
-                  className={`${styles.item} text-blue-shade-500 font-medium ${pathname.includes(`/notifications`)
+                  className={`${styles.item} font-medium ${pathname.includes(`/notifications`)
                     ? `text-white ${styles.activeitem}`
-                    : ""
+                    : "text-blue-200"
                     }`}
                 >
                   Notification
@@ -177,9 +177,9 @@ function TopNavbar() {
               </Badge>
               <Link
                 href={`/profile/${address}?active=info`}
-                className={`${styles.item} text-blue-shade-500 font-medium ${pathname.includes(`/profile`)
+                className={`${styles.item}  font-medium ${pathname.includes(`/profile`)
                   ? `text-white ${styles.activeitem}`
-                  : ""
+                  : "text-blue-200"
                   }`}
               >
                 Profile

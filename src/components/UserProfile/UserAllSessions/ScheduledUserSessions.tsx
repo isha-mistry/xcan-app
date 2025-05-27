@@ -584,7 +584,7 @@ function ScheduledUserSessions() {
       <div className="flex flex-col md:flex-row justify-center gap-8 md:gap-10 1.5lg:gap-20 sm:p-4">
         {/* First box- left side */}
         <div
-          className={`w-full md:w-auto p-6 xs:p-8 bg-[#2a2a2a]  rounded-2xl ${styles.boxshadow} basis-1/2`}
+          className={`w-full md:w-auto p-6 xs:p-8 bg-gradient-to-br from-slate-700 to-transparent rounded-2xl ${styles.boxshadow} basis-1/2`}
         >
           <div className="mb-4">
             <label className="text-gray-300 font-semibold flex items-center">
@@ -677,7 +677,7 @@ function ScheduledUserSessions() {
                 <div className="rounded-md flex items-center space-x-2">
                   <select
                     value={startTime.hour}
-                    className="p-2 border rounded cursor-pointer bg-[#2a2a2a]"
+                    className="p-2 border rounded cursor-pointer bg-slate-700"
                     onChange={(e) =>
                       handleTimeChange("start", "hour", e.target.value)
                     }
@@ -691,7 +691,7 @@ function ScheduledUserSessions() {
                   <span>:</span>
                   <select
                     value={startTime.minute}
-                    className="p-2 border rounded cursor-pointer bg-[#2a2a2a]"
+                    className="p-2 border rounded cursor-pointer bg-slate-700"
                     onChange={(e) =>
                       handleTimeChange("start", "minute", e.target.value)
                     }
@@ -701,7 +701,7 @@ function ScheduledUserSessions() {
                   </select>
                   <select
                     value={startTime.ampm}
-                    className="p-2 border rounded cursor-pointer bg-[#2a2a2a]"
+                    className="p-2 border rounded cursor-pointer bg-slate-700"
                     onChange={(e) =>
                       handleTimeChange("start", "ampm", e.target.value)
                     }
@@ -716,7 +716,7 @@ function ScheduledUserSessions() {
                 <div className="rounded-md flex items-center space-x-2">
                   <select
                     value={endTime.hour}
-                    className="p-2 border rounded cursor-pointer bg-[#2a2a2a]"
+                    className="p-2 border rounded cursor-pointer bg-slate-700"
                     onChange={(e) =>
                       handleTimeChange("end", "hour", e.target.value)
                     }
@@ -730,7 +730,7 @@ function ScheduledUserSessions() {
                   <span>:</span>
                   <select
                     value={endTime.minute}
-                    className="p-2 border rounded cursor-pointer bg-[#2a2a2a]"
+                    className="p-2 border rounded cursor-pointer bg-slate-700"
                     onChange={(e) =>
                       handleTimeChange("end", "minute", e.target.value)
                     }
@@ -740,7 +740,7 @@ function ScheduledUserSessions() {
                   </select>
                   <select
                     value={endTime.ampm}
-                    className="p-2 border rounded cursor-pointer bg-[#2a2a2a]"
+                    className="p-2 border rounded cursor-pointer bg-slate-700"
                     onChange={(e) =>
                       handleTimeChange("end", "ampm", e.target.value)
                     }
@@ -821,7 +821,7 @@ function ScheduledUserSessions() {
           <button
             onClick={handleAddSelectedDate}
             disabled={areAllSlotsPast()}
-            className={`bg-blue-shade-300 hover:bg-blue-shade-500 text-white font-semibold py-2 px-4 rounded-md shadow-md transition duration-300 ease-in-out ${areAllSlotsPast()
+            className={`bg-blue-shade-100 hover:bg-blue-shade-200 text-white font-semibold py-2 px-4 rounded-md shadow-md transition duration-300 ease-in-out ${areAllSlotsPast()
               ? "opacity-50 cursor-not-allowed"
               : "cursor-pointer"
               }`}
@@ -840,7 +840,7 @@ function ScheduledUserSessions() {
               {allData.map((item: any, index: any) => (
                 <div
                   key={index}
-                  className="bg-[#414141] p-4 rounded-lg shadow-md flex justify-between items-center"
+                  className="bg-slate-700 p-4 rounded-lg shadow-md flex justify-between items-center"
                 >
                   <div>
                     <p className="font-semibold text-gray-300">{item.date}</p>
@@ -896,7 +896,7 @@ function ScheduledUserSessions() {
 
         {/* Second box- right side */}
         <div
-          className={`w-full md:w-auto p-6 xs:p-8 bg-[#2a2a2a] bg-opacity-70 rounded-2xl ${styles.boxshadow} basis-1/2`}
+          className={`w-full md:w-auto p-6 xs:p-8 bg-gradient-to-br from-slate-700 to-transparent bg-opacity-70 rounded-2xl ${styles.boxshadow} basis-1/2`}
         >
           <AvailableUserSessions
             scheduledSuccess={scheduledSuccess}

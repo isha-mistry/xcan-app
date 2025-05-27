@@ -5,7 +5,7 @@
 
 /* Track */
 .scrollbar::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.25);
+  background: rgba(30, 58, 138, 0.25);
   border-radius: 5px;
   /* padding: 5px; */
   margin: 24px;
@@ -13,7 +13,7 @@
 
 /* Handle */
 .scrollbar::-webkit-scrollbar-thumb {
-  background: #fff;
+  background: #1e40af;
   border-radius: 5px;
 }
 
@@ -21,7 +21,7 @@
   position: relative;
   overflow: hidden;
   transition: all 0.3s ease;
-  box-shadow: 0 6px 10px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 6px 10px rgba(30, 58, 138, 0.3);
 }
 
 .icon3d::before {
@@ -33,15 +33,15 @@
   bottom: 0;
   background: linear-gradient(
     135deg,
-    rgba(255, 255, 255, 0.3) 0%,
-    rgba(255, 255, 255, 0) 50%
+    rgba(30, 64, 175, 0.3) 0%,
+    rgba(30, 64, 175, 0) 50%
   );
   z-index: 1;
 }
 
 .icon3d:hover {
   transform: translateY(-3px);
-  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 8px 15px rgba(30, 58, 138, 0.3);
 }
 
 .iconInner {
@@ -50,19 +50,19 @@
 }
 
 .icon3d.whiteBg {
-  background: linear-gradient(135deg, #ffffff 0%, #f0f0f0 100%);
+  background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
 }
 
 .icon3d.whiteBg::before {
   background: linear-gradient(
     135deg,
-    rgba(255, 255, 255, 0.5) 0%,
-    rgba(255, 255, 255, 0) 50%
+    rgba(30, 64, 175, 0.5) 0%,
+    rgba(30, 64, 175, 0) 50%
   );
 }
 
 .icon3d.whiteBg .iconInner {
-  background: linear-gradient(135deg, #0077b6 0%, #005b8e 100%);
+  background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }

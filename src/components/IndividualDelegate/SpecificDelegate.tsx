@@ -521,10 +521,10 @@ function SpecificDelegate({ props }: { props: Type }) {
                   </div>
                 </div>
 
-                <div className="hidden md:flex gap-12 bg-[#D9D9D945] pl-16">
+                <div className="hidden md:flex gap-12 bg-[#c2defd22] pl-16">
                   <button
                     className={`border-b-2 py-4 px-2  ${searchParams.get("active") === "info"
-                      ? " border-blue-shade-200 text-blue-shade-200 font-semibold"
+                      ? " border-blue-300 text-blue-300 font-semibold"
                       : "border-transparent"
                       }`}
                     onClick={() => router.push(path + "?active=info")}
@@ -533,7 +533,7 @@ function SpecificDelegate({ props }: { props: Type }) {
                   </button>
                   <button
                     className={`border-b-2 py-4 px-2 ${searchParams.get("active") === "delegatesSession"
-                      ? "text-blue-shade-200 font-semibold border-b-2 border-blue-shade-200"
+                      ? "text-blue-300 font-semibold border-b-2 border-blue-300"
                       : "border-transparent"
                       }`}
                     onClick={() =>
@@ -544,7 +544,7 @@ function SpecificDelegate({ props }: { props: Type }) {
                   </button>
                   <button
                     className={`border-b-2 py-4 px-2 ${searchParams.get("active") === "officeHours"
-                      ? "text-blue-shade-200 font-semibold border-b-2 border-blue-shade-200"
+                      ? "text-blue-300 font-semibold border-b-2 border-blue-300"
                       : "border-transparent"
                       }`}
                     onClick={() =>
