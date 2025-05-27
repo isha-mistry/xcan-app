@@ -43,7 +43,7 @@ const DelegateInfoCard: React.FC<DelegateInfoCardProps> = ({
   const [tooltipContent, setTooltipContent] = useState("Copy");
   const [isAnimating, setIsAnimating] = useState(false);
 
-console.log("delegate",delegate)  
+  console.log("delegate", delegate)
 
   useEffect(() => {
     const fetchEnsData = async () => {
@@ -66,7 +66,7 @@ console.log("delegate",delegate)
   function getDaoNameFromUrl() {
     if (typeof window !== "undefined") {
       const url = window.location.href;
-      const currentDAO=daoConfigs[daoName];
+      const currentDAO = daoConfigs[daoName];
       if (url.includes(currentDAO.name)) return currentDAO.name.toLowerCase();
       // if (url.includes("arbitrum")) return "arbitrum";
     }
@@ -151,11 +151,10 @@ console.log("delegate",delegate)
             <Tooltip content={tooltipContent}>
               <button
                 onClick={handleCopyAddress}
-                className={` ${
-                  isAnimating
+                className={` ${isAnimating
                     ? "text-blue-500"
                     : "text-gray-400 hover:text-gray-600 "
-                }  transition-colors duration-200 bg-gray-700`}
+                  }  transition-colors duration-200 bg-gray-700`}
               >
                 <IoCopy size={16} />
               </button>
@@ -166,36 +165,36 @@ console.log("delegate",delegate)
         <div className="bg-blue-100 mx-auto w-fit text-blue-800 text-sm font-medium px-2.5 py-1 rounded-full text-center">
           {formatNumber(delegate.adjustedBalance)} delegated tokens
         </div>
-{ daoName !== "letsgrowdao" && (
-        <motion.button
-          className="w-full bg-gradient-to-r from-[#3b82f6] to-[#31316d] text-white font-medium py-2 px-4 rounded-3xl overflow-hidden relative"
-          whileHover={{ scale: 1.05 }}
-          transition={{ duration: 0.2 }}
-          onMouseEnter={() => setIsButtonHovered(true)}
-          onMouseLeave={() => setIsButtonHovered(false)}
-          // onClick={(e) => {
-          //   e.stopPropagation();
-          //   onDelegateClick(delegate);
-          // }}
-          onClick={handleDelegateButtonClick}
-        >
-          <motion.div
-            className="flex items-center justify-center"
-            initial={{ x: 50 }}
-            animate={{ x: isButtonHovered ? 0 : 0 }}
-            transition={{ duration: 0.3 }}
+        {daoName !== "letsgrowdao" && (
+          <motion.button
+            className="w-full bg-gradient-to-r from-[#3b82f6] to-[#31316d] text-white font-medium py-2 px-4 rounded-3xl overflow-hidden relative"
+            whileHover={{ scale: 1.05 }}
+            transition={{ duration: 0.2 }}
+            onMouseEnter={() => setIsButtonHovered(true)}
+            onMouseLeave={() => setIsButtonHovered(false)}
+            // onClick={(e) => {
+            //   e.stopPropagation();
+            //   onDelegateClick(delegate);
+            // }}
+            onClick={handleDelegateButtonClick}
           >
-            Delegate
-          </motion.div>
-          <motion.div
-            className="absolute inset-0 flex items-center justify-center"
-            initial={{ x: 60 }}
-            animate={{ x: isButtonHovered ? 70 : 60 }}
-            transition={{ duration: 0.3 }}
-          >
-            <IoArrowForward size={24} />
-          </motion.div>
-        </motion.button>)}
+            <motion.div
+              className="flex items-center justify-center"
+              initial={{ x: 50 }}
+              animate={{ x: isButtonHovered ? 0 : 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              Delegate
+            </motion.div>
+            <motion.div
+              className="absolute inset-0 flex items-center justify-center"
+              initial={{ x: 60 }}
+              animate={{ x: isButtonHovered ? 70 : 60 }}
+              transition={{ duration: 0.3 }}
+            >
+              <IoArrowForward size={24} />
+            </motion.div>
+          </motion.button>)}
       </div>
     </motion.div>
   );

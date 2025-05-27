@@ -68,7 +68,7 @@ function AvailableUserSessions({
         toast.error("Failed to fetch data.");
       }
     };
-    if (address && isConnected) {
+    if (address) {
       fetchData();
     }
   }, [
@@ -79,9 +79,8 @@ function AvailableUserSessions({
   ]);
 
   return (
-    // <div className="max-w-xl mt-2 p-8 bg-white rounded-2xl shadow-lg min-w-[34rem] min-h-[35rem]">
     <div className="">
-      <h1 className="text-[#52648c] font-semibold 1.5lg:text-2xl text-xl mb-4 flex justify-center">
+      <h1 className="text-white font-semibold 1.5lg:text-2xl text-xl mb-4 flex justify-center">
         Your Scheduled Availability
       </h1>
       {dataLoading ? (
@@ -126,7 +125,7 @@ function AvailableUserSessions({
           )}
         </>
       ) : (
-        <div className="text-center text-gray-500">
+        <div className="text-center text-gray-400">
           No Scheduled Available Time
         </div>
       )}
@@ -254,7 +253,7 @@ function TimeSlotTable({
 
   return (
     <>
-      <p className="text-gray-700 font-semibold my-2">{title}:</p>
+      <p className="text-gray-300 font-semibold my-2">{title}:</p>
       <div className="space-y-4">
         <AnimatePresence>
           {data.map((item: any, index: number) =>
@@ -265,23 +264,23 @@ function TimeSlotTable({
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 10 }}
-                  className="bg-white shadow-md rounded-lg p-4 flex justify-between items-center"
+                  className="bg-gray-800 shadow-lg border border-gray-700 rounded-lg p-4 flex justify-between items-center"
                 >
                   <div>
-                    <p className="font-semibold">
+                    <p className="font-semibold text-white">
                       {convertUTCToLocalDate(dateRange.date)}
                     </p>
-                    <p>{convertUTCToLocalTime(dateRange.date, timeRange)}</p>
+                    <p className="text-gray-300">{convertUTCToLocalTime(dateRange.date, timeRange)}</p>
                   </div>
                   <div className="flex xs:space-x-2">
                     <button
-                      className="p-2 text-blue-600 hover:text-blue-800"
+                      className="p-2 text-blue-400 hover:text-blue-300 transition-colors"
                       onClick={handleButtonClick}
                     >
                       <FaPencilAlt />
                     </button>
                     <button
-                      className={`p-2 text-red-600 hover:text-red-800 ${deleting === dateRange.date
+                      className={`p-2 text-red-400 hover:text-red-300 transition-colors ${deleting === dateRange.date
                           ? "opacity-50 cursor-not-allowed"
                           : ""
                         }`}

@@ -8,6 +8,7 @@ import { IoClose } from "react-icons/io5";
 import { SiDiscourse } from "react-icons/si";
 import { TbBrandGithubFilled, TbMailFilled } from "react-icons/tb";
 import { Button, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, Tooltip, } from "@nextui-org/react";
+import { RiTelegram2Fill } from "react-icons/ri";
 
 interface ProfileModalProps {
   isOpen: boolean;
@@ -16,7 +17,7 @@ interface ProfileModalProps {
     displayName: string;
     emailId: string;
     twitter: string;
-    discourse: string;
+    telegram: string;
     discord: string;
     github: string;
     displayImage: string;
@@ -209,16 +210,16 @@ function UpdateProfileModal({
                 </div>
                 <div className="flex flex-col basis-1/2 mt-1.5">
                   <div className="text-sm font-semibold flex px-3 items-center gap-1.5 text-gray-200">
-                    <SiDiscourse />
-                    Discourse:
+                    <RiTelegram2Fill />
+                    Telegram:
                   </div>
                   <input
                     type="url"
-                    value={modalData.discourse}
+                    value={modalData.telegram}
                     placeholder="Enter Discourse Name"
                     className="border border-gray-600 mt-1 bg-gray-700 rounded-lg px-3 py-[10px] text-sm text-gray-200 font-normal placeholder-gray-400 focus:border-blue-400 focus:outline-none transition-colors"
                     onChange={(e) =>
-                      handleInputChange("discourse", e.target.value)
+                      handleInputChange("telegram", e.target.value)
                     }
                   />
                 </div>

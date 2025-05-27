@@ -27,7 +27,6 @@ function DelegateSessions({ props }: { props: Type }) {
   const searchParams = useSearchParams();
   const [dataLoading, setDataLoading] = useState(true);
   const [sessionDetails, setSessionDetails] = useState([]);
-  const dao_name = props.daoDelegates;
   const [error, setError] = useState<string | null>(null);
   const { address } = useAccount();
   const { ready, authenticated, login, logout, user } = usePrivy();
@@ -72,8 +71,7 @@ function DelegateSessions({ props }: { props: Type }) {
         }),
       };
       const raw = JSON.stringify({
-        dao_name: dao_name,
-        address: props.individualDelegate,
+        address: address,
       });
       const requestOptions: any = {
         method: "POST",
@@ -99,7 +97,7 @@ function DelegateSessions({ props }: { props: Type }) {
               return (
                 session.meeting_status === "Recorded" &&
                 session.host_address?.toLowerCase() ===
-                  props.individualDelegate?.toLowerCase()
+                address?.toLowerCase()
               );
             });
             setSessionDetails(filteredData);
@@ -110,7 +108,7 @@ function DelegateSessions({ props }: { props: Type }) {
                 session.attendees?.some(
                   (attendee) =>
                     attendee.attendee_address?.toLowerCase() ===
-                    props.individualDelegate?.toLowerCase()
+                    address?.toLowerCase()
                 )
               );
             });
@@ -130,8 +128,7 @@ function DelegateSessions({ props }: { props: Type }) {
   useEffect(() => {
     getMeetingData();
   }, [
-    props.daoDelegates,
-    props.individualDelegate,
+    address,
     searchParams.get("session"),
   ]);
 
@@ -157,11 +154,10 @@ function DelegateSessions({ props }: { props: Type }) {
           onScroll={handleScroll}
         >
           <button
-            className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md ${
-              searchParams.get("session") === "book"
-                ? "text-[#0500FF] font-semibold bg-[#f5f5f5]"
+            className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md ${searchParams.get("session") === "book"
+                ? "text-[#397dcf] font-semibold bg-[#f5f5f5]"
                 : "text-[#3E3D3D] bg-white"
-            }`}
+              }`}
             onClick={() =>
               router.push(path + "?active=delegatesSession&session=book")
             }
@@ -170,11 +166,10 @@ function DelegateSessions({ props }: { props: Type }) {
             Book
           </button>
           <button
-            className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md ${
-              searchParams.get("session") === "hosted"
-                ? "text-[#0500FF] font-semibold bg-[#f5f5f5]"
+            className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md ${searchParams.get("session") === "hosted"
+                ? "text-[#397dcf] font-semibold bg-[#f5f5f5]"
                 : "text-[#3E3D3D] bg-white"
-            }`}
+              }`}
             onClick={() =>
               router.push(path + "?active=delegatesSession&session=hosted")
             }
@@ -183,11 +178,10 @@ function DelegateSessions({ props }: { props: Type }) {
             Hosted
           </button>
           <button
-            className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md ${
-              searchParams.get("session") === "attended"
-                ? "text-[#0500FF] font-semibold bg-[#f5f5f5]"
+            className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md ${searchParams.get("session") === "attended"
+                ? "text-[#397dcf] font-semibold bg-[#f5f5f5]"
                 : "text-[#3E3D3D] bg-white"
-            }`}
+              }`}
             onClick={() =>
               router.push(path + `?active=delegatesSession&session=attended&dao=${props.daoDelegates}`)
             }
@@ -210,7 +204,7 @@ function DelegateSessions({ props }: { props: Type }) {
                 <div className="pt-4 font-semibold text-lg">
                   Oops, no such result available!
                 </div> */}
-                <NoResultsFound/>
+                <NoResultsFound />
               </div>
             ) : (
               <RecordedSessionsTile meetingData={sessionDetails} />
@@ -224,7 +218,7 @@ function DelegateSessions({ props }: { props: Type }) {
                 <div className="pt-4 font-semibold text-lg">
                   Oops, no such result available!
                 </div> */}
-                <NoResultsFound/>
+                <NoResultsFound />
               </div>
             ) : (
               <RecordedSessionsTile meetingData={sessionDetails} />

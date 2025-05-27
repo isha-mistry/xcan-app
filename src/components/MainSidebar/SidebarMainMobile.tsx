@@ -136,7 +136,7 @@ const SidebarMainMobile = () => {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center">
                       <IoIosRocket className="size-5 mr-4" />
-                      <span>ArbQuests</span>
+                      <span>ArbQuest</span>
                     </div>
                     <FiArrowUpRight className="w-5 h-5" />
                   </div>

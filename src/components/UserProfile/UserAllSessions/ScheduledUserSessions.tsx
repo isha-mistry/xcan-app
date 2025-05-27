@@ -584,14 +584,14 @@ function ScheduledUserSessions() {
       <div className="flex flex-col md:flex-row justify-center gap-8 md:gap-10 1.5lg:gap-20 sm:p-4">
         {/* First box- left side */}
         <div
-          className={`w-full md:w-auto p-6 xs:p-8 bg-gray-900 bg-opacity-70 rounded-2xl ${styles.boxshadow} basis-1/2`}
+          className={`w-full md:w-auto p-6 xs:p-8 bg-[#2a2a2a]  rounded-2xl ${styles.boxshadow} basis-1/2`}
         >
           <div className="mb-4">
-            <label className="text-gray-500 font-semibold flex items-center">
+            <label className="text-gray-300 font-semibold flex items-center">
               Select Time Slot Size:
               <Tooltip
                 content={
-                  <div className="font-tektur p-2 max-w-80 text-black rounded-md">
+                  <div className="font-tektur p-2 max-w-80 text-white rounded-md">
                     The duration for which you would be able to take the
                     session. The preferred duration is 30 minutes. And note that
                     the selected time slot size will apply to all the selected
@@ -623,11 +623,11 @@ function ScheduledUserSessions() {
           </div>
 
           <div className="mb-4">
-            <label className="text-gray-500 font-semibold flex items-center">
+            <label className="text-gray-300 font-semibold flex items-center">
               Select Date:
               <Tooltip
                 content={
-                  <div className="font-tektur p-2 text-black rounded-md">
+                  <div className="font-tektur p-2 text-white rounded-md">
                     It is based on your timezone.
                   </div>
                 }
@@ -652,11 +652,11 @@ function ScheduledUserSessions() {
           </div>
 
           <div className="flex flex-col mb-4">
-            <label className="text-gray-500 font-semibold flex items-center">
+            <label className="text-gray-300 font-semibold flex items-center">
               Select Available Time:
               <Tooltip
                 content={
-                  <div className="font-tektur p-2 max-w-80 text-black rounded-md">
+                  <div className="font-tektur p-2 max-w-80 text-white rounded-md">
                     Session start time and end time based on your timezone.
                   </div>
                 }
@@ -673,11 +673,11 @@ function ScheduledUserSessions() {
 
             <div className="grid grid-cols-1 xm:grid-cols-2 md:grid-cols-1 xl:grid-cols-2 gap-4">
               <div>
-                <label className="text-gray-500 mt-2">Start Time</label>
+                <label className="text-gray-300 mt-2">Start Time</label>
                 <div className="rounded-md flex items-center space-x-2">
                   <select
                     value={startTime.hour}
-                    className="p-2 border rounded cursor-pointer bg-slate-900"
+                    className="p-2 border rounded cursor-pointer bg-[#2a2a2a]"
                     onChange={(e) =>
                       handleTimeChange("start", "hour", e.target.value)
                     }
@@ -691,7 +691,7 @@ function ScheduledUserSessions() {
                   <span>:</span>
                   <select
                     value={startTime.minute}
-                    className="p-2 border rounded cursor-pointer bg-slate-900"
+                    className="p-2 border rounded cursor-pointer bg-[#2a2a2a]"
                     onChange={(e) =>
                       handleTimeChange("start", "minute", e.target.value)
                     }
@@ -701,7 +701,7 @@ function ScheduledUserSessions() {
                   </select>
                   <select
                     value={startTime.ampm}
-                    className="p-2 border rounded cursor-pointer bg-slate-900"
+                    className="p-2 border rounded cursor-pointer bg-[#2a2a2a]"
                     onChange={(e) =>
                       handleTimeChange("start", "ampm", e.target.value)
                     }
@@ -712,11 +712,11 @@ function ScheduledUserSessions() {
                 </div>
               </div>
               <div>
-                <label className="text-gray-500 mt-1">End Time</label>
+                <label className="text-gray-300 mt-1">End Time</label>
                 <div className="rounded-md flex items-center space-x-2">
                   <select
                     value={endTime.hour}
-                    className="p-2 border rounded cursor-pointer bg-slate-900"
+                    className="p-2 border rounded cursor-pointer bg-[#2a2a2a]"
                     onChange={(e) =>
                       handleTimeChange("end", "hour", e.target.value)
                     }
@@ -730,7 +730,7 @@ function ScheduledUserSessions() {
                   <span>:</span>
                   <select
                     value={endTime.minute}
-                    className="p-2 border rounded cursor-pointer bg-slate-900"
+                    className="p-2 border rounded cursor-pointer bg-[#2a2a2a]"
                     onChange={(e) =>
                       handleTimeChange("end", "minute", e.target.value)
                     }
@@ -740,7 +740,7 @@ function ScheduledUserSessions() {
                   </select>
                   <select
                     value={endTime.ampm}
-                    className="p-2 border rounded cursor-pointer bg-slate-900"
+                    className="p-2 border rounded cursor-pointer bg-[#2a2a2a]"
                     onChange={(e) =>
                       handleTimeChange("end", "ampm", e.target.value)
                     }
@@ -753,11 +753,11 @@ function ScheduledUserSessions() {
             </div>
 
             <div className="mt-4">
-              <label className="text-gray-500 font-semibold flex items-center">
+              <label className="text-gray-300 font-semibold flex items-center">
                 Total Session Count:
                 <Tooltip
                   content={
-                    <div className="font-tektur p-2 max-w-80 text-black rounded-md">
+                    <div className="font-tektur p-2 max-w-80 text-white rounded-md">
                       Displays the number of individual time slots available for
                       booking, calculated based on your selected time range and
                       slot duration.
@@ -840,11 +840,11 @@ function ScheduledUserSessions() {
               {allData.map((item: any, index: any) => (
                 <div
                   key={index}
-                  className="bg-white p-4 rounded-lg shadow-md flex justify-between items-center"
+                  className="bg-[#414141] p-4 rounded-lg shadow-md flex justify-between items-center"
                 >
                   <div>
-                    <p className="font-semibold text-gray-500">{item.date}</p>
-                    <p className="text-gray-600">
+                    <p className="font-semibold text-gray-300">{item.date}</p>
+                    <p className="text-gray-200">
                       {item.timeRanges
                         .map((time: any) => {
                           const [startTime, endTime] = time;
@@ -896,7 +896,7 @@ function ScheduledUserSessions() {
 
         {/* Second box- right side */}
         <div
-          className={`w-full md:w-auto p-6 xs:p-8 bg-gray-900 bg-opacity-70 rounded-2xl ${styles.boxshadow} basis-1/2`}
+          className={`w-full md:w-auto p-6 xs:p-8 bg-[#2a2a2a] bg-opacity-70 rounded-2xl ${styles.boxshadow} basis-1/2`}
         >
           <AvailableUserSessions
             scheduledSuccess={scheduledSuccess}

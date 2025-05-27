@@ -238,8 +238,8 @@ function InviteCreators({ userAddress }: { userAddress: any }) {
                     {
                       platform: "telegram",
                       icon: FaTelegram,
-                      color: "",
-                      iconStyle: "text-[#229ED9] bg-white",
+                      color: "bg-white",
+                      iconStyle: "text-[#229ED9]",
                       iconSize: 48,
                     },
                   ].map(

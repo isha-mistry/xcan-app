@@ -3,9 +3,11 @@
 import { motion } from "framer-motion";
 import { Calendar, Clock, Users, Video, BookOpen, Award, Star } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useAccount } from "wagmi";
 
 export default function Home() {
   const router = useRouter();
+  const { address } = useAccount();
 
   return (
     <main className="min-h-screen bg-dark-primary font-tektur">
@@ -69,7 +71,7 @@ export default function Home() {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   className="bg-blue-shade-100 text-white px-8 py-3 rounded-full font-semibold hover:bg-blue-shade-300 transition-colors flex items-center justify-center gap-2"
-                  onClick={() => router.push("/profile?active=info")}
+                  onClick={() => router.push(`/profile/${address}?active=info`)}
                 >
                   <Star className="w-5 h-5" />
                   Get Started
@@ -78,7 +80,7 @@ export default function Home() {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   className="bg-dark-tertiary text-dark-text-primary px-8 py-3 rounded-full font-semibold hover:bg-dark-accent transition-colors flex items-center justify-center gap-2"
-                  onClick={() => router.push("/profile?active=info")}
+                  onClick={() => router.push(`/profile/${address}?active=info`)}
                 >
                   <Calendar className="w-5 h-5" />
                   View Schedule
@@ -218,7 +220,7 @@ export default function Home() {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             className="bg-blue-shade-100 text-white px-8 py-3 rounded-full font-semibold hover:bg-blue-shade-300 transition-colors"
-            onClick={() => router.push("/profile?active=info")}
+            onClick={() => router.push(`/profile/${address}?active=info`)}
           >
             Get Started
           </motion.button>

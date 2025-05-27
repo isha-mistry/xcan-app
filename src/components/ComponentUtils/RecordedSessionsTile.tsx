@@ -327,7 +327,7 @@ function RecordedSessionsTile({
                     <div>
                       <span className="font-medium">Host: </span>
                       <Link
-                        href={`/arbitrum/${data.host_address}?active=info`}
+                        href={`/user/${data.host_address}?active=info`}
                         onClick={(event: any) => {
                           event.stopPropagation();
                         }}

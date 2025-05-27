@@ -23,7 +23,7 @@ import { ChevronDownIcon } from "lucide-react";
 import { usePrivy, useWallets } from "@privy-io/react-auth";
 import { fetchApi } from "@/utils/api";
 import { BrowserProvider, Contract } from "ethers";
-import { MeetingRecords } from "@/types/UserProfileTypes";
+import { SessionRecords } from "@/types/UserProfileTypes";
 import { Tooltip } from "@nextui-org/react";
 import { FaXTwitter, FaDiscord, FaGithub } from "react-icons/fa6";
 import { BiSolidMessageRoundedDetail } from "react-icons/bi";
@@ -42,6 +42,7 @@ import { BASE_URL, LIGHTHOUSE_BASE_API_KEY } from "@/config/constants";
 import { getDaoName } from "@/utils/chainUtils";
 import { checkLetsGrowDAODelegateStatus } from "@/utils/checkLetsGrowDAODelegateStatus"
 import { useConnection } from "@/app/hooks/useConnection";
+import { RiTelegram2Fill } from "react-icons/ri";
 interface Following {
   follower_address: string;
   isFollowing: boolean;
@@ -57,37 +58,33 @@ function MainProfile() {
   const { disconnect } = useDisconnect();
   const { wallets } = useWallets();
   const [description, setDescription] = useState("");
-  const [isDelegate, setIsDelegate] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [karmaImage, setKarmaImage] = useState<any>();
-  const [karmaEns, setKarmaEns] = useState("");
-  const [karmaDesc, setKarmaDesc] = useState("");
   const [isPageLoading, setIsPageLoading] = useState(true);
   const [selfDelegate, setSelfDelegate] = useState(false);
   const [daoName, setDaoName] = useState("");
-  const [attestationStatistics, setAttestationStatistics] = useState<MeetingRecords | null>(null);
+  const [attestationStatistics, setAttestationStatistics] = useState<SessionRecords | null>(null);
   const [isCopied, setIsCopied] = useState(false);
   const [isToggled, setToggle] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [selectedTab, setSelectedTab] = useState("Info");
   const [copiedAddress, setCopiedAddress] = useState<string | null>(null);
-  const [isspin, setSpin] = useState(false);
   const [modalData, setModalData] = useState({
     displayImage: "",
     displayName: "",
     emailId: "",
     twitter: "",
     discord: "",
-    discourse: "",
     github: "",
+    telegram: "",
   });
   const [userData, setUserData] = useState({
     displayImage: "",
     displayName: "",
     twitter: "",
     discord: "",
-    discourse: "",
     github: "",
+    telegram: "",
+    description: "",
   });
   // const [isDelegateLoading, setIsDelegateLoading] = useState(true);
   const tabs = [
@@ -297,15 +294,9 @@ function MainProfile() {
           twitter: modalData.twitter,
           discord: modalData.discord,
           github: modalData.github,
+          telegram: modalData.telegram,
         },
-        networks: [
-          {
-            dao_name: daoName,
-            network: chain?.name,
-            discourse: modalData.discourse,
-            description: descriptionToSave,
-          },
-        ],
+        description: descriptionToSave,
       });
 
       const requestOptions: any = {
@@ -323,12 +314,10 @@ function MainProfile() {
           displayName: modalData.displayName,
           twitter: modalData.twitter,
           discord: modalData.discord,
-          discourse: modalData.discourse,
           github: modalData.github,
+          telegram: modalData.telegram,
+          description: descriptionToSave,
         });
-        if (typeof newDescription === 'string') {
-          setDescription(newDescription);
-        }
         // toast.success("Profile updated successfully!");
       } else {
         console.error("Failed to update delegate:", result.error);
@@ -376,22 +365,6 @@ function MainProfile() {
       setSelectedTab(tab?.name || "Info");
     }
   }, [searchParams, tabs]);
-  useEffect(() => {
-    // Check the `dao` query parameter from the URL
-    const daoParam = searchParams.get("dao");
-    if (daoParam && Object.keys(daoConfigs).includes(daoParam.toLowerCase())) {
-      setDaoName(daoParam.toLowerCase());
-      return;
-    }
-
-    // If no DAO is found in the URL, determine it by chain
-    const daoKey = Object.keys(daoConfigs).find(
-      (key) => daoConfigs[key].chainName === chain?.name
-    );
-
-
-    setDaoName(daoKey || "");
-  }, [chain, chain?.name, path, searchParams.toString()]);  // 👈 Added `router.asPath` to trigger updates
 
   useEffect(() => {
     if (isConnected && authenticated && path.includes("profile/undefined")) {
@@ -424,12 +397,6 @@ function MainProfile() {
       try {
         // setIsDelegateLoading(true);
         const token = await getAccessToken();
-
-        const daoKey = Object.keys(daoConfigs).find(
-          (key) => daoConfigs[key].chainName === chain?.name
-        );
-
-        let dao = daoKey;
         const myHeaders: HeadersInit = {
           "Content-Type": "application/json",
           ...(address && {
@@ -458,34 +425,29 @@ function MainProfile() {
           setUserData({
             displayName: dbResponse.data[0]?.displayName,
             discord: dbResponse.data[0]?.socialHandles?.discord,
-            discourse:
-              dbResponse.data[0]?.networks?.find(
-                (network: any) => network?.dao_name === dao
-              )?.discourse || "",
             twitter: dbResponse.data[0].socialHandles?.twitter,
             github: dbResponse.data[0].socialHandles?.github,
+            telegram: dbResponse.data[0]?.socialHandles?.telegram,
             displayImage: dbResponse.data[0]?.image,
+            description: dbResponse.data[0]?.description
           });
           setAttestationStatistics(dbResponse.data[0]?.meetingRecords ?? null);
 
           setModalData({
             displayName: dbResponse.data[0]?.displayName,
             discord: dbResponse.data[0]?.socialHandles?.discord,
-            discourse:
-              dbResponse.data[0]?.networks?.find(
-                (network: any) => network?.dao_name === dao
-              )?.discourse || "",
             emailId: dbResponse.data[0]?.emailId,
             twitter: dbResponse.data[0]?.socialHandles?.twitter,
             github: dbResponse.data[0]?.socialHandles?.github,
+            telegram: dbResponse.data[0]?.socialHandles?.telegram,
             displayImage: dbResponse.data[0]?.image,
           });
           setToggle(dbResponse.data[0]?.isEmailVisible);
-          setDescription(
-            dbResponse.data[0]?.networks?.find(
-              (network: any) => network.dao_name === dao
-            )?.description || ""
-          );
+          // setDescription(
+          //   dbResponse.data[0]?.networks?.find(
+          //     (network: any) => network.dao_name === dao
+          //   )?.description || ""
+          // );
 
         } else {
           setIsPageLoading(false);
@@ -543,9 +505,7 @@ function MainProfile() {
               <div className="pl-4 md:px-4 mt-4 xs:mt-0 md:mt-2 lg:mt-4 w-full xs:w-auto">
                 <div className=" flex items-center py-1">
                   <div className="font-bold text-[22px] xs:text-xl sm:text-xl lg:text-[22px] pr-4">
-                    {karmaEns ? (
-                      karmaEns
-                    ) : userData.displayName ? (
+                    {userData.displayName ? (
                       userData.displayName
                     ) : (
                       <>
@@ -558,53 +518,49 @@ function MainProfile() {
                   </div>
                   <div className="flex gap-2 sm:gap-3">
                     <Link
-                      href={`https://twitter.com/${userData.twitter}`}
-                      className={`border-[0.5px] border-[#8E8E8E] rounded-full h-fit p-1 ${userData.twitter == "" || userData.twitter == undefined
+                      href={`https://x.com/${userData.twitter}`}
+                      className={`border-[0.5px] border-white rounded-full h-fit p-1 ${userData.twitter == "" || userData.twitter == undefined
                         ? "hidden"
                         : ""
                         }`}
                       style={{ backgroundColor: "rgba(217, 217, 217, 0.42)" }}
                       target="_blank"
                     >
-                      <FaXTwitter color="#7C7C7C" size={12} />
+                      <FaXTwitter color="white" size={12} />
                     </Link>
                     <Link
-                      href={
-                        daoName
-                          ? `${daoConfigs[daoName]?.discourseUrl}/${userData.discourse}`
-                          : ""
-                      }
-                      className={`border-[0.5px] border-[#8E8E8E] rounded-full h-fit p-1  ${userData.discourse == "" ||
-                        userData.discourse == undefined
+                      href={`https://t.me/${userData.telegram}`}
+                      className={`border-[0.5px] border-white rounded-full h-fit p-1  ${userData.telegram == "" ||
+                        userData.telegram == undefined
                         ? "hidden"
                         : ""
                         }`}
                       style={{ backgroundColor: "rgba(217, 217, 217, 0.42)" }}
                       target="_blank"
                     >
-                      <BiSolidMessageRoundedDetail color="#7C7C7C" size={12} />
+                      <RiTelegram2Fill color="white" size={12} />
                     </Link>
                     <Link
                       href={`https://discord.com/${userData.discord}`}
-                      className={`border-[0.5px] border-[#8E8E8E] rounded-full h-fit p-1 ${userData.discord == "" || userData.discord == undefined
+                      className={`border-[0.5px] border-white rounded-full h-fit p-1 ${userData.discord == "" || userData.discord == undefined
                         ? "hidden"
                         : ""
                         }`}
                       style={{ backgroundColor: "rgba(217, 217, 217, 0.42)" }}
                       target="_blank"
                     >
-                      <FaDiscord color="#7C7C7C" size={12} />
+                      <FaDiscord color="white" size={12} />
                     </Link>
                     <Link
                       href={`https://github.com/${userData.github}`}
-                      className={`border-[0.5px] border-[#8E8E8E] rounded-full h-fit p-1 ${userData.github == "" || userData.github == undefined
+                      className={`border-[0.5px] border-white rounded-full h-fit p-1 ${userData.github == "" || userData.github == undefined
                         ? "hidden"
                         : ""
                         }`}
                       style={{ backgroundColor: "rgba(217, 217, 217, 0.42)" }}
                       target="_blank"
                     >
-                      <FaGithub color="#7C7C7C" size={12} />
+                      <FaGithub color="white" size={12} />
                     </Link>
                     <Tooltip
                       content="Update your Profile"
@@ -613,11 +569,11 @@ function MainProfile() {
                       className="bg-gray-700"
                     >
                       <span
-                        className="border-[0.5px] border-[#8E8E8E] rounded-full h-fit p-1 cursor-pointer"
+                        className="border-[0.5px] border-white rounded-full h-fit p-1 cursor-pointer"
                         style={{ backgroundColor: "rgba(217, 217, 217, 0.42)" }}
                         onClick={onOpen}
                       >
-                        <FaPencil color="#3e3d3d" size={12} />
+                        <FaPencil color="white" size={10} />
                       </span>
                     </Tooltip>
                     <UpdateProfileModal
@@ -673,7 +629,7 @@ function MainProfile() {
                         onPress={() => {
                           if (typeof window === "undefined") return;
                           navigator.clipboard.writeText(
-                            `${BASE_URL}/arbitrum/${address}?active=info`
+                            `${BASE_URL}/user/${address}?active=info`
                           );
                           setIsCopied(true);
                           setTimeout(() => {
@@ -789,14 +745,10 @@ function MainProfile() {
               {searchParams.get("active") === "info" ? (
                 <div className="pt-2 xs:pt-4 sm:pt-6 px-4 md:px-6 lg:px-14">
                   <UserInfo
-                    karmaDesc={karmaDesc}
                     description={description}
-                    isDelegate={isDelegate}
-                    isSelfDelegate={selfDelegate}
                     onSaveButtonClick={(newDescription?: string) =>
                       handleSave(newDescription)
                     }
-                    daoName={daoName}
                     attestationCounts={attestationStatistics} />
                 </div>
               ) : ("")}
@@ -817,11 +769,7 @@ function MainProfile() {
 
               {searchParams.get("active") === "instant-meet" ? (
                 <div className="pt-2 xs:pt-4 sm:pt-6 px-4 md:px-6 lg:px-14">
-                  <InstantMeet
-                    isDelegate={isDelegate}
-                    selfDelegate={selfDelegate}
-                    daoName={daoName}
-                  />
+                  <InstantMeet />
                 </div>
               ) : (
                 ""

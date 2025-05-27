@@ -280,7 +280,7 @@ const OfficeHourTile = ({
             </div>
 
             {/* Description */}
-            <p className="text-sm text-gray-600 line-clamp-2">
+            <p className="text-sm text-gray-400 line-clamp-2">
               {data.description}
             </p>
 
@@ -323,7 +323,7 @@ const OfficeHourTile = ({
               />
               <span className="font-medium text-sm">Host:</span>
               <Link
-                href={`/arbitrum/${data.host_address}?active=info`}
+                href={`/user/${data.host_address}?active=info`}
                 passHref
                 onClick={(event: any) => {
                   event.stopPropagation();
@@ -463,10 +463,10 @@ const OfficeHourTile = ({
 
             {(isUpcoming || isOngoing) && (
               <>
-                <div className="flex items-center space-x-2 text-sm text-gray-700">
+                <div className="flex items-center space-x-2 text-sm text-gray-400">
                   <Clock className="w-4 h-4 text-indigo-500" />
                   <span className="font-medium">Starts at:</span>
-                  <span className="text-indigo-600 font-semibold">
+                  <span className="text-indigo-300 font-semibold">
                     {`${new Date(data.startTime)
                       .toLocaleDateString("en-GB", {
                         day: "2-digit",

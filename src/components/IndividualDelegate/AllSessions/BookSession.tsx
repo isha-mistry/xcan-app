@@ -174,7 +174,6 @@ const StyledCalendarContainer = styled.div`
 
 function BookSession({ props }: { props: Type }) {
   const router = useRouter();
-  const daoName = props.daoDelegates;
   const host_address = props.individualDelegate;
   const { address } = useAccount();
   const { data: session, status } = useSession();

@@ -5,7 +5,7 @@ import { NotificationProps } from "./NotificationTypeUtils";
 function SessionBookings({ notifications }: NotificationProps) {
   return (
     <div
-      className="rounded-2xl bg-white w-full mt-8"
+      className="rounded-2xl w-full mt-8"
       style={{
         boxShadow:
           "0 0 18px -7px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",

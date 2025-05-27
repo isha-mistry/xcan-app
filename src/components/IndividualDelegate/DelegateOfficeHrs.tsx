@@ -29,7 +29,7 @@ interface Session {
   attendees: any[];
 }
 
-function DelegateOfficeHrs({ props }: { props: Type }) {
+function DelegateOfficeHrs() {
   const [activeSection, setActiveSection] = useState("ongoing");
   const [searchQuery, setSearchQuery] = useState("");
   const router = useRouter();
@@ -131,7 +131,7 @@ function DelegateOfficeHrs({ props }: { props: Type }) {
     const fetchUserOfficeHours = async () => {
       try {
         const response = await fetchApi(
-          `/get-office-hours?host_address=${props.individualDelegate}&type=${currentTab}`,
+          `/get-office-hours?host_address=${address}&type=${currentTab}`,
           {
             headers: {
               Authorization: `Bearer ${await getAccessToken()}`,
@@ -157,12 +157,10 @@ function DelegateOfficeHrs({ props }: { props: Type }) {
       }
     };
 
-    if (address && isConnected) {
+    if (address) {
       fetchUserOfficeHours();
     }
   }, [
-    props.individualDelegate,
-    props.daoDelegates,
     address,
     getAccessToken,
   ]);
@@ -177,7 +175,7 @@ function DelegateOfficeHrs({ props }: { props: Type }) {
         >
           <button
             className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md ${searchParams.get("hours") === "ongoing"
-              ? "text-[#0500FF] font-semibold bg-[#f5f5f5]"
+              ? "text-[#397dcf] font-semibold bg-[#f5f5f5]"
               : "text-[#3E3D3D] bg-white"
               }`}
             onClick={() =>
@@ -189,7 +187,7 @@ function DelegateOfficeHrs({ props }: { props: Type }) {
           </button>
           <button
             className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md ${searchParams.get("hours") === "upcoming"
-              ? "text-[#0500FF] font-semibold bg-[#f5f5f5]"
+              ? "text-[#397dcf] font-semibold bg-[#f5f5f5]"
               : "text-[#3E3D3D] bg-white"
               }`}
             onClick={() =>
@@ -201,11 +199,11 @@ function DelegateOfficeHrs({ props }: { props: Type }) {
           </button>
           <button
             className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md ${searchParams.get("hours") === "hosted"
-              ? "text-[#0500FF] font-semibold bg-[#f5f5f5]"
+              ? "text-[#397dcf] font-semibold bg-[#f5f5f5]"
               : "text-[#3E3D3D] bg-white"
               }`}
             onClick={() =>
-              router.push(path + "?active=officeHours&hours=hosted&dao=" + props.daoDelegates)
+              router.push(path + "?active=officeHours&hours=hosted")
             }
           >
             <Users size={16} className="drop-shadow-lg" />
@@ -213,11 +211,11 @@ function DelegateOfficeHrs({ props }: { props: Type }) {
           </button>
           <button
             className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md ${searchParams.get("hours") === "attended"
-              ? "text-[#0500FF] font-semibold bg-[#f5f5f5]"
+              ? "text-[#397dcf] font-semibold bg-[#f5f5f5]"
               : "text-[#3E3D3D] bg-white"
               }`}
             onClick={() =>
-              router.push(path + "?active=officeHours&hours=attended&dao=" + props.daoDelegates)
+              router.push(path + "?active=officeHours&hours=attended")
             }
           >
             <CheckCircle size={16} className="drop-shadow-lg" />

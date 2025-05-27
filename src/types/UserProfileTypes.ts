@@ -51,18 +51,18 @@ export interface SessionRecord {
   onchainCounts: number;
 }
 
-export interface DaoSessionRecords {
+export interface SessionRecords {
   sessionHosted: SessionRecord;
   sessionAttended: SessionRecord;
   officeHoursHosted: SessionRecord;
   officeHoursAttended: SessionRecord;
 }
 
-export interface MeetingRecords {
-  optimism: DaoSessionRecords;
-  arbitrum: DaoSessionRecords;
-  // You can easily add more DAOs here
-}
+// export interface MeetingRecords {
+//   optimism: DaoSessionRecords;
+//   arbitrum: DaoSessionRecords;
+//   // You can easily add more DAOs here
+// }
 
 export interface UserProfileInterface {
   _id: {
@@ -79,7 +79,7 @@ export interface UserProfileInterface {
   followings?: FollowingData[];
   followers?: FollowerData[];
   isEmailVisible: boolean;
-  meetingRecords: MeetingRecords;
+  meetingRecords: SessionRecords;
   createdAt?: string;
   referrer?: string;
   [key: string]: any; // Allows for additional dynamic fields if necessary

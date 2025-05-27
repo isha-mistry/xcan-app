@@ -122,7 +122,7 @@ function UserSessions() {
 
           <button
             className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md  ${searchParams.get("session") === "schedule"
-              ? "text-[#0500FF] font-semibold bg-[#f5f5f5]"
+              ? "text-[#397dcf] font-semibold bg-[#f5f5f5]"
               : "text-[#3E3D3D] bg-white"
               }`}
             onClick={() =>
@@ -136,7 +136,7 @@ function UserSessions() {
 
           <button
             className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md  ${searchParams.get("session") === "book"
-              ? "text-[#0500FF] font-semibold bg-[#f5f5f5]"
+              ? "text-[#397dcf] font-semibold bg-[#f5f5f5]"
               : "text-[#3E3D3D] bg-white"
               }`}
             onClick={() =>
@@ -148,7 +148,7 @@ function UserSessions() {
           </button>
           <button
             className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md ${searchParams.get("session") === "attending"
-              ? "text-[#0500FF] font-semibold bg-[#f5f5f5]"
+              ? "text-[#397dcf] font-semibold bg-[#f5f5f5]"
               : "text-[#3E3D3D] bg-white"
               }`}
             onClick={() =>
@@ -160,7 +160,7 @@ function UserSessions() {
           </button>
           <button
             className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md ${searchParams.get("session") === "hosted"
-              ? "text-[#0500FF] font-semibold bg-[#f5f5f5]"
+              ? "text-[#397dcf] font-semibold bg-[#f5f5f5]"
               : "text-[#3E3D3D] bg-white"
               }`}
             onClick={() =>
@@ -172,7 +172,7 @@ function UserSessions() {
           </button>
           <button
             className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md ${searchParams.get("session") === "attended"
-              ? "text-[#0500FF] font-semibold bg-[#f5f5f5]"
+              ? "text-[#397dcf] font-semibold bg-[#f5f5f5]"
               : "text-[#3E3D3D] bg-white"
               }`}
             onClick={() =>

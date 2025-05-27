@@ -19,7 +19,7 @@ import { useRouter } from "next-nprogress-bar";
 import Link from "next/link";
 import toast, { Toaster } from "react-hot-toast";
 import { useAccount } from "wagmi";
-import ccLogo from "@/assets/images/daos/CCLogo2.png";
+import ccLogo from "@/assets/images/icon.svg";
 import MainProfileSkeletonLoader from "../SkeletonLoader/MainProfileSkeletonLoader";
 import { fetchEnsNameAndAvatar } from "@/utils/ENSUtils";
 import Confetti from "react-confetti";
@@ -35,12 +35,13 @@ import { fetchApi } from "@/utils/api";
 import { BrowserProvider, Contract, JsonRpcSigner } from "ethers";
 import { ChevronDownIcon, CloudCog } from "lucide-react";
 import Heading from "../ComponentUtils/Heading";
-import { MeetingRecords } from "@/types/UserProfileTypes";
+import { SessionRecords } from "@/types/UserProfileTypes";
 import { calculateTempCpi } from "@/actions/calculatetempCpi";
 import { createPublicClient, http } from "viem";
 import ErrorComponent from "../Error/ErrorComponent";
 import { Address } from "viem";
 import { daoConfigs } from "@/config/daos";
+import { RiTelegram2Fill } from "react-icons/ri";
 
 interface Type {
   daoDelegates: string;
@@ -48,17 +49,15 @@ interface Type {
 }
 
 function SpecificDelegate({ props }: { props: Type }) {
-  const [delegateInfo, setDelegateInfo] = useState<any>();
   const router = useRouter();
   const path = usePathname();
   const searchParams = useSearchParams();
-  const [isDelegate, setIsDelegate] = useState<boolean>();
   const [isPageLoading, setIsPageLoading] = useState(true);
   const [displayName, setDisplayName] = useState("");
   const [displayImage, setDisplayImage] = useState("");
   const [description, setDescription] = useState("");
   const [attestationStatistics, setAttestationStatistics] =
-    useState<MeetingRecords | null>(null);
+    useState<SessionRecords | null>(null);
   const [displayEnsName, setDisplayEnsName] = useState<any>(null);
   const [emailId, setEmailId] = useState<string>();
   const [isEmailVisible, setIsEmailVisible] = useState(false);
@@ -156,68 +155,12 @@ function SpecificDelegate({ props }: { props: Type }) {
     };
   }, [delegateOpen]);
 
-  const [votingPower, setVotingPower] = useState<number>();
-
   const [socials, setSocials] = useState({
     twitter: "",
     discord: "",
-    discourse: "",
     github: "",
+    telegram: "",
   });
-  const [delegatorsCount, setDelegatorsCount] = useState<number>();
-  const [votesCount, setVotesCount] = useState<number>();
-
-  const totalCount = `query Delegate($input: DelegateInput!) {
-  delegate(input: $input) {
-    id
-    votesCount
-    delegatorsCount
-  }
-}
- `;
-  const variables = {
-    input: {
-      address: `${props.individualDelegate}`,
-      governorId: "",
-      organizationId: null as number | null,
-    },
-  };
-  if (props.daoDelegates === "arbitrum") {
-    variables.input.governorId =
-      "eip155:42161:0x789fC99093B09aD01C34DC7251D0C89ce743e5a4";
-    variables.input.organizationId = 2206072050315953936;
-  } else {
-    variables.input.governorId =
-      "eip155:10:0xcDF27F107725988f2261Ce2256bDfCdE8B382B10";
-    variables.input.organizationId = 2206072049871356990;
-  }
-
-
-  useEffect(() => {
-    const fetchData = async () => {
-      setIsPageLoading(true);
-      try {
-        // const res = await fetch(
-        //   `https://api.karmahq.xyz/api/dao/find-delegate?dao=${props.daoDelegates}&user=${props.individualDelegate}`
-        // );
-        // const details = await res.json();
-        const res = await fetch(
-          `/api/search-delegate?address=${props.individualDelegate}&dao=${props.daoDelegates}`
-        );
-        const details = await res.json();
-        // setDelegateInfo(details.data.delegate);
-        if (details.length > 0) {
-          setIsDelegate(true);
-        }
-        setIsPageLoading(false);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-        setIsPageLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [props.daoDelegates, props.individualDelegate, address]);
 
 
   useEffect(() => {
@@ -234,17 +177,6 @@ function SpecificDelegate({ props }: { props: Type }) {
       window.removeEventListener("error", handleGlobalError);
     };
   }, []);
-
-
-  const formatNumber = (number: number) => {
-    if (number >= 1000000) {
-      return (number / 1000000).toFixed(2) + "m";
-    } else if (number >= 1000) {
-      return (number / 1000).toFixed(2) + "k";
-    } else {
-      return number.toFixed(2);
-    }
-  };
 
 
   useEffect(() => {
@@ -293,36 +225,21 @@ function SpecificDelegate({ props }: { props: Type }) {
               setFromDatabase(true);
               setDisplayImage(item.image);
             }
-
-            setDescription(item.description);
-            setAttestationStatistics(item?.meetingRecords ?? null);
             if (item.isEmailVisible) {
               setIsEmailVisible(true);
               setEmailId(item.emailId);
             }
-            const matchingNetwork = item.networks?.find(
-              (network: any) => network.dao_name === props.daoDelegates
-            );
 
-            // If a matching network is found, set the discourse ID
-            if (matchingNetwork) {
-              setDescription(matchingNetwork.description);
-            } else {
-              // Handle the case where no matching network is found
-              console.log(
-                "No matching network found for the specified dao_name"
-              );
-            }
+            setDescription(item.description);
+            setAttestationStatistics(item?.meetingRecords ?? null);
             setDisplayName(item.displayName);
             setSocials({
               twitter: item.socialHandles.twitter,
               discord: item.socialHandles.discord,
-              discourse: item.socialHandles.discourse,
               github: item.socialHandles.github,
+              telegram: item.socialHandles.telegram,
             });
-            // Exit the loop since we found a match
-            //   break;
-            // }
+            setIsPageLoading(false);
           }
         } else {
           console.log(
@@ -332,9 +249,11 @@ function SpecificDelegate({ props }: { props: Type }) {
             props.individualDelegate
           );
           setDisplayImage(fetchedAvatar ? fetchedAvatar : "");
+          setIsPageLoading(false);
         }
       } catch (error) {
         console.error("Error fetching data:", error);
+        setIsPageLoading(false);
       }
     };
 
@@ -354,9 +273,7 @@ function SpecificDelegate({ props }: { props: Type }) {
 
   const getImageSource = () => {
     if (!displayImage) {
-      return (
-        delegateInfo?.profilePicture ||
-          daoConfigs ? daoConfigs[props.daoDelegates].logo : ccLogo)
+      return (ccLogo)
     }
 
     // If image is from database, prepend the IPFS gateway URL
@@ -369,7 +286,7 @@ function SpecificDelegate({ props }: { props: Type }) {
   };
 
   const getImageClassName = () => {
-    if (displayImage || delegateInfo?.profilePicture) {
+    if (displayImage) {
       return "w-full xs:w-28 xs:h-28 sm:w-36 sm:h-36 lg:w-40 lg:h-40 rounded-3xl";
     }
     return "w-14 h-14 sm:w-20 sm:h-20 lg:w-20 lg:h-20 rounded-3xl";
@@ -411,26 +328,12 @@ function SpecificDelegate({ props }: { props: Type }) {
                           height={256}
                           className={getImageClassName()}
                         />
-                        {/* </div> */}
-
-                        <Image
-                          src={ccLogo}
-                          alt="ChoraClub Logo"
-                          className="absolute top-0 right-0 bg-white rounded-full"
-                          style={{
-                            width: "30px",
-                            height: "30px",
-                            marginTop: "10px",
-                            marginRight: "10px",
-                          }}
-                        />
                       </div>
                     </div>
                     <div className="px-4 mt-4 xs:mt-0 md:mt-2 lg:mt-4 w-full xs:w-auto">
                       <div className=" flex items-center py-1">
                         <div className="font-bold text-[22px] xs:text-xl sm:text-xl lg:text-[22px] pr-4">
-                          {delegateInfo?.ensName ||
-                            displayEnsName ||
+                          {displayEnsName ||
                             displayName || (
                               <>
                                 {props.individualDelegate.slice(0, 6)}...
@@ -443,10 +346,10 @@ function SpecificDelegate({ props }: { props: Type }) {
                           <Link
                             href={
                               socials.twitter
-                                ? `https://twitter.com/${socials.twitter}`
+                                ? `https://x.com/${socials.twitter}`
                                 : ""
                             }
-                            className={`border-[0.5px] border-[#8E8E8E] rounded-full h-fit p-1 ${socials.twitter == ""
+                            className={`border-[0.5px] border-white rounded-full h-fit p-1 ${socials.twitter == ""
                               ? "hidden"
                               : ""
                               }`}
@@ -455,13 +358,11 @@ function SpecificDelegate({ props }: { props: Type }) {
                             }}
                             target="_blank"
                           >
-                            <FaXTwitter color="#7C7C7C" size={12} />
+                            <FaXTwitter color="white" size={12} />
                           </Link>
                           <Link
-                            href={
-                              socials.discourse ? `${daoConfigs[props.daoDelegates].discourseUrl}/${socials.discourse}` : ""
-                            }
-                            className={`border-[0.5px] border-[#8E8E8E] rounded-full h-fit p-1  ${socials.discourse == ""
+                            href={`https://t.me/${socials.telegram}`}
+                            className={`border-[0.5px] border-white rounded-full h-fit p-1  ${socials.telegram == ""
                               ? "hidden"
                               : ""
                               }`}
@@ -470,8 +371,8 @@ function SpecificDelegate({ props }: { props: Type }) {
                             }}
                             target="_blank"
                           >
-                            <BiSolidMessageRoundedDetail
-                              color="#7C7C7C"
+                            <RiTelegram2Fill
+                              color="white"
                               size={12}
                             />
                           </Link>
@@ -481,7 +382,7 @@ function SpecificDelegate({ props }: { props: Type }) {
                                 ? `https://discord.com/${socials.discord}`
                                 : ""
                             }
-                            className={`border-[0.5px] border-[#8E8E8E] rounded-full h-fit p-1 ${socials.discord == ""
+                            className={`border-[0.5px] border-white rounded-full h-fit p-1 ${socials.discord == ""
                               ? "hidden"
                               : ""
                               }`}
@@ -490,18 +391,18 @@ function SpecificDelegate({ props }: { props: Type }) {
                             }}
                             target="_blank"
                           >
-                            <FaDiscord color="#7C7C7C" size={12} />
+                            <FaDiscord color="white" size={12} />
                           </Link>
                           {isEmailVisible && (
                             <Link
                               href={`mailto:${emailId}`}
-                              className="border-[0.5px] border-[#8E8E8E] rounded-full h-fit p-1"
+                              className="border-[0.5px] border-white rounded-full h-fit p-1"
                               style={{
                                 backgroundColor: "rgba(217, 217, 217, 0.42)",
                               }}
                               target="_blank"
                             >
-                              <FaEnvelope color="#7C7C7C" size={12} />
+                              <FaEnvelope color="white" size={12} />
                             </Link>
                           )}
                           <Link
@@ -510,7 +411,7 @@ function SpecificDelegate({ props }: { props: Type }) {
                                 ? `https://github.com/${socials.github}`
                                 : ""
                             }
-                            className={`border-[0.5px] border-[#8E8E8E] rounded-full h-fit p-1 ${socials.github == ""
+                            className={`border-[0.5px] border-white rounded-full h-fit p-1 ${socials.github == ""
                               ? "hidden"
                               : ""
                               }`}
@@ -519,7 +420,7 @@ function SpecificDelegate({ props }: { props: Type }) {
                             }}
                             target="_blank"
                           >
-                            <FaGithub color="#7C7C7C" size={12} />
+                            <FaGithub color="white" size={12} />
                           </Link>
                         </div>
                       </div>
@@ -657,7 +558,6 @@ function SpecificDelegate({ props }: { props: Type }) {
                 <div className="pt-2 xs:pt-4 sm:pt-6 px-4 md:px-6 lg:px-14">
                   {searchParams.get("active") === "info" && (
                     <DelegateInfo
-                      props={props}
                       desc={description}
                       attestationCounts={attestationStatistics}
                     />
@@ -666,7 +566,7 @@ function SpecificDelegate({ props }: { props: Type }) {
                     <DelegateSessions props={props} />
                   )}
                   {searchParams.get("active") === "officeHours" && (
-                    <DelegateOfficeHrs props={props} />
+                    <DelegateOfficeHrs />
                   )}
                 </div>
               </div>

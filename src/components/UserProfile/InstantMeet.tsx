@@ -33,10 +33,9 @@ import { useAccount } from "wagmi";
 interface instantMeetProps {
   isDelegate: boolean;
   selfDelegate: boolean;
-  daoName: string;
 }
 
-function InstantMeet({ isDelegate, selfDelegate, daoName }: instantMeetProps) {
+function InstantMeet() {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const { address } = useAccount()
   const { getAccessToken } = usePrivy();
@@ -96,7 +95,6 @@ function InstantMeet({ isDelegate, selfDelegate, daoName }: instantMeetProps) {
       let dateInfo = localDateTime.toISOString();
 
       const requestData = {
-        dao_name: daoName,
         slot_time: dateInfo,
         title: modalData.title,
         description: modalData.description,
@@ -362,7 +360,6 @@ function InstantMeet({ isDelegate, selfDelegate, daoName }: instantMeetProps) {
               <InstantMeetForm
                 key="instant-meet-form"
                 initialData={modalData}
-                daoName={daoName}
                 onChange={handleFormChange}
               />
             </div>

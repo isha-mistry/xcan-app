@@ -369,7 +369,7 @@ function EventTile({ tileIndex, data: initialData, isEvent }: TileProps) {
                 <span className="font-medium">Host: </span> &nbsp;
                 {isEvent === "Attending" ? (
                   <Link
-                    href={`/arbitrum/${data.host_address}?active=info`}
+                    href={`/user/${data.host_address}?active=info`}
                   >
                     <span className="hover:text-blue-shade-100 transition-colors duration-200">
                       {loadingEnsData

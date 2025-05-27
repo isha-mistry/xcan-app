@@ -93,7 +93,7 @@ function TopNavbar() {
     <>
       <div className="flex justify-between items-center w-screen px-4 font-tektur">
         <div className="flex gap-2 items-center">
-          <Link href="/" target="_blank" className="flex items-center gap-2">
+          <Link href="/" className="flex items-center gap-2">
             <Image
               src={logo}
               alt={"image"}
@@ -115,12 +115,12 @@ function TopNavbar() {
 
           <>
             <div className="flex gap-4">
-            <Link
+              <Link
                 href={`https://speedrun-stylus-games.vercel.app/`}
                 target="_blank"
                 className={`${styles.item} text-blue-shade-500 font-medium`}
               >
-                ArbQuests
+                ArbQuest
               </Link>
               <Link
                 href={"/explore-daos"}

@@ -95,12 +95,11 @@ export async function POST(req: NextRequest, res: NextResponse) {
         isEmailVisible,
         createdAt,
         image: null,
-        isDelegate: null,
         displayName: null,
+        description: null,
         emailId: null,
         socialHandles: null,
-        networks: null,
-        referrer: referrer,
+        referrer: referrer,  
       };
 
       // Insert document

@@ -7,18 +7,14 @@ import styled from "styled-components";
 import rehypeSanitize from "rehype-sanitize";
 import { useRouter } from "next-nprogress-bar";
 import { useAccount } from "wagmi";
-import { MeetingRecords } from "@/types/UserProfileTypes";
+import {  SessionRecords } from "@/types/UserProfileTypes";
 import { Cloud, Link } from "lucide-react";
 import { daoConfigs } from "@/config/daos";
 
 interface userInfoProps {
-  karmaDesc: string;
   description: string;
-  isDelegate: boolean;
-  isSelfDelegate: boolean;
   onSaveButtonClick: (description?: string) => Promise<void>;
-  daoName: string;
-  attestationCounts: MeetingRecords | null;
+  attestationCounts: SessionRecords | null;
   isLoadingStatus?: boolean;
 }
 
@@ -155,12 +151,8 @@ const UserInfoSkeleton = () => {
 };
 
 function UserInfo({
-  karmaDesc,
   description,
-  isDelegate,
-  isSelfDelegate,
   onSaveButtonClick,
-  daoName,
   attestationCounts,
   // isLoadingStatus,
 }: userInfoProps) {
@@ -178,7 +170,7 @@ function UserInfo({
   const [officehoursHostCount, setOfficehoursHostCount] = useState(0);
   const [officehoursAttendCount, setOfficehoursAttendCount] = useState(0);
   const [activeButton, setActiveButton] = useState("onchain");
-  const [originalDesc, setOriginalDesc] = useState(description || karmaDesc);
+  const [originalDesc, setOriginalDesc] = useState(description);
   const [isMobile, setIsMobile] = useState(false);
   // console.log(isLoadingStatus);
   const router = useRouter();
@@ -186,22 +178,15 @@ function UserInfo({
     {
       number: sessionAttendCount,
       desc: "Sessions attended",
-      ref: `/profile/${address}}?active=sessions&session=attended&dao=${daoName}`,
+      ref: `/profile/${address}}?active=sessions&session=attended`,
     },
     {
       number: officehoursAttendCount,
       desc: "Office Hours attended",
-      ref: `/profile/${address}}?active=officeHours&hours=attended&dao=${daoName}`,
+      ref: `/profile/${address}}?active=officeHours&hours=attended`,
     },
   ];
-  const getDaoNameByChain = (chainName: string): string | undefined => {
-    for (const key in daoConfigs) {
-      if (daoConfigs[key].chainName === chainName) {
-        return daoConfigs[key].name.toLowerCase();
-      }
-    }
-    return ""; // Return undefined if no match is found
-  };
+
   const isLoading =
     isSessionHostedLoading ||
     isSessionAttendedLoading ||
@@ -214,37 +199,37 @@ function UserInfo({
     setSessionAttendedLoading(true);
     setOfficeHoursHostedLoading(true);
     setOfficeHoursAttendedLoading(true);
-    const dao_name = getDaoNameByChain(chain?.name as string);
+
     try {
       if (attestationCounts) {
-        const currentDaoRecords =
-          attestationCounts?.[dao_name as keyof MeetingRecords];
+        // const currentDaoRecords =
+        //   attestationCounts as keyof SessionRecords;
 
         if (buttonType === "onchain") {
           setSessionHostCount(
-            currentDaoRecords?.sessionHosted?.onchainCounts || 0
+            attestationCounts?.sessionHosted?.onchainCounts || 0
           );
           setSessionAttendCount(
-            currentDaoRecords?.sessionAttended?.onchainCounts || 0
+            attestationCounts?.sessionAttended?.onchainCounts || 0
           );
           setOfficehoursHostCount(
-            currentDaoRecords?.officeHoursHosted?.onchainCounts || 0
+            attestationCounts?.officeHoursHosted?.onchainCounts || 0
           );
           setOfficehoursAttendCount(
-            currentDaoRecords?.officeHoursAttended?.onchainCounts || 0
+            attestationCounts?.officeHoursAttended?.onchainCounts || 0
           );
         } else if (buttonType === "offchain") {
           setSessionHostCount(
-            currentDaoRecords?.sessionHosted?.offchainCounts || 0
+            attestationCounts?.sessionHosted?.offchainCounts || 0
           );
           setSessionAttendCount(
-            currentDaoRecords?.sessionAttended?.offchainCounts || 0
+            attestationCounts?.sessionAttended?.offchainCounts || 0
           );
           setOfficehoursHostCount(
-            currentDaoRecords?.officeHoursHosted?.offchainCounts || 0
+            attestationCounts?.officeHoursHosted?.offchainCounts || 0
           );
           setOfficehoursAttendCount(
-            currentDaoRecords?.officeHoursAttended?.offchainCounts || 0
+            attestationCounts?.officeHoursAttended?.offchainCounts || 0
           );
         }
       }
@@ -285,9 +270,9 @@ function UserInfo({
   }, []);
 
   useEffect(() => {
-    setOriginalDesc(description || karmaDesc);
-    setTempDesc(description || karmaDesc);
-  }, [description, karmaDesc]);
+    setOriginalDesc(description);
+    setTempDesc(description);
+  }, [description]);
 
   useEffect(() => {
     if (activeButton === "onchain") {
@@ -296,20 +281,21 @@ function UserInfo({
       fetchAttestation("offchain");
     }
   }, [activeButton, address, address, chain]);
-  if (isDelegate === true || isSelfDelegate === true) {
-    blocks.unshift(
-      {
-        number: sessionHostCount,
-        desc: "Sessions hosted",
-        ref: `/profile/${address}}?active=sessions&session=hosted&dao=${daoName}`,
-      },
-      {
-        number: officehoursHostCount,
-        desc: "Office Hours hosted",
-        ref: `/profile/${address}}?active=officeHours&hours=attended&dao=${daoName}`,
-      }
-    );
-  }
+
+  // if (isDelegate === true || isSelfDelegate === true) {
+  //   blocks.unshift(
+  //     {
+  //       number: sessionHostCount,
+  //       desc: "Sessions hosted",
+  //       ref: `/profile/${address}}?active=sessions&session=hosted&dao=${daoName}`,
+  //     },
+  //     {
+  //       number: officehoursHostCount,
+  //       desc: "Office Hours hosted",
+  //       ref: `/profile/${address}}?active=officeHours&hours=attended&dao=${daoName}`,
+  //     }
+  //   );
+  // }
 
   return (
     <>
@@ -320,7 +306,7 @@ function UserInfo({
         <div className="flex gap-2 0.5xs:gap-4 rounded-xl text-sm flex-wrap">
           <button
             className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md ${activeButton === "onchain"
-              ? "text-[#0500FF] font-semibold bg-[#f5f5f5]"
+              ? "text-[#397dcf] font-semibold bg-[#f5f5f5]"
               : "text-[#3E3D3D] bg-white"
               } `}
             onClick={() => fetchAttestation("onchain")}
@@ -330,7 +316,7 @@ function UserInfo({
           </button>
           <button
             className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md ${activeButton === "offchain"
-              ? "text-[#0500FF] font-semibold bg-[#f5f5f5]"
+              ? "text-[#397dcf] font-semibold bg-[#f5f5f5]"
               : "text-[#3E3D3D] bg-white"
               }`}
             onClick={() => fetchAttestation("offchain")}
@@ -345,7 +331,7 @@ function UserInfo({
           onBlockClick={(ref: string) => router.push(ref)}
         />
 
-        {isSelfDelegate ? (
+        {/* {isSelfDelegate ? ( */}
           <div
             style={{ boxShadow: "0px 4px 30.9px 0px rgba(0, 0, 0, 0.12)" }}
             className={`flex flex-col justify-between min-h-48 rounded-xl my-7 mx-4 xs:mx-0 sm:mx-4 md:mx-16 lg:mx-0 p-6
@@ -353,7 +339,7 @@ function UserInfo({
           >
             <StyledMDEditorWrapper className="w-full">
               <MDEditor
-                value={isEditing ? tempDesc : description || karmaDesc}
+                value={isEditing ? tempDesc : description}
                 onChange={handleDescChange}
                 preview={isMobile ? (isEditing ? "edit" : "preview") : "live"}
                 height={isMobile ? 400 : 300}
@@ -396,9 +382,9 @@ function UserInfo({
               )}
             </div>
           </div>
-        ) : (
+        {/* ) : (
           <></>
-        )}
+        )} */}
       </div>
       {/* )} */}
     </>

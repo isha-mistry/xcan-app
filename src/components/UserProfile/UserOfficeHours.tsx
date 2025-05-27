@@ -160,7 +160,7 @@ function UserOfficeHours() {
         >
           <button
             className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md ${searchParams.get("hours") === "schedule"
-              ? "text-[#0500FF] font-semibold bg-[#f5f5f5]"
+              ? "text-[#397dcf] font-semibold bg-[#f5f5f5]"
               : "text-[#3E3D3D] bg-white"
               }`}
             onClick={() =>
@@ -173,7 +173,7 @@ function UserOfficeHours() {
 
           <button
             className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md ${searchParams.get("hours") === "ongoing"
-              ? "text-[#0500FF] font-semibold bg-[#f5f5f5]"
+              ? "text-[#397dcf] font-semibold bg-[#f5f5f5]"
               : "text-[#3E3D3D] bg-white"
               }`}
             onClick={() =>
@@ -186,7 +186,7 @@ function UserOfficeHours() {
 
           <button
             className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md ${searchParams.get("hours") === "upcoming"
-              ? "text-[#0500FF] font-semibold bg-[#f5f5f5]"
+              ? "text-[#397dcf] font-semibold bg-[#f5f5f5]"
               : "text-[#3E3D3D] bg-white"
               }`}
             onClick={() =>
@@ -199,7 +199,7 @@ function UserOfficeHours() {
 
           <button
             className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md ${searchParams.get("hours") === "hosted"
-              ? "text-[#0500FF] font-semibold bg-[#f5f5f5]"
+              ? "text-[#397dcf] font-semibold bg-[#f5f5f5]"
               : "text-[#3E3D3D] bg-white"
               }`}
             onClick={() =>
@@ -211,7 +211,7 @@ function UserOfficeHours() {
           </button>
           <button
             className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md ${searchParams.get("hours") === "attended"
-              ? "text-[#0500FF] font-semibold bg-[#f5f5f5]"
+              ? "text-[#397dcf] font-semibold bg-[#f5f5f5]"
               : "text-[#3E3D3D] bg-white"
               }`}
             onClick={() =>

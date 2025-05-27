@@ -163,7 +163,7 @@ function WatchSession({
                   className="flex gap-2 cursor-pointer"
                   onClick={() =>
                     router.push(
-                      `/arbitrum/${data.host_address}?active=info`
+                      `/user/${data.host_address}?active=info`
                     )
                   }
                 >

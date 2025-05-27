@@ -2,12 +2,11 @@ import React, { useState, useCallback } from "react";
 
 interface InstantMeetFormProps {
   initialData: { title: string; description: string };
-  daoName: string;
   onChange: (data: { title: string; description: string }) => void; 
 }
 
 const InstantMeetForm = React.memo(
-  ({ initialData, daoName, onChange }: InstantMeetFormProps) => {
+  ({ initialData, onChange }: InstantMeetFormProps) => {
     const [formData, setFormData] = useState(initialData);
 
     const handleInputChange = useCallback(

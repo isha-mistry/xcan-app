@@ -122,7 +122,7 @@ function AvailableSessions() {
   const handleBookSession = (userAddress: string) => {
     if (authenticated) {
       router.push(
-        `/arbitrum/${userAddress}?active=delegatesSession&session=book`
+        `/user/${userAddress}?active=delegatesSession&session=book`
       );
     } else if (!authenticated) {
       // openConnectModal();
