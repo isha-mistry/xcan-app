@@ -116,11 +116,11 @@ function TopNavbar() {
           <>
             <div className="flex gap-4">
               <Link
-                href={`https://speedrun-stylus-games.vercel.app/`}
+                href={`https://arb-dev-quest.vercel.app/`}
                 target="_blank"
                 className={`${styles.item} text-blue-200 font-medium`}
               >
-                ArbQuest
+                ArbDevQuest
               </Link>
               <Link
                 href={"/explore-daos"}

@@ -18,7 +18,7 @@ function DelegateSessionsMain() {
   const searchParams = useSearchParams();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 relative overflow-hidden">
+    <div className="relative overflow-hidden">
       <div className="pt-2 xs:pt-4 sm:pt-6 px-4 md:px-6 lg:px-14">
         <Heading />
       </div>
@@ -41,8 +41,8 @@ function DelegateSessionsMain() {
             >
               <button
                 className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-blue-shade-300 shadow-md ${searchParams.get("active") === "availableDelegates"
-                  ? "text-blue-shade-100 font-semibold bg-blue-shade-300"
-                  : "text-blue-shade-100 bg-blue-shade-500"
+                  ? "text-gray-200 font-semibold bg-blue-shade-300"
+                  : "text-gray-300 bg-blue-shade-500"
                   }`}
                 onClick={() => router.push(path + "?active=availableDelegates")}
               >
@@ -63,8 +63,8 @@ function DelegateSessionsMain() {
             >
               <button
                 className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-gray-700 shadow-md ${searchParams.get("active") === "recordedSessions"
-                  ? "text-blue-400 font-semibold bg-gray-700"
-                  : "text-gray-300 bg-gray-800"
+                  ? "text-gray-200 font-semibold bg-blue-shade-300"
+                  : "text-gray-300 bg-blue-shade-500"
                   }`}
                 onClick={() => router.push(path + "?active=recordedSessions")}
               >

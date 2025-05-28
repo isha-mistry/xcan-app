@@ -334,7 +334,7 @@ function UserInfo({
         {/* {isSelfDelegate ? ( */}
           <div
             style={{ boxShadow: "0px 4px 30.9px 0px rgba(0, 0, 0, 0.12)" }}
-            className={`flex flex-col justify-between min-h-48 rounded-xl my-7 mx-4 xs:mx-0 sm:mx-4 md:mx-16 lg:mx-0 p-6
+            className={`flex flex-col justify-between min-h-48 rounded-xl mt-7 pb-7 mx-4 xs:mx-0 sm:mx-4 md:mx-16 lg:mx-0 p-6
             ${isEditing ? "outline" : ""}`}
           >
             <StyledMDEditorWrapper className="w-full">

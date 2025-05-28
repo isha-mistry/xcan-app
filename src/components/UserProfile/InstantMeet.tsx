@@ -382,7 +382,7 @@ function InstantMeet() {
                   color="default"
                   variant="light"
                   onPress={handleCloseModal}
-                  className="text-blue-shade-100 text-white hover:bg-blue-shade-200"
+                  className="text-white hover:bg-blue-shade-200"
                 >
                   Cancel
                 </Button>

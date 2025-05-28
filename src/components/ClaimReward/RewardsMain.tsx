@@ -31,7 +31,7 @@ function RewardsMain() {
   }, []);
 
   const renderLoader = () => (
-    <div className="flex flex-col items-center justify-center h-screen bg-gradient-to-b from-blue-50 to-blue-100">
+    <div className="flex flex-col items-center justify-center">
       <div className="flex space-x-8 mb-8">
         {/* <TailSpin
           visible={true}
@@ -73,7 +73,7 @@ function RewardsMain() {
     if (isReady) {
       return (
         <>
-          <div className="min-h-screen h-fit bg-gradient-to-b from-blue-50 to-blue-100">
+          <div className="min-h-screen h-fit">
             <div className="relative mx-auto px-4 md:px-6 lg:px-16 py-8">
               <Heading />
               <div className="max-w-6xl mx-auto p-4 0.5xs:p-6 space-y-8 font-tektur">

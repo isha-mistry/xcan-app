@@ -261,7 +261,7 @@ function TotalRewards() {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+        <div className="border border-gray-700 bg-slate-900 rounded-lg shadow-lg overflow-hidden">
           <div className="p-4 xm:p-6">
             <h2 className="text-2xl font-bold mb-4">Claim Rewards</h2>
             {fetchingReward ? (
@@ -331,13 +331,13 @@ function TotalRewards() {
       </div>
 
       <div className="mt-4">
-        <Link
+        {/* <Link
           href="https://docs.chora.club/earn-rewards/mint-referral-reward"
           target="_blank"
           className="text-blue-600 hover:text-blue-800 hover:underline transition-colors duration-300"
         >
           Learn more about Referral Rewards
-        </Link>
+        </Link> */}
       </div>
     </>
   );

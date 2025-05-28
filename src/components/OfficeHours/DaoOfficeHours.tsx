@@ -231,7 +231,7 @@ function DaoOfficeHours() {
           <div className="flex gap-2 0.5xs:gap-4 rounded-xl text-sm flex-wrap mb-6">
             <button
               className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-blue-shade-300 shadow-md ${searchParams.get("hours") === "ongoing"
-                ? "text-blue-shade-100 font-semibold bg-blue-shade-300"
+                ? "text-gray-200 font-semibold bg-blue-shade-300"
                 : "text-dark-text-secondary bg-blue-shade-500"
                 }`}
               onClick={() => handleNavigation(path + '?hours=ongoing', 'Office Hours Navigation', 'Live Tab Clicked', 'Live')}
@@ -241,7 +241,7 @@ function DaoOfficeHours() {
             </button>
             <button
               className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-blue-shade-300 shadow-md ${searchParams.get("hours") === "upcoming"
-                ? "text-blue-shade-100 font-semibold bg-blue-shade-300"
+                ? "text-gray-200 font-semibold bg-blue-shade-300"
                 : "text-dark-text-secondary bg-blue-shade-500"
                 }`}
               onClick={() => handleNavigation(path + "?hours=upcoming", 'Office Hours Navigation', 'Scheduled Tab Clicked', 'Scheduled')}
@@ -251,7 +251,7 @@ function DaoOfficeHours() {
             </button>
             <button
               className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-blue-shade-300 shadow-md ${searchParams.get("hours") === "recorded"
-                ? "text-blue-shade-100 font-semibold bg-blue-shade-300"
+                ? "text-gray-200 font-semibold bg-blue-shade-300"
                 : "text-dark-text-secondary bg-blue-shade-500"
                 }`}
               onClick={() => handleNavigation(path + "?hours=recorded", 'Office Hours Navigation', 'Recorded Tab Clicked', 'Recorded')}

@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   title: "Arbitrum University",
   description: "Discover. Learn. Engage.",
   openGraph: {
-    title: "Available Delegates",
+    title: "Available Experts",
     description:
       "Explore available uses by date, and time to book sessions and unlock Web3 opportunities.",
     url: "https://stylus-university.vercel.app/available-delegates",

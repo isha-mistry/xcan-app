@@ -111,22 +111,22 @@ function MintedNFTs() {
   return (
     <>
       <h2 className="xm:hidden text-xl font-semibold ">Minted NFTs</h2>
-      <div className="bg-gray-50 hover:bg-gray-100 transition duration-300 rounded-lg shadow-md p-4 xm:p-6">
+      <div className="border border-gray-700 bg-slate-900 transition duration-300 rounded-lg shadow-md p-4 xm:p-6">
         <div className="flex flex-col xm:flex-row justify-end xm:justify-between items-end xm:items-center gap-2">
           <h2 className="hidden xm:block text-xl font-semibold ">
             Minted NFTs
           </h2>
-          <div className="flex flex-col xs:flex-row gap-2">
+          {/* <div className="flex flex-col xs:flex-row gap-2">
             <CustomDropdown
               options={["Optimism", "Arbitrum", "Arbitrum Sepolia"]}
               onChange={handleSelectChange}
             />
-          </div>
+          </div> */}
         </div>
         <div className="flex gap-2 0.5xs:gap-4 rounded-xl text-sm flex-wrap mt-6">
           <button
             className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md ${active === "Sessions"
-                ? "text-[#0500FF] font-semibold bg-[#f5f5f5]"
+                ? "text-blue-shade-200 font-semibold bg-[#f5f5f5]"
                 : "text-[#3E3D3D] bg-white"
               }`}
             onClick={() => handleOption("Sessions")}
@@ -136,7 +136,7 @@ function MintedNFTs() {
           </button>
           <button
             className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md ${active === "OfficeHours"
-                ? "text-[#0500FF] font-semibold bg-[#f5f5f5]"
+                ? "text-blue-shade-200 font-semibold bg-[#f5f5f5]"
                 : "text-[#3E3D3D] bg-white"
               }`}
             onClick={() => handleOption("OfficeHours")}

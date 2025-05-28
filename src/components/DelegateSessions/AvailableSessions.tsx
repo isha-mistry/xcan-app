@@ -38,6 +38,7 @@ import user5 from "@/assets/images/user/user4.svg";
 import toast from "react-hot-toast";
 import { daoConfigs } from "../../config/daos";
 import NoResultsFound from "@/utils/Noresult";
+import { LuAlarmClockCheck } from "react-icons/lu";
 
 interface Type {
   ensName: string;
@@ -457,7 +458,7 @@ function AvailableSessions() {
             showArrow
             content={<div className="font-tektur">More Options</div>}
             placement="bottom"
-            className="rounded-md   bg-gray-700"
+            className="rounded-md bg-gray-700"
             closeDelay={1}
           >
             <div
@@ -633,7 +634,7 @@ function AvailableSessions() {
                 style={{
                   boxShadow: "0px 4px 50.8px 0px rgba(0, 0, 0, 0.11)",
                 }}
-                className="rounded-3xl flex flex-col bg-white h-full justify-between transition-all duration-700 ease-in-out hover:shadow-2xl hover:transform hover:scale-105"
+                className="rounded-3xl flex flex-col bg-[#2c548d6a] h-full justify-between transition-all duration-700 ease-in-out hover:shadow-2xl hover:transform hover:scale-105"
               >
                 <div className="border-b-2 sm:border-b-0 mb-2 sm:mb-0 relative">
                   <div className=" py-5 px-5 rounded-tl-3xl rounded-tr-3xl">
@@ -673,7 +674,7 @@ function AvailableSessions() {
                                 className="bg-gray-700"
                               >
                                 <div
-                                  className="text-[#3E3D3D] hover:text-blue-shade-100 text-base sm:text-lg font-semibold truncate truncate-text"
+                                  className="text-[#cacaca] hover:text-white text-base sm:text-lg font-semibold truncate truncate-text"
                                   ref={textRef}
                                   onMouseEnter={(e) => {
                                     const element = e.currentTarget;
@@ -729,7 +730,7 @@ function AvailableSessions() {
                             <Link
                               href={`/${daos.session.dao_name}/${daos.session.userAddress}?active=info`}
                             >
-                              <div className="hover:text-blue-shade-100">
+                              <div className="text-gray-300 hover:text-white">
                                 {daos.session.userAddress.slice(0, 6) +
                                   "..." +
                                   daos.session.userAddress.slice(-4)}
@@ -746,7 +747,7 @@ function AvailableSessions() {
                               >
                                 <div
                                   className={`pl-2 pt-[2px] cursor-pointer  ${animatingButtons[daos.session.userAddress]
-                                    ? "text-blue-500"
+                                    ? "text-white"
                                     : "text-[#3E3D3D]"
                                     }`}
                                 >
@@ -817,16 +818,17 @@ function AvailableSessions() {
                 </div>
 
                 <div className="sm:border-t-2 flex items-center sm:pt-4 px-3 sm:px-5 pb-2 sm:pb-3">
-                  <Image
+                  {/* <Image
                     alt="clockIcn"
                     width={20}
                     height={20}
                     src={clockIcn}
                     className="size-4 xs:size-5"
                     priority
-                  />
+                  /> */}
+                  <LuAlarmClockCheck  className="text-[#acacac]"/>
                   <div className="w-[55%] 0.5xs:w-[60%] flex items-center">
-                    <span className="text-[10px] xs:text-xs sm:text-base font-semibold text-[#0500FF] ml-1">
+                    <span className="text-[10px] xs:text-xs sm:text-base font-semibold text-[#acacac] ml-1">
                       Available for {`${daos.session.timeSlotSizeMinutes}`}{" "}
                       minutes
                     </span>
