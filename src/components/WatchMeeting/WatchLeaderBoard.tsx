@@ -240,7 +240,7 @@ const WatchLeaderBoard = ({
       <div className="font-tektur  w-full">
         <div className="flex justify-between items-center mb-3 sm:mb-5 px-2 sm:px-4">
           <div className="flex">
-            <p className="text-sm sm:text-base lg:text-lg font-medium text-blue-shade-100">
+            <p className="text-sm sm:text-base lg:text-lg font-medium text-white">
               🏆LeaderBoard
             </p>
           </div>

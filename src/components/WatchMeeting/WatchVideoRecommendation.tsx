@@ -132,13 +132,13 @@ const WatchVideoRecommendation = ({ data }: any) => {
   return (
     <div>
       <div className="flex justify-between mt-5">
-        <p className="text-lg font-medium text-blue-shade-100">
+        <p className="text-lg font-medium text-gray-200">
           Video Recommendations
         </p>
 
         <Link
           href={"/sessions?active=recordedSessions"}
-          className="text-[10px] text-blue-shade-100 bg-blue-shade-700 rounded py-1 px-2 border border-blue-shade-100 flex items-center justify-center cursor-pointer"
+          className="text-[10px] text-white bg-blue-shade-700 rounded py-1 px-2 border border-white flex items-center justify-center cursor-pointer"
         >
           View All
         </Link>

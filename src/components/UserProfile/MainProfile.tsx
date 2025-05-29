@@ -652,12 +652,12 @@ function MainProfile() {
 
           <div className=" ">
             <div
-              className="md:hidden mt-4 px-8 xs:px-4 sm:px-8 py-2 sm:py-[10px] bg-[#D9D9D945]"
+              className="md:hidden mt-4 px-8 xs:px-4 sm:px-8 py-2 sm:py-[10px] bg-[#c2defd22]"
               ref={dropdownRef}
               onMouseLeave={handleMouseLeave}
             >
               <div
-                className="w-full flex justify-between items-center text-left font-normal rounded-full capitalize text-lg text-blue-shade-100 bg-white px-4 py-2 cursor-pointer"
+                className="w-full flex justify-between items-center text-left font-normal rounded-full capitalize text-lg text-gray-200 bg-[#455670] px-4 py-2 cursor-pointer"
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                 onMouseEnter={handleMouseEnter}
               >
@@ -673,12 +673,12 @@ function MainProfile() {
                   : "max-h-0 opacity-0"
                   }`}
               >
-                <div className="p-2 border border-white-shade-100 rounded-xl bg-white shadow-md">
+                <div className="p-2 border border-white-shade-100 rounded-xl bg-[#455670] shadow-md">
                   {tabs.map((tab, index) => (
                     <React.Fragment key={tab.value}>
                       <div
                         onClick={() => handleTabChange(tab.value)}
-                        className="px-3 py-2 rounded-lg transition duration-300 ease-in-out hover:bg-gray-100 capitalize text-base cursor-pointer"
+                        className="px-3 py-2 rounded-lg transition duration-300 ease-in-out hover:bg-[#24344ece] capitalize text-base cursor-pointer"
                       >
                         {tab.name}
                       </div>

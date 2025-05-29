@@ -7,7 +7,7 @@ import styled from "styled-components";
 import rehypeSanitize from "rehype-sanitize";
 import { useRouter } from "next-nprogress-bar";
 import { useAccount } from "wagmi";
-import {  SessionRecords } from "@/types/UserProfileTypes";
+import { SessionRecords } from "@/types/UserProfileTypes";
 import { Cloud, Link } from "lucide-react";
 import { daoConfigs } from "@/config/daos";
 
@@ -20,7 +20,7 @@ interface userInfoProps {
 
 const StyledMDEditorWrapper = styled.div`
   .w-md-editor {
-    background-color: #1a1a1a !important;
+    background-color: #12203b !important;
     color: #ffffff !important;
   }
 
@@ -31,7 +31,7 @@ const StyledMDEditorWrapper = styled.div`
   }
 
   .wmde-markdown {
-    background-color: #1a1a1a !important;
+    background-color: #12203b !important;
     color: #ffffff !important;
   }
 
@@ -247,10 +247,12 @@ function UserInfo({
   };
 
   const handleSaveClick = async () => {
-    setLoading(true);
-    await onSaveButtonClick(tempDesc);
-    setEditing(false);
-    setLoading(false);
+    if (tempDesc !== originalDesc || tempDesc !== "") {
+      setLoading(true);
+      await onSaveButtonClick(tempDesc);
+      setEditing(false);
+      setLoading(false);
+    }
   };
 
   const handleCancelClick = () => {
@@ -332,11 +334,11 @@ function UserInfo({
         />
 
         {/* {isSelfDelegate ? ( */}
-          <div
-            style={{ boxShadow: "0px 4px 30.9px 0px rgba(0, 0, 0, 0.12)" }}
-            className={`flex flex-col justify-between min-h-48 rounded-xl mt-7 pb-7 mx-4 xs:mx-0 sm:mx-4 md:mx-16 lg:mx-0 p-6
-            ${isEditing ? "outline" : ""}`}
-          >
+        <div
+          style={{ boxShadow: "0px 4px 30.9px 0px rgba(0, 0, 0, 0.12)" }}
+          className={`flex flex-col justify-between min-h-48 rounded-xl mt-7 pb-7 mx-4 xs:mx-0 sm:mx-4 md:mx-16 lg:mx-0 py-6`}
+        >
+          <div className={`${isEditing ? "outline rounded-xl" : ""}`}>
             <StyledMDEditorWrapper className="w-full">
               <MDEditor
                 value={isEditing ? tempDesc : description}
@@ -355,33 +357,34 @@ function UserInfo({
                 commandsFilter={(cmd) => cmd.name === 'fullscreen' ? false : cmd}
               />
             </StyledMDEditorWrapper>
-
-            <div className="flex justify-end mt-3">
-              {isEditing ? (
-                <>
-                  <button
-                    className="bg-blue-shade-100 text-white text-sm py-1 px-3 rounded-full font-semibold mr-2"
-                    onClick={handleCancelClick}
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    className="bg-blue-shade-100 text-white text-sm py-1 px-3 rounded-full font-semibold"
-                    onClick={handleSaveClick}
-                  >
-                    {loading ? "Saving" : "Save"}
-                  </button>
-                </>
-              ) : (
-                <button
-                  className="bg-blue-shade-100 text-white text-sm py-1 px-4  rounded-full font-semibold"
-                  onClick={() => setEditing(true)}
-                >
-                  Edit
-                </button>
-              )}
-            </div>
           </div>
+
+          <div className="flex justify-end mt-3">
+            {isEditing ? (
+              <>
+                <button
+                  className="bg-blue-shade-100 text-white text-sm py-1 px-3 rounded-full font-semibold mr-2"
+                  onClick={handleCancelClick}
+                >
+                  Cancel
+                </button>
+                <button
+                  className="bg-blue-shade-100 text-white text-sm py-1 px-3 rounded-full font-semibold"
+                  onClick={handleSaveClick}
+                >
+                  {loading ? "Saving" : "Save"}
+                </button>
+              </>
+            ) : (
+              <button
+                className="bg-blue-shade-100 text-white text-sm py-1 px-4  rounded-full font-semibold"
+                onClick={() => setEditing(true)}
+              >
+                Edit
+              </button>
+            )}
+          </div>
+        </div>
         {/* ) : (
           <></>
         )} */}

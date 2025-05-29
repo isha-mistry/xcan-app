@@ -163,13 +163,13 @@ function InviteCreators({ userAddress }: { userAddress: any }) {
                   Invite creators to Arbitrum University and earn ETH every time they
                   mint! The more you bring, the more you earn!
                 </p>
-                <Link
+                {/* <Link
                   href="https://docs.chora.club/earn-rewards/create-referral-reward"
                   target="_blank"
                   className="inline-block mt-4 text-blue-shade-100 hover:text-blue-shade-200 hover:underline transition-colors duration-300"
                 >
                   Learn more about referrals →
-                </Link>
+                </Link> */}
               </div>
 
               <div className="bg-gradient-to-r from-blue-shade-400/20 via-purple-500/20 to-pink-500/20 rounded-lg p-2 sm:p-4 md:p-6 mb-8">
@@ -270,7 +270,7 @@ function InviteCreators({ userAddress }: { userAddress: any }) {
                     {totalRewards?.amount} ETH
                   </p>
                 </div>
-                <button onClick={handleClaimRewards} className="mt-4 w-full bg-blue-shade-100 text-white py-2 rounded-md hover:bg-blue-shade-200 transition-colors duration-200">
+                <button onClick={handleClaimRewards} className="mt-4 w-full bg-[#4f4b41] text-white py-2 rounded-md hover:bg-[#4f4b41]/80 transition-colors duration-200">
                   Claim Rewards
                 </button>
               </div>

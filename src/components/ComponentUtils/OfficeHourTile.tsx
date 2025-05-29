@@ -261,15 +261,6 @@ const OfficeHourTile = ({
               height={200}
               className="w-full h-44 rounded-t-3xl object-cover"
             />
-            <div className="absolute top-2 right-2 bg-black rounded-full">
-              <Image
-                src={logo}
-                alt="image"
-                width={100}
-                height={100}
-                className="w-7 h-7"
-              />
-            </div>
           </div>
           <div className="px-5 py-4 space-y-2">
             {/* Title with gradient underline animation */}
@@ -286,24 +277,6 @@ const OfficeHourTile = ({
 
             {(isAttended || isHosted || isRecorded) && (
               <div className="flex items-center text-sm gap-0.5 sm:gap-1 py-1">
-                <div className=" flex items-center ">
-                  <div>
-                    <Image
-                      src={daoConfigs[data.dao_name.toLowerCase()]?.logo}
-                      alt="image"
-                      width={100}
-                      height={100}
-                      className="rounded-full size-4 sm:size-6"
-                    />
-                    {/* <DAOLogo
-                      daoName={data.dao_name}
-                      width={100}
-                      height={100}
-                      className="rounded-full size-4 sm:size-6"
-                    /> */}
-                  </div>
-                </div>
-                <LuDot />
                 <div className="text-xs sm:text-sm capitalize">
                   {data.views ?? 0} views
                 </div>

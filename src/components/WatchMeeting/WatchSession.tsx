@@ -148,7 +148,7 @@ function WatchSession({
 
   return (
     <div className="">
-      <div className="rounded-3xl border border-[#CCCCCC] bg-[#F2F2F2]">
+      <div className="rounded-3xl border border-[#CCCCCC] bg-blue-shade-500">
         <div
           className={`px-6 pt-4 pb-4 ${data.description.length > 0 ? "border-b" : ""
             }  border-[#CCCCCC]`}
@@ -179,7 +179,7 @@ function WatchSession({
                     className="w-5 h-5 rounded-full"
                     priority
                   />
-                  <div className="text-[#292929] font-semibold hover:text-blue-shade-100">
+                  <div className="text-[#dbdbdb] font-semibold hover:text-blue-shade-100">
                     {ensHostName}
                   </div>
                 </div>
@@ -195,12 +195,12 @@ function WatchSession({
                       closeDelay={1}
                     >
                       <Link
-                        href={
-                          data.uid_host
-                            ? `${daoConfigs[data.dao_name.toLowerCase()]
-                              .attestationUrl
-                            }/${data.uid_host}`
-                            : "#"
+                        href={ `https://arbitrum.easscan.org/offchain/attestation/view/${data.uid_host}`
+                          // data.uid_host
+                          //   ? `${daoConfigs[data.dao_name.toLowerCase()]
+                          //     .attestationUrl
+                          //   }/${data.uid_host}`
+                          //   : "#"
                         }
                         onClick={(e) => {
                           if (!data.uid_host) {
@@ -236,12 +236,12 @@ function WatchSession({
                     closeDelay={1}
                   >
                     <Link
-                      href={
-                        data.onchain_host_uid
-                          ? `${daoConfigs[data.dao_name.toLowerCase()]
-                            .attestationUrl
-                          }/${data.onchain_host_uid}`
-                          : "#"
+                      href={ `https://arbitrum.easscan.org/attestation/view/${data.onchain_host_uid}`
+                        // data.onchain_host_uid
+                        //   ? `${daoConfigs[data.dao_name.toLowerCase()]
+                        //     .attestationUrl
+                        //   }/${data.onchain_host_uid}`
+                        //   : "#"
                       }
                       onClick={(e) => {
                         if (!data.onchain_host_uid) {
@@ -265,27 +265,12 @@ function WatchSession({
                   <></>
                 )}
               </div>
-
-              <div className="flex items-center gap-1">
-                {daoConfigs[data.dao_name.toLowerCase()] && (
-                  <Image
-                    src={daoConfigs[data.dao_name.toLowerCase()].logo}
-                    alt={`${data.dao_name} logo`}
-                    width={100}
-                    height={100}
-                    className="rounded-full w-5 h-5"
-                  />
-                )}
-                <div className="text-[#292929] font-semibold capitalize">
-                  {data.dao_name}
-                </div>
-              </div>
             </div>
 
             <div className="flex gap-[10px]">
               <div className="flex items-center gap-1">
                 <IoMdEye size={20} />
-                <div className="text-[#1E1E1E]">
+                <div className="text-[#dbdbdb]">
                   {formatViews(data?.views ?? 0)} views
                 </div>
               </div>
@@ -298,7 +283,7 @@ function WatchSession({
                   priority
                   className="w-5 h-5"
                 />
-                <div className="text-[#1E1E1E]">
+                <div className="text-[#dbdbdb]">
                   {collection === "sessions"
                     ? formatTimeAgo(data.slot_time)
                     : collection === "office_hours"
@@ -324,7 +309,7 @@ function WatchSession({
                     <div className="scale-x-[-1]">
                       <BiSolidShare size={20} />
                     </div>
-                    <div className="text-[#1E1E1E]">Share</div>
+                    <div className="text-[#dbdbdb]">Share</div>
                   </div>
                 </>
               )}
@@ -388,12 +373,12 @@ function WatchSession({
                           closeDelay={1}
                         >
                           <Link
-                            href={
-                              daoConfigs
-                                ? `${daoConfigs[data.dao_name.toLowerCase()]
-                                  .attestationUrl
-                                }/${attendee.attendee_uid}`
-                                : ""
+                            href={ `https://arbitrum.easscan.org/offchain/attestation/view/${attendee.attendee_uid}`
+                              // daoConfigs
+                              //   ? `${daoConfigs[data.dao_name.toLowerCase()]
+                              //     .attestationUrl
+                              //   }/${attendee.attendee_uid}`
+                              //   : ""
                             }
                             target="_blank"
                           >
@@ -426,11 +411,7 @@ function WatchSession({
                         >
                           <Link
                             href={
-                              daoConfigs
-                                ? `${daoConfigs[data.dao_name.toLowerCase()]
-                                  .attestationUrl
-                                }/${attendee.onchain_attendee_uid}}`
-                                : ""
+                              `https://arbitrum.easscan.org/attestation/view/${attendee.onchain_attendee_uid}`
                               // data.dao_name === "optimism" ||
                               // data.dao_name === "Optimism"
                               //   ? `https://optimism.easscan.org/attestation/view/${attendee.onchain_attendee_uid}`
@@ -468,14 +449,14 @@ function WatchSession({
 
         {sessionDetails.description.length > 0 ? (
           <div
-            className={`px-6 pt-4 pb-4 rounded-b-3xl bg-white text-[#1E1E1E]`}
+            className={`px-6 pt-4 pb-4 rounded-b-3xl bg-[#212c4c] text-[#bebebe]`}
           >
             {sessionDetails.description}
           </div>
         ) : (
           data.description.length > 0 && (
             <div
-              className={`px-6 pt-4 pb-4 rounded-b-3xl bg-white text-[#1E1E1E]`}
+              className={`px-6 pt-4 pb-4 rounded-b-3xl bg-[#212c4c] text-[#bebebe]`}
             >
               <>
                 <div

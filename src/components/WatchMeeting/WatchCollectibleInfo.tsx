@@ -28,7 +28,7 @@ const WatchCollectibleInfo = ({
   return (
     <div className="rounded-3xl border border-black-shade-200 font-tektur w-full">
       <div className="flex w-full rounded-t-3xl bg-blue-shade-400 py-3 pl-6">
-        <p className="font-medium xl:text-base 1.7xl:text-lg text-blue-shade-100">
+        <p className="font-medium xl:text-base 1.7xl:text-lg text-white">
           Collectibles Info
         </p>
       </div>

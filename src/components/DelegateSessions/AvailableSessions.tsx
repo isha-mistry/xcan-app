@@ -417,7 +417,7 @@ function AvailableSessions() {
 
   return (
     <div className="xs:mx-4">
-      <div className="flex flex-col lg:flex-row lg:gap-3 bg-[#D9D9D945] px-2 py-4 xs:p-4 mt-4 mx-2 rounded-2xl font-tektur">
+      <div className="flex flex-col lg:flex-row lg:gap-3 bg-[#c2defd22] px-2 py-4 xs:p-4 mt-4 mx-2 rounded-2xl font-tektur">
         {/* <div
           style={{ background: "rgba(238, 237, 237, 0.36)" }}
           className="flex border-[0.5px] border-black w-fit rounded-full  "
@@ -441,7 +441,7 @@ function AvailableSessions() {
         </div> */}
         <div className="flex gap-3 items-center">
           <div
-            className={`flex items-center rounded-full shadow-lg bg-[#484e57] text-white cursor-pointer w-[300px] xs:w-[365px] lg:w-[150px] 1.5lg:w-[200px] 2xl:w-[365px]`}
+            className={`flex items-center rounded-full shadow-lg bg-[#414f63a1] text-white cursor-pointer w-[300px] xs:w-[365px] lg:w-[150px] 1.5lg:w-[200px] 2xl:w-[365px]`}
           >
             <CiSearch
               className={`text-base transition-all duration-700 ease-in-out ml-3`}
@@ -462,7 +462,7 @@ function AvailableSessions() {
             closeDelay={1}
           >
             <div
-              className="lg:hidden rounded-full shadow-lg flex items-center justify-center size-7 sm:size-9 bg-white cursor-pointer"
+              className="lg:hidden rounded-full flex items-center justify-center shadow-xl size-7 sm:size-9 bg-[#455670] cursor-pointer"
               onClick={() => setShowFilterOptions(!showFilterOptions)}
             >
               <FaChevronDown
@@ -496,7 +496,7 @@ function AvailableSessions() {
                   value={selectedDate}
                   onChange={handleDateChange}
                   min={formattedDate}
-                  className="bg-[#484e57] 2xl:px-3 2xl:py-2 p-1.5 sm:p-2 shadow-lg rounded-full cursor-pointer text-xs sm:text-sm lg:text-xs xl:text-sm"
+                  className="bg-[#414f63a1] 2xl:px-3 2xl:py-2 p-1.5 sm:p-2 shadow-lg rounded-full cursor-pointer text-xs sm:text-sm lg:text-xs xl:text-sm"
                 />
               </Tooltip>
             </div>
@@ -518,14 +518,14 @@ function AvailableSessions() {
               {!showStartTimeSelector ? (
                 <button
                   onClick={() => handleSetStartTime()}
-                  className="bg-[#484e57] 2xl:px-3 2xl:py-2 p-1.5 sm:p-2 rounded-full shadow-lg mr-1 cursor-pointer w-[132px] xs:w-[151px]"
+                  className="bg-[#414f63a1] 2xl:px-3 2xl:py-2 p-1.5 sm:p-2 rounded-full shadow-lg mr-1 cursor-pointer w-[132px] xs:w-[151px]"
                 >
                   Set Start Time
                 </button>
               ) : (
-                <div className="bg-[#484e57] p-1 sm:p-2 shadow-lg rounded-full">
+                <div className="bg-[#414f63a1] p-1 sm:p-2 shadow-lg rounded-full">
                   <select
-                    className="cursor-pointer mr-1 bg-[#484e57]"
+                    className="cursor-pointer mr-1 bg-[#414f63a1]"
                     value={startHour}
                     onChange={(e) => setStartHour(e.target.value)}
                   >
@@ -539,13 +539,13 @@ function AvailableSessions() {
                   <select
                     value={startMinute}
                     onChange={(e) => setStartMinute(e.target.value)}
-                    className="ml-1 cursor-pointer bg-[#484e57]"
+                    className="ml-1 cursor-pointer bg-[#414f63a1]"
                   >
                     <option value="00">00</option>
                     <option value="30">30</option>
                   </select>
                   <select
-                    className="cursor-pointer bg-[#484e57]"
+                    className="cursor-pointer bg-[#414f63a1]"
                     value={startPeriod}
                     onChange={(e) => setStartPeriod(e.target.value)}
                   >
@@ -560,14 +560,14 @@ function AvailableSessions() {
               {!showEndTimeSelector ? (
                 <button
                   onClick={() => handleSetEndTime()}
-                  className="bg-[#484e57] 2xl:px-3 2xl:py-2 p-1.5 sm:p-2 rounded-full shadow-lg ml-1 w-[132px] xs:w-[151px] cursor-pointer"
+                  className="bg-[#414f63a1] 2xl:px-3 2xl:py-2 p-1.5 sm:p-2 rounded-full shadow-lg ml-1 w-[132px] xs:w-[151px] cursor-pointer"
                 >
                   Set End Time
                 </button>
               ) : (
-                <div className="bg-[#484e57] p-1 sm:p-2 shadow-lg rounded-full">
+                <div className="bg-[#414f63a1] p-1 sm:p-2 shadow-lg rounded-full">
                   <select
-                    className="ml-1 cursor-pointer bg-[#484e57]"
+                    className="ml-1 cursor-pointer bg-[#414f63a1]"
                     value={endHour}
                     onChange={(e) => setEndHour(e.target.value)}
                   >
@@ -579,7 +579,7 @@ function AvailableSessions() {
                   </select>
                   <span>:</span>
                   <select
-                    className="mr-1 cursor-pointer bg-[#484e57]"
+                    className="mr-1 cursor-pointer bg-[#414f63a1]"
                     value={endMinute}
                     onChange={(e) => setEndMinute(e.target.value)}
                   >
@@ -587,7 +587,7 @@ function AvailableSessions() {
                     <option value="30">30</option>
                   </select>
                   <select
-                    className="cursor-pointer bg-[#484e57]"
+                    className="cursor-pointer bg-[#414f63a1]"
                     value={endPeriod}
                     onChange={(e) => setEndPeriod(e.target.value)}
                   >

@@ -262,7 +262,7 @@ function DaoOfficeHours() {
           </div>
 
           {/* Search bar */}
-          <div className="flex items-center rounded-full shadow-lg bg-gray-700 text-white cursor-pointer w-full max-w-md mb-6">
+          <div className="flex items-center rounded-full shadow-lg bg-[#c2defd22] text-white cursor-pointer w-full max-w-md mb-6">
             <CiSearch className="text-xl text-gray-400 ml-4" />
             <input
               type="text"

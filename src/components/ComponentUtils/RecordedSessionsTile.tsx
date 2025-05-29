@@ -278,15 +278,6 @@ function RecordedSessionsTile({
               <div className="absolute right-2 bottom-2 text-white text-xs bg-white px-1 bg-opacity-30 rounded-sm">
                 {formatVideoDuration(videoDurations[index] || 0)}
               </div>
-              <div className="absolute top-2 right-2 bg-black rounded-full">
-                <Image
-                  src={logo}
-                  alt="image"
-                  width={100}
-                  height={100}
-                  className="w-7 h-7"
-                />
-              </div>
             </div>
             <div className="flex flex-col justify-between">
               <div className="px-4 pb-2 sm:py-2">

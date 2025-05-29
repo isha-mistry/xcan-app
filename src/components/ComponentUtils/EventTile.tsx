@@ -266,9 +266,6 @@ function EventTile({ tileIndex, data: initialData, isEvent }: TileProps) {
             height={176}
             className="w-full h-44 sm:rounded-t-3xl object-cover"
           />
-          <div className="absolute top-2 right-2 bg-black rounded-full">
-            <Image src={logo} alt="image" width={24} />
-          </div>
         </div>
 
         <div className="px-4 pt-2">

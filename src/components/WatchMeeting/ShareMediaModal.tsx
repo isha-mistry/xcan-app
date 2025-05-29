@@ -107,7 +107,7 @@ function ShareMediaModal({
           className="absolute inset-0 backdrop-blur-md"
           onClick={toggleModal}
         ></div>
-        <div className="p-4 sm:p-5 border z-50 rounded-2xl bg-white flex flex-col gap-2 sm:gap-3 relative w-full max-w-md mx-2 xm:mx-auto">
+        <div className="p-4 sm:p-5 border z-50 rounded-2xl bg-[#212c4c]  flex flex-col gap-2 sm:gap-3 relative w-full max-w-md mx-2 xm:mx-auto">
           <div className="bg-black rounded-full size-5 p-px flex justify-center items-center absolute top-5 right-5">
             <IoClose
               className="cursor-pointer w-5 h-5 text-white "
@@ -138,7 +138,7 @@ function ShareMediaModal({
               <SiFarcaster className="bg-white text-[#8a63d2] rounded-full size-14 sm:size-16 md:size-[72px] cursor-pointer" />
             </div>
             <div onClick={shareOnTelegram}>
-              <FaTelegram className="text-[#1d98dc] bg-white size-14 sm:size-16 md:size-[72px] cursor-pointer" />
+              <FaTelegram className="text-[#1d98dc] bg-white rounded-full size-14 sm:size-16 md:size-[72px] cursor-pointer" />
             </div>
             {/* <div
               className="bg-black-shade-900 rounded-full size-[72px] p-3 flex justify-center items-center cursor-pointer"
@@ -148,7 +148,7 @@ function ShareMediaModal({
             </div> */}
           </div>
           <div
-            className={`bg-black-shade-800 rounded-lg py-2 sm:py-2.5 px-2 sm:px-3 flex justify-between items-center gap-2 sm:gap-4`}
+            className={`bg-[#3843646b] rounded-lg py-2 sm:py-2.5 px-2 sm:px-3 flex justify-between items-center gap-2 sm:gap-4`}
           >
             <p className="text-xs sm:text-sm font-light truncate flex-1">{link}</p>
             <IoCopy

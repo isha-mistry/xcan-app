@@ -21,6 +21,7 @@ import { IoGiftSharp } from "react-icons/io5";
 import ConnectWalletWithENS from "../ConnectWallet/ConnectWalletWithENS";
 import { usePrivy } from "@privy-io/react-auth";
 import logo from "@/assets/images/icon.svg";
+import ConnectYourWallet from "../ComponentUtils/ConnectYourWallet";
 
 const SidebarMainMobile = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -245,19 +246,9 @@ const SidebarMainMobile = () => {
                     <FiArrowUpRight className="w-5 h-5" />
                   </div>
                 </Link> */}
-              {!isConnected || !session ? (
-                <li>
-                  <div className="block py-4 pl-6 sm:py-5 hover:bg-blue-shade-100">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center">
-                        <FaUser className="size-5 mr-4" />
-                        <span>Profile</span>
-                      </div>
-                      <FiArrowUpRight className="w-5 h-5" />
-                    </div>
-                  </div>
-                </li>
-              ) : (
+              {/* {!isConnected || !session ? (
+                <ConnectYourWallet />
+              ) : ( */}
                 <li>
                   <Link
                     href={`/profile/${address}?active=info`}
@@ -272,7 +263,7 @@ const SidebarMainMobile = () => {
                     </div>
                   </Link>
                 </li>
-              )}
+              {/* )} */}
             </ul>
           </nav>
 

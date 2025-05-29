@@ -91,9 +91,6 @@ function NFTTile({ nft }: NFTProps) {
             <span className="text-gray-500 text-sm">Image Unavailable</span>
           </div>
         )}
-        <div className="absolute top-2 right-2 bg-black rounded-full">
-          <Image src={logo} alt="logo" width={24} height={24} />
-        </div>
       </div>
       <div className="px-4 py-2">
         <div
