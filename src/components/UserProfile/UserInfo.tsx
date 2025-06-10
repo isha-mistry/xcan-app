@@ -174,11 +174,22 @@ function UserInfo({
   const [isMobile, setIsMobile] = useState(false);
   // console.log(isLoadingStatus);
   const router = useRouter();
+  
   const blocks = [
+    {
+      number: sessionHostCount,
+      desc: "Sessions hosted",
+      ref: `/profile/${address}}?active=sessions&session=hosted`,
+    },
     {
       number: sessionAttendCount,
       desc: "Sessions attended",
       ref: `/profile/${address}}?active=sessions&session=attended`,
+    },
+    {
+      number: officehoursHostCount,
+      desc: "Office Hours hosted",
+      ref: `/profile/${address}}?active=officeHours&hours=attended`,
     },
     {
       number: officehoursAttendCount,

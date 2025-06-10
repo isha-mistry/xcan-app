@@ -42,13 +42,13 @@ import WalletWrapper from "@/components/WalletWrapper";
 //   }
 
 //   return {
-//     metadataBase: new URL("https://stylus-university.vercel.app/"),
+//     metadataBase: new URL("https://arbitrum-university.vercel.app/"),
 //     title: "Arbitrum University",
 //     description: "Discover. Learn. Engage.",
 //     openGraph: {
 //       title: delegateMetadata.title,
 //       description: delegateMetadata.description,
-//       url: `https://stylus-university.vercel.app/${daoDelegates}`,
+//       url: `https://arbitrum-university.vercel.app/${daoDelegates}`,
 //       siteName: "Arbitrum University",
 //       images: [
 //         {

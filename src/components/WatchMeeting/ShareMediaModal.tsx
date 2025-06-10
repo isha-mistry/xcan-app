@@ -66,7 +66,7 @@ function ShareMediaModal({
   const text = encodeURIComponent(
     `${data.title} ${decodeURIComponent(
       url
-    )} via @ChoraClub\n\n#choraclub #session #growth`
+    )} via Arbitrum University\n\n #session #growth`
   );
 
   const shareOnTwitter = () => {

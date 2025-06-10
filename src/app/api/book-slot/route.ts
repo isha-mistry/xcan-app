@@ -9,7 +9,6 @@ import {
 } from "@/utils/NotificationUtils";
 import { imageCIDs } from "@/config/staticDataUtils";
 import { SessionInterface } from "@/types/MeetingTypes";
-import { compileBookedSessionTemplate, sendMail } from "@/lib/mail";
 import { cacheWrapper } from "@/utils/cacheWrapper";
 
 function getRandomElementFromArray(arr: any[]) {
@@ -26,7 +25,6 @@ export async function POST(req: NextRequest) {
     meeting_status,
     host_joined_status,
     booking_status,
-    dao_name,
     title,
     description,
     thumbnail_image,
@@ -49,7 +47,6 @@ export async function POST(req: NextRequest) {
       meeting_status,
       host_joined_status,
       booking_status,
-      dao_name,
       title,
       description,
       thumbnail_image: randomImage,
@@ -62,9 +59,6 @@ export async function POST(req: NextRequest) {
       });
 
       const delegateCollection = db.collection("users");
-      const documentsForHostEmail = await delegateCollection
-        .find({ address: host_address })
-        .toArray();
 
       const localSlotTime = await formatSlotDateAndTime({
         dateInput: slot_time,
@@ -76,7 +70,7 @@ export async function POST(req: NextRequest) {
         const hostENSNameOrAddress = await getDisplayNameOrAddr(host_address);
         const notificationToHost = {
           receiver_address: host_address,
-          content: `Great news! 🎉 ${userENSNameOrAddress} has just booked a session with you on ${dao_name}. The session is scheduled on ${localSlotTime} UTC and will focus on ${title}.`,
+          content: `Great news! 🎉 ${userENSNameOrAddress} has just booked a session with you. The session is scheduled on ${localSlotTime} UTC and will focus on ${title}.`,
           createdAt: Date.now(),
           read_status: false,
           notification_name: "newBookingForHost",
@@ -141,53 +135,6 @@ export async function POST(req: NextRequest) {
         socket.on("error", (err) => {
           console.error("WebSocket error:", err);
         });
-
-        for (const document of documentsForHostEmail) {
-          const emailId = document.emailId;
-          if (emailId && emailId !== "" && emailId !== undefined) {
-            try {
-              await sendMail({
-                to: emailId,
-                name: "Arbitrum University",
-                subject: "Session Booked",
-                body: compileBookedSessionTemplate(
-                  "Your session has been Booked.",
-                  notificationToHost.content
-                ),
-              });
-            } catch (error) {
-              console.error("Error sending mail:", error);
-            }
-          }
-        }
-
-        const documentsForUserEmail = await delegateCollection
-          .find({ address: guestAddress })
-          .toArray();
-        for (const document of documentsForUserEmail) {
-          const emailId = document.emailId;
-          if (emailId && emailId !== "" && emailId !== undefined) {
-            try {
-              await sendMail({
-                to: emailId,
-                name: "Arbitrum University",
-                subject: "Session Booked",
-                body: compileBookedSessionTemplate(
-                  "🎉 Hooray! Your session is officially booked! ",
-                  notificationToGuest.content
-                ),
-              });
-              if (cacheWrapper.isAvailable) {
-                const cacheKey1 = `Notification:${guestAddress}`;
-                const cacheKey2 = `Notification:${host_address}`;
-                await cacheWrapper.delete(cacheKey1);
-                await cacheWrapper.delete(cacheKey2);
-              }
-            } catch (error) {
-              console.error("Error sending mail:", error);
-            }
-          }
-        }
       }
 
       client.close();

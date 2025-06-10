@@ -2,33 +2,18 @@
 
 import React, { useState, useEffect } from "react";
 import DayTimeScheduler from "@captainwalterdev/daytimescheduler";
-import { useAccount, useSwitchChain } from "wagmi";
-import { DateTime, Duration } from "luxon";
-
+import { useAccount } from "wagmi";
 import { isSameDay } from "date-fns";
-
 import { useSession } from "next-auth/react";
 import { Oval, ThreeDots } from "react-loader-spinner";
 import styled from "styled-components";
-import {
-  Modal,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-  Button,
-  useDisclosure,
-} from "@nextui-org/react";
-import toast, { Toaster } from "react-hot-toast";
-import SchedulingSuccessModal from "@/components/UserProfile/UserAllSessions/SchedulingSuccessModal";
+import {  useDisclosure } from "@nextui-org/react";
+import toast from "react-hot-toast";
 import BookingSuccessModal from "./BookingSuccessModal";
-import AddEmailModal from "@/components/ComponentUtils/AddEmailModal";
-import { RxCross2 } from "react-icons/rx";
 import { MdCancel } from "react-icons/md";
 import { useRouter } from "next-nprogress-bar";
 import { usePrivy } from "@privy-io/react-auth";
 import { fetchApi } from "@/utils/api";
-import { daoConfigs } from "@/config/daos";
 import { useConnection } from "@/app/hooks/useConnection";
 interface Type {
   daoDelegates: string;
@@ -200,12 +185,7 @@ function BookSession({ props }: { props: Type }) {
 
   const [mailId, setMailId] = useState<string>();
   const [checkUserMail, setCheckUserMail] = useState(false);
-  const [hasEmailID, setHasEmailID] = useState<Boolean>();
-  const [showGetMailModal, setShowGetMailModal] = useState<Boolean>();
-  const [isValidEmail, setIsValidEmail] = useState(true);
   const [continueAPICalling, setContinueAPICalling] = useState<Boolean>(false);
-  const [userRejected, setUserRejected] = useState<Boolean>();
-  const [addingEmail, setAddingEmail] = useState<boolean>();
   const [isApiCallInProgress, setIsApiCallInProgress] = useState(false);
   const { ready, authenticated, login, logout, getAccessToken, user } =
     usePrivy();
@@ -310,79 +290,10 @@ function BookSession({ props }: { props: Type }) {
   };
 
   useEffect(() => {
-    const hasRejected = JSON.parse(
-      sessionStorage.getItem("bookingMailRejected") || "false"
-    );
-    setUserRejected(hasRejected);
-  }, [userRejected, sessionStorage.getItem("bookingMailRejected")]);
-
-  useEffect(() => {
     if (continueAPICalling && !isApiCallInProgress) {
       apiCall();
     }
   }, [continueAPICalling]);
-
-  useEffect(() => {
-    const checkUser = async () => {
-      try {
-        const token = await getAccessToken();
-        const myHeaders: HeadersInit = {
-          "Content-Type": "application/json",
-          ...(address && {
-            "x-wallet-address": address,
-            Authorization: `Bearer ${token}`,
-          }),
-        };
-
-        const raw = JSON.stringify({
-          address: address,
-        });
-
-        const requestOptions: any = {
-          method: "POST",
-          headers: myHeaders,
-          body: raw,
-          redirect: "follow",
-        };
-        const response = await fetchApi(
-          `/profile/${address}`,
-          requestOptions
-        );
-        const result = await response.json();
-        if (Array.isArray(result.data) && result.data.length > 0) {
-          for (const item of result.data) {
-            if (item.address === address) {
-              if (item.emailId === null || item.emailId === "") {
-                setHasEmailID(false);
-                return false;
-              } else if (item.emailId) {
-                const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                const isValid = emailPattern.test(item.emailId);
-                if (isValid) {
-                  setMailId(item.emailId);
-                  setHasEmailID(true);
-                  return true;
-                } else {
-                  return false;
-                }
-              }
-            }
-          }
-        }
-      } catch (error) {
-        // toast.error("An error occurred while checking user information");
-        return false;
-      }
-    };
-
-    const runCheck = async () => {
-      let checkMail = await checkUser();
-      // console.log('ChekMail',checkMail);
-      setCheckUserMail(checkMail ? checkMail : false);
-    };
-
-    runCheck(); // Call the async function inside the effect
-  }, [address]); // Include walletAddress or other dependencies
 
   const checkBeforeApiCall = async () => {
     if (isApiCallInProgress || confirmSave) {
@@ -392,17 +303,12 @@ function BookSession({ props }: { props: Type }) {
     if (modalData.title.length > 0 && modalData.description.length > 0) {
       try {
         setConfirmSave(true);
-        const userRejectedLocal: any = await sessionStorage.getItem(
-          "bookingMailRejected"
-        );
-        if (!checkUserMail && (!userRejected || !userRejectedLocal)) {
-          setShowGetMailModal(true);
-        } else {
-          if (!continueAPICalling || continueAPICalling === false) {
-            setContinueAPICalling(true);
-          } else if (continueAPICalling) {
-            apiCall();
-          }
+
+        if (!continueAPICalling || continueAPICalling === false) {
+          setContinueAPICalling(true);
+        } else if (continueAPICalling) {
+          apiCall();
+
         }
       } catch (error) {
         setConfirmSave(false);
@@ -599,70 +505,10 @@ function BookSession({ props }: { props: Type }) {
     router.push(`/profile/${address}?active=sessions&session=attending`);
   };
 
-  const handleEmailChange = (email: string) => {
-    setMailId(email);
-    setIsValidEmail(validateEmail(email));
-  };
 
   const validateEmail = (email: string) => {
     const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return regex.test(email);
-  };
-
-  const handleSubmit = async () => {
-    if (address && isConnected) {
-      if (mailId && (mailId !== "" || mailId !== undefined)) {
-        if (isValidEmail) {
-          try {
-            setAddingEmail(true);
-            const token = await getAccessToken();
-            const myHeaders: HeadersInit = {
-              "Content-Type": "application/json",
-              ...(address && {
-                "x-wallet-address": address,
-                Authorization: `Bearer ${token}`,
-              }),
-            };
-            const raw = JSON.stringify({
-              address: address,
-              emailId: mailId,
-            });
-
-            const requestOptions: any = {
-              method: "PUT",
-              headers: myHeaders,
-              body: raw,
-              redirect: "follow",
-            };
-
-            const response = await fetchApi("/profile", requestOptions);
-            const result = await response.json();
-            if (result.success) {
-              setContinueAPICalling(true);
-              setAddingEmail(false);
-            }
-            setShowGetMailModal(false);
-          } catch (error) {
-            setAddingEmail(false);
-          }
-        } else {
-          toast.error("Enter Valid Email");
-          setShowGetMailModal(true);
-        }
-      } else {
-        toast.error("Enter Valid Email");
-        setShowGetMailModal(true);
-      }
-    }
-  };
-
-  const handleGetMailModalClose = () => {
-    if (!userRejected) {
-      sessionStorage.setItem("bookingMailRejected", JSON.stringify(true));
-      setUserRejected(true);
-    }
-    setContinueAPICalling(true);
-    setShowGetMailModal(false);
   };
 
   return (
@@ -787,66 +633,6 @@ function BookSession({ props }: { props: Type }) {
         </div>
       )}
 
-      {showGetMailModal && (
-        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/40 backdrop-blur-md transition-opacity duration-300">
-          <div className="bg-white rounded-[41px] shadow-lg w-full max-w-lg mx-4 p-6 relative animate-fadeIn">
-            {/* Close Button */}
-            <button
-              className="absolute top-4 right-4 p-2 text-gray-500 hover:text-gray-800 transition-all"
-              onClick={handleGetMailModalClose}
-              disabled={addingEmail || isApiCallInProgress}
-            >
-              <MdCancel className="w-6 h-6" />
-            </button>
-
-            {/* Title */}
-            <h2 className="text-blue-shade-200 font-semibold text-sm sm:text-base text-center">
-              Get Notified About Your Session Request
-            </h2>
-
-            {/* Subtitle */}
-            <p className="text-gray-500 text-xs sm:text-sm text-center mt-2">
-              Add your email address to get notified when the delegate approves
-              or rejects your session request.
-            </p>
-
-            {/* Email Input & Button */}
-            <div className="mt-4 flex flex-col sm:flex-row gap-3">
-              <input
-                type="email"
-                value={mailId || ""}
-                placeholder="Enter email address"
-                onChange={(e) => handleEmailChange(e.target.value)}
-                className="flex-1 px-4 py-2 rounded-3xl bg-[#D9D9D945] text-sm sm:text-base outline-none focus:ring-2 focus:ring-gray-400 transition-all"
-              />
-              <button
-                onClick={handleSubmit}
-                className="w-full sm:w-auto bg-black text-white px-6 sm:px-8 py-2 sm:py-3 rounded-3xl hover:bg-gray-900 text-sm sm:text-base flex items-center justify-center"
-                disabled={addingEmail || isApiCallInProgress}
-              >
-                {addingEmail ? (
-                  <ThreeDots
-                    visible={true}
-                    height="20"
-                    width="50"
-                    color="#ffffff"
-                    radius="9"
-                    ariaLabel="loading"
-                  />
-                ) : (
-                  <>Notify Me</>
-                )}
-              </button>
-            </div>
-
-            {/* Additional Info */}
-            <p className="text-blue-shade-100 text-xs italic text-center mt-3">
-              You can also add your email later from your profile. Cancel or
-              submit your email to continue booking.
-            </p>
-          </div>
-        </div>
-      )}
 
       {modalOpen && (
         <BookingSuccessModal isOpen={modalOpen} onClose={handleModalClose} />

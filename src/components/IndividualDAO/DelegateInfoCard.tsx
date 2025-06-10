@@ -132,7 +132,7 @@ const DelegateInfoCard: React.FC<DelegateInfoCardProps> = ({
           >
             <Image
               src={ccLogo}
-              alt="ChoraClub Logo"
+              alt="Logo"
               width={40}
               height={40}
               className="rounded-full shadow-md"

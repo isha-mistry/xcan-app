@@ -122,7 +122,7 @@ const SidebarMainMobile = () => {
             </button>
             <Link
               className="ml-5 text-white font-semibold text-[26px] font-tektur"
-              href={"https://stylus-university.vercel.app/"}
+              href={"https://arbitrum-university.vercel.app/"}
             >
               Arbitrum University
             </Link>

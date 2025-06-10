@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 
 export const DEFAULT_METADATA: Metadata = {
-  metadataBase: new URL("https://stylus-university.vercel.app/"),
+  metadataBase: new URL("https://arbitrum-university.vercel.app/"),
   title: "Arbitrum University",
   description: "The requested page does not exist.",
   openGraph: {
     title: "Arbitrum University - Page Not Found",
     description: "The requested page does not exist.",
-    url: "https://stylus-university.vercel.app/",
+    url: "https://arbitrum-university.vercel.app/",
     siteName: "Arbitrum University",
     // images: [
     //   {

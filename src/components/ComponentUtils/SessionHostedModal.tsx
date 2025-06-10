@@ -22,15 +22,10 @@ function SessionHostedModal({ data }: any) {
 
   const shareOnTwitter = () => {
     const url = encodeURIComponent(link);
-    // const text = encodeURIComponent(
-    //   `${data.title} ${decodeURIComponent(
-    //     url
-    //   )} via @ChoraClub\n\n#choraclub #session #growth`
-    // );
     const text = encodeURIComponent(
-      `Just wrapped up an incredible session in @ChoraClub! 🎉 Thrilled to share my knowledge and help new users dive into the Web3 ecosystem.
+      `Just wrapped up an incredible session on Arbitrum University! 🎉 Thrilled to share my knowledge and help new users dive into the Web3 ecosystem.
 Check out the session here:👇\n ${decodeURIComponent(url)}
-#Web3 #ChoraClub`
+#Web3 #arbitrum`
     );
 
     // Twitter share URL

@@ -4,14 +4,14 @@ import type { Metadata } from "next";
 import WalletWrapper from "@/components/WalletWrapper";
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://stylus-university.vercel.app/"),
+  metadataBase: new URL("https://arbitrum-university.vercel.app/"),
   title: "Arbitrum University",
   description: "Discover. Learn. Engage.",
   openGraph: {
     title: "Office Hours",
     description:
       "Find all the current, upcoming, and past office hours hosted by different DAOs, and easily search them by using Title or Host Address.",
-    url: "https://stylus-university.vercel.app/office-hours?hours=ongoing",
+    url: "https://arbitrum-university.vercel.app/office-hours?hours=ongoing",
     siteName: "Arbitrum University",
     // images: [
     //   {

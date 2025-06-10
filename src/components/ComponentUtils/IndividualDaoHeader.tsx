@@ -91,7 +91,7 @@ function IndividualDaoHeader() {
           </div>
           {isOpen && (
             <div
-              className={`absolute mt-1 p-1.5 w-full min-w-[200px] sm:w-56 md:w-64 lg:w-72 border border-white-shade-100 rounded-xl bg-white shadow-md z-50 ${
+              className={`absolute mt-1 p-1.5 w-full min-w-[200px] sm:w-56 md:w-64 lg:w-72 border border-white rounded-xl bg-blue-500 shadow-md z-50 ${
                 isOpen ? "opacity-100" : "opacity-0 pointer-events-none"
               }`}
               style={{ transition: "opacity 0.3s" }}

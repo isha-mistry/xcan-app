@@ -1,5 +1,4 @@
 import { connectDB } from "@/config/connectDB";
-import { compileBookedSessionTemplate, sendMail } from "@/lib/mail";
 import { NextResponse, NextRequest } from "next/server";
 
 // Define the request body type
@@ -94,34 +93,6 @@ export async function POST(
         .find({ address: userAddress })
         .toArray();
 
-      for (const document of documentsForEmail) {
-        const emailId = document.emailId;
-        if (emailId && emailId !== "" && emailId !== undefined) {
-          try {
-            await sendMail({
-              to: emailId,
-              name: "Arbitrum University",
-              subject: "Session Scheduled",
-              body: compileBookedSessionTemplate(
-                "Your session has been Scheduled.",
-                "Please wait till the users books any session."
-              ),
-            });
-
-            // return NextResponse.json(
-            //   { success: true, result: "Email sent successfully!" },
-            //   { status: 200 }
-            // );
-          } catch (error) {
-            console.error("Error sending mail:", error);
-            // return NextResponse.json(
-            //   { error: "Internal Server Error" },
-            //   { status: 500 }
-            // );
-          }
-        }
-      }
-
       client.close();
 
       return NextResponse.json(
@@ -151,34 +122,6 @@ export async function POST(
         const documentsForEmail = await delegateCollection
           .find({ address: userAddress })
           .toArray();
-
-        for (const document of documentsForEmail) {
-          const emailId = document.emailId;
-          if (emailId && emailId !== "" && emailId !== undefined) {
-            try {
-              await sendMail({
-                to: emailId,
-                name: "Arbitrum University",
-                subject: "Session Scheduled",
-                body: compileBookedSessionTemplate(
-                  "Your session has been Scheduled.",
-                  "Please wait till the users books any session."
-                ),
-              });
-
-              return NextResponse.json(
-                { success: true, result: "Email sent successfully!" },
-                { status: 200 }
-              );
-            } catch (error) {
-              console.error("Error sending mail:", error);
-              // return NextResponse.json(
-              //   { error: "Internal Server Error" },
-              //   { status: 500 }
-              // );
-            }
-          }
-        }
 
         return NextResponse.json(
           { success: true, data: insertedDocument },

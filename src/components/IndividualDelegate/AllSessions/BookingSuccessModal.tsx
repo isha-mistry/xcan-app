@@ -20,12 +20,12 @@ function BookingSuccessModal({
 
   const shareOnTwitter = () => {
     const url = encodeURIComponent(
-      `https://stylus-university.vercel.app/sessions?active=availableDelegates`
+      `https://arbitrum-university.vercel.app/sessions?active=availableDelegates`
     );
     const text = encodeURIComponent(
-      `Hello Geeks! 🎉\nJust booked my session on @ChoraClub and can't wait to learn more about the #Web3 ecosystem from the experienced Delegate!🌐\n👉 ${decodeURIComponent(
+      `Hello Geeks! 🎉\nJust booked my session on Arbitrum University and can't wait to learn more about the #Web3 ecosystem from the experienced Delegate!🌐\n👉 ${decodeURIComponent(
         url
-      )}\n\n#choraclub #session #growth`
+      )}\n\n #session #growth`
     );
 
     // Twitter share URL

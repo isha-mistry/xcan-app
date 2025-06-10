@@ -8,7 +8,6 @@ import {
   formatSlotDateAndTime,
   getDisplayNameOrAddr,
 } from "@/utils/NotificationUtils";
-import { sendMail } from "@/lib/mail";
 import { cacheWrapper } from "@/utils/cacheWrapper";
 interface UpdateBookingStatusResponse {
   success: boolean;
@@ -164,34 +163,6 @@ export async function PUT(
       });
     }
 
-    const delegateCollection = db.collection("users");
-    const documentsForUserEmail = await delegateCollection
-      .find({ address: attendeeAddress })
-      .toArray();
-    for (const document of documentsForUserEmail) {
-      const emailId = document.emailId;
-      if (emailId && emailId !== "" && emailId !== undefined) {
-        if (booking_status === "Rejected") {
-          try {
-            await sendMail({
-              to: emailId,
-              name: "Arbitrum University",
-              subject: "Session Rejected",
-              body: `The session you have booked has been rejected by the delegate due to following reason: ${rejectionReason}`,
-            });
-
-            if (cacheWrapper.isAvailable) {
-              const cacheKey1 = `Notification:${attendeeAddress}`;
-              const cacheKey2 = `Notification:${host_address}`;
-              await cacheWrapper.delete(cacheKey1);
-              await cacheWrapper.delete(cacheKey2);
-            }
-          } catch (error) {
-            console.error("Error sending mail:", error);
-          }
-        }
-      }
-    }
 
     client.close();
     // console.log("MongoDB connection closed");

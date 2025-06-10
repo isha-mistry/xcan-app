@@ -30,7 +30,7 @@ const tektur = Tektur({
 // });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://stylus-university.vercel.app/"),
+  metadataBase: new URL("https://arbitrum-university.vercel.app/"),
   title: "Arbitrum University",
   description: "Discover. Learn. Engage.",
   appleWebApp: {
@@ -46,7 +46,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Arbitrum University",
     description: "Discover. Learn. Engage.",
-    url: "https://stylus-university.vercel.app/",
+    url: "https://arbitrum-university.vercel.app/",
     siteName: "Arbitrum University",
 
     // images: [

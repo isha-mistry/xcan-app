@@ -3,25 +3,17 @@
 import React, { useState, useEffect, ReactEventHandler } from "react";
 import { DateTime } from "luxon";
 import { useAccount } from "wagmi";
-import toast, { Toaster } from "react-hot-toast";
+import toast from "react-hot-toast";
 import { Oval } from "react-loader-spinner";
-import { FaChevronDown, FaCircleInfo, FaPlus } from "react-icons/fa6";
+import { FaCircleInfo, FaPlus } from "react-icons/fa6";
 import { Tooltip } from "@nextui-org/react";
 import SchedulingSuccessModal from "./SchedulingSuccessModal";
-import { RxCross2 } from "react-icons/rx";
-import AddEmailModal from "@/components/ComponentUtils/AddEmailModal";
-import Image from "next/image";
 import AvailableUserSessions from "./AvailableUserSessions";
 import styles from "./ScheduleUserSessions.module.css";
-import { TimeInput } from "@nextui-org/react";
-import { Time } from "@internationalized/date";
-import { AbiEncodingLengthMismatchError } from "viem";
-import { all } from "axios";
 import { fetchEnsNameAndAvatar } from "@/utils/ENSUtils";
-import { headers } from "next/headers";
 import { usePrivy } from "@privy-io/react-auth";
-import { fetchApi } from "@/utils/api";
 import { useConnection } from "@/app/hooks/useConnection";
+import { fetchApi } from "@/utils/api";
 
 interface dataToStore {
   userAddress: `0x${string}` | undefined | null;
@@ -50,7 +42,6 @@ function ScheduledUserSessions() {
     usePrivy();
   const [mailId, setMailId] = useState<string>();
   const [hasEmailID, setHasEmailID] = useState<Boolean>();
-  const [showGetMailModal, setShowGetMailModal] = useState<Boolean>();
   const [isValidEmail, setIsValidEmail] = useState(true);
   const [continueAPICalling, setContinueAPICalling] = useState<Boolean>(false);
   const [userRejected, setUserRejected] = useState<Boolean>();
@@ -239,19 +230,12 @@ function ScheduledUserSessions() {
     if (allData.length > 0) {
       try {
         setCreateSessionLoading(true);
-        const checkUserMail = await checkUser();
-        const userRejectedLocal: any = await sessionStorage.getItem(
-          "schedulingMailRejected"
-        );
-        // setUserRejected(userRejectedLocal);
-        if (!checkUserMail && (!userRejected || !userRejectedLocal)) {
-          setShowGetMailModal(true);
-        } else {
-          if (!continueAPICalling || continueAPICalling === false) {
-            setContinueAPICalling(true);
-          } else if (continueAPICalling) {
-            handleApplyButtonClick();
-          }
+
+        if (!continueAPICalling || continueAPICalling === false) {
+          setContinueAPICalling(true);
+        } else if (continueAPICalling) {
+          handleApplyButtonClick();
+
         }
         // if (continueAPICalling) {
         //   handleApplyButtonClick();
@@ -504,78 +488,6 @@ function ScheduledUserSessions() {
 
   const handleModalClose = () => {
     setSuccessModalOpen(false);
-  };
-
-  const handleEmailChange = (email: string) => {
-    setMailId(email);
-    setIsValidEmail(validateEmail(email));
-  };
-
-  const validateEmail = (email: string) => {
-    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return regex.test(email);
-  };
-
-  const handleSubmit = async () => {
-    if (address && isConnected) {
-      if (mailId && (mailId !== "" || mailId !== undefined)) {
-        if (isValidEmail) {
-          try {
-            setAddingEmail(true);
-            const token = await getAccessToken();
-            const myHeaders: HeadersInit = {
-              "Content-Type": "application/json",
-              ...(address && {
-                "x-wallet-address": address,
-                Authorization: `Bearer ${token}`,
-              }),
-            };
-
-            const raw = JSON.stringify({
-              address: address,
-              emailId: mailId,
-            });
-
-            const requestOptions: any = {
-              method: "PUT",
-              headers: myHeaders,
-              body: raw,
-              redirect: "follow",
-            };
-
-            const response = await fetchApi("/profile", requestOptions);
-            const result = await response.json();
-            if (result.success) {
-              setContinueAPICalling(true);
-              setAddingEmail(false);
-            }
-            // Optionally, close the modal
-            // handleGetMailModalClose();
-            setShowGetMailModal(false);
-          } catch (error) {
-            console.log("Error", error);
-            setAddingEmail(false);
-          }
-        } else {
-          toast.error("Enter Valid Email");
-          setShowGetMailModal(true);
-          console.log("Error");
-        }
-      } else {
-        toast.error("Enter Valid Email");
-        setShowGetMailModal(true);
-        console.log("Error");
-      }
-    }
-  };
-
-  const handleGetMailModalClose = () => {
-    if (!userRejected) {
-      sessionStorage.setItem("schedulingMailRejected", JSON.stringify(true));
-      setUserRejected(true);
-    }
-    setContinueAPICalling(true);
-    setShowGetMailModal(false);
   };
 
 
@@ -913,17 +825,6 @@ function ScheduledUserSessions() {
           isOpen={successModalOpen}
           onClose={handleModalClose}
           data={finalData}
-        />
-      )}
-      {showGetMailModal && (
-        <AddEmailModal
-          addingEmail={addingEmail}
-          isOpen={showGetMailModal}
-          onClose={handleGetMailModalClose}
-          onEmailChange={handleEmailChange}
-          onSubmit={handleSubmit}
-          mailId={mailId}
-          isValidEmail={isValidEmail}
         />
       )}
     </>
