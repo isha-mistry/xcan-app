@@ -31,7 +31,7 @@ function DelegateSessionsMain() {
               showArrow
               content={
                 <div className="font-tektur">
-                  Explore available delegates by DAO, date, and time to book
+                  Explore available experts by DAO, date, and time to book
                   sessions and unlock Web3 opportunities.
                 </div>
               }
@@ -40,14 +40,14 @@ function DelegateSessionsMain() {
               closeDelay={1}
             >
               <button
-                className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-blue-shade-300 shadow-md ${searchParams.get("active") === "availableDelegates"
+                className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-blue-shade-300 shadow-md ${searchParams.get("active") === "availableExperts"
                   ? "text-gray-200 font-semibold bg-blue-shade-300"
                   : "text-gray-300 bg-blue-shade-500"
                   }`}
-                onClick={() => router.push(path + "?active=availableDelegates")}
+                onClick={() => router.push(path + "?active=availableExperts")}
               >
                 <Users size={16} className="drop-shadow-lg" />
-                Available Delegates
+                Available Experts
               </button>
             </Tooltip>
             <Tooltip
@@ -78,7 +78,7 @@ function DelegateSessionsMain() {
             {searchParams.get("active") === "recordedSessions" && (
               <RecordedSessions />
             )}
-            {searchParams.get("active") === "availableDelegates" && (
+            {searchParams.get("active") === "availableExperts" && (
               <AvailableSessions />
             )}
           </div>

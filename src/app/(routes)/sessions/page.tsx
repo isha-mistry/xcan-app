@@ -9,8 +9,8 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Available Experts",
     description:
-      "Explore available uses by date, and time to book sessions and unlock Web3 opportunities.",
-    url: "https://arbitrum-university.vercel.app/available-delegates",
+      "Explore available experts by date, and time to book sessions and unlock Web3 opportunities.",
+    // url: "https://arbitrum-university.vercel.app/available-delegates",
     siteName: "Arbitrum University",
     // images: [
     //   {

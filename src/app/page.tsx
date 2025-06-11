@@ -12,9 +12,9 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-dark-primary font-tektur">
       {/* Hero Section */}
-      <section className="relative min-h-[85vh] py-6 flex items-center justify-center overflow-hidden">
-        <div className="absolute inset-0  opacity-50"></div>
-        <div className="container mx-auto px-4 z-10">
+      <section className="min-h-[85vh] py-6 flex items-center justify-center overflow-hidden">
+        {/* <div className="inset-0  opacity-50"></div> */}
+        <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             {/* Left Content */}
             <motion.div

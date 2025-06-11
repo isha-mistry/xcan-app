@@ -6,9 +6,9 @@ import { HiArrowSmLeft } from "react-icons/hi";
 import { IoIosRocket, IoMdNotifications } from "react-icons/io";
 import { SiGitbook } from "react-icons/si";
 import { PiUsersThreeFill } from "react-icons/pi";
-import { FaBusinessTime, FaUser } from "react-icons/fa6";
+import { FaBusinessTime, FaCodeBranch, FaUser } from "react-icons/fa6";
 import { BiSolidMessageSquareAdd, BiSolidWallet } from "react-icons/bi";
-import { FiArrowUpRight } from "react-icons/fi";
+import { FiArrowUpRight, FiCodesandbox } from "react-icons/fi";
 import { useSidebar } from "../../app/hooks/useSidebar";
 import { Badge, Tooltip, VisuallyHidden } from "@nextui-org/react";
 import Image from "next/image";
@@ -22,6 +22,7 @@ import ConnectWalletWithENS from "../ConnectWallet/ConnectWalletWithENS";
 import { usePrivy } from "@privy-io/react-auth";
 import logo from "@/assets/images/icon.svg";
 import ConnectYourWallet from "../ComponentUtils/ConnectYourWallet";
+import { MdHub } from "react-icons/md";
 
 const SidebarMainMobile = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -105,7 +106,7 @@ const SidebarMainMobile = () => {
 
       <div
         ref={sidebarRef}
-        className={`fixed inset-y-0 left-0 w-full font-tektur bg-blue-shade-200 text-white transform z-10 ${isOpen ? "translate-x-0" : "-translate-x-full"
+        className={`fixed inset-y-0 left-0 w-full font-tektur bg-blue-shade-200 text-white transform z-50 ${isOpen ? "translate-x-0" : "-translate-x-full"
           } transition-transform duration-500 ease-in-out`}
         onClick={handleSidebarClick}
       >
@@ -132,14 +133,13 @@ const SidebarMainMobile = () => {
             <ul className="">
               <li>
                 <Link
-                  href="https://arb-dev-quest.vercel.app/"
-                  target="_blank"
+                  href="/ecosystem"
                   className="block py-4 pl-6 sm:py-5 hover:bg-blue-shade-100 "
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center">
-                      <IoIosRocket className="size-5 mr-4" />
-                      <span>ArbDevQuest</span>
+                      <MdHub className="size-5 mr-4" />
+                      <span>Ecosystem</span>
                     </div>
                     <FiArrowUpRight className="w-5 h-5" />
                   </div>
@@ -148,13 +148,30 @@ const SidebarMainMobile = () => {
               </li>
               <li>
                 <Link
-                  href="/explore-daos"
+                  href="https://www.speedrunstylus.com/"
+                  target="_blank"
                   className="block py-4 pl-6 sm:py-5 hover:bg-blue-shade-100 "
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center">
                       <IoIosRocket className="size-5 mr-4" />
-                      <span>Explore DAOs</span>
+                      <span>Speedrun Stylus</span>
+                    </div>
+                    <FiArrowUpRight className="w-5 h-5" />
+                  </div>
+                </Link>
+                <div className="h-[0.1px] w-full bg-white"></div>
+              </li>
+              <li>
+                <Link
+                  href="https://inorbit-app.vercel.app/"
+                  target="_blank"
+                  className="block py-4 pl-6 sm:py-5 hover:bg-blue-shade-100 "
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <FiCodesandbox className="size-5 mr-4" />
+                      <span>InOrbit</span>
                     </div>
                     <FiArrowUpRight className="w-5 h-5" />
                   </div>
@@ -178,7 +195,7 @@ const SidebarMainMobile = () => {
               </li>
               <li>
                 <Link
-                  href={"/sessions?active=availableDelegates"}
+                  href={"/sessions?active=availableExperts"}
                   className="block py-4 pl-6 sm:py-5 hover:bg-blue-shade-100"
                 >
                   <div className="flex items-center justify-between">
@@ -249,20 +266,20 @@ const SidebarMainMobile = () => {
               {/* {!isConnected || !session ? (
                 <ConnectYourWallet />
               ) : ( */}
-                <li>
-                  <Link
-                    href={`/profile/${address}?active=info`}
-                    className="block py-4 pl-6 sm:py-5 hover:bg-blue-shade-100"
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center">
-                        <FaUser className="size-5 mr-4" />
-                        <span>Profile</span>
-                      </div>
-                      <FiArrowUpRight className="w-5 h-5" />
+              <li>
+                <Link
+                  href={`/profile/${address}?active=info`}
+                  className="block py-4 pl-6 sm:py-5 hover:bg-blue-shade-100"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <FaUser className="size-5 mr-4" />
+                      <span>Profile</span>
                     </div>
-                  </Link>
-                </li>
+                    <FiArrowUpRight className="w-5 h-5" />
+                  </div>
+                </Link>
+              </li>
               {/* )} */}
             </ul>
           </nav>

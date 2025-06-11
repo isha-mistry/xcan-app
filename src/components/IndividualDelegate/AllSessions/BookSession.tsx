@@ -274,7 +274,7 @@ function BookSession({ props }: { props: Type }) {
   const handleScheduled = async (data: any) => {
     if (authenticated) {
       if (host_address === address) {
-        toast("Delegates can not book their own sessions!");
+        toast("Experts can not book their own sessions!");
       } else {
         setIsScheduling(true);
         setScheduleErr("");

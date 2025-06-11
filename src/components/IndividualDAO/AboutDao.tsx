@@ -281,7 +281,7 @@ const AboutDao = ({ props }: { props: string }) => {
         className="text-4xl font-bold mb-8 text-center text-blue-300"
         {...fadeInUp}
       >
-        About {text?.display_text}
+        About Arbitrum Ecosystem
       </motion.h1>
 
       <motion.section className="mb-16" {...fadeInUp}>

@@ -84,7 +84,7 @@ const Homepage = () => {
             setShowConnectWalletBookSession(true);
           } else {
             if (authenticated) {
-              await router.push("/sessions?active=availableDelegates");
+              await router.push("/sessions?active=availableExperts");
             } else {
               setShowConnectWalletBookSession(true);
               console.log("not authenticated");
@@ -125,7 +125,7 @@ const Homepage = () => {
     if (isConnected && authenticated && ShowConnectWalletBookSession) {
       // Close the wallet modal and redirect
       setShowConnectWalletBookSession(false);
-      router.push("/sessions?active=availableDelegates");
+      router.push("/sessions?active=availableExperts");
     }
   }, [isConnected, ShowConnectWalletBookSession, router, path, authenticated]);
 
@@ -297,7 +297,7 @@ const Homepage = () => {
                       Join as a User
                     </h2>
                     <p className="text-dark-text-secondary max-w-sm text-sm 0.7xs:text-base">
-                      Connect with delegates—master the basics, start
+                      Connect with experts— master the basics, start
                       participating, and make an impact in DAOs from day one!
                     </p>
                     <div className="mt-4">

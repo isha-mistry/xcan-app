@@ -484,7 +484,7 @@ function AvailableSessions() {
                 showArrow
                 content={
                   <div className="font-tektur">
-                    Select a date to view available Delegates for that date.
+                    Select a date to view available expert for that date.
                   </div>
                 }
                 placement="bottom"
@@ -506,7 +506,7 @@ function AvailableSessions() {
             showArrow
             content={
               <div className="font-tektur">
-                Select a time to view available Delegates for that specific
+                Select a time to view available expert for that specific
                 time.
               </div>
             }

@@ -134,7 +134,7 @@ function Sidebar() {
       target: ".session",
       content: (
         <p className="text-black-shade-1000 text-left font-normal text-base font-tektur">
-          Watch recorded sessions and connect with available delegates.
+          Watch recorded sessions and connect with available experts.
         </p>
       ),
       disableBeacon: true,
@@ -386,7 +386,7 @@ function Sidebar() {
             >
               {/* <Link href={"/sessions?active=recordedSessions"}> */}
               <Link
-                href={"/sessions?active=availableDelegates"}
+                href={"/sessions?active=availableExperts"}
                 className={`session cursor-pointer xl:w-11 xl:h-11 2xl:w-12 2xl:h-12 2.5xl:w-14 2.5xl:h-14 rounded-full flex items-center justify-center border border-white bg-blue-shade-800 w-10 h-10 ${styles.icon3d
                   } ${pathname.includes(`/sessions`)
                     ? "border-white border-2 rounded-full"

@@ -25,7 +25,7 @@ export async function generateMetadata({
     description: "Arbitrum University",
     openGraph: {
       title: name,
-      description: "Delegate",
+      description: "Expert",
     },
   };
 }

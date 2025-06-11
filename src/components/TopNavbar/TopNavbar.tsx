@@ -116,20 +116,27 @@ function TopNavbar() {
           <>
             <div className="flex gap-4">
               <Link
-                href={`https://arb-dev-quest.vercel.app/`}
-                target="_blank"
-                className={`${styles.item} text-blue-200 font-medium`}
-              >
-                ArbDevQuest
-              </Link>
-              <Link
-                href={"/explore-daos"}
-                className={`${styles.item} font-medium ${pathname.includes(`/explore-daos`)
+                href={"/ecosystem"}
+                className={`${styles.item} font-medium ${pathname.includes(`/ecosystem`)
                   ? `text-white ${styles.activeitem}`
                   : "text-blue-200"
                   }`}
               >
-                DAOs
+                Ecosystem
+              </Link>
+              <Link
+                href={`https://www.speedrunstylus.com/`}
+                target="_blank"
+                className={`${styles.item} text-blue-200 font-medium`}
+              >
+                Speedrun Stylus
+              </Link>
+              <Link
+                href={`https://inorbit-app.vercel.app/`}
+                target="_blank"
+                className={`${styles.item} text-blue-200 font-medium`}
+              >
+                InOrbit
               </Link>
               <Link
                 href={"/office-hours?hours=ongoing"}
@@ -141,7 +148,7 @@ function TopNavbar() {
                 Office Hours
               </Link>
               <Link
-                href={"/sessions?active=availableDelegates"}
+                href={"/sessions?active=availableExperts"}
                 className={`${styles.item} font-medium ${pathname.includes(`/sessions`)
                   ? `text-white ${styles.activeitem}`
                   : "text-blue-200"
