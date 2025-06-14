@@ -22,7 +22,7 @@ const titles: TitlesMap = {
 
 function Heading() {
   const pathname = usePathname();
-  let title = "Arbitrum University";
+  let title = "Inorbit";
 
   Object.keys(titles).forEach((key) => {
     if (pathname === key || pathname.startsWith(key)) {

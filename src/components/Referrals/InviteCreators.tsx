@@ -106,12 +106,12 @@ function InviteCreators({ userAddress }: { userAddress: any }) {
   }, [address, isConnected]);
 
   const url = encodeURIComponent(`${BASE_URL}/invite/${userAddress}`);
-  const text = encodeURIComponent(`Join me on Arbitrum University`);
+  const text = encodeURIComponent(`Join me on Inorbit`);
 
   const shareOn = (platform: any) => {
     const url = encodeURIComponent(`${BASE_URL}/invite/${userAddress}`);
     const text = encodeURIComponent(
-      `Join me on Arbitrum University and let's revolutionize Web3 together! 🚀`
+      `Join me on Inorbit and let's revolutionize Web3 together! 🚀`
     );
     const links: any = {
       farcaster: `https://warpcast.com/~/compose?text=${text}&embeds%5B%5D=${url}`,
@@ -160,7 +160,7 @@ function InviteCreators({ userAddress }: { userAddress: any }) {
                   Ready to earn ETH by inviting creators?
                 </h2>
                 <p className="text-base sm:text-lg text-dark-text-secondary">
-                  Invite creators to Arbitrum University and earn ETH every time they
+                  Invite creators to Inorbit and earn ETH every time they
                   mint! The more you bring, the more you earn!
                 </p>
                 {/* <Link
@@ -188,7 +188,7 @@ function InviteCreators({ userAddress }: { userAddress: any }) {
                   />
                 </div>
                 <div className="font-semibold text-center mb-1 text-sm sm:text-base text-dark-text-primary">
-                  You&apos;ve been invited to create on Arbitrum University by
+                  You&apos;ve been invited to create on Inorbit by
                 </div>
                 <div className="font-bold text-base sm:text-lg mb-2 text-center break-words max-w-full px-2 text-dark-text-primary">
                   {inviteeDetails?.ensName ||

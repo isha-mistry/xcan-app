@@ -18,11 +18,11 @@ export async function generateMetadata({
 }: {
   params: Type;
 }): Promise<Metadata> {
-  const name = "Arbitrum University";
+  const name = "Inorbit";
 
   return {
     title: name,
-    description: "Arbitrum University",
+    description: "Inorbit",
     openGraph: {
       title: name,
       description: "Expert",

@@ -109,7 +109,7 @@ const Homepage = () => {
     {
       title: "Grow and Earn More",
       description:
-        "Refer creators or users to Arbitrum University and earn rewards for every mint and engagement.",
+        "Refer creators or users to Inorbit and earn rewards for every mint and engagement.",
       buttonText: "Learn How to Earn",
       image: feature4,
       onclick: () => {

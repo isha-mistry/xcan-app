@@ -1,13 +1,25 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Calendar, Clock, Users, Video, BookOpen, Award, Star } from "lucide-react";
+import { Calendar, Clock, Users, Video, BookOpen, Award, Star, User } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useAccount } from "wagmi";
+import { usePrivy } from "@privy-io/react-auth";
 
 export default function Home() {
   const router = useRouter();
   const { address } = useAccount();
+  const { authenticated, login } = usePrivy();
+
+  const handleProfileClick = () => {
+    if (!authenticated || !address) {
+      // Show Privy modal if wallet is not connected
+      login();
+    } else {
+      // Redirect to profile if wallet is connected
+      router.push(`/profile/${address}?active=info`);
+    }
+  };
 
   return (
     <main className="min-h-screen bg-dark-primary font-tektur">
@@ -27,7 +39,7 @@ export default function Home() {
                 <span className="text-blue-shade-100 font-medium">Join Our Growing Community</span>
               </div>
               <h1 className="text-4xl md:text-6xl font-bold text-dark-text-primary mb-6 leading-tight">
-                Welcome to Arbitrum University
+                Welcome to Inorbit
               </h1>
               <p className="text-xl text-dark-text-secondary mb-8 max-w-2xl">
                 Your platform for meaningful sessions and office hours. Connect, learn, and grow with our community of experts and learners.
@@ -67,23 +79,24 @@ export default function Home() {
 
               {/* CTA Buttons */}
               <div className="flex flex-col sm:flex-row gap-4">
-                <motion.button
+                <motion.a
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   className="bg-blue-shade-100 text-white px-8 py-3 rounded-full font-semibold hover:bg-blue-shade-300 transition-colors flex items-center justify-center gap-2"
-                  onClick={() => router.push(`/profile/${address}?active=info`)}
+                  href={`https://inorbit-modules.vercel.app/`}
+                  target="_blank"
                 >
                   <Star className="w-5 h-5" />
                   Get Started
-                </motion.button>
+                </motion.a>
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   className="bg-dark-tertiary text-dark-text-primary px-8 py-3 rounded-full font-semibold hover:bg-dark-accent transition-colors flex items-center justify-center gap-2"
-                  onClick={() => router.push(`/profile/${address}?active=info`)}
+                  onClick={handleProfileClick}
                 >
-                  <Calendar className="w-5 h-5" />
-                  View Schedule
+                  <User className="w-5 h-5" />
+                  Go to Profile
                 </motion.button>
               </div>
             </motion.div>
@@ -216,14 +229,15 @@ export default function Home() {
           <p className="text-dark-text-secondary mb-8 max-w-2xl mx-auto">
             Join our community today and start participating in sessions and office hours.
           </p>
-          <motion.button
+          <motion.a
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             className="bg-blue-shade-100 text-white px-8 py-3 rounded-full font-semibold hover:bg-blue-shade-300 transition-colors"
-            onClick={() => router.push(`/profile/${address}?active=info`)}
+            href={`https://inorbit-modules.vercel.app/`}
+            target="_blank"
           >
             Get Started
-          </motion.button>
+          </motion.a>
         </div>
       </section>
     </main>

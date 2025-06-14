@@ -15,7 +15,7 @@ import { fetchApi } from "@/utils/api";
 
 function TopNavbar() {
   const pathname = usePathname();
-  const { authenticated } = usePrivy();
+  const { authenticated, login } = usePrivy();
   const { status, address, isConnected } = useSidebar();
   const sessionLoading = status === "loading";
   const {
@@ -89,6 +89,17 @@ function TopNavbar() {
     getAccessToken
   ]);
 
+  const handleProfileClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (!authenticated || !address || !isConnected) {
+      // Show Privy modal if wallet is not connected
+      login();
+    } else {
+      // Redirect to profile if wallet is connected
+      window.location.href = `/profile/${address}?active=info`;
+    }
+  };
+
   return (
     <>
       <div className="relative z-10 flex justify-between items-center w-screen px-4 font-tektur py-8">
@@ -101,7 +112,7 @@ function TopNavbar() {
               height={200}
               className="h-11 w-11"
             ></Image>
-            <span className="text-white text-[26px] font-bold">Arbitrum University</span>
+            <span className="text-white text-[26px] font-bold">Inorbit</span>
           </Link>
           {/* <Link
             className="text-black font-semibold text-[28px] font-tektur flex items-center mt-[4px]"
@@ -125,18 +136,14 @@ function TopNavbar() {
                 Ecosystem
               </Link>
               <Link
-                href={`https://www.speedrunstylus.com/`}
+                href={`https://inorbit-modules.vercel.app/`}
                 target="_blank"
-                className={`${styles.item} text-blue-200 font-medium`}
+                className={`${styles.item} text-blue-200 font-medium relative`}
               >
-                Speedrun Stylus
-              </Link>
-              <Link
-                href={`https://inorbit-app.vercel.app/`}
-                target="_blank"
-                className={`${styles.item} text-blue-200 font-medium`}
-              >
-                InOrbit
+                Modules
+                <span className="rounded-full px-1 text-[11px]">
+                  (by Inorbit)
+                </span>
               </Link>
               <Link
                 href={"/office-hours?hours=ongoing"}
@@ -184,6 +191,7 @@ function TopNavbar() {
               </Badge>
               <Link
                 href={`/profile/${address}?active=info`}
+                onClick={handleProfileClick}
                 className={`${styles.item}  font-medium ${pathname.includes(`/profile`)
                   ? `text-white ${styles.activeitem}`
                   : "text-blue-200"

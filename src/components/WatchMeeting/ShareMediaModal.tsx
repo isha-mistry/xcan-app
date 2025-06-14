@@ -66,7 +66,7 @@ function ShareMediaModal({
   const text = encodeURIComponent(
     `${data.title} ${decodeURIComponent(
       url
-    )} via Arbitrum University\n\n #session #growth`
+    )} via Inorbit\n\n #session #growth`
   );
 
   const shareOnTwitter = () => {
@@ -152,9 +152,8 @@ function ShareMediaModal({
           >
             <p className="text-xs sm:text-sm font-light truncate flex-1">{link}</p>
             <IoCopy
-              className={`cursor-pointer ${
-                copySuccess ? "text-blue-shade-100" : ""
-              }`}
+              className={`cursor-pointer ${copySuccess ? "text-blue-shade-100" : ""
+                }`}
               onClick={handleCopy}
             />
           </div>

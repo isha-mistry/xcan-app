@@ -210,7 +210,7 @@ function PopupGenerateLink({ onclose, dao }: PopupProps) {
                 <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center">
                   <Image src={logo} alt="Logo" className="size-10 xs:size-16" />
                   <span className="text-white font-medium mt-2 text-xs">
-                    Arbitrum University
+                    Inorbit
                   </span>
                 </div>
               </div>

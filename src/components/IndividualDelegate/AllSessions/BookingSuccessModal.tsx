@@ -20,10 +20,10 @@ function BookingSuccessModal({
 
   const shareOnTwitter = () => {
     const url = encodeURIComponent(
-      `https://arbitrum-university.vercel.app/sessions?active=availableExperts`
+      `https://inorbit-edu.vercel.app/sessions?active=availableExperts`
     );
     const text = encodeURIComponent(
-      `Hello Geeks! 🎉\nJust booked my session on Arbitrum University and can't wait to learn more about the #Web3 ecosystem from the experienced Delegate!🌐\n👉 ${decodeURIComponent(
+      `Hello Geeks! 🎉\nJust booked my session on Inorbit and can't wait to learn more about the #Web3 ecosystem from the experienced Delegate!🌐\n👉 ${decodeURIComponent(
         url
       )}\n\n #session #growth`
     );

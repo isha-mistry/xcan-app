@@ -3,15 +3,15 @@ import DelegateSessionsMain from "@/components/DelegateSessions/DelegateSessions
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://arbitrum-university.vercel.app/"),
-  title: "Arbitrum University",
+  metadataBase: new URL("https://inorbit-edu.vercel.app/"),
+  title: "Inorbit",
   description: "Discover. Learn. Engage.",
   openGraph: {
     title: "Available Experts",
     description:
       "Explore available experts by date, and time to book sessions and unlock Web3 opportunities.",
-    // url: "https://arbitrum-university.vercel.app/available-delegates",
-    siteName: "Arbitrum University",
+    // url: "https://inorbit-edu.vercel.app/available-delegates",
+    siteName: "Inorbit",
     // images: [
     //   {
     //     url: "https://gateway.lighthouse.storage/ipfs/QmUEoQqvoYbfp9ZD3AHzDNBYTmwovDifVBxWByzr8mMKnT",

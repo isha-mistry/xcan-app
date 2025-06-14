@@ -30,13 +30,13 @@ const tektur = Tektur({
 // });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://arbitrum-university.vercel.app/"),
-  title: "Arbitrum University",
+  metadataBase: new URL("https://inorbit-edu.vercel.app/"),
+  title: "Inorbit",
   description: "Discover. Learn. Engage.",
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
-    title: 'Arbitrum University PWA'
+    title: 'Inorbit PWA'
   },
   manifest: '/manifest.json',
   icons: {
@@ -44,10 +44,10 @@ export const metadata: Metadata = {
     apple: [{ url: "/favicon.png" }],
   },
   openGraph: {
-    title: "Arbitrum University",
+    title: "Inorbit",
     description: "Discover. Learn. Engage.",
-    url: "https://arbitrum-university.vercel.app/",
-    siteName: "Arbitrum University",
+    url: "https://inorbit-edu.vercel.app/",
+    siteName: "Inorbit",
 
     // images: [
     //   {

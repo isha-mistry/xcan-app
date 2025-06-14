@@ -23,10 +23,10 @@ function SchedulingSuccessModal({
     const userAddress = data.userAddress;
     const dao_name = data.dao_name;
     const url = encodeURIComponent(
-      `https://arbitrum-university.vercel.app/user/${userAddress}?active=delegatesSession&session=book`
+      `https://inorbit-edu.vercel.app/user/${userAddress}?active=delegatesSession&session=book`
     );
     const text = encodeURIComponent(
-      `Hello Web3 Enthusiasts!🎉\nI've opened up some time slots for sessions on Arbitrum University!📅\nDon't miss out – book your session now to learn more about Web3 ecosystem! 📝\n👉 ${decodeURIComponent(
+      `Hello Web3 Enthusiasts!🎉\nI've opened up some time slots for sessions on Inorbit!📅\nDon't miss out – book your session now to learn more about Web3 ecosystem! 📝\n👉 ${decodeURIComponent(
         url
       )}\n\n#arbitrum #sessionbooking`
     );
@@ -44,7 +44,7 @@ function SchedulingSuccessModal({
   const CopyUrl = () => {
     const userAddress = data.userAddress;
     const dao_name = data.dao_name;
-    const url = `https://arbitrum-university.vercel.app/${dao_name}/${userAddress}?active=delegatesSession&session=book`;
+    const url = `https://inorbit-edu.vercel.app/${dao_name}/${userAddress}?active=delegatesSession&session=book`;
     copy(url);
     setIsToolTip(true);
     setTimeout(() => {

@@ -27,7 +27,7 @@ import { MdHub } from "react-icons/md";
 const SidebarMainMobile = () => {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
-  const { authenticated } = usePrivy();
+  const { authenticated, login } = usePrivy();
   const {
     storedDao,
     handleMouseOver,
@@ -72,6 +72,19 @@ const SidebarMainMobile = () => {
     toggleSidebar();
   };
 
+  const handleProfileClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (!authenticated || !address || !isConnected) {
+      // Show Privy modal if wallet is not connected
+      login();
+    } else {
+      // Redirect to profile if wallet is connected
+      window.location.href = `/profile/${address}?active=info`;
+    }
+    // Close sidebar after action
+    setIsOpen(false);
+  };
+
   return (
     <div className="relative z-10">
       <div className="bg-dark-secondary flex items-center justify-between w-full border-b-1 p-1">
@@ -89,13 +102,13 @@ const SidebarMainMobile = () => {
           >
             <Image
               src={logo}
-              alt={"Arbitrum University Logo"}
+              alt={"Inorbit Logo"}
               width={200}
               height={200}
               className="h-8 w-8 xs:h-9 xs:w-9 sm:h-10 sm:w-10 md:h-11 md:w-11"
             />
             <span className="text-white text-[18px] sm:text-[22px] md:text-[26px] ml-1 xs:ml-2">
-              Arbitrum University
+              Inorbit
             </span>
           </Link>
         </div>
@@ -123,9 +136,9 @@ const SidebarMainMobile = () => {
             </button>
             <Link
               className="ml-5 text-white font-semibold text-[26px] font-tektur"
-              href={"https://arbitrum-university.vercel.app/"}
+              href={"https://inorbit-edu.vercel.app/"}
             >
-              Arbitrum University
+              Inorbit
             </Link>
           </div>
 
@@ -148,23 +161,7 @@ const SidebarMainMobile = () => {
               </li>
               <li>
                 <Link
-                  href="https://www.speedrunstylus.com/"
-                  target="_blank"
-                  className="block py-4 pl-6 sm:py-5 hover:bg-blue-shade-100 "
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center">
-                      <IoIosRocket className="size-5 mr-4" />
-                      <span>Speedrun Stylus</span>
-                    </div>
-                    <FiArrowUpRight className="w-5 h-5" />
-                  </div>
-                </Link>
-                <div className="h-[0.1px] w-full bg-white"></div>
-              </li>
-              <li>
-                <Link
-                  href="https://inorbit-app.vercel.app/"
+                  href="https://inorbit-modules.vercel.app/"
                   target="_blank"
                   className="block py-4 pl-6 sm:py-5 hover:bg-blue-shade-100 "
                 >
@@ -269,6 +266,7 @@ const SidebarMainMobile = () => {
               <li>
                 <Link
                   href={`/profile/${address}?active=info`}
+                  onClick={handleProfileClick}
                   className="block py-4 pl-6 sm:py-5 hover:bg-blue-shade-100"
                 >
                   <div className="flex items-center justify-between">

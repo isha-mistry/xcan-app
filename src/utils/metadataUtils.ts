@@ -1,14 +1,14 @@
 import type { Metadata } from "next";
 
 export const DEFAULT_METADATA: Metadata = {
-  metadataBase: new URL("https://arbitrum-university.vercel.app/"),
-  title: "Arbitrum University",
+  metadataBase: new URL("https://inorbit-edu.vercel.app/"),
+  title: "Inorbit",
   description: "The requested page does not exist.",
   openGraph: {
-    title: "Arbitrum University - Page Not Found",
+    title: "Inorbit - Page Not Found",
     description: "The requested page does not exist.",
-    url: "https://arbitrum-university.vercel.app/",
-    siteName: "Arbitrum University",
+    url: "https://inorbit-edu.vercel.app/",
+    siteName: "Inorbit",
     // images: [
     //   {
     //     url: "https://gateway.lighthouse.storage/ipfs/bafybeiez3e5gvqra2r3ijbg2arrdhaalzoqqzgr5s4tc2tlysyuywnzude", // Default or error image

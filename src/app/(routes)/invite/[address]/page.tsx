@@ -10,7 +10,7 @@ export async function generateMetadata(
 ): Promise<Metadata> {
   const inviteeDetails = await fetchInviteeDetails(params.address);
 
-  const title = `You have been invited on Arbitrum University by ${inviteeDetails?.ensName ||
+  const title = `You have been invited on Inorbit by ${inviteeDetails?.ensName ||
     inviteeDetails?.displayName ||
     inviteeDetails?.formattedAddr
     }`;
@@ -20,14 +20,14 @@ export async function generateMetadata(
     "https://gateway.lighthouse.storage/ipfs/bafkreidirbp5rpggihsab76teieq66wnj6lj75pjn2guhkvabfa3z53dzm";
 
   return {
-    metadataBase: new URL("https://arbitrum-university.vercel.app/"),
-    title: "Arbitrum University",
+    metadataBase: new URL("https://inorbit-edu.vercel.app/"),
+    title: "Inorbit",
     description: "Discover. Learn. Engage.",
     openGraph: {
       title: title,
       description: description,
-      url: `https://arbitrum-university.vercel.app/invite/${params.address}`,
-      siteName: "Arbitrum University",
+      url: `https://inorbit-edu.vercel.app/invite/${params.address}`,
+      siteName: "Inorbit",
       // images: [
       //   `${BASE_URL}/api/images/og/referral?inviteeName=${encodeURIComponent(
       //     inviteeDetails?.ensName ||

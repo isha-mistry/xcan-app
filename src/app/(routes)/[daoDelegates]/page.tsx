@@ -42,14 +42,14 @@ import WalletWrapper from "@/components/WalletWrapper";
 //   }
 
 //   return {
-//     metadataBase: new URL("https://arbitrum-university.vercel.app/"),
-//     title: "Arbitrum University",
+//     metadataBase: new URL("https://inorbit-edu.vercel.app/"),
+//     title: "Inorbit",
 //     description: "Discover. Learn. Engage.",
 //     openGraph: {
 //       title: delegateMetadata.title,
 //       description: delegateMetadata.description,
-//       url: `https://arbitrum-university.vercel.app/${daoDelegates}`,
-//       siteName: "Arbitrum University",
+//       url: `https://inorbit-edu.vercel.app/${daoDelegates}`,
+//       siteName: "Inorbit",
 //       images: [
 //         {
 //           url: delegateMetadata.image,

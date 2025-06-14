@@ -1,7 +1,7 @@
 {
-  "name": "Arbitrum University App",
-  "short_name": "Arbitrum University",
-  "description": "Arbitrum University App for smoother communication",
+  "name": "Inorbit App",
+  "short_name": "Inorbit",
+  "description": "Inorbit App for smoother communication",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
