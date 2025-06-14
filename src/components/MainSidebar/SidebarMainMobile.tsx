@@ -177,13 +177,13 @@ const SidebarMainMobile = () => {
               </li>
               <li>
                 <Link
-                  href={"/office-hours?hours=ongoing"}
+                  href={"/lectures?hours=ongoing"}
                   className="block py-4 pl-6 sm:py-5 hover:bg-blue-shade-100"
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center">
                       <FaBusinessTime className="size-5 mr-4" />
-                      <span>Office Hours</span>
+                      <span>Lectures</span>
                     </div>
                     <FiArrowUpRight className="w-5 h-5" />
                   </div>
@@ -198,14 +198,14 @@ const SidebarMainMobile = () => {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center">
                       <PiUsersThreeFill className="size-5 mr-4" />
-                      <span>Sessions</span>
+                      <span>Experts Sessions</span>
                     </div>
                     <FiArrowUpRight className="w-5 h-5" />
                   </div>
                 </Link>
                 <div className="h-[0.1px] w-full bg-white"></div>
               </li>
-              <li>
+              {/* <li>
                 <Link
                   href={"/invite"}
                   className="block py-4 pl-6 sm:py-5 hover:bg-blue-shade-100"
@@ -219,7 +219,7 @@ const SidebarMainMobile = () => {
                   </div>
                 </Link>
                 <div className="h-[0.1px] w-full bg-white"></div>
-              </li>
+              </li> */}
               <li className=" md:hidden">
                 <Link
                   href={"/claim-rewards"}
@@ -264,8 +264,8 @@ const SidebarMainMobile = () => {
                 <ConnectYourWallet />
               ) : ( */}
               <li>
-                <Link
-                  href={`/profile/${address}?active=info`}
+                <button
+                  // href={`/profile/${address}?active=info`}
                   onClick={handleProfileClick}
                   className="block py-4 pl-6 sm:py-5 hover:bg-blue-shade-100"
                 >
@@ -276,7 +276,7 @@ const SidebarMainMobile = () => {
                     </div>
                     <FiArrowUpRight className="w-5 h-5" />
                   </div>
-                </Link>
+                </button>
               </li>
               {/* )} */}
             </ul>

@@ -153,13 +153,13 @@ function InstantMeet() {
       description:
         "Engage with yourself in an instant meeting and share the link with the people you want to connect with. Experience the following features for a comprehensive virtual meeting experience.",
     },
-    {
-      image: accessImg,
-      hoverImage: accessImghover,
-      title: "Quick Access to DAO Links",
-      description:
-        "Access the quick links of DAO directly within the meeting itself,making it easier to reference and share relevant information during your session.",
-    },
+    // {
+    //   image: accessImg,
+    //   hoverImage: accessImghover,
+    //   title: "Quick Access to DAO Links",
+    //   description:
+    //     "Access the quick links of DAO directly within the meeting itself,making it easier to reference and share relevant information during your session.",
+    // },
     {
       image: videoImg,
       hoverImage: videoImghover,
@@ -188,6 +188,13 @@ function InstantMeet() {
       description:
         "Foster real-time communication by sending text messages to participants within the meeting, allowing for quick exchanges and enhanced collaboration.",
     },
+    {
+      image: accessImg,
+      hoverImage: accessImghover,
+      title: "Recordings",
+      description:
+        "Access the recordings of the meeting after it ends, allowing you to share the content with others and watch it later.",
+    }
   ];
 
   const ModalConfirmationContent = () => (

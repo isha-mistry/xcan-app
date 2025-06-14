@@ -120,13 +120,13 @@ function DelegateInfo({
     },
     {
       number: officehoursHostCount,
-      desc: "Office Hours hosted",
-      ref: `/user/${address}?active=officeHours&hours=hosted`,
+      desc: "Lectures hosted",
+      ref: `/user/${address}?active=lectures&lectures=hosted`,  
     },
     {
       number: officehoursAttendCount,
-      desc: "Office Hours attended",
-      ref: `/user/${address}?active=officeHours&hours=attended`,
+      desc: "Lectures attended",
+      ref: `/user/${address}?active=lectures&lectures=attended`,
     },
   ];
 

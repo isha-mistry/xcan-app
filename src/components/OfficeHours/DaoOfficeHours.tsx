@@ -234,8 +234,8 @@ function DaoOfficeHours() {
                 ? "text-gray-200 font-semibold bg-blue-shade-300"
                 : "text-dark-text-secondary bg-blue-shade-500"
                 }`}
-              onClick={() => handleNavigation(path + '?hours=ongoing', 'Office Hours Navigation', 'Live Tab Clicked', 'Live')}
-            >
+              onClick={() => handleNavigation(path + '?hours=ongoing', 'Lectures Navigation', 'Live Tab Clicked', 'Live')}
+            > 
               <Clock size={16} className="drop-shadow-lg" />
               Live
             </button>
@@ -244,7 +244,7 @@ function DaoOfficeHours() {
                 ? "text-gray-200 font-semibold bg-blue-shade-300"
                 : "text-dark-text-secondary bg-blue-shade-500"
                 }`}
-              onClick={() => handleNavigation(path + "?hours=upcoming", 'Office Hours Navigation', 'Scheduled Tab Clicked', 'Scheduled')}
+              onClick={() => handleNavigation(path + "?hours=upcoming", 'Lectures Navigation', 'Scheduled Tab Clicked', 'Scheduled')}
             >
               <Calendar size={16} className="drop-shadow-lg" />
               Scheduled
@@ -254,7 +254,7 @@ function DaoOfficeHours() {
                 ? "text-gray-200 font-semibold bg-blue-shade-300"
                 : "text-dark-text-secondary bg-blue-shade-500"
                 }`}
-              onClick={() => handleNavigation(path + "?hours=recorded", 'Office Hours Navigation', 'Recorded Tab Clicked', 'Recorded')}
+                onClick={() => handleNavigation(path + "?hours=recorded", 'Lectures Navigation', 'Recorded Tab Clicked', 'Recorded')}
             >
               <BookOpen size={16} className="drop-shadow-lg" />
               Recorded

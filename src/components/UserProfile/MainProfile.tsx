@@ -91,7 +91,7 @@ function MainProfile() {
     { name: "Info", value: "info" },
     ...(selfDelegate ? [{ name: "Past Votes", value: "votes" }] : []),
     { name: "Sessions", value: "sessions" },
-    { name: "Office Hours", value: "officeHours" },
+    { name: "Lectures", value: "lectures" },
     ...(selfDelegate ? [{ name: "Instant Meet", value: "instant-meet" }] : []),
   ];
 
@@ -113,8 +113,8 @@ function MainProfile() {
           `?active=${tabValue}&session=${selfDelegate ? "schedule" : "attending"
           }`
         );
-      } else if (tabValue === "officeHours") {
-        router.push(path + `?active=${tabValue}&hours=schedule`);
+        } else if (tabValue === "lectures") {
+        router.push(path + `?active=${tabValue}&lectures=schedule`);
       } else {
         router.push(path + `?active=${tabValue}`);
       }
@@ -643,6 +643,11 @@ function MainProfile() {
                     </Tooltip>
                   </div>
                 </div>
+                <div>
+                  <button className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white sm:text-lg px-6 py-1 rounded-full" onClick={() => {
+                    router.push(`/invite`)
+                  }}  >Invite</button>
+                </div>
               </div>
             </div>
             <div className="absolute right-4 md:right-6 lg:right-14 hidden lg:flex gap-1 xs:gap-2 items-center">
@@ -714,7 +719,7 @@ function MainProfile() {
                   )
                 }
               >
-                Sessions
+                Expert Sessions
               </button>
               <button
                 className={`border-b-2 py-3 xs:py-4 px-2 outline-none flex-shrink-0 ${searchParams.get("active") === "officeHours"
@@ -722,10 +727,10 @@ function MainProfile() {
                   : "border-transparent"
                   }`}
                 onClick={() =>
-                  router.push(path + "?active=officeHours&hours=schedule")
+                  router.push(path + "?active=lectures&lectures=schedule")
                 }
               >
-                Office Hours
+                Lectures
               </button>
 
               {<button
@@ -759,7 +764,7 @@ function MainProfile() {
                 ""
               )}
 
-              {searchParams.get("active") === "officeHours" ? (
+              {searchParams.get("active") === "lectures" ? (
                 <div className="pt-2 xs:pt-4 sm:pt-6 px-4 md:px-6 lg:px-14">
                   <UserOfficeHours />
                 </div>

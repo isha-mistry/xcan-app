@@ -15,12 +15,12 @@ function OfficeHoursAlertMessage() {
           </div>
 
           <h2 className="text-3xl font-bold text-blue-800 mb-4">
-            Office Hours
-          </h2>
+            Lectures
+          </h2>   
 
           <div className="bg-blue-50 rounded-lg p-4 mb-6">
             <p className="text-blue-700 text-lg">
-              Office hours are currently being developed. In the meantime,
+              Lectures are currently being developed. In the meantime,
               please enjoy our 1:1 sessions.
             </p>
           </div>

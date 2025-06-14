@@ -62,11 +62,11 @@ async function sendNotifications(
           const hostENSNameOrAddress = await getDisplayNameOrAddr(hostAddress);
           return {
             receiver_address: user.address,
-            content: `New office hours is scheduled by ${hostENSNameOrAddress} on ${formattedTime} UTC.`,
+            content: `New lecture is scheduled by ${hostENSNameOrAddress} on ${formattedTime} UTC.`,
             createdAt: Date.now(),
             read_status: false,
             notification_name: "officeHoursScheduled",
-            notification_title: "Office Hours Scheduled",
+            notification_title: "Lecture Scheduled",
             notification_type: "officeHours",
             additionalData: {
               ...meeting,

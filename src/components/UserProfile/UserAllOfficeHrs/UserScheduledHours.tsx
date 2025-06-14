@@ -543,7 +543,7 @@ const UserScheduledHours: React.FC<{
       getOfficeHours();
       onScheduleSave?.();
     } catch (error) {
-      console.error("Error saving office hours:", error);
+      console.error("Error saving lectures:", error);
       toast.error("Failed to save schedule. Please try again.");
     } finally {
       setIsSaving(false);
@@ -642,7 +642,7 @@ const UserScheduledHours: React.FC<{
       processExistingSchedules(meetings);
 
     } catch (error) {
-      console.error("Error fetching office hours:", error);
+      console.error("Error fetching lectures:", error);
       toast.error("Failed to load existing schedules");
     } finally {
       setIsLoadingSchedules(false);
@@ -717,91 +717,91 @@ const UserScheduledHours: React.FC<{
   return (
     <div className="min-h-screen rounded-2xl">
       {/* <div className="max-w-7xl mx-auto"> */}
-        {/* Header Section */}
-        <div className="mb-8">
-          {/* Schedule Details Card */}
-          <div className="bg-gradient-to-br from-slate-700 to-transparent rounded-2xl shadow-md p-3 0.2xs:p-4 sm:p-6 mb-8 transition-all hover:shadow-lg">
-            <div className="space-y-6">
-              <div className="space-y-4">
-                <label htmlFor="title" className="block">
-                  <span className="text-lg font-semibold text-gray-100 mb-2 flex items-center">
-                    <CalendarIcon className="w-5 h-5 mr-2 text-gray-100" />
-                    Title
-                  </span>
-                  <input
-                    type="text"
-                    id="title"
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                    placeholder="Enter a title for your schedule"
-                    className="w-full px-4 py-3 text-gray-100 bg-slate-800 bg-opacity-20 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-200 focus:border-blue-500 transition-all"
-                    disabled={isLoadingSchedules}
-                  />
-                </label>
-              </div>
-
-              <div className="space-y-4">
-                <label htmlFor="description" className="block">
-                  <span className="text-lg font-semibold text-gray-100 mb-2 flex items-center">
-                    <AlertCircle className="w-5 h-5 mr-2 text-gray-100" />
-                    Description
-                  </span>
-                  <textarea
-                    id="description"
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    placeholder="Describe the purpose of this schedule..."
-                    rows={3}
-                    className="w-full px-4 py-3 text-gray-100 bg-slate-800 bg-opacity-20 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-200 focus:border-blue-500 transition-all"
-                    disabled={isLoadingSchedules}
-                  />
-                </label>
-              </div>
-            </div>
-          </div>
-
-          {/* Schedule Availability Section */}
-          <div className="bg-gradient-to-br from-slate-700 to-transparent rounded-2xl shadow-md p-3 0.2xs:p-4 sm:p-6 transition-all hover:shadow-lg relative">
-
-            <div className="flex items-center mb-6">
-              <Clock className="w-6 h-6 text-blue-100 mr-3" />
-              <div>
-                <h3 className="text-xl font-semibold text-gray-100">
-                  Schedule Availability
-                </h3>
-                <p className="text-sm text-gray-200 mt-1">
-                  All times shown in {timezone}
-                </p>
-              </div>
+      {/* Header Section */}
+      <div className="mb-8">
+        {/* Schedule Details Card */}
+        <div className="bg-gradient-to-br from-slate-700 to-transparent rounded-2xl shadow-md p-3 0.2xs:p-4 sm:p-6 mb-8 transition-all hover:shadow-lg">
+          <div className="space-y-6">
+            <div className="space-y-4">
+              <label htmlFor="title" className="block">
+                <span className="text-lg font-semibold text-gray-100 mb-2 flex items-center">
+                  <CalendarIcon className="w-5 h-5 mr-2 text-gray-100" />
+                  Title
+                </span>
+                <input
+                  type="text"
+                  id="title"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  placeholder="Enter a title for your schedule"
+                  className="w-full px-4 py-3 text-gray-100 bg-slate-800 bg-opacity-20 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-200 focus:border-blue-500 transition-all"
+                  disabled={isLoadingSchedules}
+                />
+              </label>
             </div>
 
-            <div className="flex flex-col 1.5lg:flex-row gap-6 lg:gap-8">
-              <div className="w-full 1.5lg:w-1/3">{memoizedCalendar}</div>
-              <div className="w-full 1.5lg:w-2/3">
-                {memoizedTimeSlotSection}
-              </div>
+            <div className="space-y-4">
+              <label htmlFor="description" className="block">
+                <span className="text-lg font-semibold text-gray-100 mb-2 flex items-center">
+                  <AlertCircle className="w-5 h-5 mr-2 text-gray-100" />
+                  Description
+                </span>
+                <textarea
+                  id="description"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="Describe the purpose of this schedule..."
+                  rows={3}
+                  className="w-full px-4 py-3 text-gray-100 bg-slate-800 bg-opacity-20 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-200 focus:border-blue-500 transition-all"
+                  disabled={isLoadingSchedules}
+                />
+              </label>
             </div>
           </div>
         </div>
 
-        {/* Save Button */}
-        <button
-          onClick={handleSave}
-          disabled={!isScheduleValid || isLoadingSchedules}
-          className={`w-full sm:w-auto sm:min-w-[200px] mt-4 py-4 px-6 rounded-2xl text-base font-medium transition-all ${!isScheduleValid || isLoadingSchedules
-            ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-            : "bg-blue-600 text-white hover:bg-blue-700 shadow-md hover:shadow-lg active:transform active:scale-95"
-            } relative bottom-auto left-auto right-auto`}
-        >
-          {isSaving ? (
-            <div className="flex items-center justify-center">
-              <Loader2 className="w-5 h-5 text-white animate-spin mr-2" />
-              Saving...
+        {/* Schedule Availability Section */}
+        <div className="bg-gradient-to-br from-slate-700 to-transparent rounded-2xl shadow-md p-3 0.2xs:p-4 sm:p-6 transition-all hover:shadow-lg relative">
+
+          <div className="flex items-center mb-6">
+            <Clock className="w-6 h-6 text-blue-100 mr-3" />
+            <div>
+              <h3 className="text-xl font-semibold text-gray-100">
+                Schedule Availability
+              </h3>
+              <p className="text-sm text-gray-200 mt-1">
+                All times shown in {timezone}
+              </p>
             </div>
-          ) : (
-            "Save Schedule"
-          )}
-        </button>
+          </div>
+
+          <div className="flex flex-col 1.5lg:flex-row gap-6 lg:gap-8">
+            <div className="w-full 1.5lg:w-1/3">{memoizedCalendar}</div>
+            <div className="w-full 1.5lg:w-2/3">
+              {memoizedTimeSlotSection}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Save Button */}
+      <button
+        onClick={handleSave}
+        disabled={!isScheduleValid || isLoadingSchedules}
+        className={`w-full sm:w-auto sm:min-w-[200px] mt-4 py-4 px-6 rounded-2xl text-base font-medium transition-all ${!isScheduleValid || isLoadingSchedules
+          ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+          : "bg-blue-600 text-white hover:bg-blue-700 shadow-md hover:shadow-lg active:transform active:scale-95"
+          } relative bottom-auto left-auto right-auto`}
+      >
+        {isSaving ? (
+          <div className="flex items-center justify-center">
+            <Loader2 className="w-5 h-5 text-white animate-spin mr-2" />
+            Saving...
+          </div>
+        ) : (
+          "Save Schedule"
+        )}
+      </button>
       {/* </div> */}
     </div>
   );

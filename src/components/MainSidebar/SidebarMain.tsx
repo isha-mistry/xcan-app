@@ -361,11 +361,11 @@ function Sidebar() {
               className="rounded-md bg-opacity-90 bg-gray-700"
               closeDelay={1}
             >
-              {/* <Link href={"/office-hours?hours=ongoing"}> */}
+              {/* <Link href={"/lectures?hours=ongoing"}> */}
               <Link
-                href={"/office-hours?hours=ongoing"}
+                href={"/lectures?hours=ongoing"}
                 className={`office cursor-pointer xl:w-11 xl:h-11 2xl:w-12 2xl:h-12 2.5xl:w-14 2.5xl:h-14 rounded-full flex items-center justify-center border border-white bg-blue-shade-800 w-10 h-10 ${styles.icon3d
-                  } ${pathname.includes(`/office-hours`)
+                  } ${pathname.includes(`/lectures`)
                     ? "border-white border-2 rounded-full"
                     : ""
                   }`}

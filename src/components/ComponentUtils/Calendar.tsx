@@ -77,8 +77,8 @@ const Calendar: React.FC<CalendarProps> = ({
                   isDateSelected(date)
                     ? "bg-blue-600 text-white hover:bg-blue-700"
                     : isDateDisabled(date)
-                    ? "text-gray-300 cursor-not-allowed"
-                    : "hover:bg-gray-100 text-gray-700"
+                    ? "text-gray-500 cursor-not-allowed"
+                    : "hover:bg-gray-100 text-gray-300 hover:text-gray-700"
                 }
                 ${isToday(date) ? "ring-2 ring-blue-200" : ""}`}
               >

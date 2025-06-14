@@ -146,13 +146,13 @@ function TopNavbar() {
                 </span>
               </Link>
               <Link
-                href={"/office-hours?hours=ongoing"}
-                className={`${styles.item} font-medium ${pathname.includes(`/office-hours`)
+                href={"/lectures?hours=ongoing"}
+                className={`${styles.item} font-medium ${pathname.includes(`/lectures`)
                   ? `text-white ${styles.activeitem}`
                   : "text-blue-200"
                   }`}
               >
-                Office Hours
+                Lectures
               </Link>
               <Link
                 href={"/sessions?active=availableExperts"}
@@ -161,9 +161,9 @@ function TopNavbar() {
                   : "text-blue-200"
                   }`}
               >
-                Sessions
+                Experts Sessions
               </Link>
-              <Link
+              {/* <Link
                 href={"/invite"}
                 className={`${styles.item} font-medium  ${pathname.includes(`/invite`)
                   ? `text-white ${styles.activeitem}`
@@ -171,7 +171,7 @@ function TopNavbar() {
                   }`}
               >
                 Invite
-              </Link>
+              </Link> */}
               <Badge
                 isInvisible={!hasAnyUnreadNotification}
                 content={""}

@@ -9,7 +9,7 @@ interface TitlesMap {
 
 const titles: TitlesMap = {
   "/ecosystem": "Ecosystem",
-  "/office-hours": "Office Hours",
+  "/lectures": "Lectures",
   "/sessions": "Sessions",
   "/notifications": "Notifications",
   "/profile": "Profile",

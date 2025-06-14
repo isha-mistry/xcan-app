@@ -102,7 +102,7 @@ function MintedNFTs() {
   };
   const handleOption = (option: string) => {
     if (option === "OfficeHours") {
-      toast("Coming Soon! 🚀"); // Show toast when Office Hours is selected
+      toast("Coming Soon! 🚀"); // Show toast when Lectures is selected
     }
     // setActive(option);
     setActive("Sessions");
@@ -142,8 +142,8 @@ function MintedNFTs() {
             onClick={() => handleOption("OfficeHours")}
           >
             <Clock size={16} className="drop-shadow-lg" />
-            Office Hours
-          </button>
+            Lectures
+          </button>     
         </div>
 
         {dataLoading ? (

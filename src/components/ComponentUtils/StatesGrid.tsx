@@ -19,7 +19,7 @@ const StatsGrid: React.FC<StatsGridProps> = ({ blocks, isLoading, onBlockClick }
   const getIcon = (desc: string): React.ReactNode => {
     if (desc.includes('Sessions hosted')) return <Calendar className="w-6 h-6 text-blue-200 group-hover:text-white" />;
     if (desc.includes('Sessions attended')) return <Users className="w-6 h-6 text-blue-200 group-hover:text-white" />;
-    if (desc.includes('Office Hours hosted')) return <Activity className="w-6 h-6 text-blue-200 group-hover:text-white" />;
+    if (desc.includes('Lectures hosted')) return <Activity className="w-6 h-6 text-blue-200 group-hover:text-white" />;
     return <Clock className="w-6 h-6 text-blue-200 group-hover:text-white" />;
   };
 

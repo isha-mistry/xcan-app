@@ -224,20 +224,13 @@ function WatchComponentMain({ props }: { props: { id: string } }) {
       {/* <div className="hidden md:block"> */}
       {data ? (
         <div className=" px-4 md:px-6 lg:px-8 1.7xl:px-14">
-          <div className="flex justify-between items-center pt-6 pb-3">
-            <div className="font-tektur font-medium text-4xl">
-              <span className="text-black">Chora</span>{" "}
-              <span className="text-blue-shade-200">Club</span>
-            </div>
-            <div className="flex gap-1 xs:gap-2 items-center">
-              <RewardButton />
-              {/* <ConnectWalletWithENS /> */}
-            </div>
+          <div className="flex justify-end items-center pt-6 pb-3">
+            <RewardButton />
           </div>
 
           <div className="grid grid-cols-1 1.5lg:grid-cols-3 gap-y-4 1.5lg:gap-x-4 1.7xl:gap-x-6 pt-6 relative ">
             {/* Left side */}
-            <div className="col-span-2 space-y-5 font-tektur 1.5lg:pb-10 ">
+            <div className="col-span-2 space-y-5 font-tektur 1.5lg:pb-10">
               <WatchSessionVideo
                 data={data}
                 collection={collection}

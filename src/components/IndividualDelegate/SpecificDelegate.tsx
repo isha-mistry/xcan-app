@@ -86,7 +86,7 @@ function SpecificDelegate({ props }: { props: Type }) {
     { name: "Info", value: "info" },
     { name: "Past Votes", value: "pastVotes" },
     { name: "Sessions", value: "delegatesSession" },
-    { name: "Office Hours", value: "officeHours" },
+    { name: "Lectures", value: "lectures" },
   ];
 
   const handleTabChange = (tabValue: string) => {
@@ -98,8 +98,8 @@ function SpecificDelegate({ props }: { props: Type }) {
       setIsDropdownOpen(false);
       if (tabValue === "sessions") {
         router.push(path + "?active=delegatesSession&session=book");
-      } else if (tabValue === "officeHours") {
-        router.push(path + `?active=${tabValue}&hours=ongoing`);
+      } else if (tabValue === "lectures") {
+        router.push(path + `?active=${tabValue}&lectures=ongoing`);
       } else {
         router.push(path + `?active=${tabValue}`);
       }
@@ -540,7 +540,7 @@ function SpecificDelegate({ props }: { props: Type }) {
                       router.push(path + "?active=delegatesSession&session=book")
                     }
                   >
-                    Sessions
+                    Expert Sessions
                   </button>
                   <button
                     className={`border-b-2 py-4 px-2 ${searchParams.get("active") === "officeHours"
@@ -548,10 +548,10 @@ function SpecificDelegate({ props }: { props: Type }) {
                       : "border-transparent"
                       }`}
                     onClick={() =>
-                      router.push(path + "?active=officeHours&hours=ongoing")
+                      router.push(path + "?active=lectures&lectures=ongoing")
                     }
                   >
-                    Office Hours
+                    Lectures
                   </button>
                 </div>
 
@@ -565,7 +565,7 @@ function SpecificDelegate({ props }: { props: Type }) {
                   {searchParams.get("active") === "delegatesSession" && (
                     <DelegateSessions props={props} />
                   )}
-                  {searchParams.get("active") === "officeHours" && (
+                  {searchParams.get("active") === "lectures" && (
                     <DelegateOfficeHrs />
                   )}
                 </div>

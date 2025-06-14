@@ -60,7 +60,7 @@ function OfficeHours({ props }: { props: string }) {
       setOriginalData(data);
       setFilteredData(data); // Initially, filtered data is same as original
     } catch (err) {
-      setError("Failed to fetch office hours data");
+      setError("Failed to fetch lectures data");
     } finally {
       setDataLoading(false);
     }
@@ -152,7 +152,7 @@ function OfficeHours({ props }: { props: string }) {
               : "text-[#3E3D3D] bg-white"
               }`}
             onClick={() =>
-              router.push(`${path}?active=officeHours&hours=ongoing`)
+              router.push(`${path}?active=lectures&lectures=ongoing`)
             }
           >
             <Clock size={16} className="drop-shadow-lg" />
@@ -164,7 +164,7 @@ function OfficeHours({ props }: { props: string }) {
               : "text-[#3E3D3D] bg-white"
               }`}
             onClick={() =>
-              router.push(`${path}?active=officeHours&hours=upcoming`)
+              router.push(`${path}?active=lectures&lectures=upcoming`)
             }
           >
             <Calendar size={16} className="drop-shadow-lg" />
@@ -176,8 +176,8 @@ function OfficeHours({ props }: { props: string }) {
               : "text-[#3E3D3D] bg-white"
               }`}
             onClick={() =>
-              router.push(`${path}?active=officeHours&hours=recorded`)
-            }
+              router.push(`${path}?active=lectures&lectures=recorded`)  
+              }
           >
             <BookOpen size={16} className="drop-shadow-lg" />
             Library

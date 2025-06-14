@@ -188,13 +188,13 @@ function UserInfo({
     },
     {
       number: officehoursHostCount,
-      desc: "Office Hours hosted",
-      ref: `/profile/${address}}?active=officeHours&hours=attended`,
+      desc: "Lectures hosted",
+      ref: `/profile/${address}}?active=lectures&lectures=hosted`,
     },
     {
       number: officehoursAttendCount,
-      desc: "Office Hours attended",
-      ref: `/profile/${address}}?active=officeHours&hours=attended`,
+      desc: "Lectures attended",
+      ref: `/profile/${address}}?active=lectures&lectures=attended`,  
     },
   ];
 
@@ -304,9 +304,9 @@ function UserInfo({
   //     },
   //     {
   //       number: officehoursHostCount,
-  //       desc: "Office Hours hosted",
-  //       ref: `/profile/${address}}?active=officeHours&hours=attended&dao=${daoName}`,
-  //     }
+  //       desc: "Lectures hosted",
+  //       ref: `/profile/${address}}?active=lectures&lectures=hosted&dao=${daoName}`,
+  //     }  
   //   );
   // }
 

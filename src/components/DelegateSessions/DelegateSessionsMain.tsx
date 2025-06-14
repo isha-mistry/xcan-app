@@ -31,7 +31,7 @@ function DelegateSessionsMain() {
               showArrow
               content={
                 <div className="font-tektur">
-                  Explore available experts by DAO, date, and time to book
+                  Explore available experts by date and time to book
                   sessions and unlock Web3 opportunities.
                 </div>
               }

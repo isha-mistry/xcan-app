@@ -56,13 +56,13 @@ async function sendMeetingDeletionNotification({
 
     // Updated notification content without DAO name
     const baseNotification = {
-      content: `Office hours "${title}" previously scheduled for ${localSlotTime} UTC and hosted by ${hostENSNameOrAddress}, has been cancelled. We apologize for any inconvenience. ${
+      content: `Lecture "${title}" previously scheduled for ${localSlotTime} UTC and hosted by ${hostENSNameOrAddress}, has been cancelled. We apologize for any inconvenience. ${
         deleteReason && `Reason: ${deleteReason}.`
       }`,
-      createdAt: Date.now(),
+      createdAt: Date.now(),    
       read_status: false,
       notification_name: "officeHoursDeleted",
-      notification_title: "Office Hours Cancelled",
+      notification_title: "Lecture Cancelled",
       notification_type: "officeHours",
       additionalData: {
         ...additionalData,
@@ -146,7 +146,7 @@ export async function PUT(req: Request) {
       return NextResponse.json(
         {
           success: false,
-          error: "You are not authorized to delete this office hours slot",
+          error: "You are not authorized to delete this lecture",
         },
         { status: 403 }
       );

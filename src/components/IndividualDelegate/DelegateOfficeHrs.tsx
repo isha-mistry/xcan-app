@@ -152,7 +152,7 @@ function DelegateOfficeHrs() {
         setFilteredData(data); // Initially, filtered data is same as original
         setDataLoading(false);
       } catch (error) {
-        console.error("Error fetching office hours:", error);
+        console.error("Error fetching lectures:", error);
         setDataLoading(false);
       }
     };
@@ -174,48 +174,48 @@ function DelegateOfficeHrs() {
           onScroll={handleScroll}
         >
           <button
-            className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md ${searchParams.get("hours") === "ongoing"
-              ? "text-blue-shade-100 font-semibold bg-[#f5f5f5]"
+            className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md ${searchParams.get("lectures") === "ongoing"
+              ? "text-blue-shade-100 font-semibold bg-[#c2d2ff]"
               : "text-[#3E3D3D] bg-white"
               }`}
             onClick={() =>
-              router.push(path + "?active=officeHours&hours=ongoing")
+              router.push(path + "?active=lectures&lectures=ongoing")
             }
           >
             <Clock size={16} className="drop-shadow-lg" />
             Live
           </button>
           <button
-            className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md ${searchParams.get("hours") === "upcoming"
-              ? "text-blue-shade-100 font-semibold bg-[#f5f5f5]"
+            className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md ${searchParams.get("lectures") === "upcoming"
+              ? "text-blue-shade-100 font-semibold bg-[#c2d2ff]"
               : "text-[#3E3D3D] bg-white"
               }`}
             onClick={() =>
-              router.push(path + "?active=officeHours&hours=upcoming")
+              router.push(path + "?active=lectures&lectures=upcoming")
             }
           >
             <Calendar size={16} className="drop-shadow-lg" />
             Scheduled
           </button>
           <button
-            className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md ${searchParams.get("hours") === "hosted"
-              ? "text-blue-shade-100 font-semibold bg-[#f5f5f5]"
+            className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md ${searchParams.get("lectures") === "hosted"
+              ? "text-blue-shade-100 font-semibold bg-[#c2d2ff]"
               : "text-[#3E3D3D] bg-white"
               }`}
             onClick={() =>
-              router.push(path + "?active=officeHours&hours=hosted")
+              router.push(path + "?active=lectures&lectures=hosted")
             }
           >
             <Users size={16} className="drop-shadow-lg" />
             Hosted
           </button>
           <button
-            className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md ${searchParams.get("hours") === "attended"
-              ? "text-blue-shade-100 font-semibold bg-[#f5f5f5]"
+            className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md ${searchParams.get("lectures") === "attended"
+              ? "text-blue-shade-100 font-semibold bg-[#c2d2ff]"
               : "text-[#3E3D3D] bg-white"
               }`}
             onClick={() =>
-              router.push(path + "?active=officeHours&hours=attended")
+              router.push(path + "?active=lectures&lectures=attended")
             }
           >
             <CheckCircle size={16} className="drop-shadow-lg" />

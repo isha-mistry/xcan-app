@@ -93,7 +93,7 @@ export async function generateMetadata({
 
     const formattedDaoName = dao_name
       ? dao_name.charAt(0).toUpperCase() + dao_name.slice(1)
-      : "Unknown DAO";
+      : "Unknown ";
 
     if (description.length > 55) {
       description = description.substring(0, 55) + "...";
@@ -103,7 +103,7 @@ export async function generateMetadata({
 
     return {
       title: "Inorbit",
-      description: `Watch this video hosted on ${formattedDaoName} DAO on ${title}`,
+      description: `Watch this video hosted on Inorbit on ${title}`,
       openGraph: {
         title: "Inorbit",
         description: `Watch this video: ${title}`,

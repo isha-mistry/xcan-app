@@ -180,7 +180,7 @@ export const handleRedirection = async (
   } else if (data.notification_type === "officeHours") {
     if (data.notification_name === "officeHoursScheduled") {
       router.push(
-        `/${data.additionalData.dao_name}/${data.additionalData.host_address}?active=officeHours&hours=upcoming`
+        `/${data.additionalData.dao_name}/${data.additionalData.host_address}?active=lectures&lectures=upcoming`
       );
     } else if (
       (data.notification_name === "officeHoursStarted" ||

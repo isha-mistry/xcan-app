@@ -45,7 +45,7 @@ const EditOfficeHoursModal: React.FC<EditOfficeHoursModalProps> = ({
       setIsAuthorized(authorized);
 
       if (!authorized) {
-        toast.error("You are not authorized to edit this office hours slot");
+        toast.error("You are not authorized to edit this lecture");
       }
 
       if (!authenticated || !address || !isConnected) {
@@ -64,7 +64,7 @@ const EditOfficeHoursModal: React.FC<EditOfficeHoursModalProps> = ({
 
       // Check if the current user is the host
       if (address.toLowerCase() !== hostAddress.toLowerCase()) {
-        toast.error("You are not authorized to edit this office hours slot");
+        toast.error("You are not authorized to edit this lecture");
         return null;
       }
       const token = await getAccessToken();
@@ -95,7 +95,7 @@ const EditOfficeHoursModal: React.FC<EditOfficeHoursModalProps> = ({
           toast.error("Authentication required. Please connect your wallet.");
           return null;
         } else if (response.status === 403) {
-          toast.error("You are not authorized to edit this office hours slot");
+          toast.error("You are not authorized to edit this lecture");
           return null;
         } else {
           throw new Error(data.error || "Failed to update meeting");
@@ -112,7 +112,7 @@ const EditOfficeHoursModal: React.FC<EditOfficeHoursModalProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!isAuthorized) {
-      toast.error("You are not authorized to edit this office hours slot");
+      toast.error("You are not authorized to edit this lecture");
       return;
     }
 
@@ -151,7 +151,7 @@ const EditOfficeHoursModal: React.FC<EditOfficeHoursModalProps> = ({
 
   const handleChange = async (selectedImage: any) => {
     if (!isAuthorized) {
-      toast.error("You are not authorized to edit this office hours slot");
+      toast.error("You are not authorized to edit this lecture");
       return;
     }
     const apiKey = LIGHTHOUSE_BASE_API_KEY ? LIGHTHOUSE_BASE_API_KEY : "";

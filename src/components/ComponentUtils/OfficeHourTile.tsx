@@ -499,10 +499,10 @@ const OfficeHourTile = ({
                                   </div>
                                   <div className="ml-3 flex-1 font-tektur">
                                     <p className="text-sm font-medium text-gray-900">
-                                      Office Hours Not Scheduled for Today
+                                      Lectures Not Scheduled for Today
                                     </p>
                                     <p className="mt-1 text-sm text-gray-500">
-                                      You cannot start this office hour session today as it is scheduled for another day.
+                                      You cannot start this lecture session today as it is scheduled for another day.
                                     </p>
                                   </div>
                                 </div>

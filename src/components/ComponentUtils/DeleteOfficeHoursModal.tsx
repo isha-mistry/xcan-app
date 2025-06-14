@@ -44,7 +44,7 @@ const DeleteOfficeHoursModal: React.FC<DeleteOfficeHoursModalProps> = ({
         setIsAuthorized(authorized);
         
         if (!authorized) {
-          toast.error("You are not authorized to delete this office hours slot");
+          toast.error("You are not authorized to delete this lecture");
         }
         
         if (!authenticated || !address) {
@@ -66,7 +66,7 @@ const DeleteOfficeHoursModal: React.FC<DeleteOfficeHoursModalProps> = ({
 
       // Check if the current user is the host
       if (address.toLowerCase() !== hostAddress.toLowerCase()) {
-        toast.error("You are not authorized to delete this office hours slot");
+        toast.error("You are not authorized to delete this lecture");
         return null;
       }
       const token = await getAccessToken();
@@ -94,8 +94,8 @@ const DeleteOfficeHoursModal: React.FC<DeleteOfficeHoursModalProps> = ({
           toast.error("Authentication required. Please connect your wallet.");
           return null;
         } else if (result.status === 403) {
-          toast.error("You are not authorized to delete this office hours slot");
-          return null;
+          toast.error("You are not authorized to delete this lecture");
+          return null;    
         } else {
           throw new Error("Failed to delete meeting");
         }

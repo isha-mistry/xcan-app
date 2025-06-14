@@ -39,10 +39,10 @@ export default function Home() {
                 <span className="text-blue-shade-100 font-medium">Join Our Growing Community</span>
               </div>
               <h1 className="text-4xl md:text-6xl font-bold text-dark-text-primary mb-6 leading-tight">
-                Welcome to Inorbit
+                Welcome Inorbit
               </h1>
               <p className="text-xl text-dark-text-secondary mb-8 max-w-2xl">
-                Your platform for meaningful sessions and office hours. Connect, learn, and grow with our community of experts and learners.
+                Your platform for meaningful expert sessions and lectures. Connect, learn, and grow with our community of experts and learners.
               </p>
 
               {/* Stats */}
@@ -114,7 +114,7 @@ export default function Home() {
                     <Video className="w-6 h-6 text-blue-shade-100" />
                   </div>
                   <div>
-                    <h3 className="text-xl font-semibold text-dark-text-primary mb-2">Live Interactive Sessions</h3>
+                    <h3 className="text-xl font-semibold text-dark-text-primary mb-2">Live Lectures</h3>
                     <p className="text-dark-text-secondary">Join real-time sessions with industry experts and get your questions answered instantly.</p>
                   </div>
                 </div>
@@ -125,7 +125,7 @@ export default function Home() {
                     <Clock className="w-6 h-6 text-green-shade-100" />
                   </div>
                   <div>
-                    <h3 className="text-xl font-semibold text-dark-text-primary mb-2">Personalized Office Hours</h3>
+                    <h3 className="text-xl font-semibold text-dark-text-primary mb-2">Personalized Expert Sessions</h3>
                     <p className="text-dark-text-secondary">Schedule one-on-one time with mentors for personalized guidance and support.</p>
                   </div>
                 </div>
@@ -162,7 +162,7 @@ export default function Home() {
                 <Video className="w-6 h-6 text-white" />
               </div>
               <h3 className="text-xl font-semibold text-dark-text-primary mb-2">
-                Live Sessions
+                Live Lectures
               </h3>
               <p className="text-dark-text-secondary">
                 Join interactive sessions with experts and community members.
@@ -178,7 +178,7 @@ export default function Home() {
                 <Clock className="w-6 h-6 text-white" />
               </div>
               <h3 className="text-xl font-semibold text-dark-text-primary mb-2">
-                Office Hours
+                Expert Sessions
               </h3>
               <p className="text-dark-text-secondary">
                 Schedule one-on-one time with mentors and experts.
@@ -227,7 +227,7 @@ export default function Home() {
             Ready to Get Started?
           </h2>
           <p className="text-dark-text-secondary mb-8 max-w-2xl mx-auto">
-            Join our community today and start participating in sessions and office hours.
+            Join our community today and start participating in expert sessions and lectures.
           </p>
           <motion.a
             whileHover={{ scale: 1.05 }}

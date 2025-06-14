@@ -59,7 +59,7 @@ function NotificationMain() {
     // { name: "Followers", value: "followers" },
     { name: "Attestations", value: "attestations" },
     // { name: "Proposal Vote", value: "proposalVote" },
-    { name: "Office Hours", value: "officeHours" }
+    { name: "Lectures", value: "lectures" }
   ];
 
 
@@ -76,7 +76,7 @@ function NotificationMain() {
         toast("Coming Soon 🚀");
       } else if (tabValue === "attestations") {
         router.push(path + `?active=${tabValue}`);
-      } else if (tabValue === "officeHours") {
+      } else if (tabValue === "lectures") {
         router.push(path + `?active=${tabValue}`);
       } else {
         router.push(path + `?active=${tabValue}`);
@@ -247,7 +247,7 @@ function NotificationMain() {
       // followers: "newFollower",
       attestations: "attestation",
       // proposalVote: "proposalVote",
-      officeHours: "officeHours",
+      lectures: "lectures",
     };
     return combinedNotifications.filter(
       (item) => item.notification_type === typeMap[type as keyof typeof typeMap]
@@ -431,7 +431,7 @@ function NotificationMain() {
       sessionBookings: SessionBookings,
       recordedSessions: RecordedSessions,
       attestations: Attestation,
-      officeHours: OfficeHours,
+      lectures: OfficeHours,
     };
     const Component =
       components[activeTab as keyof typeof components] || NotificationAll;
@@ -535,9 +535,9 @@ function NotificationMain() {
                 ? "text-blue-300 font-semibold border-b-2 border-blue-300"
                 : "border-transparent"
                 }`}
-              onClick={() => router.push(path + "?active=officeHours")}
+              onClick={() => router.push(path + "?active=lectures")}
             >
-              Office Hours
+              Lectures
             </button>
           </div>
           <div className="hidden 2md:block ml-auto 1.5lg:pe-16 pe-8">

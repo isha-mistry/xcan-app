@@ -8,10 +8,10 @@ export const metadata: Metadata = {
   title: "Inorbit",
   description: "Discover. Learn. Engage.",
   openGraph: {
-    title: "Office Hours",
+    title: "Lectures",
     description:
-      "Find all the current, upcoming, and past office hours hosted by different DAOs, and easily search them by using Title or Host Address.",
-    url: "https://inorbit-edu.vercel.app/office-hours?hours=ongoing",
+      "Find all the current, upcoming, and past lectures hosted by experts, and easily search them by using Title or Host Address.",
+    url: "https://inorbit-edu.vercel.app/lectures?hours=ongoing",
     siteName: "Inorbit",
     // images: [
     //   {
