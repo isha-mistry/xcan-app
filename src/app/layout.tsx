@@ -7,6 +7,7 @@ import { Suspense } from "react";
 import ProgressBarProvider from "@/components/ProgressBarProvider/ProgressBarProvider";
 import SidebarMainMobile from "@/components/MainSidebar/SidebarMainMobile";
 import TopNavbar from "@/components/TopNavbar/TopNavbar";
+import RouteProtectionWrapper from "@/components/RouteProtectionWrapper";
 import { Toaster } from "react-hot-toast";
 
 const poppins = Poppins({
@@ -83,17 +84,19 @@ export default function RootLayout({
         <ProgressBarProvider>
           <Suspense>
             <RootProviders>
-              <div className="">
-                <div className="lg:hidden w-full bg-dark-secondary border border-dark-accent">
-                  <SidebarMainMobile />
+              <RouteProtectionWrapper>
+                <div className="">
+                  <div className="lg:hidden w-full bg-dark-secondary border border-dark-accent">
+                    <SidebarMainMobile />
+                  </div>
+                  <div className="hidden lg:flex items-center bg-dark-secondary ">
+                    <TopNavbar />
+                  </div>
+                  <div className="pt-6">
+                    {children}
+                  </div>
                 </div>
-                <div className="hidden lg:flex items-center bg-dark-secondary ">
-                  <TopNavbar />
-                </div>
-                <div className="pt-6">
-                  {children}
-                </div>
-              </div>
+              </RouteProtectionWrapper>
             </RootProviders>
           </Suspense>
         </ProgressBarProvider>
