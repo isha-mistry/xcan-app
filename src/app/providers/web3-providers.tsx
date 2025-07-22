@@ -41,7 +41,7 @@ const privyConfig: PrivyClientConfig = {
     requireUserPasswordOnCreate: true,
     noPromptOnSignature: false,
   },
-  loginMethods: ["wallet"],
+  loginMethods: ["wallet", "github"],
   appearance: {
     showWalletLoginFirst: true,
     logo: logo.src,

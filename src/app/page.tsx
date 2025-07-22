@@ -5,24 +5,64 @@ import { Calendar, Clock, Users, Video, BookOpen, Award, Star, User } from "luci
 import { useRouter } from "next/navigation";
 import { useAccount } from "wagmi";
 import { usePrivy } from "@privy-io/react-auth";
+import ConnectYourWallet from "@/components/ComponentUtils/ConnectYourWallet";
+import { useEffect, useState } from "react";
 
 export default function Home() {
   const router = useRouter();
   const { address } = useAccount();
-  const { authenticated, login } = usePrivy();
+  const { authenticated, user } = usePrivy();
+  const [showConnectModal, setShowConnectModal] = useState(false);
+
+  // Check if user has valid wallet and GitHub
+  const hasValidWallet = () => {
+    const verifiedWallets = user?.linkedAccounts?.filter((account) => account.type === "wallet")?.map((account) => account.address) || [];
+    return Boolean(address && verifiedWallets.includes(address));
+  };
+  const hasGitHubAuth = () => {
+    return Boolean(user?.linkedAccounts?.find((account) => account.type === "github_oauth"));
+  };
+
+  useEffect(() => {
+    // Always trigger the event and store in sessionStorage
+    if (sessionStorage.getItem("inorbit_connect_prompt") === "hidden") {
+      return;
+    }
+    sessionStorage.setItem("inorbit_connect_prompt", "shown");
+    // Show modal if not fully connected
+    if (!authenticated || !hasValidWallet() || !hasGitHubAuth()) {
+      setShowConnectModal(true);
+    } else {
+      setShowConnectModal(false);
+    }
+  }, [authenticated, address, user]);
+
+  const handleCloseModal = () => {
+    setShowConnectModal(false);
+    sessionStorage.setItem("inorbit_connect_prompt", "hidden");
+  };
 
   const handleProfileClick = () => {
     if (!authenticated || !address) {
-      // Show Privy modal if wallet is not connected
-      login();
+      setShowConnectModal(true);
     } else {
-      // Redirect to profile if wallet is connected
       router.push(`/profile/${address}?active=info`);
     }
   };
 
   return (
-    <main className="min-h-screen bg-dark-primary font-tektur">
+    <main className="min-h-screen bg-dark-primary font-tektur relative">
+      {/* Modal and Blur Overlay */}
+      {showConnectModal && (
+        <>
+          <div className="fixed inset-0 z-40 backdrop-blur-md bg-black/40 transition-all" />
+          <div className="fixed inset-0 z-50 flex items-center justify-center">
+            <div className="relative w-full max-w-lg mx-auto">
+              <ConnectYourWallet requireGitHub={true} showBg={false} closeModal={handleCloseModal} />
+            </div>
+          </div>
+        </>
+      )}
       {/* Hero Section */}
       <section className="min-h-[85vh] py-6 flex items-center justify-center overflow-hidden">
         {/* <div className="inset-0  opacity-50"></div> */}
@@ -35,8 +75,8 @@ export default function Home() {
               transition={{ duration: 0.8 }}
               className="text-left"
             >
-              <div className="inline-block bg-blue-shade-200/10 px-4 py-2 rounded-full mb-6">
-                <span className="text-blue-shade-100 font-medium">Join Our Growing Community</span>
+              <div className="inline-block bg-blue-950 px-4 py-2 rounded-full mb-6">
+                <span className="text-blue-200 font-medium">Join Our Growing Community</span>
               </div>
               <h1 className="text-4xl md:text-6xl font-bold text-dark-text-primary mb-6 leading-tight">
                 Welcome Inorbit
@@ -110,8 +150,8 @@ export default function Home() {
             >
               <div className="bg-dark-tertiary p-6 rounded-xl">
                 <div className="flex items-start gap-4">
-                  <div className="bg-blue-shade-200/20 p-3 rounded-lg">
-                    <Video className="w-6 h-6 text-blue-shade-100" />
+                  <div className="bg-blue-900/50 p-3 rounded-lg">
+                    <Video className="w-6 h-6 text-blue-200" />
                   </div>
                   <div>
                     <h3 className="text-xl font-semibold text-dark-text-primary mb-2">Live Lectures</h3>
@@ -132,8 +172,8 @@ export default function Home() {
               </div>
               <div className="bg-dark-tertiary p-6 rounded-xl">
                 <div className="flex items-start gap-4">
-                  <div className="bg-blue-shade-300/20 p-3 rounded-lg">
-                    <Users className="w-6 h-6 text-blue-shade-100" />
+                  <div className="bg-blue-900/50 p-3 rounded-lg">
+                    <Users className="w-6 h-6 text-blue-200" />
                   </div>
                   <div>
                     <h3 className="text-xl font-semibold text-dark-text-primary mb-2">Community Learning</h3>

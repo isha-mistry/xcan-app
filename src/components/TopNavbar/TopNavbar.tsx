@@ -89,16 +89,16 @@ function TopNavbar() {
     getAccessToken
   ]);
 
-  const handleProfileClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    if (!authenticated || !address || !isConnected) {
-      // Show Privy modal if wallet is not connected
-      login();
-    } else {
-      // Redirect to profile if wallet is connected
-      window.location.href = `/profile/${address}?active=info`;
-    }
-  };
+  // const handleProfileClick = (e: React.MouseEvent) => {
+  //   e.preventDefault();
+  //   if (!authenticated || !address || !isConnected) {
+  //     // Show Privy modal if wallet is not connected
+  //     login();
+  //   } else {
+  //     // Redirect to profile if wallet is connected
+  //     window.location.href = `/profile/${address}?active=info`;
+  //   }
+  // };
 
   return (
     <>
@@ -191,7 +191,7 @@ function TopNavbar() {
               </Badge>
               <Link
                 href={`/profile/${address}?active=info`}
-                onClick={handleProfileClick}
+                // onClick={handleProfileClick}
                 className={`${styles.item}  font-medium ${pathname.includes(`/profile`)
                   ? `text-white ${styles.activeitem}`
                   : "text-blue-200"

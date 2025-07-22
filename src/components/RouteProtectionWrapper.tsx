@@ -18,48 +18,28 @@ interface RouteProtectionWrapperProps {
  * - Public Routes: No authentication required (e.g., home page)
  * - Social Login Routes: Allow social authentication without wallet requirement
  * - Protected Routes: Require full wallet connection and authentication
+ * - Profile Routes: Require both wallet AND GitHub authentication
  * 
  * Usage: Place this component at the root level to protect all routes automatically
  */
 export default function RouteProtectionWrapper({ children }: RouteProtectionWrapperProps) {
   const pathname = usePathname();
 
-  // Define public routes that don't require wallet connection
+  // Only the home page is public
   const publicRoutes = [
     "/", // Home page
-    "/ecosystem", // Public ecosystem page
   ];
 
-  // Define routes that allow social login without wallet
-  const socialLoginRoutes = [
-    "/invite", // Invite pages might be accessible with social login
-  ];
-
-  // Check if current route is public
   const isPublicRoute = publicRoutes.includes(pathname);
-
-  // Check if current route allows social login
-  const allowsSocialLogin = socialLoginRoutes.some(route =>
-    pathname.startsWith(route)
-  );
 
   // If it's a public route, render children without protection
   if (isPublicRoute) {
     return <>{children}</>;
   }
 
-  // If it allows social login, use WalletWrapper with requireWallet=false
-  if (allowsSocialLogin) {
-    return (
-      <WalletWrapper requireWallet={false}>
-        {children}
-      </WalletWrapper>
-    );
-  }
-
-  // For all other routes, require full wallet connection
+  // For all other routes, require both wallet and GitHub authentication
   return (
-    <WalletWrapper requireWallet={true}>
+    <WalletWrapper requireWallet="wallet-and-github">
       {children}
     </WalletWrapper>
   );

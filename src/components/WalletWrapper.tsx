@@ -10,9 +10,10 @@ interface WalletWrapperProps {
   /** 
    * If false, allows social logins (Google/Farcaster) without requiring wallet connection
    * If true (default), requires a properly connected and verified wallet
+   * If 'wallet-and-github', requires both wallet and GitHub authentication
    */
   children: React.ReactNode;
-  requireWallet?: boolean;
+  requireWallet?: boolean | 'wallet-and-github';
 }
 
 /**
@@ -25,19 +26,21 @@ interface WalletWrapperProps {
  * - Checks Privy authentication status
  * - Validates wallet connection state
  * - Supports both wallet and social login authentication
+ * - Can require both wallet AND GitHub authentication
  * - Provides loading states during initialization
  * - Shows appropriate connection UI when authentication is missing
  * 
  * @param children - React components to render when authentication is successful
- * @param requireWallet - Whether to require wallet connection (default: true)
+ * @param requireWallet - Whether to require wallet connection (default: true), or 'wallet-and-github' for both
  * 
  * Authentication Flow:
  * 1. Shows loading spinner while Privy initializes
  * 2. Checks if user is authenticated with Privy
  * 3. If requireWallet=false, allows social logins to proceed
  * 4. If requireWallet=true, validates proper wallet connection
- * 5. Renders children only when all requirements are met
- * 6. Shows ConnectYourWallet component for missing authentication
+ * 5. If requireWallet='wallet-and-github', validates both wallet and GitHub
+ * 6. Renders children only when all requirements are met
+ * 7. Shows ConnectYourWallet component for missing authentication
  */
 export default function WalletWrapper({
   children,
@@ -101,8 +104,19 @@ export default function WalletWrapper({
     return Boolean(activeWallet && isConnected && address);
   };
 
-  // If wallet is required and not properly connected, show connect screen
-  if (requireWallet && !hasValidWallet()) {
+  // Check for GitHub authentication
+  const hasGitHubAuth = () => {
+    return Boolean(user?.linkedAccounts?.find((account) => account.type === "github_oauth"));
+  };
+
+  // Handle different authentication requirements
+  if (requireWallet === 'wallet-and-github') {
+    // Require both wallet and GitHub
+    if (!hasValidWallet() || !hasGitHubAuth()) {
+      return <ConnectYourWallet requireGitHub={true} />;
+    }
+  } else if (requireWallet && !hasValidWallet()) {
+    // If wallet is required and not properly connected, show connect screen
     return <ConnectYourWallet />;
   }
 

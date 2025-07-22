@@ -79,7 +79,13 @@ export function PrivyAuthHandler() {
         await new Promise((resolve) => setTimeout(resolve, 1000));
 
         // Create or verify account
-        await createOrVerifyAccount(selectedWallet.address, token, referrer);
+        const githubAccount = user.linkedAccounts.find(account => account.type === "github_oauth");
+        const githubInfo = githubAccount ? {
+          id: githubAccount.subject,
+          username: githubAccount.username || githubAccount.name || ""
+        } : undefined;
+
+        await createOrVerifyAccount(selectedWallet.address, token, referrer, githubInfo);
       } catch (error) {
         console.error("Error handling user login:", error);
       }
@@ -95,7 +101,8 @@ export function PrivyAuthHandler() {
 async function createOrVerifyAccount(
   walletAddress: string,
   token: string | null,
-  referrer: string | null
+  referrer: string | null,
+  githubInfo?: { id: string; username: string }
 ) {
   try {
     const response = await fetch(`${BASE_URL}/api/auth/accountcreate`, {
@@ -110,6 +117,8 @@ async function createOrVerifyAccount(
         isEmailVisible: false,
         createdAt: new Date(),
         referrer: referrer,
+        githubId: githubInfo?.id || null,
+        githubUsername: githubInfo?.username || null,
       }),
     });
 

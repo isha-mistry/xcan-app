@@ -12,6 +12,8 @@ interface DelegateRequestBody {
   isEmailVisible: boolean;
   createdAt: Date;
   referrer: string | null;
+  githubId?: string;
+  githubUsername?: string;
 }
 
 export async function POST(req: NextRequest, res: NextResponse) {
@@ -70,6 +72,8 @@ export async function POST(req: NextRequest, res: NextResponse) {
         isEmailVisible,
         createdAt,
         referrer,
+        githubId,
+        githubUsername,
       }: DelegateRequestBody = await req.json();
 
       // Connect to database
@@ -83,6 +87,27 @@ export async function POST(req: NextRequest, res: NextResponse) {
       });
 
       if (existingDocument) {
+        // If user exists but doesn't have GitHub info, update it
+        if (githubId && !existingDocument.githubId) {
+          await collection.updateOne(
+            { address: requestWalletAddress },
+            {
+              $set: {
+                socialHandles: {
+                  githubId: githubId,
+                  githubUsername: githubUsername,
+                },
+              },
+            }
+          );
+          const updatedDocument = await collection.findOne({
+            address: requestWalletAddress,
+          });
+          return NextResponse.json(
+            { result: updatedDocument },
+            { status: 200 }
+          );
+        }
         return NextResponse.json(
           { result: "Already Exists!" },
           { status: 409 }
@@ -98,8 +123,11 @@ export async function POST(req: NextRequest, res: NextResponse) {
         displayName: null,
         description: null,
         emailId: null,
-        socialHandles: null,
-        referrer: referrer,  
+        socialHandles: {
+          githubId: githubId || null,
+          githubUsername: githubUsername || null,
+        },
+        referrer: referrer,
       };
 
       // Insert document

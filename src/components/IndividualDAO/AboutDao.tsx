@@ -276,7 +276,7 @@ const AboutDao = ({ props }: { props: string }) => {
   };
 
   return (
-    <div className="container mx-auto md:px-4 py-12">
+    <div className="container mx-auto md:px-4 py-12 font-tektur">
       <motion.h1
         className="text-4xl font-bold mb-8 text-center text-blue-300"
         {...fadeInUp}
