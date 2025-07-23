@@ -146,6 +146,15 @@ function TopNavbar() {
                 </span>
               </Link>
               <Link
+                href={"/dashboard"}
+                className={`${styles.item} font-medium ${pathname.includes(`/dashboard`)
+                  ? `text-white ${styles.activeitem}`
+                  : "text-blue-200"
+                  }`}
+              >
+                Dashboard
+              </Link>
+              <Link
                 href={"/lectures?hours=ongoing"}
                 className={`${styles.item} font-medium ${pathname.includes(`/lectures`)
                   ? `text-white ${styles.activeitem}`

@@ -12,3 +12,15 @@ export async function connectDB() {
 
   return client;
 }
+
+export async function connectMintDB() {
+  const client = await MongoClient.connect(process.env.MONGODB_NFT_URI!, {
+    dbName: "speedrun-stylus",
+    // useNewUrlParser: true,
+    // useUnifiedTopology: true,
+    // serverSelectionTimeoutMS: 30000,
+    // socketTimeoutMS: 45000,
+  } as MongoClientOptions);
+
+  return client;
+}  

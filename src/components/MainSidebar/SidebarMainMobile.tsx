@@ -177,6 +177,21 @@ const SidebarMainMobile = () => {
               </li>
               <li>
                 <Link
+                  href={"/dashboard"}
+                  className="block py-4 pl-6 sm:py-5 hover:bg-blue-shade-100 "
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <FaUser className="size-5 mr-4" />
+                      <span>Dashboard</span>
+                    </div>
+                    <FiArrowUpRight className="w-5 h-5" />
+                  </div>
+                </Link>
+                <div className="h-[0.1px] w-full bg-white"></div>
+              </li>
+              <li>
+                <Link
                   href={"/lectures?hours=ongoing"}
                   className="block py-4 pl-6 sm:py-5 hover:bg-blue-shade-100"
                 >
