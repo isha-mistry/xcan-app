@@ -7,7 +7,8 @@ import styles from "./TopNavbar.module.css";
 import style from "../Notification/NotificationIconComponent.module.css";
 import { getAccessToken, usePrivy } from "@privy-io/react-auth";
 import { useSidebar } from "@/app/hooks/useSidebar";
-import ConnectWalletWithENS from "../ConnectWallet/ConnectWalletWithENS";
+import { useState } from "react";
+import { FaGithub, FaCopy, FaSignOutAlt, FaWallet } from "react-icons/fa";
 import { useNotificationStudioState } from "@/store/notificationStudioState";
 import { useEffect } from "react";
 import { Badge } from "@nextui-org/react";
@@ -15,7 +16,7 @@ import { fetchApi } from "@/utils/api";
 
 function TopNavbar() {
   const pathname = usePathname();
-  const { authenticated, login } = usePrivy();
+  const { authenticated, login, logout, user } = usePrivy();
   const { status, address, isConnected } = useSidebar();
   const sessionLoading = status === "loading";
   const {
@@ -24,6 +25,28 @@ function TopNavbar() {
     setNotifications,
     updateCombinedNotifications
   } = useNotificationStudioState();
+
+  const [showAccountMenu, setShowAccountMenu] = useState(false);
+  const [copySuccess, setCopySuccess] = useState(false);
+
+  // Get GitHub and embedded wallet info
+  const githubAccount = user?.linkedAccounts?.find(a => a.type === "github_oauth");
+  const embeddedWallet = user?.linkedAccounts?.find(a => a.type === "wallet" && typeof (a as any).address === "string");
+  const walletAddress = embeddedWallet && typeof (embeddedWallet as any).address === "string" ? (embeddedWallet as any).address : undefined;
+  const githubUsername = githubAccount?.username || githubAccount?.name || githubAccount?.email || githubAccount?.subject;
+
+  const handleCopy = async () => {
+    if (walletAddress) {
+      await navigator.clipboard.writeText(walletAddress);
+      setCopySuccess(true);
+      setTimeout(() => setCopySuccess(false), 1500);
+    }
+  };
+
+  const handleLogout = async () => {
+    setShowAccountMenu(false);
+    await logout();
+  };
 
   // const isHomePage = pathname === "/";
   // const isLoginPage = pathname === "/login";
@@ -209,7 +232,56 @@ function TopNavbar() {
                 Profile
               </Link>
             </div>
-            <ConnectWalletWithENS />
+            {/* Account/Login Button */}
+            <div className="relative">
+              {!authenticated ? (
+                <button
+                  onClick={login}
+                  className="flex items-center gap-2 px-4 py-2 bg-black text-white rounded-lg font-semibold hover:bg-gray-900 transition"
+                >
+                  <FaGithub className="mr-2" /> Login with GitHub
+                </button>
+              ) : (
+                <>
+                  <button
+                    onClick={() => setShowAccountMenu(v => !v)}
+                    className="flex items-center gap-2 px-4 py-2 bg-gray-100 rounded-lg font-semibold hover:bg-gray-200 transition"
+                  >
+                    <FaGithub className="text-black" />
+                    <span className="text-black">{githubUsername || "GitHub User"}</span>
+                    {/* <FaWallet className="ml-2 text-blue-600" />
+                    <span className="text-xs text-blue-600">{walletAddress ? walletAddress.slice(0, 6) + "..." + walletAddress.slice(-4) : "No Wallet"}</span> */}
+                  </button>
+                  {showAccountMenu && (
+                    <div className="absolute right-0 mt-2 w-72 bg-white rounded-xl shadow-lg border z-50 p-4 flex flex-col gap-2">
+                      <div className="flex items-center gap-2 mb-2">
+                        <FaGithub className="text-black" />
+                        <span className="font-semibold text-black">{githubUsername || "GitHub User"}</span>
+                      </div>
+                      <div className="flex items-center gap-2 mb-2">
+                        <FaWallet className="text-blue-600" />
+                        <span className="font-mono text-xs text-black">{walletAddress ? walletAddress.slice(0, 6) + "..." + walletAddress.slice(-4) : "No embedded wallet"}</span>
+                        {walletAddress && (
+                          <button
+                            onClick={handleCopy}
+                            className="ml-2 px-2 py-1 bg-gray-200 rounded text-blue-600 hover:bg-gray-300 text-xs"
+                          >
+                            <FaCopy className="inline-block mr-1" />
+                            {copySuccess ? "Copied!" : "Copy"}
+                          </button>
+                        )}
+                      </div>
+                      <button
+                        onClick={handleLogout}
+                        className="flex items-center gap-2 px-3 py-2 bg-red-100 text-red-700 rounded hover:bg-red-200 font-semibold mt-2"
+                      >
+                        <FaSignOutAlt /> Logout
+                      </button>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
           </>
 
         </div>

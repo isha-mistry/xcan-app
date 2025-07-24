@@ -1,19 +1,6 @@
-import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
-// import { getToken } from "next-auth/jwt";
+import { NextRequest, NextResponse } from "next/server";
 import { PrivyClient } from "@privy-io/server-auth";
 
-const allowedOrigins = [
-  process.env.NEXT_PUBLIC_LOCAL_BASE_URL!,
-  process.env.NEXT_PUBLIC_HOSTED_BASE_URL!,
-  process.env.NEXT_PUBLIC_MIDDLEWARE_BASE_URL!,
-  process.env.NEXT_PUBLIC_LOCAL_MEETING_APP_URL!,
-  process.env.NEXT_PUBLIC_HOSTED_MEETING_APP_URL!,
-  process.env.NEXT_PUBLIC_LOCAL_REQUIRED_URL!,
-  process.env.NEXT_PUBLIC_LOCAL_REQUIRED_URL!,
-].filter(Boolean);
-
-console.log("allowedOrigins", allowedOrigins);
 const privyClient = new PrivyClient(
   process.env.NEXT_PUBLIC_PRIVY_APP_ID!,
   process.env.PRIVY_SECRET!
@@ -21,22 +8,12 @@ const privyClient = new PrivyClient(
 
 const routeConfig = {
   proxy: {
-    // Routes that need full authentication (token + wallet)
-    authenticated: [
-      // ... add other routes that need authentication
-    ],
-    // Routes that only need API key
-    apiKeyOnly: [
-      "/calculate-cpi",
-      // ... add other routes that only need API key
-    ],
-    // Public routes that need no authentication
-    public: [
-      // ... add other public routes
-    ],
+    authenticated: [],
+    apiKeyOnly: ["/calculate-cpi"],
+    public: [],
   },
 };
-// Set CORS headers
+
 function setCorsHeaders(response: NextResponse, origin: string | null) {
   response.headers.set("Access-Control-Allow-Origin", origin || "*");
   response.headers.set(
@@ -45,65 +22,21 @@ function setCorsHeaders(response: NextResponse, origin: string | null) {
   );
   response.headers.set(
     "Access-Control-Allow-Headers",
-    "Content-Type, Authorization, x-wallet-address, x-api-key"
+    "Content-Type, Authorization, x-api-key"
   );
   response.headers.set("Referrer-Policy", "strict-origin");
 }
 
 export async function middleware(request: NextRequest) {
-  const { origin, pathname } = request.nextUrl;
+  const { pathname } = request.nextUrl;
+  const origin = request.headers.get("origin");
   const apiKey = request.headers.get("x-api-key");
   const authHeader = request.headers.get("Authorization");
-
-  // CORS preflight request handler
-  if (request.method === "OPTIONS") {
-    return new NextResponse(null, {
-      status: 200,
-      headers: {
-        "Access-Control-Allow-Origin": origin || "*",
-        "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-        "Access-Control-Allow-Headers":
-          "Content-Type, Authorization, x-wallet-address, x-api-key",
-        "Referrer-Policy": "strict-origin",
-      },
-    });
-  }
-
-  // Origin validation
-  if (!origin || !allowedOrigins.includes(origin)) {
-    return new NextResponse(
-      JSON.stringify({ error: "Unknown origin request. Forbidden" }),
-      {
-        status: 403,
-        headers: {
-          "Content-Type": "application/json",
-          "Access-Control-Allow-Origin": origin,
-          "Referrer-Policy": "strict-origin",
-        },
-      }
-    );
-  }
-
-  // Proxy route authentication
-  const isProxyRoute = pathname.startsWith("/api/proxy/");
-  const isApiKeyOnlyRoute = routeConfig.proxy.apiKeyOnly.some((route) =>
-    pathname.includes(route)
+  const isProxyRoute = routeConfig.proxy.authenticated.some((route) =>
+    pathname.startsWith(route)
   );
-
-  if (request.method === "GET" || isApiKeyOnlyRoute) {
-    const response = NextResponse.next();
-    setCorsHeaders(response, origin);
-    return response;
-  }
-
   if (isProxyRoute) {
-    // GET requests and API key only routes can pass through
-
-    // Validate Privy token for other proxy routes
     const privyToken = authHeader?.replace("Bearer ", "");
-    const walletAddress = request.headers.get("x-wallet-address");
-
-    // Check token presence
     if (!privyToken) {
       return new NextResponse(
         JSON.stringify({ error: "Authentication required" }),
@@ -113,37 +46,17 @@ export async function middleware(request: NextRequest) {
         }
       );
     }
-
-    // Validate wallet address
-    if (!walletAddress) {
-      return new NextResponse(
-        JSON.stringify({ error: "Wallet address not provided" }),
-        {
-          status: 400,
-          headers: { "Content-Type": "application/json" },
-        }
-      );
-    }
-
     try {
       // Verify Privy token and get user
       const verifiedUser = await privyClient.verifyAuthToken(privyToken);
       const user = await privyClient.getUserById(verifiedUser.userId);
-
-      // Find linked wallet that matches the provided address
-      const linkedWallet = user.linkedAccounts
-        .filter((account) => account.type === "wallet")
-        .find(
-          (wallet) =>
-            wallet.address?.toLowerCase() === walletAddress.toLowerCase()
-        );
-
-      if (!linkedWallet) {
-        console.log(
-          `Forbidden access attempt: Wallet address ${walletAddress} not linked to user ${verifiedUser.userId}`
-        );
+      // Only check for GitHub OAuth
+      const githubAccount = user.linkedAccounts.find(
+        (account) => account.type === "github_oauth"
+      );
+      if (!githubAccount) {
         return new NextResponse(
-          JSON.stringify({ error: "Invalid wallet address" }),
+          JSON.stringify({ error: "GitHub account not linked to user" }),
           {
             status: 403,
             headers: { "Content-Type": "application/json" },
@@ -161,7 +74,6 @@ export async function middleware(request: NextRequest) {
       );
     }
   } else {
-    // Non-proxy routes require API key
     if (!apiKey || apiKey !== process.env.CHORA_CLUB_API_KEY) {
       console.log("Direct API access not allowed");
       return new NextResponse(
@@ -170,8 +82,6 @@ export async function middleware(request: NextRequest) {
       );
     }
   }
-
-  // Allow request to proceed
   const response = NextResponse.next();
   setCorsHeaders(response, origin);
   return response;
@@ -204,6 +114,6 @@ export const config = {
     "/api/update-attestation-uid/:path*",
     "/api/update-office-hours/:path*",
     "/api/update-recorded-session/:path*",
-    "/api/track-delegation/:path*"
+    "/api/track-delegation/:path*",
   ],
 };

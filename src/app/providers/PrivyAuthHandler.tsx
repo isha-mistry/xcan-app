@@ -1,5 +1,5 @@
-import { getAccessToken, usePrivy, useWallets } from "@privy-io/react-auth";
-import { useEffect, useRef, useState } from "react";
+import { usePrivy } from "@privy-io/react-auth";
+import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { BASE_URL } from "@/config/constants";
 
@@ -12,9 +12,7 @@ const handleReferrerStorage = (referrer: string | null) => {
 
 export function PrivyAuthHandler() {
   const { user, ready, getAccessToken } = usePrivy();
-  const { wallets } = useWallets();
   const searchParams = useSearchParams();
-  const processedWalletRef = useRef<string | null>(null);
   const [referrer, setReferrer] = useState<string | null>(null);
 
   // Handle referrer on mount and when searchParams change
@@ -32,105 +30,56 @@ export function PrivyAuthHandler() {
   useEffect(() => {
     const handleUserLogin = async () => {
       if (!ready || !user) return;
-
       try {
         const token = await getAccessToken();
         const referrer = searchParams.get("referrer");
-
-        // Wait for wallets to be properly initialized
-        if (!wallets || wallets.length === 0) {
-          // console.log("Waiting for wallets to initialize...");
-          return;
-        }
-
-        // Get verified wallets from user object
-        const verifiedWallets = user.linkedAccounts
-          .filter((account) => account.type === "wallet")
-          .map((account) => account.address);
-
-        // Find a wallet that is both connected and verified
-        const selectedWallet = wallets.find(
-          (wallet) => wallet.address && verifiedWallets.includes(wallet.address)
-        );
-
-        if (!selectedWallet) {
-          console.log(
-            "No verified wallet found. Available wallets:",
-            wallets.map((w) => w.address)
-          );
-          return;
-        }
-
-        // Ensure we have a valid address
-        if (!selectedWallet.address) {
-          console.error("Selected wallet has no address");
-          return;
-        }
-
-        // Check if we've already processed this wallet
-        if (processedWalletRef.current === selectedWallet.address) {
-          return;
-        }
-
-        // Store the processed wallet address
-        processedWalletRef.current = selectedWallet.address;
-
-        // Small delay to ensure everything is synchronized
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-
-        // Create or verify account
+        // Get GitHub info from user object
         const githubAccount = user.linkedAccounts.find(account => account.type === "github_oauth");
-        const githubInfo = githubAccount ? {
+        if (!githubAccount) {
+          // Not logged in with GitHub
+          return;
+        }
+        const githubInfo = {
           id: githubAccount.subject,
           username: githubAccount.username || githubAccount.name || ""
-        } : undefined;
-
-        await createOrVerifyAccount(selectedWallet.address, token, referrer, githubInfo);
+        };
+        await createOrVerifyAccount(token, referrer, githubInfo);
       } catch (error) {
         console.error("Error handling user login:", error);
       }
     };
-
     handleUserLogin();
-  }, [user, ready, wallets]);
+  }, [user, ready]);
 
   return null;
 }
 
-// Updated createOrVerifyAccount function
+// Updated createOrVerifyAccount function for GitHub only
 async function createOrVerifyAccount(
-  walletAddress: string,
   token: string | null,
   referrer: string | null,
-  githubInfo?: { id: string; username: string }
+  githubInfo: { id: string; username: string }
 ) {
   try {
     const response = await fetch(`${BASE_URL}/api/auth/accountcreate`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "x-wallet-address": walletAddress,
         Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({
-        address: walletAddress,
         isEmailVisible: false,
         createdAt: new Date(),
         referrer: referrer,
-        githubId: githubInfo?.id || null,
-        githubUsername: githubInfo?.username || null,
+        githubId: githubInfo.id,
+        githubUsername: githubInfo.username,
       }),
     });
-
     const responseText = await response.text();
-    // if(localStorage.getItem('persistentWalletAddress')==null){
-    //   localStorage.setItem("persistentWalletAddress",walletAddress); //Inorder to get accurate wallet addres
-    // }
-
     if (response.status === 200) {
-      // console.log("Account created successfully");
+      // Account created successfully
     } else if (response.status === 409) {
-      // console.log("Account already exists");
+      // Account already exists
     } else {
       throw new Error(`Failed to create/verify account: ${responseText}`);
     }

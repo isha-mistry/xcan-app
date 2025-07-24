@@ -1,47 +1,24 @@
 import { connectDB } from "@/config/connectDB";
-import { cacheWrapper } from "@/utils/cacheWrapper";
-import { NextApiRequest, NextApiResponse } from "next";
-import { NextResponse, NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 interface ProfileRequestBody {
-  address: string;
-  image: string;
-  displayName: string;
-  description: string;
-  emailId: string;
-  isEmailVisible: boolean;
-  socialHandles: {
-    twitter: string;
-    discord: string;
-    github: string;
+  githubId: string;
+  githubUsername: string;
+  image?: string;
+  displayName?: string;
+  description?: string;
+  emailId?: string;
+  isEmailVisible?: boolean;
+  socialHandles?: {
+    githubId: string;
+    githubUsername: string;
   };
 }
 
-interface ProfileResponseBody {
-  success: boolean;
-  data?: {
-    id: string;
-    address: string;
-    image: string;
-    displayName: string;
-    description: string;
-    emailId: string;
-    isEmailVisible: boolean;
-    socialHandles: {
-      twitter: string;
-      discord: string;
-      github: string;
-    };
-  } | null;
-  error?: string;
-}
-
-export async function POST(
-  req: NextRequest,
-  res: NextApiResponse<ProfileResponseBody>
-) {
+export async function POST(req: NextRequest) {
   const {
-    address,
+    githubId,
+    githubUsername,
     image,
     displayName,
     description,
@@ -51,37 +28,35 @@ export async function POST(
   }: ProfileRequestBody = await req.json();
 
   try {
-    // Connect to your MongoDB database
-    // console.log("Connecting to MongoDB...");
     const client = await connectDB();
-    // console.log("Connected to MongoDB");
-
-    // Access the collection
     const db = client.db();
     const collection = db.collection("users");
-
-    // Insert the new profile document
-    // console.log("Inserting profile document...");
-    const result = await collection.insertOne({
-      address,
-      image,
-      displayName,
-      description,
-      emailId,
-      isEmailVisible,
-      socialHandles,
-    });
-
+    // Insert or update the profile document using githubId as the key
+    const result = await collection.updateOne(
+      { "socialHandles.githubId": githubId },
+      {
+        $set: {
+          githubId,
+          githubUsername,
+          image,
+          displayName,
+          description,
+          emailId,
+          isEmailVisible,
+          socialHandles,
+        },
+      },
+      { upsert: true }
+    );
     client.close();
-
-    if (result.insertedId) {
-      const insertedDocument = await collection.findOne({
-        _id: result.insertedId,
+    if (result.upsertedId || result.modifiedCount > 0) {
+      const updatedDocument = await collection.findOne({
+        "socialHandles.githubId": githubId,
       });
-      return NextResponse.json({ result: insertedDocument }, { status: 200 });
+      return NextResponse.json({ result: updatedDocument }, { status: 200 });
     } else {
       return NextResponse.json(
-        { error: "Failed to retrieve inserted document" },
+        { error: "Failed to update or insert document" },
         { status: 500 }
       );
     }
@@ -124,7 +99,8 @@ export async function PUT(
     if (displayName !== undefined) updateFields.displayName = displayName;
     if (description !== undefined) updateFields.description = description;
     if (emailId !== undefined) updateFields.emailId = emailId;
-    if (isEmailVisible !== undefined) updateFields.isEmailVisible = isEmailVisible;
+    if (isEmailVisible !== undefined)
+      updateFields.isEmailVisible = isEmailVisible;
     if (socialHandles !== undefined) updateFields.socialHandles = socialHandles;
 
     // Update the profile document

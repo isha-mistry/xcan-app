@@ -8,12 +8,11 @@ const privyClient = new PrivyClient(
 );
 
 interface DelegateRequestBody {
-  address: string;
   isEmailVisible: boolean;
   createdAt: Date;
   referrer: string | null;
-  githubId?: string;
-  githubUsername?: string;
+  githubId: string;
+  githubUsername: string;
 }
 
 export async function POST(req: NextRequest, res: NextResponse) {
@@ -35,88 +34,43 @@ export async function POST(req: NextRequest, res: NextResponse) {
       const verifiedUser: AuthTokenClaims = await privyClient.verifyAuthToken(
         privyToken
       );
-
       const verifiedUserId = verifiedUser.userId;
-
       // Get full user details
       const userDetails = await privyClient.getUser(verifiedUserId);
-
-      // Get request wallet address from header
-      const requestWalletAddress = req.headers.get("x-wallet-address");
-      if (!requestWalletAddress) {
+      // Get GitHub account from linkedAccounts
+      const githubAccount = userDetails.linkedAccounts.find(
+        (account) => account.type === "github_oauth"
+      );
+      if (!githubAccount) {
         return NextResponse.json(
-          { error: "No wallet address provided in request" },
+          { error: "No GitHub account linked to user" },
           { status: 401 }
         );
       }
-
-      // Check all linked wallets for a match
-      const linkedWallets = userDetails.linkedAccounts.filter(
-        (account) => account.type === "wallet"
-      );
-
-      const verifiedWallet = linkedWallets.find(
-        (wallet) => wallet.address === requestWalletAddress
-      );
-
-      if (!verifiedWallet) {
-        return NextResponse.json(
-          { error: "Wallet address not found in user's linked accounts" },
-          { status: 401 }
-        );
-      }
-
       // Get request body
       const {
-        address,
         isEmailVisible,
         createdAt,
         referrer,
         githubId,
         githubUsername,
       }: DelegateRequestBody = await req.json();
-
       // Connect to database
       client = await connectDB();
       const db = client.db();
       const collection = db.collection("users");
-
-      // Check if delegate already exists
+      // Check if user already exists by githubId
       const existingDocument = await collection.findOne({
-        address: requestWalletAddress,
+        "socialHandles.githubId": githubId,
       });
-
       if (existingDocument) {
-        // If user exists but doesn't have GitHub info, update it
-        if (githubId && !existingDocument.githubId) {
-          await collection.updateOne(
-            { address: requestWalletAddress },
-            {
-              $set: {
-                socialHandles: {
-                  githubId: githubId,
-                  githubUsername: githubUsername,
-                },
-              },
-            }
-          );
-          const updatedDocument = await collection.findOne({
-            address: requestWalletAddress,
-          });
-          return NextResponse.json(
-            { result: updatedDocument },
-            { status: 200 }
-          );
-        }
         return NextResponse.json(
           { result: "Already Exists!" },
           { status: 409 }
         );
       }
-
-      // Create new delegate document
+      // Create new user document
       const newDocument = {
-        address: requestWalletAddress, // Use the exact wallet address
         isEmailVisible,
         createdAt,
         image: null,
@@ -124,15 +78,13 @@ export async function POST(req: NextRequest, res: NextResponse) {
         description: null,
         emailId: null,
         socialHandles: {
-          githubId: githubId || null,
-          githubUsername: githubUsername || null,
+          githubId: githubId,
+          githubUsername: githubUsername,
         },
         referrer: referrer,
       };
-
       // Insert document
       const result = await collection.insertOne(newDocument);
-
       if (result.insertedId) {
         const insertedDocument = await collection.findOne({
           _id: result.insertedId,

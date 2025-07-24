@@ -41,12 +41,10 @@ const privyConfig: PrivyClientConfig = {
     requireUserPasswordOnCreate: true,
     noPromptOnSignature: false,
   },
-  loginMethods: ["wallet", "github"],
+  loginMethods: ["github"],
   appearance: {
-    showWalletLoginFirst: true,
-    logo: logo.src,
+    logo: undefined,
   },
-  defaultChain: optimism,
 };
 
 const queryClient = new QueryClient();
