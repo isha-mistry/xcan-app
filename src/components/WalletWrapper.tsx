@@ -4,6 +4,7 @@ import { usePrivy, useWallets } from "@privy-io/react-auth";
 import { useAccount } from "wagmi";
 import { useEffect, useState } from "react";
 import ConnectYourWallet from "./ComponentUtils/ConnectYourWallet";
+import { BASE_URL } from "@/config/constants";
 import { Bars } from "react-loader-spinner";
 
 interface WalletWrapperProps {
@@ -42,6 +43,7 @@ interface WalletWrapperProps {
  * 6. Renders children only when all requirements are met
  * 7. Shows ConnectYourWallet component for missing authentication
  */
+
 export default function WalletWrapper({
   children,
   requireWallet = true
@@ -51,8 +53,11 @@ export default function WalletWrapper({
   const { address, isConnected } = useAccount();
   const [isInitializing, setIsInitializing] = useState(true);
 
+  // --- NEW: GitHub link state ---
+  const [githubLinked, setGithubLinked] = useState(false);
+  const [githubChecked, setGithubChecked] = useState(false);
+
   useEffect(() => {
-    // Give some time for authentication to settle
     if (ready) {
       const timer = setTimeout(() => {
         setIsInitializing(false);
@@ -61,17 +66,32 @@ export default function WalletWrapper({
     }
   }, [ready]);
 
+  // --- NEW: Check GitHub link status from backend ---
+  useEffect(() => {
+    const checkGithubStatus = async () => {
+      if (address) {
+        try {
+          const response = await fetch(`/api/auth/github-status?address=${address}`);
+          const data = await response.json();
+          setGithubLinked(data.isLinked);
+        } catch (error) {
+          setGithubLinked(false);
+        }
+      }
+      setGithubChecked(true);
+    };
+    if (requireWallet === 'wallet-and-github' && isConnected && address) {
+      checkGithubStatus();
+    } else {
+      setGithubChecked(true);
+    }
+  }, [requireWallet, isConnected, address]);
+
   // Show loading while initializing
-  if (!ready || isInitializing) {
+  if (!ready || isInitializing || (requireWallet === 'wallet-and-github' && !githubChecked)) {
     return (
       <div className="flex h-screen justify-center items-center">
-        <Bars
-          height="150"
-          width="150"
-          color="#0500FF"
-          ariaLabel="bars-loading"
-          visible={true}
-        />
+        <Bars height="150" width="150" color="#0500FF" ariaLabel="bars-loading" visible={true} />
       </div>
     );
   }
@@ -91,35 +111,23 @@ export default function WalletWrapper({
 
   // Check for proper wallet connection
   const hasValidWallet = () => {
-    // Check if user has verified wallets
     const verifiedWallets = user?.linkedAccounts
       ?.filter((account) => account.type === "wallet")
       ?.map((account) => account.address) || [];
-
-    // Check if there's an active wallet that's verified
     const activeWallet = wallets.find(
       (wallet) => wallet.address && verifiedWallets.includes(wallet.address)
     );
-
     return Boolean(activeWallet && isConnected && address);
   };
 
-  // Check for GitHub authentication
-  const hasGitHubAuth = () => {
-    return Boolean(user?.linkedAccounts?.find((account) => account.type === "github_oauth"));
-  };
-
-  // Handle different authentication requirements
+  // --- CHANGED: Use githubLinked state instead of Privy for GitHub auth ---
   if (requireWallet === 'wallet-and-github') {
-    // Require both wallet and GitHub
-    if (!hasValidWallet() || !hasGitHubAuth()) {
+    if (!hasValidWallet() || !githubLinked) {
       return <ConnectYourWallet requireGitHub={true} />;
     }
   } else if (requireWallet && !hasValidWallet()) {
-    // If wallet is required and not properly connected, show connect screen
     return <ConnectYourWallet />;
   }
 
-  // All checks passed, render children
   return <>{children}</>;
 }

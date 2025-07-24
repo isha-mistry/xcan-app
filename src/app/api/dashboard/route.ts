@@ -39,12 +39,12 @@ interface DashboardUser extends User {
 }
 
 export async function GET(req: NextRequest, res: NextResponse) {
-  if (req.method !== "GET") {
-    return NextResponse.json(
-      { message: "Method not allowed" },
-      { status: 405 }
-    );
-  }
+  // if (req.method !== "GET") {
+  //   return NextResponse.json(
+  //     { message: "Method not allowed" },
+  //     { status: 405 }
+  //   );
+  // }
 
   try {
     // Connect to user database

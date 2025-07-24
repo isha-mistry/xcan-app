@@ -121,6 +121,8 @@ const DashboardPage: React.FC = () => {
       const response = await fetch('/api/dashboard');
       const data = await response.json();
 
+      // console.log(data);
+
       if (data.success) {
         setUsers(data.data);
       } else {
