@@ -35,8 +35,8 @@ const SocialIcon: React.FC<{ platform: string; className?: string }> = ({ platfo
 // Enhanced Status Badge Component
 const StatusBadge: React.FC<{ hasNFT: boolean }> = ({ hasNFT }) => (
   <div className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${hasNFT
-      ? 'bg-green-shade-100/20 text-green-shade-100 border border-green-shade-100/30'
-      : 'bg-blue-shade-200/20 text-dark-text-secondary border border-blue-shade-200/30'
+    ? 'bg-green-shade-100/20 text-green-shade-100 border border-green-shade-100/30'
+    : 'bg-blue-shade-200/20 text-dark-text-secondary border border-blue-shade-200/30'
     }`}>
     <div className={`w-2 h-2 rounded-full mr-2 ${hasNFT ? 'bg-green-shade-100' : 'bg-blue-shade-200'
       }`} />
@@ -118,10 +118,15 @@ const DashboardPage: React.FC = () => {
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/dashboard');
+      const response = await fetch(`/api/dashboard`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        }
+      });
       const data = await response.json();
 
-      // console.log(data);
+      console.log("dashboard data: ", data);
 
       if (data.success) {
         setUsers(data.data);
@@ -445,8 +450,8 @@ const DashboardPage: React.FC = () => {
                       key={pageNumber}
                       onClick={() => paginate(pageNumber)}
                       className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold rounded-xl transition-all duration-300 ${currentPage === pageNumber
-                          ? 'bg-gradient-to-r from-blue-shade-100 to-blue-shade-200 text-white shadow-lg transform scale-105'
-                          : 'text-dark-text-primary hover:bg-blue-shade-100/20 hover:text-white'
+                        ? 'bg-gradient-to-r from-blue-shade-100 to-blue-shade-200 text-white shadow-lg transform scale-105'
+                        : 'text-dark-text-primary hover:bg-blue-shade-100/20 hover:text-white'
                         }`}
                     >
                       {pageNumber}

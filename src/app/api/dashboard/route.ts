@@ -38,17 +38,12 @@ interface DashboardUser extends User {
   nfts: NFT[];
 }
 
-export async function GET(req: NextRequest, res: NextResponse) {
-  // if (req.method !== "GET") {
-  //   return NextResponse.json(
-  //     { message: "Method not allowed" },
-  //     { status: 405 }
-  //   );
-  // }
+export const revalidate = 0;
 
+export async function GET(req: NextRequest, res: NextResponse) {
   try {
     // Connect to user database
-    const userClient = await connectDB(); 
+    const userClient = await connectDB();
     const userDb = userClient.db();
     const usersCollection = userDb.collection<User>("users");
 
@@ -79,6 +74,8 @@ export async function GET(req: NextRequest, res: NextResponse) {
       _id: user._id.toString(),
       nfts: nftsByAddress.get(user.address.toLowerCase()) || [],
     }));
+
+    console.log("dashboardUsers: ", dashboardUsers.length);
 
     // Close database connections
     await userClient.close();
