@@ -7,21 +7,43 @@ import { useAccount } from "wagmi";
 import { usePrivy } from "@privy-io/react-auth";
 import ConnectYourWallet from "@/components/ComponentUtils/ConnectYourWallet";
 import { useEffect, useState } from "react";
+import { BASE_URL } from "@/config/constants";
 
 export default function Home() {
   const router = useRouter();
   const { address } = useAccount();
   const { authenticated, user } = usePrivy();
   const [showConnectModal, setShowConnectModal] = useState(false);
+  const [githubLinked, setGithubLinked] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Check if user has valid wallet and GitHub
   const hasValidWallet = () => {
     const verifiedWallets = user?.linkedAccounts?.filter((account) => account.type === "wallet")?.map((account) => account.address) || [];
     return Boolean(address && verifiedWallets.includes(address));
   };
-  const hasGitHubAuth = () => {
-    return Boolean(user?.linkedAccounts?.find((account) => account.type === "github_oauth"));
-  };
+
+  useEffect(() => {
+    const checkGithubStatus = async () => {
+      if (address) {
+        try {
+          const response = await fetch(`${BASE_URL}/api/auth/github-status?address=${address}`);
+          const data = await response.json();
+          setGithubLinked(data.isLinked);
+        } catch (error) {
+          console.error("Error checking GitHub status:", error);
+        }
+      }
+      setIsLoading(false);
+    };
+
+    // If no address, we can stop loading immediately
+    if (!address) {
+      setIsLoading(false);
+    } else {
+      checkGithubStatus();
+    }
+  }, [address]);
 
   useEffect(() => {
     // Always trigger the event and store in sessionStorage
@@ -29,13 +51,19 @@ export default function Home() {
       return;
     }
     sessionStorage.setItem("inorbit_connect_prompt", "shown");
+
+    // Don't show modal while loading
+    if (isLoading) {
+      return;
+    }
+
     // Show modal if not fully connected
-    if (!authenticated || !hasValidWallet() || !hasGitHubAuth()) {
+    if (!authenticated || !hasValidWallet() || !githubLinked) {
       setShowConnectModal(true);
     } else {
       setShowConnectModal(false);
     }
-  }, [authenticated, address, user]);
+  }, [authenticated, address, user, githubLinked, isLoading]);
 
   const handleCloseModal = () => {
     setShowConnectModal(false);
@@ -53,7 +81,7 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-dark-primary font-tektur relative">
       {/* Modal and Blur Overlay */}
-      {showConnectModal && (
+      {showConnectModal && !isLoading && (
         <>
           <div className="fixed inset-0 z-40 backdrop-blur-md bg-black/40 transition-all" />
           <div className="fixed inset-0 z-50 flex items-center justify-center">

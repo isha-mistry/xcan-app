@@ -8,41 +8,9 @@ import { BASE_URL } from "@/config/constants";
 import { Bars } from "react-loader-spinner";
 
 interface WalletWrapperProps {
-  /** 
-   * If false, allows social logins (Google/Farcaster) without requiring wallet connection
-   * If true (default), requires a properly connected and verified wallet
-   * If 'wallet-and-github', requires both wallet and GitHub authentication
-   */
   children: React.ReactNode;
   requireWallet?: boolean | 'wallet-and-github';
 }
-
-/**
- * WalletWrapper - A comprehensive authentication wrapper component
- * 
- * This component provides protection for routes by ensuring users are properly authenticated
- * through Privy and have the required wallet connection based on the route requirements.
- * 
- * Features:
- * - Checks Privy authentication status
- * - Validates wallet connection state
- * - Supports both wallet and social login authentication
- * - Can require both wallet AND GitHub authentication
- * - Provides loading states during initialization
- * - Shows appropriate connection UI when authentication is missing
- * 
- * @param children - React components to render when authentication is successful
- * @param requireWallet - Whether to require wallet connection (default: true), or 'wallet-and-github' for both
- * 
- * Authentication Flow:
- * 1. Shows loading spinner while Privy initializes
- * 2. Checks if user is authenticated with Privy
- * 3. If requireWallet=false, allows social logins to proceed
- * 4. If requireWallet=true, validates proper wallet connection
- * 5. If requireWallet='wallet-and-github', validates both wallet and GitHub
- * 6. Renders children only when all requirements are met
- * 7. Shows ConnectYourWallet component for missing authentication
- */
 
 export default function WalletWrapper({
   children,

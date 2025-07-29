@@ -15,7 +15,7 @@ interface RouteProtectionWrapperProps {
  * to provide seamless protection across the application.
  * 
  * Route Categories:
- * - Public Routes: No authentication required (e.g., home page)
+ * - Public Routes: No authentication required (e.g., home page, dashboard)
  * - Social Login Routes: Allow social authentication without wallet requirement
  * - Protected Routes: Require full wallet connection and authentication
  * - Profile Routes: Require both wallet AND GitHub authentication
@@ -25,9 +25,10 @@ interface RouteProtectionWrapperProps {
 export default function RouteProtectionWrapper({ children }: RouteProtectionWrapperProps) {
   const pathname = usePathname();
 
-  // Only the home page is public
+  // Public routes that don't require authentication
   const publicRoutes = [
     "/", // Home page
+    "/dashboard", // Dashboard page - accessible to all users
   ];
 
   const isPublicRoute = publicRoutes.includes(pathname);
