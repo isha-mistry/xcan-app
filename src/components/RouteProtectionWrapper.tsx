@@ -16,9 +16,7 @@ interface RouteProtectionWrapperProps {
  * 
  * Route Categories:
  * - Public Routes: No authentication required (e.g., home page, dashboard)
- * - Social Login Routes: Allow social authentication without wallet requirement
  * - Protected Routes: Require full wallet connection and authentication
- * - Profile Routes: Require both wallet AND GitHub authentication
  * 
  * Usage: Place this component at the root level to protect all routes automatically
  */
@@ -38,9 +36,9 @@ export default function RouteProtectionWrapper({ children }: RouteProtectionWrap
     return <>{children}</>;
   }
 
-  // For all other routes, require both wallet and GitHub authentication
+  // For all other routes, require wallet authentication
   return (
-    <WalletWrapper requireWallet="wallet-and-github">
+    <WalletWrapper requireWallet={true}>
       {children}
     </WalletWrapper>
   );

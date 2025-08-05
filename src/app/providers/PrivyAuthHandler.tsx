@@ -1,33 +1,15 @@
-import { getAccessToken, usePrivy, useWallets } from "@privy-io/react-auth";
-import { useEffect, useRef, useState } from "react";
-import { useSearchParams } from "next/navigation";
-import { BASE_URL } from "@/config/constants";
+"use client";
 
-// Helper function to handle referrer storage
-const handleReferrerStorage = (referrer: string | null) => {
-  if (referrer && typeof window !== "undefined") {
-    sessionStorage.setItem("referrer", referrer);
-  }
-};
+import { useEffect, useRef } from "react";
+import { usePrivy, useWallets } from "@privy-io/react-auth";
+import { useSearchParams } from "next/navigation";
+import { createOrVerifyAccount } from "@/utils/api";
 
 export function PrivyAuthHandler() {
   const { user, ready, getAccessToken } = usePrivy();
   const { wallets } = useWallets();
   const searchParams = useSearchParams();
   const processedWalletRef = useRef<string | null>(null);
-  const [referrer, setReferrer] = useState<string | null>(null);
-
-  // Handle referrer on mount and when searchParams change
-  useEffect(() => {
-    const referrerFromURL = searchParams.get("referrer");
-    const storedReferrer = sessionStorage.getItem("referrer");
-
-    const finalReferrer = referrerFromURL || storedReferrer;
-    if (finalReferrer) {
-      setReferrer(finalReferrer);
-      handleReferrerStorage(finalReferrer);
-    }
-  }, [searchParams, referrer]);
 
   useEffect(() => {
     const handleUserLogin = async () => {
@@ -79,63 +61,15 @@ export function PrivyAuthHandler() {
         await new Promise((resolve) => setTimeout(resolve, 1000));
 
         // Create or verify account
-        const githubAccount = user.linkedAccounts.find(account => account.type === "github_oauth");
-        const githubInfo = githubAccount ? {
-          id: githubAccount.subject,
-          username: githubAccount.username || githubAccount.name || ""
-        } : undefined;
-
-        await createOrVerifyAccount(selectedWallet.address, token, referrer, githubInfo);
+        await createOrVerifyAccount(selectedWallet.address, token, referrer);
       } catch (error) {
-        console.error("Error handling user login:", error);
+        console.error("Error in PrivyAuthHandler:", error);
       }
     };
 
     handleUserLogin();
-  }, [user, ready, wallets]);
+  }, [user, ready, wallets, getAccessToken, searchParams]);
 
+  // Return null since this component only handles side effects
   return null;
-}
-
-// Updated createOrVerifyAccount function
-async function createOrVerifyAccount(
-  walletAddress: string,
-  token: string | null,
-  referrer: string | null,
-  githubInfo?: { id: string; username: string }
-) {
-  try {
-    const response = await fetch(`${BASE_URL}/api/auth/accountcreate`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-wallet-address": walletAddress,
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        address: walletAddress,
-        isEmailVisible: false,
-        createdAt: new Date(),
-        referrer: referrer,
-        githubId: githubInfo?.id || null,
-        githubUsername: githubInfo?.username || null,
-      }),
-    });
-
-    const responseText = await response.text();
-    // if(localStorage.getItem('persistentWalletAddress')==null){
-    //   localStorage.setItem("persistentWalletAddress",walletAddress); //Inorder to get accurate wallet addres
-    // }
-
-    if (response.status === 200) {
-      // console.log("Account created successfully");
-    } else if (response.status === 409) {
-      // console.log("Account already exists");
-    } else {
-      throw new Error(`Failed to create/verify account: ${responseText}`);
-    }
-  } catch (error) {
-    console.error("Error creating/verifying account:", error);
-    throw error;
-  }
 }

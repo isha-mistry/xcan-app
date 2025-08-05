@@ -56,3 +56,40 @@ export async function fetchApi(
 
   return response;
 }
+
+// Helper function to create or verify user account
+export async function createOrVerifyAccount(
+  walletAddress: string,
+  token: string | null,
+  referrer: string | null
+) {
+  try {
+    const response = await fetch(`/api/auth/accountcreate`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-wallet-address": walletAddress,
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        address: walletAddress,
+        isEmailVisible: false,
+        createdAt: new Date(),
+        referrer: referrer,
+      }),
+    });
+
+    const responseText = await response.text();
+
+    if (response.status === 200) {
+      // console.log("Account created successfully");
+    } else if (response.status === 409) {
+      // console.log("Account already exists");
+    } else {
+      throw new Error(`Failed to create/verify account: ${responseText}`);
+    }
+  } catch (error) {
+    console.error("Error creating/verifying account:", error);
+    throw error;
+  }
+}

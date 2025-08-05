@@ -1,13 +1,13 @@
 // types/dashboard.ts
 export interface SocialHandles {
-  githubId?: string;
   githubUsername?: string;
-  twitterId?: string;
+  githubConnectedAt?: string;
   twitterUsername?: string;
-  discordId?: string;
+  twitterConnectedAt?: string;
   discordUsername?: string;
-  telegramId?: string;
+  discordConnectedAt?: string;
   telegramUsername?: string;
+  telegramConnectedAt?: string;
 }
 
 export interface User {
@@ -15,16 +15,13 @@ export interface User {
   address: string;
   isEmailVisible: boolean;
   createdAt: string;
-  image: string | null;
-  displayName: string | null;
-  description: string | null;
-  emailId: string | null;
   socialHandles: SocialHandles;
-  referrer: string | null;
 }
 
-export interface NFT {
-  userAddress: string;
+export interface MintedLevel {
+  level: number;
+  levelKey: string;
+  levelName: string;
   transactionHash: string;
   metadataUrl: string;
   imageUrl: string;
@@ -32,8 +29,24 @@ export interface NFT {
   network: string;
 }
 
+export interface NFT {
+  _id: string;
+  userAddress: string;
+  githubUsername: string;
+  lastMintedAt: string;
+  mintedLevels: MintedLevel[];
+  totalMinted: number;
+}
+
 export interface DashboardUser extends User {
-  nfts: NFT[];
+  nftData: NFT | null;
+  totalNftsMinted: number;
+  connectedSocials: {
+    github: boolean;
+    twitter: boolean;
+    discord: boolean;
+    telegram: boolean;
+  };
 }
 
 export interface DashboardResponse {

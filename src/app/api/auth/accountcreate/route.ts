@@ -98,10 +98,7 @@ export async function POST(req: NextRequest, res: NextResponse) {
         displayName: null,
         description: null,
         emailId: null,
-        socialHandles: {
-          githubId: null,
-          githubUsername: null,
-        },
+        socialHandles: {},
         referrer: referrer,
       };
 

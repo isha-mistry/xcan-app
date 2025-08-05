@@ -5,74 +5,16 @@ import { Calendar, Clock, Users, Video, BookOpen, Award, Star, User } from "luci
 import { useRouter } from "next/navigation";
 import { useAccount } from "wagmi";
 import { usePrivy } from "@privy-io/react-auth";
-import ConnectYourWallet from "@/components/ComponentUtils/ConnectYourWallet";
-import { useEffect, useState } from "react";
-import { BASE_URL } from "@/config/constants";
+import StatisticsSection from "@/components/HomePage/StatisticsSection";
 
 export default function Home() {
   const router = useRouter();
   const { address } = useAccount();
-  const { authenticated, user } = usePrivy();
-  const [showConnectModal, setShowConnectModal] = useState(false);
-  const [githubLinked, setGithubLinked] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-
-  // Check if user has valid wallet and GitHub
-  const hasValidWallet = () => {
-    const verifiedWallets = user?.linkedAccounts?.filter((account) => account.type === "wallet")?.map((account) => account.address) || [];
-    return Boolean(address && verifiedWallets.includes(address));
-  };
-
-  useEffect(() => {
-    const checkGithubStatus = async () => {
-      if (address) {
-        try {
-          const response = await fetch(`${BASE_URL}/api/auth/github-status?address=${address}`);
-          const data = await response.json();
-          setGithubLinked(data.isLinked);
-        } catch (error) {
-          console.error("Error checking GitHub status:", error);
-        }
-      }
-      setIsLoading(false);
-    };
-
-    // If no address, we can stop loading immediately
-    if (!address) {
-      setIsLoading(false);
-    } else {
-      checkGithubStatus();
-    }
-  }, [address]);
-
-  useEffect(() => {
-    // Always trigger the event and store in sessionStorage
-    if (sessionStorage.getItem("inorbit_connect_prompt") === "hidden") {
-      return;
-    }
-    sessionStorage.setItem("inorbit_connect_prompt", "shown");
-
-    // Don't show modal while loading
-    if (isLoading) {
-      return;
-    }
-
-    // Show modal if not fully connected
-    if (!authenticated || !hasValidWallet() || !githubLinked) {
-      setShowConnectModal(true);
-    } else {
-      setShowConnectModal(false);
-    }
-  }, [authenticated, address, user, githubLinked, isLoading]);
-
-  const handleCloseModal = () => {
-    setShowConnectModal(false);
-    sessionStorage.setItem("inorbit_connect_prompt", "hidden");
-  };
+  const { authenticated } = usePrivy();
 
   const handleProfileClick = () => {
     if (!authenticated || !address) {
-      setShowConnectModal(true);
+      router.push('/dashboard');
     } else {
       router.push(`/profile/${address}?active=info`);
     }
@@ -80,20 +22,8 @@ export default function Home() {
 
   return (
     <main className="min-h-screen bg-dark-primary font-tektur relative">
-      {/* Modal and Blur Overlay */}
-      {showConnectModal && !isLoading && (
-        <>
-          <div className="fixed inset-0 z-40 backdrop-blur-md bg-black/40 transition-all" />
-          <div className="fixed inset-0 z-50 flex items-center justify-center">
-            <div className="relative w-full max-w-lg mx-auto">
-              <ConnectYourWallet requireGitHub={true} showBg={false} closeModal={handleCloseModal} />
-            </div>
-          </div>
-        </>
-      )}
       {/* Hero Section */}
       <section className="min-h-[85vh] py-6 flex items-center justify-center overflow-hidden">
-        {/* <div className="inset-0  opacity-50"></div> */}
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             {/* Left Content */}
@@ -112,38 +42,6 @@ export default function Home() {
               <p className="text-xl text-dark-text-secondary mb-8 max-w-2xl">
                 Your platform for meaningful expert sessions and lectures. Connect, learn, and grow with our community of experts and learners.
               </p>
-
-              {/* Stats */}
-              {/* <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
-                <div className="bg-dark-tertiary p-4 rounded-xl">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Users className="w-5 h-5 text-blue-shade-100" />
-                    <span className="text-dark-text-secondary">Active Users</span>
-                  </div>
-                  <p className="text-2xl font-bold text-dark-text-primary">10K+</p>
-                </div>
-                <div className="bg-dark-tertiary p-4 rounded-xl">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Video className="w-5 h-5 text-green-shade-100" />
-                    <span className="text-dark-text-secondary">Sessions</span>
-                  </div>
-                  <p className="text-2xl font-bold text-dark-text-primary">500+</p>
-                </div>
-                <div className="bg-dark-tertiary p-4 rounded-xl">
-                  <div className="flex items-center gap-2 mb-2">
-                    <BookOpen className="w-5 h-5 text-blue-shade-300" />
-                    <span className="text-dark-text-secondary">Courses</span>
-                  </div>
-                  <p className="text-2xl font-bold text-dark-text-primary">50+</p>
-                </div>
-                <div className="bg-dark-tertiary p-4 rounded-xl">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Award className="w-5 h-5 text-yellow-400" />
-                    <span className="text-dark-text-secondary">Experts</span>
-                  </div>
-                  <p className="text-2xl font-bold text-dark-text-primary">100+</p>
-                </div>
-              </div> */}
 
               {/* CTA Buttons */}
               <div className="flex flex-col sm:flex-row gap-4">
@@ -164,7 +62,7 @@ export default function Home() {
                   onClick={handleProfileClick}
                 >
                   <User className="w-5 h-5" />
-                  Go to Profile
+                  {authenticated && address ? 'Go to Profile' : 'Explore Dashboard'}
                 </motion.button>
               </div>
             </motion.div>
@@ -213,6 +111,9 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* Statistics Section */}
+      <StatisticsSection />
 
       {/* Features Section */}
       <section className="py-20 bg-blue-shade-400">

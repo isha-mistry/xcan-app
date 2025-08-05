@@ -32,36 +32,101 @@ const SocialIcon: React.FC<{ platform: string; className?: string }> = ({ platfo
   return icons[platform as keyof typeof icons] || null;
 };
 
-// Enhanced Status Badge Component
-const StatusBadge: React.FC<{ hasNFT: boolean }> = ({ hasNFT }) => (
-  <div className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${hasNFT
-    ? 'bg-green-shade-100/20 text-green-shade-100 border border-green-shade-100/30'
-    : 'bg-blue-shade-200/20 text-dark-text-secondary border border-blue-shade-200/30'
-    }`}>
-    <div className={`w-2 h-2 rounded-full mr-2 ${hasNFT ? 'bg-green-shade-100' : 'bg-blue-shade-200'
-      }`} />
-    {hasNFT ? 'NFT Claimed' : 'Pending'}
-  </div>
-);
+// Compact Status Badge Component
+const StatusBadge: React.FC<{ hasNFT: boolean; totalMinted?: number }> = ({ hasNFT, totalMinted }) => {
+  if (!hasNFT) {
+    return (
+      <div className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-shade-200/20 text-dark-text-secondary border border-blue-shade-200/30">
+        <div className="w-1.5 h-1.5 rounded-full mr-1.5 bg-blue-shade-200" />
+        Pending
+      </div>
+    );
+  }
+
+  return (
+    <div className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-shade-100/20 text-green-shade-100 border border-green-shade-100/30">
+      <div className="w-1.5 h-1.5 rounded-full mr-1.5 bg-green-shade-100" />
+      {totalMinted} NFT{totalMinted && totalMinted > 1 ? 's' : ''}
+    </div>
+  );
+};
+
+// Compact NFT Levels Display Component
+const NFTLevelsDisplay: React.FC<{ nftData: any; totalMinted: number }> = ({ nftData, totalMinted }) => {
+  if (!nftData || !nftData.mintedLevels || nftData.mintedLevels.length === 0) {
+    return (
+      <div className="flex items-center justify-start py-2">
+        <span className="text-dark-text-tertiary text-xs italic">No NFTs claimed</span>
+      </div>
+    );
+  }
+
+  // Sort completed levels by level number
+  const completedLevels = nftData.mintedLevels.sort((a: any, b: any) => a.level - b.level);
+
+  return (
+    <div className="flex items-center gap-1">
+      <span className="text-xs text-dark-text-secondary mr-2">{totalMinted}/7</span>
+      <div className="flex gap-0.5">
+        {completedLevels.map((levelData: any) => (
+          <div
+            key={levelData.level}
+            className="w-6 h-6 rounded-md border-2 flex items-center justify-center cursor-pointer transition-all duration-200 bg-green-shade-100/20 border-green-shade-100 text-green-shade-100 hover:bg-green-shade-100/30"
+            title={`Level ${levelData.level}: ${levelData.levelName} - Click to view transaction`}
+            onClick={() => {
+              window.open(`https://sepolia.arbiscan.io/tx/${levelData.transactionHash}`, '_blank');
+            }}
+          >
+            <span className="text-xs font-medium">{levelData.level}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
 
 // Social Links Component
-const SocialLinks: React.FC<{ socialHandles: any }> = ({ socialHandles }) => {
+const SocialLinks: React.FC<{ socialHandles: any; connectedSocials: any }> = ({ socialHandles, connectedSocials }) => {
   const socialPlatforms = [
-    { key: 'github', usernameKey: 'githubUsername', idKey: 'githubId', color: 'text-dark-text-secondary hover:text-white', url: (value: string) => `https://github.com/${value}` },
-    { key: 'twitter', usernameKey: 'twitter', idKey: 'twitterId', color: 'text-blue-400 hover:text-blue-300', url: (value: string) => `https://x.com/${value}` },
-    { key: 'discord', usernameKey: 'discordUsername', idKey: 'discordId', color: 'text-indigo-400 hover:text-indigo-300', url: (value: string) => `https://discord.com/users/${value}` },
-    { key: 'telegram', usernameKey: 'telegramUsername', idKey: 'telegramId', color: 'text-cyan-400 hover:text-cyan-300', url: (value: string) => `https://t.me/${value}` }
+    {
+      key: 'github',
+      usernameKey: 'githubUsername',
+      color: 'text-dark-text-secondary hover:text-white',
+      url: (value: string) => `https://github.com/${value}`,
+      connected: connectedSocials?.github
+    },
+    {
+      key: 'twitter',
+      usernameKey: 'twitterUsername',
+      color: 'text-blue-400 hover:text-blue-300',
+      url: (value: string) => `https://x.com/${value}`,
+      connected: connectedSocials?.twitter
+    },
+    {
+      key: 'discord',
+      usernameKey: 'discordUsername',
+      color: 'text-indigo-400 hover:text-indigo-300',
+      url: (value: string) => `https://discord.com/users/${value}`,
+      connected: connectedSocials?.discord
+    },
+    {
+      key: 'telegram',
+      usernameKey: 'telegramUsername',
+      color: 'text-cyan-400 hover:text-cyan-300',
+      url: (value: string) => `https://t.me/${value}`,
+      connected: connectedSocials?.telegram
+    }
   ];
 
-  const availablePlatforms = socialPlatforms.filter(({ usernameKey, idKey }) =>
-    socialHandles?.[usernameKey] || socialHandles?.[idKey]
+  const availablePlatforms = socialPlatforms.filter(({ usernameKey, connected }) =>
+    socialHandles?.[usernameKey] && connected
   );
 
   return (
     <div className="flex flex-wrap gap-3">
       {availablePlatforms.length > 0 ? (
-        availablePlatforms.map(({ key, usernameKey, idKey, color, url }) => {
-          const value = socialHandles[usernameKey] || socialHandles[idKey];
+        availablePlatforms.map(({ key, usernameKey, color, url }) => {
+          const value = socialHandles[usernameKey];
           return (
             <a
               key={key}
@@ -161,7 +226,8 @@ const DashboardPage: React.FC = () => {
 
   const filteredUsers = users.filter(user =>
     user.address.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.socialHandles?.githubUsername?.toLowerCase().includes(searchTerm.toLowerCase())
+    user.socialHandles?.githubUsername?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    user.nftData?.githubUsername?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const indexOfLastUser = currentPage * usersPerPage;
@@ -173,9 +239,9 @@ const DashboardPage: React.FC = () => {
 
   // Calculate stats
   const totalUsers = users.length;
-  const usersWithNFTs = users.filter(user => user.nfts.length > 0).length;
+  const totalNFTsMinted = users.reduce((sum, user) => sum + user.totalNftsMinted, 0);
   const usersWithSocials = users.filter(user =>
-    user.socialHandles && Object.values(user.socialHandles).some(handle => handle)
+    Object.values(user.connectedSocials).some(connected => connected)
   ).length;
 
   if (loading) {
@@ -245,7 +311,7 @@ const DashboardPage: React.FC = () => {
             />
             <StatsCard
               title="NFTs Claimed"
-              value={usersWithNFTs}
+              value={totalNFTsMinted}
               icon={<svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
               </svg>}
@@ -287,10 +353,10 @@ const DashboardPage: React.FC = () => {
             <input
               type="text"
               className="block w-full pl-14 pr-12 py-4 rounded-xl bg-blue-shade-500 border-blue-900 text-dark-text-primary placeholder-dark-text-secondary/50 shadow-lg transition-all duration-300 ease-in-out text-lg hover:shadow-xl hover:border-blue-shade-300/30"
-              placeholder="Search by wallet address or GitHub username..."
+              placeholder="Search by wallet address, GitHub username, or NFT data..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              aria-label="Search users by wallet address or GitHub username"
+              aria-label="Search users by wallet address, GitHub username, or NFT data"
             />
 
             {/* Clear Button */}
@@ -335,7 +401,7 @@ const DashboardPage: React.FC = () => {
                     Social Connections
                   </th>
                   <th className="px-8 py-6 text-left text-sm font-bold text-dark-text-primary uppercase tracking-wider font-tektur">
-                    Status
+                    NFT Minted
                   </th>
                   <th className="px-8 py-6 text-left text-sm font-bold text-dark-text-primary uppercase tracking-wider font-tektur">
                     NFT Details
@@ -371,27 +437,16 @@ const DashboardPage: React.FC = () => {
                       </div>
                     </td>
                     <td className="px-8 py-6">
-                      <SocialLinks socialHandles={user.socialHandles} />
+                      <SocialLinks socialHandles={user.socialHandles} connectedSocials={user.connectedSocials} />
                     </td>
                     <td className="px-8 py-6 whitespace-nowrap">
-                      <StatusBadge hasNFT={user.nfts.length > 0} />
+                      <StatusBadge
+                        hasNFT={user.totalNftsMinted > 0}
+                        totalMinted={user.totalNftsMinted}
+                      />
                     </td>
-                    <td className="px-8 py-6 whitespace-nowrap">
-                      {user.nfts.length > 0 ? (
-                        <a
-                          href={`https://sepolia.arbiscan.io/tx/${user.nfts[0].transactionHash}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-shade-100 to-blue-shade-200 text-white text-sm font-medium rounded-xl hover:from-blue-shade-200 hover:to-blue-shade-100 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-blue-shade-100/25"
-                        >
-                          <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                          </svg>
-                          View on Arbiscan
-                        </a>
-                      ) : (
-                        <span className="text-dark-text-tertiary text-sm italic">Not claimed yet</span>
-                      )}
+                    <td className="px-8 py-6">
+                      <NFTLevelsDisplay nftData={user.nftData} totalMinted={user.totalNftsMinted} />
                     </td>
                   </tr>
                 ))}

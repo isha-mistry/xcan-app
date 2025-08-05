@@ -1,15 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
-import { connectDB, connectMintDB } from "@/config/connectDB";
+import { connectDB } from "@/config/connectDB";
 
 interface SocialHandles {
-  githubId?: string;
   githubUsername?: string;
-  twitterId?: string;
+  githubConnectedAt?: string;
   twitterUsername?: string;
-  discordId?: string;
+  twitterConnectedAt?: string;
   discordUsername?: string;
-  telegramId?: string;
+  discordConnectedAt?: string;
   telegramUsername?: string;
+  telegramConnectedAt?: string;
 }
 
 interface User {
@@ -17,16 +17,13 @@ interface User {
   address: string;
   isEmailVisible: boolean;
   createdAt: string;
-  image: string | null;
-  displayName: string | null;
-  description: string | null;
-  emailId: string | null;
   socialHandles: SocialHandles;
-  referrer: string | null;
 }
 
-interface NFT {
-  userAddress: string;
+interface MintedLevel {
+  level: number;
+  levelKey: string;
+  levelName: string;
   transactionHash: string;
   metadataUrl: string;
   imageUrl: string;
@@ -34,8 +31,24 @@ interface NFT {
   network: string;
 }
 
+interface NFT {
+  _id: string;
+  userAddress: string;
+  githubUsername: string;
+  lastMintedAt: string;
+  mintedLevels: MintedLevel[];
+  totalMinted: number;
+}
+
 interface DashboardUser extends User {
-  nfts: NFT[];
+  nftData: NFT | null;
+  totalNftsMinted: number;
+  connectedSocials: {
+    github: boolean;
+    twitter: boolean;
+    discord: boolean;
+    telegram: boolean;
+  };
 }
 
 export const revalidate = 0;
@@ -44,13 +57,9 @@ export async function GET(req: NextRequest, res: NextResponse) {
   try {
     // Connect to user database
     const userClient = await connectDB();
-    const userDb = userClient.db();
-    const usersCollection = userDb.collection<User>("users");
-
-    // Connect to NFT database
-    const nftClient = await connectMintDB();
-    const nftDb = nftClient.db();
-    const nftsCollection = nftDb.collection<NFT>("minted-nft");
+    const db = userClient.db("inorbit_modules");
+    const usersCollection = db.collection<User>("users");
+    const nftsCollection = db.collection<NFT>("minted-nft");
 
     // Fetch all users
     const users = await usersCollection.find({}).toArray();
@@ -59,27 +68,37 @@ export async function GET(req: NextRequest, res: NextResponse) {
     const nfts = await nftsCollection.find({}).toArray();
 
     // Create a map of NFTs by user address for efficient lookup
-    const nftsByAddress = new Map<string, NFT[]>();
+    const nftsByAddress = new Map<string, NFT>();
     nfts.forEach((nft) => {
       const address = nft.userAddress.toLowerCase();
-      if (!nftsByAddress.has(address)) {
-        nftsByAddress.set(address, []);
-      }
-      nftsByAddress.get(address)!.push(nft);
+      nftsByAddress.set(address, nft);
     });
 
     // Combine user data with their NFTs
-    const dashboardUsers: DashboardUser[] = users.map((user) => ({
-      ...user,
-      _id: user._id.toString(),
-      nfts: nftsByAddress.get(user.address.toLowerCase()) || [],
-    }));
+    const dashboardUsers: DashboardUser[] = users.map((user) => {
+      const nftData = nftsByAddress.get(user.address.toLowerCase()) || null;
+
+      // Determine connected socials
+      const connectedSocials = {
+        github: !!user.socialHandles?.githubUsername,
+        twitter: !!user.socialHandles?.twitterUsername,
+        discord: !!user.socialHandles?.discordUsername,
+        telegram: !!user.socialHandles?.telegramUsername,
+      };
+
+      return {
+        ...user,
+        _id: user._id.toString(),
+        nftData,
+        totalNftsMinted: nftData?.totalMinted || 0,
+        connectedSocials,
+      };
+    });
 
     console.log("dashboardUsers: ", dashboardUsers.length);
 
     // Close database connections
     await userClient.close();
-    await nftClient.close();
 
     return NextResponse.json({
       success: true,

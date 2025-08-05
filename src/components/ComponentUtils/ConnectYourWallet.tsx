@@ -1,194 +1,71 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { useAccount } from "wagmi";
-import { Bars } from "react-loader-spinner";
-import { FaGithub, FaWallet } from "react-icons/fa";
-import { BASE_URL } from "@/config/constants";
-import { usePrivy, useWallets } from "@privy-io/react-auth";
+import React from "react";
+import ConnectWalletWithENS from "@/components/ConnectWallet/ConnectWalletWithENS";
+import { ShieldCheckIcon } from "lucide-react";
 
 interface ConnectYourWalletProps {
-  requireGitHub?: boolean;
   showBg?: boolean;
   closeModal?: () => void;
 }
 
-export default function ConnectYourWallet({ requireGitHub = true, showBg = true, closeModal }: ConnectYourWalletProps) {
-  const { login, authenticated, user, linkGithub, connectWallet } = usePrivy();
-  const { wallets } = useWallets();
-
-  const { address, isConnected } = useAccount();
-  const [isLinkingGitHub, setIsLinkingGitHub] = useState(false);
-  const [authStep, setAuthStep] = useState<'wallet' | 'github' | 'complete'>('wallet');
-  const [isLoading, setIsLoading] = useState(true);
-  const [githubLinked, setGithubLinked] = useState(false);
-
-  // Check authentication status
-  const hasValidWallet = () => {
-    const verifiedWallets = user?.linkedAccounts
-      ?.filter((account) => account.type === "wallet")
-      ?.map((account) => account.address) || [];
-
-    const activeWallet = wallets.find(
-      (wallet) => wallet.address && verifiedWallets.includes(wallet.address)
-    );
-
-    return Boolean(activeWallet && isConnected && address);
-  };
-
-  const hasGitHubAuth = () => {
-    return Boolean(user?.linkedAccounts?.find((account) => account.type === "github_oauth"));
-  };
-
-  useEffect(() => {
-    const checkGithubStatus = async () => {
-      if (address) {
-        try {
-          const response = await fetch(`${BASE_URL}/api/auth/github-status?address=${address}`);
-          const data = await response.json();
-          console.log("github data", data);
-          setGithubLinked(data.isLinked);
-        } catch (error) {
-          console.error("Error checking GitHub status:", error);
-        }
-      }
-      setIsLoading(false);
-    };
-
-    // If no address, we can stop loading immediately
-    if (!address) {
-      setIsLoading(false);
-    } else {
-      checkGithubStatus();
-    }
-  }, [address]);
-
-  useEffect(() => {
-    if (!isConnected) {
-      setAuthStep('wallet');
-    } else if (requireGitHub && !githubLinked) {
-      setAuthStep('github');
-    } else {
-      setAuthStep('complete');
-    }
-  }, [isConnected, githubLinked, requireGitHub]);
-
-  // Don't render anything while loading
-  if (isLoading) {
-    return null;
-  }
-
-  // Don't show the modal if everything is already connected
-  if (authStep === 'complete') {
-    return null;
-  }
-
-  const handleWalletConnect = async () => {
-    if (!authenticated) {
-      await login();
-    } else {
-      await connectWallet();
-    }
-  };
-
-  const handleGitHubLink = () => {
-    setIsLinkingGitHub(true);
-    const clientId = process.env.NEXT_PUBLIC_GITHUB_ID;
-    const redirectUri = `${BASE_URL}/api/auth/github-callback`;
-    const scope = 'read:user user:email';
-
-    const state = address; // Using wallet address as state
-    const authUrl = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&scope=${scope}&state=${state}`;
-
-    window.location.href = authUrl;
-  };
-
+export default function ConnectYourWallet({
+  showBg = true,
+  closeModal
+}: ConnectYourWalletProps) {
   return (
-    <div className={`min-h-screen flex items-center justify-center p-4 ${showBg ? 'bg-gradient-to-br from-[#0a0a23] to-[#1a1a40]' : ''}`}>
-      <div className="relative bg-[#181826] rounded-2xl shadow-2xl p-8 max-w-md w-full border border-[#23234a]">
+    <div className={`min-h-screen flex items-center justify-center p-4 ${showBg ? 'bg-gradient-to-br from-[#0a0a23] to-[#1a1a40]' : ''
+      }`}>
+      <div className="relative bg-gradient-to-br from-[#181826] to-[#19192a] rounded-3xl shadow-2xl p-8 max-w-md w-full border border-[#23234a] backdrop-blur-sm">
         {!showBg && closeModal && (
           <button
             onClick={closeModal}
-            className="absolute top-2 right-2 text-white bg-dark-tertiary rounded-full p-2 hover:bg-dark-accent focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="absolute top-4 right-4 text-white bg-dark-tertiary rounded-full p-2 hover:bg-dark-accent focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-200"
           >
             <span className="sr-only">Close</span>
-            ×
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
           </button>
         )}
+
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-white mb-2 tracking-tight">Welcome to InOrbit</h1>
-          <p className="text-[#b3b3cc]">
-            {requireGitHub
-              ? "Connect your wallet and link your GitHub account to continue"
-              : "Connect your wallet to get started"
-            }
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-indigo-500 to-blue-600 rounded-full mb-6">
+            <ShieldCheckIcon className="w-10 h-10 text-white" />
+          </div>
+          <h1 className="text-3xl font-bold text-white mb-3 tracking-tight bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
+            Welcome to InOrbit
+          </h1>
+          <p className="text-[#b3b3cc] text-lg leading-relaxed">
+            Connect your wallet to access exclusive expert sessions and lectures
           </p>
         </div>
 
-        <div className={`mb-6 p-4 rounded-lg border-2 transition-colors duration-200 ${authStep === 'wallet' ? 'border-indigo-500 bg-[#23234a]' :
-            isConnected ? 'border-green-500 bg-[#1e2d24]' : 'border-[#23234a] bg-[#181826]'
-          }`}>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <FaWallet className={`mr-3 text-2xl ${isConnected ? 'text-green-400' : 'text-indigo-400'}`} />
+        <div className="space-y-6">
+          {/* Wallet Connection */}
+          <div className="flex justify-center">
+            <ConnectWalletWithENS />
+          </div>
+
+          {/* Security Info */}
+          <div className="bg-gradient-to-r from-green-900/20 to-emerald-900/20 p-4 rounded-xl border border-green-500/30">
+            <div className="flex items-center space-x-3">
+              <svg className="w-5 h-5 text-green-400" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z" />
+              </svg>
               <div>
-                <h3 className="font-semibold text-white">Wallet Connection</h3>
-                <p className="text-sm text-[#b3b3cc]">
-                  {hasValidWallet() ? 'Connected successfully' : 'Connect your crypto wallet'}
-                </p>
+                <h4 className="font-semibold text-white text-sm">Secure Connection</h4>
+                <p className="text-xs text-[#b3b3cc]">Your wallet connection is encrypted and secure</p>
               </div>
             </div>
-            {!hasValidWallet() ? (
-              <button
-                onClick={handleWalletConnect}
-                className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-semibold shadow transition-colors"
-              >
-                Connect Wallet
-              </button>
-            ) : (
-              <div className="text-green-400 text-2xl font-bold">✓</div>
-            )}
           </div>
         </div>
 
-        {requireGitHub && (
-          <div className={`mb-6 p-4 rounded-lg border-2 transition-colors duration-200 ${authStep === 'github' ? 'border-indigo-500 bg-[#23234a]' :
-              githubLinked ? 'border-green-500 bg-[#1e2d24]' : 'border-[#23234a] bg-[#181826]'
-            }`}>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <FaGithub className={`mr-3 text-2xl ${githubLinked ? 'text-green-400' : 'text-indigo-400'}`} />
-                <div>
-                  <h3 className="font-semibold text-white">GitHub Account</h3>
-                  <p className="text-sm text-[#b3b3cc]">
-                    {githubLinked ? 'Linked successfully' : 'Link your GitHub account'}
-                  </p>
-                </div>
-              </div>
-              {!githubLinked && isConnected ? (
-                <button
-                  onClick={handleGitHubLink}
-                  disabled={isLinkingGitHub}
-                  className="bg-[#23234a] hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-semibold shadow transition-colors disabled:opacity-50 border border-indigo-500"
-                >
-                  {isLinkingGitHub ? 'Linking...' : 'Link GitHub'}
-                </button>
-              ) : githubLinked ? (
-                <div className="text-green-400 text-2xl font-bold">✓</div>
-              ) : (
-                <div className="text-[#666688] text-sm">Complete wallet first</div>
-              )}
-            </div>
-          </div>
-        )}
-
-        <div className="mt-8">
-          <div className="flex justify-center space-x-2">
-            <div className={`w-3 h-3 rounded-full ${isConnected ? 'bg-green-400' : 'bg-[#39396a]'}`} />
-            {requireGitHub && (
-              <div className={`w-3 h-3 rounded-full ${githubLinked ? 'bg-green-400' : 'bg-[#39396a]'}`} />
-            )}
-          </div>
+        {/* Footer */}
+        <div className="mt-8 pt-6 border-t border-[#23234a]">
+          <p className="text-center text-xs text-[#666688]">
+            By connecting your wallet, you agree to our Terms of Service and Privacy Policy
+          </p>
         </div>
       </div>
     </div>
