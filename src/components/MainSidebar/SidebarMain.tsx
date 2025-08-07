@@ -62,7 +62,7 @@ function Sidebar() {
       target: "body",
       content: (
         <p className="text-black-shade-1000 text-left font-normal text-base font-tektur">
-          Let&apos;s take a quick tour of Inorbit.
+          Let&apos;s take a quick tour of Xcan.
         </p>
       ),
       disableBeacon: true,
@@ -116,7 +116,7 @@ function Sidebar() {
       target: ".office",
       content: (
         <p className="text-black-shade-1000 text-left font-normal text-base font-tektur">
-          View ongoing, upcoming, and recorded office hours taken on Inorbit.
+          View ongoing, upcoming, and recorded office hours taken on Xcan.
         </p>
       ),
       disableBeacon: true,

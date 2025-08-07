@@ -37,7 +37,7 @@ export default function Home() {
                 <span className="text-blue-200 font-medium">Join Our Growing Community</span>
               </div>
               <h1 className="text-4xl md:text-6xl font-bold text-dark-text-primary mb-6 leading-tight">
-                Welcome Inorbit
+                Welcome Xcan
               </h1>
               <p className="text-xl text-dark-text-secondary mb-8 max-w-2xl">
                 Your platform for meaningful expert sessions and lectures. Connect, learn, and grow with our community of experts and learners.

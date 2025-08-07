@@ -112,7 +112,7 @@ function TopNavbar() {
               height={200}
               className="h-11 w-11"
             ></Image>
-            <span className="text-white text-[26px] font-bold">Inorbit</span>
+            <span className="text-white text-[26px] font-bold">Xcan</span>
           </Link>
           {/* <Link
             className="text-black font-semibold text-[28px] font-tektur flex items-center mt-[4px]"
@@ -142,7 +142,7 @@ function TopNavbar() {
               >
                 Modules
                 <span className="rounded-full px-1 text-[11px]">
-                  (by Inorbit)
+                  (by Xcan)
                 </span>
               </Link>
               <Link

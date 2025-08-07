@@ -10,7 +10,7 @@ export async function generateMetadata(
 ): Promise<Metadata> {
   const inviteeDetails = await fetchInviteeDetails(params.address);
 
-  const title = `You have been invited on Inorbit by ${inviteeDetails?.ensName ||
+  const title = `You have been invited on Xcan by ${inviteeDetails?.ensName ||
     inviteeDetails?.displayName ||
     inviteeDetails?.formattedAddr
     }`;
@@ -21,13 +21,13 @@ export async function generateMetadata(
 
   return {
     metadataBase: new URL("https://inorbit-edu.vercel.app/"),
-    title: "Inorbit",
+    title: "Xcan",
     description: "Discover. Learn. Engage.",
     openGraph: {
       title: title,
       description: description,
       url: `https://inorbit-edu.vercel.app/invite/${params.address}`,
-      siteName: "Inorbit",
+      siteName: "Xcan",
       // images: [
       //   `${BASE_URL}/api/images/og/referral?inviteeName=${encodeURIComponent(
       //     inviteeDetails?.ensName ||

@@ -4,14 +4,14 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://inorbit-edu.vercel.app/"),
-  title: "Inorbit",
+  title: "Xcan",
   description: "Discover. Learn. Engage.",
   openGraph: {
     title: "Lectures",
     description:
       "Find all the current, upcoming, and past lectures hosted by experts, and easily search them by using Title or Host Address.",
     url: "https://inorbit-edu.vercel.app/lectures?hours=ongoing",
-    siteName: "Inorbit",
+    siteName: "Xcan",
     // images: [
     //   {
     //     url: "https://gateway.lighthouse.storage/ipfs/QmPjZZxacLkRM1kPSBMmyV45MUtCHJPAPYW21cSds8gUet",

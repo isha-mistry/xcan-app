@@ -187,7 +187,7 @@ export async function GET(req: NextRequest) {
                 display: "flex",
               }}
             >
-              {inviteeName} has invited you to become a creator on Inorbit!
+              {inviteeName} has invited you to become a creator on Xcan!
             </div>
             <div style={{ display: "flex", gap: "10px" }}>
               <div

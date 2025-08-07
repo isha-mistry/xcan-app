@@ -1,7 +1,7 @@
 {
-  "name": "Inorbit App",
-  "short_name": "Inorbit",
-  "description": "Inorbit App for smoother communication",
+  "name": "Xcan App",
+  "short_name": "Xcan",
+  "description": "Xcan App for smoother communication",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

@@ -26,7 +26,7 @@ function SchedulingSuccessModal({
       `https://inorbit-edu.vercel.app/user/${userAddress}?active=delegatesSession&session=book`
     );
     const text = encodeURIComponent(
-      `Hello Web3 Enthusiasts!🎉\nI've opened up some time slots for sessions on Inorbit!📅\nDon't miss out – book your session now to learn more about Web3 ecosystem! 📝\n👉 ${decodeURIComponent(
+      `Hello Web3 Enthusiasts!🎉\nI've opened up some time slots for sessions on Xcan!📅\nDon't miss out – book your session now to learn more about Web3 ecosystem! 📝\n👉 ${decodeURIComponent(
         url
       )}\n\n#arbitrum #sessionbooking`
     );

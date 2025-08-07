@@ -102,13 +102,13 @@ const SidebarMainMobile = () => {
           >
             <Image
               src={logo}
-              alt={"Inorbit Logo"}
+              alt={"Xcan Logo"}
               width={200}
               height={200}
               className="h-8 w-8 xs:h-9 xs:w-9 sm:h-10 sm:w-10 md:h-11 md:w-11"
             />
             <span className="text-white text-[18px] sm:text-[22px] md:text-[26px] ml-1 xs:ml-2">
-              Inorbit
+              Xcan
             </span>
           </Link>
         </div>
@@ -138,7 +138,7 @@ const SidebarMainMobile = () => {
               className="ml-5 text-white font-semibold text-[26px] font-tektur"
               href={"https://inorbit-edu.vercel.app/"}
             >
-              Inorbit
+              Xcan
             </Link>
           </div>
 
@@ -168,7 +168,7 @@ const SidebarMainMobile = () => {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center">
                       <FiCodesandbox className="size-5 mr-4" />
-                      <span>InOrbit</span>
+                      <span>Xcan</span>
                     </div>
                     <FiArrowUpRight className="w-5 h-5" />
                   </div>

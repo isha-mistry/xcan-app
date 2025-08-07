@@ -66,7 +66,7 @@ function ShareMediaModal({
   const text = encodeURIComponent(
     `${data.title} ${decodeURIComponent(
       url
-    )} via Inorbit\n\n #session #growth`
+    )} via Xcan\n\n #session #growth`
   );
 
   const shareOnTwitter = () => {

@@ -32,12 +32,12 @@ const tektur = Tektur({
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://inorbit-edu.vercel.app/"),
-  title: "Inorbit",
+  title: "Xcan",
   description: "Discover. Learn. Engage.",
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
-    title: 'Inorbit PWA'
+    title: 'Xcan PWA'
   },
   manifest: '/manifest.json',
   icons: {
@@ -45,10 +45,10 @@ export const metadata: Metadata = {
     apple: [{ url: "/favicon.png" }],
   },
   openGraph: {
-    title: "Inorbit",
+    title: "Xcan",
     description: "Discover. Learn. Engage.",
-    url: "https://inorbit-edu.vercel.app/",
-    siteName: "Inorbit",
+    url: "https://inorbit-app.vercel.app/",
+    siteName: "Xcan",
 
     // images: [
     //   {

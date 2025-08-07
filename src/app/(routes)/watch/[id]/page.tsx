@@ -102,10 +102,10 @@ export async function generateMetadata({
     // const imageApiUrl = await prepareOgImage(watchData);
 
     return {
-      title: "Inorbit",
-      description: `Watch this video hosted on Inorbit on ${title}`,
+      title: "Xcan",
+      description: `Watch this video hosted on Xcan on ${title}`,
       openGraph: {
-        title: "Inorbit",
+        title: "Xcan",
         description: `Watch this video: ${title}`,
         // images: [imageApiUrl],
       },

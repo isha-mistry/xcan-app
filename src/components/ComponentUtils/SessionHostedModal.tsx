@@ -23,7 +23,7 @@ function SessionHostedModal({ data }: any) {
   const shareOnTwitter = () => {
     const url = encodeURIComponent(link);
     const text = encodeURIComponent(
-      `Just wrapped up an incredible session on Inorbit! 🎉 Thrilled to share my knowledge and help new users dive into the Web3 ecosystem.
+      `Just wrapped up an incredible session on Xcan! 🎉 Thrilled to share my knowledge and help new users dive into the Web3 ecosystem.
 Check out the session here:👇\n ${decodeURIComponent(url)}
 #Web3 #arbitrum`
     );

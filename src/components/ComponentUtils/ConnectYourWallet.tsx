@@ -34,7 +34,7 @@ export default function ConnectYourWallet({
             <ShieldCheckIcon className="w-10 h-10 text-white" />
           </div>
           <h1 className="text-3xl font-bold text-white mb-3 tracking-tight bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
-            Welcome to InOrbit
+            Welcome to Xcan
           </h1>
           <p className="text-[#b3b3cc] text-lg leading-relaxed">
             Connect your wallet to access exclusive expert sessions and lectures
