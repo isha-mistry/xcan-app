@@ -333,7 +333,7 @@ function WatchSession({
             </div>
             {showPopup && (
               <div
-                className={`absolute bg-white rounded-xl mt-1 py-2 duration-200 ease-in-out z-30 ${styles.customScrollbar}`}
+                className={`absolute bg-[#1c2634] text-gray-100 rounded-xl mt-1 py-2 duration-200 ease-in-out z-30 ${styles.customScrollbar}`}
                 style={{ boxShadow: "0px 4px 9.1px 0px rgba(0,0,0,0.04)", maxHeight: "300px", overflowY: "auto" }}
               >
                 {data.attendees.map((attendee, index) => (

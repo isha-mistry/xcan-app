@@ -192,6 +192,7 @@ function WatchComponentMain({ props }: { props: { id: string } }) {
           throw new Error("Network response was not ok");
         }
         const result = await response.json();
+        console.log("data: ", result.data[0]);
         setData(result.data[0]);
         setCollection(result.collection);
         // console.log(result.data[0].video_uri);
@@ -224,7 +225,8 @@ function WatchComponentMain({ props }: { props: { id: string } }) {
       {/* <div className="hidden md:block"> */}
       {data ? (
         <div className=" px-4 md:px-6 lg:px-8 1.7xl:px-14">
-          <div className="flex justify-end items-center pt-6 pb-3">
+          <div className="flex justify-between items-center pt-6 pb-3">
+            <div className="font-tektur text-3xl text-[#adc7f6] font-semibold">{data?.session_type === "session" || data?.session_type === "instant-meet" ? "Sessions" : "Lectures"}</div>
             <RewardButton />
           </div>
 

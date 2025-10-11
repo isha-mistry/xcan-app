@@ -322,7 +322,7 @@ function RecordedSessionsTile({
                         onClick={(event: any) => {
                           event.stopPropagation();
                         }}
-                        className="cursor-pointer hover:text-blue-shade-200 ml-1"
+                        className="cursor-pointer hover:text-blue-200 ml-1"
                       >
                         {loadingHostNames
                           ? data.host_address.slice(0, 4) +

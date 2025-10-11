@@ -294,7 +294,7 @@ function EventTile({ tileIndex, data: initialData, isEvent }: TileProps) {
               {/* Approve */}
             </div>
           </div>
-          <div className="text-[#1E1E1E] text-sm mt-0.5">
+          <div className="text-gray-200 text-sm mt-0.5">
             {data.description}
           </div>
           <div className="py-1">
@@ -302,14 +302,14 @@ function EventTile({ tileIndex, data: initialData, isEvent }: TileProps) {
           </div>
 
           <div className="flex items-center text-sm gap-3 py-1">
-            <div className="bg-[#F5F5F5] text-sm sm:text-base py-0.5 sm:py-1 px-3 rounded-md flex items-center w-fit">
+            <div className="text-[#F5F5F5] text-sm sm:text-base py-0.5 sm:py-1 px-3 rounded-md flex items-center w-fit">
               {formatSlotTimeToLocal(data.slot_time)}
             </div>
           </div>
 
           <div className="flex flex-col gap-2 text-sm pt-1">
             {data.session_type === "session" ? (
-              <div className="text-[#3E3D3D] text-xs sm:text-sm flex items-center gap-2">
+              <div className="text-gray-300 text-xs sm:text-sm flex items-center gap-2">
                 <Image
                   src={ensGuestAvatar || user1}
                   alt="image"
@@ -354,7 +354,7 @@ function EventTile({ tileIndex, data: initialData, isEvent }: TileProps) {
                 <span className="font-semibold">Instant Meet</span>{" "}
               </div>
             )}
-            <div className="text-[#3E3D3D] text-xs sm:text-sm flex items-center gap-2">
+            <div className="text-gray-300 text-xs sm:text-sm flex items-center gap-2">
               <Image
                 src={ensHostAvatar || user1}
                 alt="image"

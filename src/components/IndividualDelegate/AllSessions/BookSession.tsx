@@ -551,7 +551,7 @@ function BookSession({ props }: { props: Type }) {
           className="font-tektur z-[70] fixed inset-0 flex items-center justify-center backdrop-blur-md"
           style={{ boxShadow: " 0px 0px 45px -17px rgba(0,0,0,0.75)" }}
         >
-          <div className="bg-[#0f172a] rounded-[41px] overflow-hidden shadow-lg w-full max-w-lg mx-4">
+          <div className="bg-[#0f172a] border border-[#dce4f6] rounded-[41px] overflow-hidden shadow-lg w-full max-w-lg mx-4">
             <div className="relative">
               <div className="flex flex-col gap-1 text-white bg-[#1e3a8a] p-4 py-7">
                 <div className="flex items-center justify-between mx-4">

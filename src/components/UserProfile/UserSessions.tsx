@@ -95,7 +95,7 @@ function UserSessions() {
   }, []);
 
   useEffect(() => {
-    if (address && isConnected) {
+    if (address) {
       getUserMeetingData();
     }
   }, [

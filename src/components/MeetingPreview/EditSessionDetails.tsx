@@ -67,7 +67,7 @@ function EditSessionDetails({
       </div>
       <div>
         <div className="">
-          <div className="text-xl font-semibold mb-2 text-blue-shade-100 font-tektur">
+          <div className="text-xl font-semibold mb-2 text-gray-100 font-tektur">
             Thumbnail Image
           </div>
           <div className="flex gap-3 items-center">
@@ -98,8 +98,8 @@ function EditSessionDetails({
               )}
             </div>
             <div className="flex items-end">
-              <div className="flex bg-[#EEF8FF] items-center gap-6 rounded-lg p-3">
-                <label className="bg-[#EEF8FF]  text-blue-shade-100 font-medium text-sm py-3 px-4 rounded-full border cursor-pointer border-blue-shade-100 cursor-point flex gap-2 items-center ">
+              <div className="flex text-[#EEF8FF] items-center gap-6 rounded-lg p-3">
+                <label className="text-[#EEF8FF]  font-medium text-sm py-3 px-4 rounded-full border cursor-pointer border-gray-100 cursor-point flex gap-2 items-center ">
                   <CgAttachment />
                   <span>Upload Image</span>
                   <input
@@ -112,7 +112,7 @@ function EditSessionDetails({
                   />
                 </label>
                 <Button
-                  className="bg-black text-white py-5 px-4 text-xs font-medium rounded-full font-tektur"
+                  className="bg-blue-shade-200 text-white py-5 px-4 text-xs font-medium rounded-full font-tektur"
                   onClick={getRandomImage}
                 >
                   Add Random Image
@@ -123,19 +123,19 @@ function EditSessionDetails({
           </div>
         </div>
         <div className="py-3 font-tektur">
-          <div className="text-xl mb-2 font-semibold text-blue-shade-100 font-tektur">
+          <div className="text-xl mb-2 font-semibold text-gray-100 font-tektur">
             Session Title
           </div>
           <div className="relative">
             <input
               type="text"
-              className="border bg-[#F9F9F9] w-full py-3 px-4 text-sm rounded-lg outline-none pr-20"
+              className="border text-[#F9F9F9] bg-[#0c113ebf] w-full py-3 px-4 text-sm rounded-lg outline-none pr-20"
               placeholder="Enter a descriptive title for your session"
               value={sessionDetails.title}
               onChange={handleTitleChange}
               maxLength={100}
             />
-            <div className="absolute top-3 right-4 text-[14px] font-medium text-[#7C7C7C] pe-1 font-tektur">
+            <div className="absolute top-3 right-4 text-[14px] font-medium text-gray-300 pe-1 font-tektur">
               {sessionDetails.title.length}/100
             </div>
           </div>
@@ -143,12 +143,12 @@ function EditSessionDetails({
         <div className="py-3">
           <div className="flex justify-between items-center mb-2">
             <div>
-              <div className="text-xl font-semibold text-blue-shade-100 font-tektur">
+              <div className="text-xl font-semibold text-gray-100 font-tektur">
                 Session Description
               </div>
             </div>
             <div
-              className={`rounded-lg  px-4 py-1 text-xs border ${sessionDetails.description.length < 600
+                className={`rounded-lg  px-4 py-1 text-xs border ${sessionDetails.description.length < 600
                   ? "bg-red-500"
                   : sessionDetails.description.length <= 1000
                     ? "bg-yellow-500"
@@ -163,13 +163,13 @@ function EditSessionDetails({
           <div className="relative ">
             <textarea
               rows={8}
-              className="border bg-[#F9F9F9] w-full p-4 text-sm rounded-lg outline-none pr-20"
+              className="border text-[#F9F9F9] bg-[#0c113ebf] w-full p-4 text-sm rounded-lg outline-none pr-20"
               placeholder="Briefly describe what your session covers"
               value={sessionDetails.description}
               onChange={handleDescriptionChange}
               maxLength={2000}
             ></textarea>
-            <div className="absolute top-4 right-4 text-[14px] font-medium text-[#7C7C7C] pe-1">
+            <div className="absolute top-4 right-4 text-[14px] font-medium text-gray-300 pe-1">
               {sessionDetails.description.length}/2000
             </div>
           </div>
