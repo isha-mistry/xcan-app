@@ -144,23 +144,23 @@ export async function PUT(
       const socket = io(`${SOCKET_BASE_URL}`, {
         withCredentials: true,
       });
-      socket.on("connect", () => {
-        console.log("Connected to WebSocket server from API");
-        socket.emit("reject_session", {
-          attendee_address,
-          dataToSendGuest,
-        });
-        console.log("Message sent from API to socket server");
-        socket.disconnect();
-      });
+      // socket.on("connect", () => {
+      //   console.log("Connected to WebSocket server from API");
+      //   socket.emit("reject_session", {
+      //     attendee_address,
+      //     dataToSendGuest,
+      //   });
+      //   console.log("Message sent from API to socket server");
+      //   socket.disconnect();
+      // });
 
-      socket.on("connect_error", (err) => {
-        console.error("WebSocket connection error:", err);
-      });
+      // socket.on("connect_error", (err) => {
+      //   console.error("WebSocket connection error:", err);
+      // });
 
-      socket.on("error", (err) => {
-        console.error("WebSocket error:", err);
-      });
+      // socket.on("error", (err) => {
+      //   console.error("WebSocket error:", err);
+      // });
     }
 
 

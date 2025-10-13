@@ -95,29 +95,29 @@ async function sendMeetingDeletionNotification({
         withCredentials: true,
       });
 
-      socket.on("connect", () => {
-        console.log("Connected to WebSocket server from API");
+      // socket.on("connect", () => {
+      //   console.log("Connected to WebSocket server from API");
 
-        socket.emit("officehours_deleted", {
-          notifications: insertedNotifications.map((notification: any) => ({
-            ...notification,
-            _id: notification._id.toString(),
-          })),
-        });
+      //   socket.emit("officehours_deleted", {
+      //     notifications: insertedNotifications.map((notification: any) => ({
+      //       ...notification,
+      //       _id: notification._id.toString(),
+      //     })),
+      //   });
 
-        console.log(
-          "Bulk deletion notifications sent from API to socket server"
-        );
-        socket.disconnect();
-      });
+      //   console.log(
+      //     "Bulk deletion notifications sent from API to socket server"
+      //   );
+      //   socket.disconnect();
+      // });
 
-      socket.on("connect_error", (err) => {
-        console.error("WebSocket connection error:", err);
-      });
+      // socket.on("connect_error", (err) => {
+      //   console.error("WebSocket connection error:", err);
+      // });
 
-      socket.on("error", (err) => {
-        console.error("WebSocket error:", err);
-      });
+      // socket.on("error", (err) => {
+      //   console.error("WebSocket error:", err);
+      // });
     }
 
     return notificationResults;

@@ -41,7 +41,7 @@ export async function PUT(req: Request) {
 
     // Find the document containing the meeting with the specified reference_id
     const existingDoc = await collection.findOne({
-      host_address: walletAddress,
+      host_address: host_address,
       "meetings.reference_id": reference_id,
     });
 
@@ -283,7 +283,7 @@ export async function PUT(req: Request) {
 
     const result = await collection.updateOne(
       {
-        host_address: walletAddress,
+        host_address: host_address,
         "meetings.reference_id": reference_id,
       },
       { $set: fieldsToUpdate },
@@ -295,15 +295,15 @@ export async function PUT(req: Request) {
     );
 
     const updatedDocument = await collection.findOne({
-      host_address: walletAddress,
+      host_address: host_address,
       "meetings.reference_id": reference_id,
     });
 
     await client.close();
 
     if (cacheWrapper.isAvailable) {
-      const hostCacheKey = `profile:${walletAddress}`;
-      await cacheWrapper.delete(hostCacheKey);
+      const cacheKey = `office-hours-all`;
+      await cacheWrapper.delete(cacheKey);
     }
 
     return NextResponse.json(

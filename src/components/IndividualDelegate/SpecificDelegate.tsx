@@ -89,6 +89,7 @@ function SpecificDelegate({ props }: { props: Type }) {
     { name: "Lectures", value: "lectures" },
   ];
 
+
   const handleTabChange = (tabValue: string) => {
     // console.log(tabValue);
     const selected = tabs.find((tab) => tab.value === tabValue);
@@ -543,7 +544,7 @@ function SpecificDelegate({ props }: { props: Type }) {
                     Expert Sessions
                   </button>
                   <button
-                    className={`border-b-2 py-4 px-2 ${searchParams.get("active") === "officeHours"
+                    className={`border-b-2 py-4 px-2 ${searchParams.get("active") === "lectures"
                       ? "text-blue-300 font-semibold border-b-2 border-blue-300"
                       : "border-transparent"
                       }`}

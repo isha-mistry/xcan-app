@@ -722,7 +722,7 @@ function MainProfile() {
                 Expert Sessions
               </button>
               <button
-                className={`border-b-2 py-3 xs:py-4 px-2 outline-none flex-shrink-0 ${searchParams.get("active") === "officeHours"
+                className={`border-b-2 py-3 xs:py-4 px-2 outline-none flex-shrink-0 ${searchParams.get("active") === "lectures"
                   ? "text-blue-300 font-semibold border-b-2 border-blue-300"
                   : "border-transparent"
                   }`}

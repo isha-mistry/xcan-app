@@ -27,7 +27,7 @@ function UserOfficeHours() {
   const path = usePathname();
   const searchParams = useSearchParams();
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
-  const currentTab = searchParams.get("hours") || "";
+  const currentTab = searchParams.get("lectures") || "";
 
   // SWR fetcher function
   const fetcher = async (url: string) => {
@@ -72,6 +72,7 @@ function UserOfficeHours() {
   // Update data when SWR data changes
   useEffect(() => {
     if (data) {
+      console.log("data: ", data);
       const newData = {
         ongoing: data.data.ongoing,
         upcoming: data.data.upcoming,
@@ -132,7 +133,7 @@ function UserOfficeHours() {
   };
 
   const getCurrentData = () => {
-    const currentTab = searchParams.get("hours") as keyof typeof filteredData;
+    const currentTab = searchParams.get("lectures") as keyof typeof filteredData;
     return filteredData[currentTab] || [];
   };
 
@@ -223,7 +224,7 @@ function UserOfficeHours() {
           </button>
         </div>
 
-        {searchParams.get("hours") !== "schedule" && (
+        {searchParams.get("lectures") !== "schedule" && (
           <div className="flex items-center my-8 rounded-full shadow-lg bg-gray-100 text-black cursor-pointer w-[300px] xs:w-[365px]">
             <CiSearch className="text-base transition-all duration-700 ease-in-out ml-3" />
             <input
@@ -238,17 +239,17 @@ function UserOfficeHours() {
 
         <div
           className={
-            searchParams.get("hours") === "schedule" ? `py-10` : `pb-10`
+            searchParams.get("lectures") === "schedule" ? `py-10` : `pb-10`
           }
         >
-          {searchParams.get("hours") === "schedule" && (
+          {searchParams.get("lectures") === "schedule" && (
             <UserScheduledHours
               // onScheduleSave={fetchUserOfficeHours}
               onScheduleSave={() => mutate()}
             />
           )}
 
-          {searchParams.get("hours") !== "schedule" && (
+          {searchParams.get("lectures") !== "schedule" && (
             <>
               {/* {dataLoading ? ( */}
               {isLoading ? (
@@ -259,13 +260,13 @@ function UserOfficeHours() {
                 </div>
               ) : (
                 <OfficeHourTile
-                  isOngoing={searchParams.get("hours") === "ongoing"}
-                  isUpcoming={searchParams.get("hours") === "upcoming"}
-                  isHosted={searchParams.get("hours") === "hosted"}
-                  isAttended={searchParams.get("hours") === "attended"}
-                  isUserProfile={searchParams.get("hours") === "upcoming"}
+                  isOngoing={searchParams.get("lectures") === "ongoing"}
+                  isUpcoming={searchParams.get("lectures") === "upcoming"}
+                  isHosted={searchParams.get("lectures") === "hosted"}
+                  isAttended={searchParams.get("lectures") === "attended"}
+                  isUserProfile={searchParams.get("lectures") === "upcoming"}
                   isRecorded={["hosted", "attended"].includes(
-                    searchParams.get("hours") || ""
+                    searchParams.get("lectures") || ""
                   )}
                   data={getCurrentData()}
                 />

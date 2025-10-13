@@ -28,7 +28,7 @@ export async function GET(req: NextRequest) {
             { "meetings.status": "active" },
             {
               $or: [
-                { host_address: { $regex: hostAddressRegex } }, 
+                { host_address: { $regex: hostAddressRegex } },
                 {
                   "meetings.attendees.attendee_address": {
                     $regex: hostAddressRegex,
@@ -144,9 +144,7 @@ export async function GET(req: NextRequest) {
               }
             );
 
-            const meetingStartTime = new Date(
-              meeting.startTime || 0
-            ).getTime();
+            const meetingStartTime = new Date(meeting.startTime || 0).getTime();
             const oneDayAgo = currentTime - 6 * 60 * 60 * 1000;
 
             // Categorize meetings
@@ -164,7 +162,10 @@ export async function GET(req: NextRequest) {
               case "Recorded":
                 recorded.push(meetingDocument);
 
-                if (result.host_address.toLowerCase() === host_address?.toLowerCase()) {
+                if (
+                  result.host_address.toLowerCase() ===
+                  host_address?.toLowerCase()
+                ) {
                   meetingDocument.meeting_starttime =
                     attendanceVerification?.startTime;
                   meetingDocument.meeting_endtime =
@@ -181,7 +182,9 @@ export async function GET(req: NextRequest) {
 
                 if (
                   meeting.attendees?.some(
-                    (attendee) => attendee.attendee_address.toLowerCase() === (host_address || '').toLowerCase()
+                    (attendee) =>
+                      attendee.attendee_address.toLowerCase() ===
+                      (host_address || "").toLowerCase()
                   )
                 ) {
                   meetingDocument.meeting_starttime =
@@ -191,11 +194,9 @@ export async function GET(req: NextRequest) {
                   meetingDocument.meetingType = 4;
                   const isParticipant =
                     attendanceVerification?.participants?.some(
-                      (participant: {
-                        metadata: { walletAddress: string };
-                      }) =>
+                      (participant: { metadata: { walletAddress: string } }) =>
                         participant.metadata?.walletAddress?.toLowerCase() ===
-                        (host_address || '').toLowerCase()
+                        (host_address || "").toLowerCase()
                     );
                   meetingDocument.isEligible = isParticipant;
                   attended.push(meetingDocument);
