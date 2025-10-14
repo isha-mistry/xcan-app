@@ -19,9 +19,9 @@ interface ClaimButtonProps {
   address: string;
   onChainId: string | undefined;
   disabled: boolean;
-  reference_id?:string
-  meetingCategory?:string
-  attendees?:string,
+  reference_id?: string;
+  meetingCategory?: string;
+  attendees?: string;
   onClaimStart: () => void;
   onClaimEnd: () => void;
 }
@@ -59,10 +59,9 @@ const ClaimButton: React.FC<ClaimButtonProps> = ({
 
   const handleAttestationOnchain = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    
+
     // Early return conditions
     if (isClaimed || isClaiming || disabled) return;
-    
 
     // Reset states
     setIsClaiming(true);
@@ -91,28 +90,84 @@ const ClaimButton: React.FC<ClaimButtonProps> = ({
       }
 
       // Use ethers to create a provider
-      const ethersProvider = new ethers.BrowserProvider(privyProvider);
-      const signer = await ethersProvider.getSigner();
+      let ethersProvider = new ethers.BrowserProvider(privyProvider);
+      let signer = await ethersProvider.getSigner();
 
-      // Determine DAO-specific details
-      let token = "";
-      let EASContractAddress = "";
+      // Determine DAO-specific details (Arbitrum by default for on-chain claims)
+      const desiredDao = daoConfigs["arbitrum"];
+      const token = desiredDao.tokenSymbol || "ARB";
+      let EASContractAddress = desiredDao.eascontracAddress;
 
-      // switch (dao.toLowerCase()) {
-      //   case "optimism":
-      //     token = "OP";
-      //     EASContractAddress = "0x4200000000000000000000000000000000000021";
-      //     break;
-      //   case "arbitrum":
-      //     token = "ARB";
-      //     EASContractAddress = "0xbD75f629A22Dc1ceD33dDA0b68c546A1c035c458";
-      //     break;
-      //   default:
-      //     throw new Error(`Unsupported DAO: ${dao}`);
-      // }
+      // Ensure wallet is on the correct network for the EAS contract
+      const currentNetwork = await ethersProvider.getNetwork();
+      if (Number(currentNetwork.chainId) !== Number(desiredDao.chainId)) {
+        try {
+          const hexChainId = "0x" + Number(desiredDao.chainId).toString(16);
+          // Try EIP-3326 switch chain via the underlying provider
+          // @ts-ignore - request is available on EIP-1193 providers
+          await privyProvider.request?.({
+            method: "wallet_switchEthereumChain",
+            params: [{ chainId: hexChainId }],
+          });
 
-      token="ARB";
-      EASContractAddress="0xbD75f629A22Dc1ceD33dDA0b68c546A1c035c458";
+          // Re-create provider and signer after chain switch
+          const switchedProvider = new ethers.BrowserProvider(privyProvider);
+          const switchedSigner = await switchedProvider.getSigner();
+          // Overwrite references
+          ethersProvider = switchedProvider;
+          signer = switchedSigner;
+        } catch (switchErr) {
+          const err = switchErr as { code?: number; message?: string };
+          // If chain is not added to wallet, attempt to add it
+          // @ts-ignore - some providers provide code 4902 for unknown chain
+          if (
+            err &&
+            (err.code === 4902 ||
+              err?.message?.includes("Unrecognized chain ID"))
+          ) {
+            try {
+              // @ts-ignore
+              await privyProvider.request?.({
+                method: "wallet_addEthereumChain",
+                params: [
+                  {
+                    chainId: "0xa4b1",
+                    chainName: "Arbitrum One",
+                    nativeCurrency: {
+                      name: "Ether",
+                      symbol: "ETH",
+                      decimals: 18,
+                    },
+                    rpcUrls: ["https://arb1.arbitrum.io/rpc"],
+                    blockExplorerUrls: [
+                      desiredDao.explorerUrl || "https://arbiscan.io",
+                    ],
+                  },
+                ],
+              });
+              // Retry switch after adding
+              // @ts-ignore
+              await privyProvider.request?.({
+                method: "wallet_switchEthereumChain",
+                params: [{ chainId: "0xa4b1" }],
+              });
+
+              const switchedProvider = new ethers.BrowserProvider(
+                privyProvider
+              );
+              const switchedSigner = await switchedProvider.getSigner();
+              ethersProvider = switchedProvider;
+              signer = switchedSigner;
+            } catch (addErr) {
+              toast.error("Please switch your wallet to Arbitrum One to claim");
+              throw addErr;
+            }
+          } else {
+            toast.error("Please switch your wallet to Arbitrum One to claim");
+            throw switchErr;
+          }
+        }
+      }
 
       // Prepare attestation data
       const data = {
@@ -153,15 +208,25 @@ const ClaimButton: React.FC<ClaimButtonProps> = ({
       }
 
       const attestationObject = await res.json();
-
+      console.log("attestationObject", attestationObject);
       // Initialize EAS
       const eas = new EAS(EASContractAddress);
       eas.connect(signer);
 
+      // Preflight: verify EAS contract is reachable on this network
+      try {
+        await eas.getVersion();
+      } catch (versionErr) {
+        toast.error(
+          "EAS contract not available on current network. Switch to Arbitrum One."
+        );
+        throw versionErr;
+      }
+
       // Prepare attestation parameters
       const schemaUID =
-        "0xf9e214a80b66125cad64453abe4cef5263be3a7f01760d0cc72789236fca2b5d";
-    
+        "0x1e7a1d1627d7ae5d324aa0fd78c5b42474e926dcca73c31365444fd716ff025e";
+
       // Perform on-chain attestation
       const tx = await eas.attestByDelegation({
         schema: schemaUID,
@@ -174,13 +239,13 @@ const ClaimButton: React.FC<ClaimButtonProps> = ({
           data: attestationObject.delegatedAttestation.message.data,
         },
         signature: attestationObject.delegatedAttestation.signature,
-        attester: "0x7B2C5f70d66Ac12A25cE4c851903436545F1b741",
+        attester: "0x7cd21A56e0Ae577A204F76cA7AbB23FcDE02291C",
       });
-
+      console.log("tx", tx);
       // Wait for transaction confirmation
       const newAttestationUID = await tx.wait();
-
-      if (newAttestationUID && meetingCategory==="session") {
+      console.log("newAttestationUID", newAttestationUID);
+      if (newAttestationUID && meetingCategory === "session") {
         // Update attestation UID in backend
         const ClientToken = await getAccessToken();
         const myHeaders: HeadersInit = {
@@ -198,16 +263,16 @@ const ClaimButton: React.FC<ClaimButtonProps> = ({
             meetingId: meetingId,
             meetingType: meetingType,
             uidOnchain: newAttestationUID,
-            address: address
+            address: address,
           }),
         });
 
         const updateData = await updateResponse.json();
-        
+
         if (updateData.success) {
           // Successful claim
           setIsClaimed(true);
-          
+
           // Trigger confetti with a slight delay
           setTimeout(() => {
             triggerConfetti();
@@ -216,13 +281,11 @@ const ClaimButton: React.FC<ClaimButtonProps> = ({
           toast.success("On-chain attestation claimed successfully!");
           onClaimEnd();
         } else {
+          console.log("Failed to update attestation UID");
           throw new Error("Failed to update attestation UID");
         }
-      }
-      else 
-      { 
-        if(newAttestationUID && meetingCategory==="officehours")
-        {
+      } else {
+        if (newAttestationUID && meetingCategory === "officehours") {
           // console.log("Line 338:",newAttestationUID);
           const ClientToken = await getAccessToken();
           const myHeaders: HeadersInit = {
@@ -239,43 +302,43 @@ const ClaimButton: React.FC<ClaimButtonProps> = ({
               host_address: address,
               reference_id: reference_id,
               onchain_host_uid: newAttestationUID,
-              attendees:attendees,
+              attendees: attendees,
             }),
           });
-  
+
           const updateData = await updateResponse.json();
 
           // console.log("Line 353:",updateData);
-          
+
           if (updateData.success) {
             // Successful claim
             setIsClaimed(true);
-            
+
             // Trigger confetti with a slight delay
             setTimeout(() => {
               triggerConfetti();
             }, 100);
-  
+
             toast.success("On-chain attestation claimed successfully!");
             onClaimEnd();
           } else {
+            console.log("Failed to update attestation UID");
             throw new Error("Failed to update attestation UID");
           }
         }
-       
       }
     } catch (error: any) {
       // Comprehensive error handling
       console.error("Claim Error:", error);
-      
+
       let errorMessage = "Failed to claim on-chain attestation";
-      
-      if (error.code === 'ACTION_REJECTED') {
+
+      if (error.code === "ACTION_REJECTED") {
         errorMessage = "Transaction was rejected by the user";
-      } else if (error.message.includes('insufficient funds')) {
+      } else if (error.message.includes("insufficient funds")) {
         errorMessage = "Insufficient funds for transaction";
       }
-      
+
       toast.error(errorMessage);
       onClaimEnd();
     } finally {
@@ -332,4 +395,4 @@ const ClaimButton: React.FC<ClaimButtonProps> = ({
   );
 };
 
-export default ClaimButton; 
+export default ClaimButton;

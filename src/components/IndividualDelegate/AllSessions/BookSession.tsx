@@ -7,7 +7,7 @@ import { isSameDay } from "date-fns";
 import { useSession } from "next-auth/react";
 import { Oval, ThreeDots } from "react-loader-spinner";
 import styled from "styled-components";
-import {  useDisclosure } from "@nextui-org/react";
+import { useDisclosure } from "@nextui-org/react";
 import toast from "react-hot-toast";
 import BookingSuccessModal from "./BookingSuccessModal";
 import { MdCancel } from "react-icons/md";
@@ -189,7 +189,7 @@ function BookSession({ props }: { props: Type }) {
   const [isApiCallInProgress, setIsApiCallInProgress] = useState(false);
   const { ready, authenticated, login, logout, getAccessToken, user } =
     usePrivy();
-  const { isConnected } = useConnection()
+  const { isConnected } = useConnection();
 
   useEffect(() => {
     if (isOpen) {
@@ -308,7 +308,6 @@ function BookSession({ props }: { props: Type }) {
           setContinueAPICalling(true);
         } else if (continueAPICalling) {
           apiCall();
-
         }
       } catch (error) {
         setConfirmSave(false);
@@ -338,8 +337,6 @@ function BookSession({ props }: { props: Type }) {
     setIsApiCallInProgress(true);
 
     try {
-
-
       let roomId = await createRandomRoom();
 
       const requestData = {
@@ -358,6 +355,7 @@ function BookSession({ props }: { props: Type }) {
         session_type: "session",
         meetingId: roomId,
         host_joined_status: "Pending",
+        dao_name: "arbitrum",
       };
 
       const token = await getAccessToken();
@@ -505,7 +503,6 @@ function BookSession({ props }: { props: Type }) {
     router.push(`/profile/${address}?active=sessions&session=attending`);
   };
 
-
   const validateEmail = (email: string) => {
     const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return regex.test(email);
@@ -632,7 +629,6 @@ function BookSession({ props }: { props: Type }) {
           </div>
         </div>
       )}
-
 
       {modalOpen && (
         <BookingSuccessModal isOpen={modalOpen} onClose={handleModalClose} />

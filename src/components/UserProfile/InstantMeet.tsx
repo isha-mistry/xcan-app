@@ -103,6 +103,7 @@ function InstantMeet() {
         meetingId: roomId,
         meeting_status: "Ongoing",
         attendees: [],
+        dao_name: "arbitrum",
       };
       const token = await getAccessToken();
       const myHeaders: HeadersInit = {

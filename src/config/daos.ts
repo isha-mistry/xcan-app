@@ -32,6 +32,7 @@ export const daoConfigs: { [key: string]: DAOConfig } = {
     proposalAbi: arb_proposals_abi as Abi,
     attestationUrl: "https://arbitrum.easscan.org/offchain/attestation/view",
     eascontracAddress: "0xbD75f629A22Dc1ceD33dDA0b68c546A1c035c458",
+    // eascontracAddress: "0x6dC1D6b864e8BEf815806f9e4677123496e12026",
     delegateChangedsUrl:
       "https://api.studio.thegraph.com/query/68573/arb_token/v0.0.3",
     descriptionQuery: gql`

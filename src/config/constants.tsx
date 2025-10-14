@@ -30,8 +30,8 @@ export const SOCKET_BASE_URL =
 
 export const SCHEMA_ID =
   process.env.NODE_ENV == "development"
-    ? "0xf9e214a80b66125cad64453abe4cef5263be3a7f01760d0cc72789236fca2b5d"
-    : "0xf9e214a80b66125cad64453abe4cef5263be3a7f01760d0cc72789236fca2b5d";
+    ? "0x1e7a1d1627d7ae5d324aa0fd78c5b42474e926dcca73c31365444fd716ff025e"
+    : "0x1e7a1d1627d7ae5d324aa0fd78c5b42474e926dcca73c31365444fd716ff025e";
 
 export const OFFCHAIN_OP_ATTESTATION_BASE_URL =
   process.env.NODE_ENV == "development"
@@ -93,8 +93,8 @@ export const MEETING_BASE_URL =
 
 // export const SCHEMA_ID =
 //   process.env.NODE_ENV == "development"
-//     ? "0xf9e214a80b66125cad64453abe4cef5263be3a7f01760d0cc72789236fca2b5d"
-//     : "0xf9e214a80b66125cad64453abe4cef5263be3a7f01760d0cc72789236fca2b5d";
+//     ? "0x2af46cd4e53ed6953e21e6f089645513fad2f918ddf6e892c7c843784eabfc9e"
+//     : "0x2af46cd4e53ed6953e21e6f089645513fad2f918ddf6e892c7c843784eabfc9e";
 
 // export const OFFCHAIN_OP_ATTESTATION_BASE_URL =
 //   process.env.NODE_ENV == "development"

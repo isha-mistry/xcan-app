@@ -2,7 +2,13 @@
 
 import React, { useState, useEffect } from "react";
 import Image, { StaticImageData } from "next/image";
-import { FaCircleCheck, FaCircleXmark, FaCirclePlay, FaPlay, FaXmark } from "react-icons/fa6";
+import {
+  FaCircleCheck,
+  FaCircleXmark,
+  FaCirclePlay,
+  FaPlay,
+  FaXmark,
+} from "react-icons/fa6";
 import { Tooltip } from "@nextui-org/react";
 import { Oval } from "react-loader-spinner";
 // import { useRouter } from "next/navigation";
@@ -110,7 +116,7 @@ function EventTile({ tileIndex, data: initialData, isEvent }: TileProps) {
           );
           setEnsGuestName(
             guestEnsData?.ensName ||
-            formatWalletAddress(data.attendees[0].attendee_address)
+              formatWalletAddress(data.attendees[0].attendee_address)
           );
           setEnsGuestAvatar(guestEnsData?.avatar || "");
         }
@@ -283,20 +289,19 @@ function EventTile({ tileIndex, data: initialData, isEvent }: TileProps) {
               {data.title}
             </div>
             <div
-              className={`rounded-md px-2 py-0.5 w-fit flex items-center text-xs ${data.booking_status === "Approved"
-                ? "border border-lime-600 text-lime-600"
-                : data.booking_status === "Rejected"
+              className={`rounded-md px-2 py-0.5 w-fit flex items-center text-xs ${
+                data.booking_status === "Approved"
+                  ? "border border-lime-600 text-lime-600"
+                  : data.booking_status === "Rejected"
                   ? "border border-red-600 text-red-600"
                   : "border border-yellow-500 text-yellow-500"
-                }`}
+              }`}
             >
               {data.booking_status}
               {/* Approve */}
             </div>
           </div>
-          <div className="text-gray-200 text-sm mt-0.5">
-            {data.description}
-          </div>
+          <div className="text-gray-200 text-sm mt-0.5">{data.description}</div>
           <div className="py-1">
             <hr />
           </div>
@@ -331,10 +336,11 @@ function EventTile({ tileIndex, data: initialData, isEvent }: TileProps) {
                     className="bg-gray-700"
                   >
                     <span
-                      className={`cursor-pointer text-xs sm:text-sm ${copyStates.guest.isAnimating
-                        ? "text-blue-500"
-                        : "text-gray-400 hover:text-gray-600"
-                        }`}
+                      className={`cursor-pointer text-xs sm:text-sm ${
+                        copyStates.guest.isAnimating
+                          ? "text-blue-500"
+                          : "text-gray-400 hover:text-gray-600"
+                      }`}
                     >
                       <IoCopy
                         onClick={(event) => {
@@ -365,9 +371,7 @@ function EventTile({ tileIndex, data: initialData, isEvent }: TileProps) {
               <div className="flex items-center">
                 <span className="font-medium">Host: </span> &nbsp;
                 {isEvent === "Attending" ? (
-                  <Link
-                    href={`/user/${data.host_address}?active=info`}
-                  >
+                  <Link href={`/user/${data.host_address}?active=info`}>
                     <span className="hover:text-blue-shade-100 transition-colors duration-200">
                       {loadingEnsData
                         ? formatWalletAddress(data.host_address)
@@ -390,10 +394,11 @@ function EventTile({ tileIndex, data: initialData, isEvent }: TileProps) {
                   className="bg-gray-700"
                 >
                   <span
-                    className={`cursor-pointer text-xs sm:text-sm ${copyStates.host.isAnimating
-                      ? "text-blue-500"
-                      : "text-gray-400 hover:text-gray-600"
-                      }`}
+                    className={`cursor-pointer text-xs sm:text-sm ${
+                      copyStates.host.isAnimating
+                        ? "text-blue-500"
+                        : "text-gray-400 hover:text-gray-600"
+                    }`}
                   >
                     <IoCopy
                       onClick={(event) => {
@@ -433,15 +438,17 @@ function EventTile({ tileIndex, data: initialData, isEvent }: TileProps) {
                     showArrow
                     className="bg-gray-700"
                   >
-                    <div className={`flex items-center justify-center gap-2 w-full px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-indigo-500 to-blue-500 rounded-full hover:from-indigo-600 hover:to-blue-600 transition-all duration-300 transform hover:scale-[1.02] cursor-pointer`} onClick={() => {
-                      setStartLoading(true);
-                      const meetingUrl = `${MEETING_BASE_URL}/meeting/session/${data.meetingId}/lobby`;
-                      window.open(meetingUrl, "_blank");
-                      setStartLoading(false);
-                    }}>
+                    <div
+                      className={`flex items-center justify-center gap-2 w-full px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-indigo-500 to-blue-500 rounded-full hover:from-indigo-600 hover:to-blue-600 transition-all duration-300 transform hover:scale-[1.02] cursor-pointer`}
+                      onClick={() => {
+                        setStartLoading(true);
+                        const meetingUrl = `${MEETING_BASE_URL}/meeting/session/${data.meetingId}/lobby`;
+                        window.open(meetingUrl, "_blank");
+                        setStartLoading(false);
+                      }}
+                    >
                       <Play className="w-4 h-4" />
-                      <span >Start</span>
-
+                      <span>Start</span>
                     </div>
                   </Tooltip>
                 )}
@@ -452,7 +459,10 @@ function EventTile({ tileIndex, data: initialData, isEvent }: TileProps) {
                   showArrow
                   className="bg-gray-700"
                 >
-                  <div className={`flex items-center justify-center gap-2 w-full px-4 py-2 text-sm font-medium text-red-600 bg-red-50 rounded-full hover:bg-red-100  transition-all  transform hover:scale-[1.02] cursor-pointer`} onClick={onOpen}>
+                  <div
+                    className={`flex items-center justify-center gap-2 w-full px-4 py-2 text-sm font-medium text-red-600 bg-red-50 rounded-full hover:bg-red-100  transition-all  transform hover:scale-[1.02] cursor-pointer`}
+                    onClick={onOpen}
+                  >
                     <span>Reject</span>
                     <Trash2 className="w-4 h-4" />
                   </div>
@@ -541,7 +551,7 @@ function EventTile({ tileIndex, data: initialData, isEvent }: TileProps) {
                     className={`flex items-center justify-center gap-2 w-full px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-indigo-500 to-blue-500 rounded-full hover:from-indigo-600 hover:to-blue-600 transition-all duration-300 transform hover:scale-[1.02] cursor-pointer`}
                   >
                     <BsPersonVideo3 className="w-4 h-4" />
-                    <span >Join Session</span>
+                    <span>Join Session</span>
                     {/* <span className={styles.iconWrapper}> */}
                     {/* </span>/ */}
                   </div>

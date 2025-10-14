@@ -53,17 +53,16 @@ export async function POST(req: NextRequest, res: NextResponse) {
   const requestData = (await req.json()) as AttestOnchainRequestBody;
   // Your validation logic here
 
+  // const currentDAO=daoConfigs[requestData.daoName];
+  const currentDAO = daoConfigs["arbitrum"];
 
-
-  const currentDAO=daoConfigs[requestData.daoName];
-
-  try {;
-    const atstUrl =currentDAO.alchemyAttestationUrl;
-      // requestData.daoName === "optimism"
-      //   ? process.env.NEXT_PUBLIC_OP_ATTESTATION_URL
-      //   : requestData.daoName === "arbitrum"
-      //   ? process.env.NEXT_PUBLIC_ARB_ATTESTATION_URL
-      //   : "";
+  try {
+    const atstUrl = currentDAO.alchemyAttestationUrl;
+    // requestData.daoName === "optimism"
+    //   ? process.env.NEXT_PUBLIC_OP_ATTESTATION_URL
+    //   : requestData.daoName === "arbitrum"
+    //   ? process.env.NEXT_PUBLIC_ARB_ATTESTATION_URL
+    //   : "";
 
     // Set up your ethers provider and signer
     const provider = new ethers.JsonRpcProvider(atstUrl, undefined, {
@@ -71,12 +70,12 @@ export async function POST(req: NextRequest, res: NextResponse) {
     });
     const privateKey = process.env.PVT_KEY ?? "";
     const signer = new ethers.Wallet(privateKey, provider);
-    const EASContractAddress = currentDAO?currentDAO.eascontracAddress:"";
-      // requestData.daoName === "optimism"
-      //   ? "0x4200000000000000000000000000000000000021"
-      //   : requestData.daoName === "arbitrum"
-      //   ? "0xbD75f629A22Dc1ceD33dDA0b68c546A1c035c458"
-      //   : "";
+    const EASContractAddress = currentDAO ? currentDAO.eascontracAddress : "";
+    // requestData.daoName === "optimism"
+    //   ? "0x4200000000000000000000000000000000000021"
+    //   : requestData.daoName === "arbitrum"
+    //   ? "0xbD75f629A22Dc1ceD33dDA0b68c546A1c035c458"
+    //   : "";
     const eas = new EAS(EASContractAddress);
     eas.connect(signer);
 
@@ -106,7 +105,7 @@ export async function POST(req: NextRequest, res: NextResponse) {
       const delegated = await eas.getDelegated();
       console.log(delegated);
       const schemaUID =
-        "0xf9e214a80b66125cad64453abe4cef5263be3a7f01760d0cc72789236fca2b5d";
+        "0x1e7a1d1627d7ae5d324aa0fd78c5b42474e926dcca73c31365444fd716ff025e";
 
       console.log("delegated obj: ", delegated);
       const delegatedAttestation = await delegated.signDelegatedAttestation(
@@ -114,7 +113,7 @@ export async function POST(req: NextRequest, res: NextResponse) {
           schema: schemaUID,
           recipient: requestData.recipient,
           expirationTime: NO_EXPIRATION,
-          revocable: false,
+          revocable: true,
           refUID: ZERO_BYTES32,
           data: encodedData,
           nonce: await eas.getNonce(signer.address),

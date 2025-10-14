@@ -218,7 +218,7 @@ SessionTileProps) {
       const signer = await provider.getSigner();
       eas.connect(signer);
       const schemaUID =
-        "0xf9e214a80b66125cad64453abe4cef5263be3a7f01760d0cc72789236fca2b5d";
+        "0x1e7a1d1627d7ae5d324aa0fd78c5b42474e926dcca73c31365444fd716ff025e";
       const tx = await eas.attestByDelegation({
         schema: schemaUID,
         data: {
@@ -230,7 +230,7 @@ SessionTileProps) {
           data: attestationObject.delegatedAttestation.message.data,
         },
         signature: attestationObject.delegatedAttestation.signature,
-        attester: "0x7B2C5f70d66Ac12A25cE4c851903436545F1b741",
+        attester: "0x7cd21A56e0Ae577A204F76cA7AbB23FcDE02291C",
       });
       const newAttestationUID = await tx.wait();
 
