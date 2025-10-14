@@ -38,7 +38,7 @@ const UserScheduledHours: React.FC<{
     ExistingSchedule[]
   >([]);
   const [isSaving, setIsSaving] = useState(false);
-  const [isLoadingSchedules, setIsLoadingSchedules] = useState(true);
+  const [isLoadingSchedules, setIsLoadingSchedules] = useState(false);
   const [initialLoad, setInitialLoad] = useState(true);
   const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -525,6 +525,7 @@ const UserScheduledHours: React.FC<{
 
     const raw = JSON.stringify({
       host_address: address,
+      dao_name: "arbitrum",
       meetings: utcSchedule,
     });
 
@@ -550,67 +551,67 @@ const UserScheduledHours: React.FC<{
     }
   }, [convertToUTC, address, getAccessToken, resetState]);
 
-  const processExistingSchedules = useCallback((schedules: ExistingSchedule[]) => {
-    if (!schedules || schedules.length === 0) {
-      return;
-    }
+  // const processExistingSchedules = useCallback((schedules: ExistingSchedule[]) => {
+  //   if (!schedules || schedules.length === 0) {
+  //     return;
+  //   }
 
-    // Group schedules by date
-    const schedulesByDate = schedules.reduce((acc, schedule) => {
-      const startDate = new Date(schedule.startTime);
-      const dateKey = format(startDate, "yyyy-MM-dd");
+  //   // Group schedules by date
+  //   const schedulesByDate = schedules.reduce((acc, schedule) => {
+  //     const startDate = new Date(schedule.startTime);
+  //     const dateKey = format(startDate, "yyyy-MM-dd");
 
-      if (!acc[dateKey]) {
-        acc[dateKey] = {
-          date: startDate,
-          slots: [],
-          title: schedule.title || title,
-          description: schedule.description || description,
-        };
-      }
+  //     if (!acc[dateKey]) {
+  //       acc[dateKey] = {
+  //         date: startDate,
+  //         slots: [],
+  //         title: schedule.title || title,
+  //         description: schedule.description || description,
+  //       };
+  //     }
 
-      acc[dateKey].slots.push({
-        startTime: format(startDate, "HH:mm"),
-        endTime: format(new Date(schedule.endTime), "HH:mm"),
-        id: schedule.reference_id || Math.random().toString(36).substr(2, 9),
-        bookedTitle: schedule.title,
-        bookedDescription: schedule.description,
-        reference_id: schedule.reference_id,
-      });
+  //     acc[dateKey].slots.push({
+  //       startTime: format(startDate, "HH:mm"),
+  //       endTime: format(new Date(schedule.endTime), "HH:mm"),
+  //       id: schedule.reference_id || Math.random().toString(36).substr(2, 9),
+  //       bookedTitle: schedule.title,
+  //       bookedDescription: schedule.description,
+  //       reference_id: schedule.reference_id,
+  //     });
 
-      return acc;
-    }, {} as Record<string, { date: Date; slots: TimeSlot[]; title: string; description: string }>);
+  //     return acc;
+  //   }, {} as Record<string, { date: Date; slots: TimeSlot[]; title: string; description: string }>);
 
-    // Convert to DateSchedule format and add to selected dates
-    const newSchedules: DateSchedule[] = Object.values(schedulesByDate).map(({ date, slots, title: scheduleTitle, description: scheduleDesc }) => ({
-      date: new Date(date.getFullYear(), date.getMonth(), date.getDate()), // Normalize to start of day
-      timeSlots: slots.sort((a, b) => a.startTime.localeCompare(b.startTime)), // Sort by start time
-      isRecurring: false,
-      title: scheduleTitle,
-      description: scheduleDesc,
-    }));
+  //   // Convert to DateSchedule format and add to selected dates
+  //   const newSchedules: DateSchedule[] = Object.values(schedulesByDate).map(({ date, slots, title: scheduleTitle, description: scheduleDesc }) => ({
+  //     date: new Date(date.getFullYear(), date.getMonth(), date.getDate()), // Normalize to start of day
+  //     timeSlots: slots.sort((a, b) => a.startTime.localeCompare(b.startTime)), // Sort by start time
+  //     isRecurring: false,
+  //     title: scheduleTitle,
+  //     description: scheduleDesc,
+  //   }));
 
-    // Update selected dates without duplicating existing dates
-    setSelectedDates(prevDates => {
-      const existingDateStrings = prevDates.map(schedule =>
-        format(schedule.date, "yyyy-MM-dd")
-      );
+  //   // Update selected dates without duplicating existing dates
+  //   setSelectedDates(prevDates => {
+  //     const existingDateStrings = prevDates.map(schedule =>
+  //       format(schedule.date, "yyyy-MM-dd")
+  //     );
 
-      const filteredNewSchedules = newSchedules.filter(newSchedule =>
-        !existingDateStrings.includes(format(newSchedule.date, "yyyy-MM-dd"))
-      );
+  //     const filteredNewSchedules = newSchedules.filter(newSchedule =>
+  //       !existingDateStrings.includes(format(newSchedule.date, "yyyy-MM-dd"))
+  //     );
 
-      return [...prevDates, ...filteredNewSchedules];
-    });
+  //     return [...prevDates, ...filteredNewSchedules];
+  //   });
 
-    // Set title and description from the first schedule if not already set
-    if (!title && schedules.length > 0 && schedules[0].title) {
-      setTitle(schedules[0].title);
-    }
-    if (!description && schedules.length > 0 && schedules[0].description) {
-      setDescription(schedules[0].description);
-    }
-  }, [title, description]);
+  //   // Set title and description from the first schedule if not already set
+  //   if (!title && schedules.length > 0 && schedules[0].title) {
+  //     setTitle(schedules[0].title);
+  //   }
+  //   if (!description && schedules.length > 0 && schedules[0].description) {
+  //     setDescription(schedules[0].description);
+  //   }
+  // }, []);
 
   const getOfficeHours = useCallback(async () => {
     setIsLoadingSchedules(true);
@@ -636,10 +637,12 @@ const UserScheduledHours: React.FC<{
       const result = await response.json();
       const meetings = result.data.meetings || [];
 
+      console.log("meetings", meetings);
+
       setExistingSchedules(meetings);
 
       // Process existing schedules and add to selected dates
-      processExistingSchedules(meetings);
+      // processExistingSchedules(meetings);
 
     } catch (error) {
       console.error("Error fetching lectures:", error);
@@ -648,7 +651,7 @@ const UserScheduledHours: React.FC<{
       setIsLoadingSchedules(false);
       setInitialLoad(false);
     }
-  }, [address, processExistingSchedules]);
+  }, [address]);
 
   useEffect(() => {
     getOfficeHours();

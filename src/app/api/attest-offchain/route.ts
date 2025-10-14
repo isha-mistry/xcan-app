@@ -403,21 +403,21 @@ export async function POST(req: NextRequest, res: NextResponse) {
     const socket = io(`${SOCKET_BASE_URL}`, {
       withCredentials: true,
     });
-    socket.on("connect", () => {
-      socket.emit("received_offchain_attestation", {
-        receiver_address,
-        dataToSend,
-      });
-      socket.disconnect();
-    });
+    // socket.on("connect", () => {
+    //   socket.emit("received_offchain_attestation", {
+    //     receiver_address,
+    //     dataToSend,
+    //   });
+    //   socket.disconnect();
+    // });
 
-    socket.on("connect_error", (err) => {
-      console.error("WebSocket connection error:", err);
-    });
+    // socket.on("connect_error", (err) => {
+    //   console.error("WebSocket connection error:", err);
+    // });
 
-    socket.on("error", (err) => {
-      console.error("WebSocket error:", err);
-    });
+    // socket.on("error", (err) => {
+    //   console.error("WebSocket error:", err);
+    // });
     await client.close();
     if (cacheWrapper.isAvailable) {
       const cacheKey = `Notification:${requestData.recipient}`;

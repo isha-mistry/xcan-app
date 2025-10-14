@@ -27,6 +27,7 @@ export interface Attendee {
 }
 export interface OfficeHoursDocument {
   host_address: string;
+  dao_name: string;
   meetings: Meeting[];
   created_at: Date;
   updated_at: Date;
@@ -34,6 +35,7 @@ export interface OfficeHoursDocument {
 
 export interface OfficeHoursRequestBody {
   host_address: string;
+  dao_name: string;
   meetings: Meeting[];
 }
 

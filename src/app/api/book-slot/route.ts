@@ -116,25 +116,25 @@ export async function POST(req: NextRequest) {
         const socket = io(`${SOCKET_BASE_URL}`, {
           withCredentials: true,
         });
-        socket.on("connect", () => {
-          console.log("Connected to WebSocket server from API");
-          socket.emit("new_session", {
-            host_address,
-            dataToSendHost,
-            attendee_address,
-            dataToSendGuest,
-          });
-          console.log("Message sent from API to socket server");
-          socket.disconnect();
-        });
+        // socket.on("connect", () => {
+        //   console.log("Connected to WebSocket server from API");
+        //   socket.emit("new_session", {
+        //     host_address,
+        //     dataToSendHost,
+        //     attendee_address,
+        //     dataToSendGuest,
+        //   });
+        //   console.log("Message sent from API to socket server");
+        //   socket.disconnect();
+        // });
 
-        socket.on("connect_error", (err) => {
-          console.error("WebSocket connection error:", err);
-        });
+        // socket.on("connect_error", (err) => {
+        //   console.error("WebSocket connection error:", err);
+        // });
 
-        socket.on("error", (err) => {
-          console.error("WebSocket error:", err);
-        });
+        // socket.on("error", (err) => {
+        //   console.error("WebSocket error:", err);
+        // });
       }
 
       client.close();

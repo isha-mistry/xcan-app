@@ -98,29 +98,29 @@ async function sendNotifications(
           withCredentials: true,
         });
 
-        socket.on("connect", () => {
-          console.log("Connected to WebSocket server from API");
-          console.log("Socket url", SOCKET_BASE_URL);
+        // socket.on("connect", () => {
+        //   console.log("Connected to WebSocket server from API");
+        //   console.log("Socket url", SOCKET_BASE_URL);
 
-          // Emit office_hours_scheduled event with notifications
-          socket.emit("officehours_scheduled", {
-            notifications: storedNotifications.map((notification: any) => ({
-              ...notification,
-              _id: notification._id.toString(),
-            })),
-          });
+        //   // Emit office_hours_scheduled event with notifications
+        //   socket.emit("officehours_scheduled", {
+        //     notifications: storedNotifications.map((notification: any) => ({
+        //       ...notification,
+        //       _id: notification._id.toString(),
+        //     })),
+        //   });
 
-          console.log("Office hours notifications sent through socket");
-          socket.disconnect();
-        });
+        //   console.log("Office hours notifications sent through socket");
+        //   socket.disconnect();
+        // });
 
-        socket.on("connect_error", (err) => {
-          console.error("WebSocket connection error:", err);
-        });
+        // socket.on("connect_error", (err) => {
+        //   console.error("WebSocket connection error:", err);
+        // });
 
-        socket.on("error", (err) => {
-          console.error("WebSocket error:", err);
-        });
+        // socket.on("error", (err) => {
+        //   console.error("WebSocket error:", err);
+        // });
       } catch (dbError) {
         console.error("Error storing notifications in database:", dbError);
         throw dbError;
@@ -251,6 +251,7 @@ const createNewHostWithMeetings = async (
 
   return await collection.insertOne({
     host_address: hostAddress,
+    dao_name: "arbitrum",
     meetings: meetingDocuments,
     created_at: new Date(),
     updated_at: new Date(),
