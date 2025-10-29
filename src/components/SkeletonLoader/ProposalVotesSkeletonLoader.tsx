@@ -1,8 +1,8 @@
 import React from "react";
 const ProposalvotesSkeletonLoader = () => {
   return (
-    <div className="w-full z-10 rounded-[1rem] shadow-xl transition-shadow duration-300 ease-in-out  font-tektur min-h-[416px] 1.3lg:h-fit h-full">
-      <div className="w-full flex justify-center flex-col rounded-[1rem] font-tektur h-fit p-6 min-h-[416px] 1.3lg:h-fit">
+    <div className="w-full z-10 rounded-[1rem] shadow-xl transition-shadow duration-300 ease-in-out  font-robotoMono min-h-[416px] 1.3lg:h-fit h-full">
+      <div className="w-full flex justify-center flex-col rounded-[1rem] font-robotoMono h-fit p-6 min-h-[416px] 1.3lg:h-fit">
         {/* Title skeleton */}
         <div className="text-2xl font-bold mb-6 bg-blue-shade-300 animate-pulse h-8 w-48 mx-auto rounded-full"></div>
 

@@ -2,7 +2,7 @@ import React from 'react'
 
 const RecordedSessionsSkeletonLoader = () => {
   return (
-    <div className="grid min-[475px]:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-10 py-8 font-tektur">
+    <div className="grid min-[475px]:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-10 py-8 font-robotoMono">
       {Array.from({ length: 8 }).map((_, index) => (
         <div key={index} className="sm:rounded-3xl">
           <div className="w-full h-44 sm:rounded-t-3xl bg-gray-200 animate-pulse"></div>

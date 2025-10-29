@@ -63,7 +63,7 @@ function UpdateProfileModal({
           event.stopPropagation();
         }}
         isOpen={isOpen}
-        className="font-tektur rounded-3xl max-h-[90vh] overflow-hidden bg-gray-800"
+        className="font-robotoMono rounded-3xl max-h-[90vh] overflow-hidden bg-gray-800"
         size={isMobile ? "full" : "2xl"}
         hideCloseButton
       >

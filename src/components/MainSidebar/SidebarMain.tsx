@@ -61,115 +61,115 @@ function Sidebar() {
     {
       target: "body",
       content: (
-        <p className="text-black-shade-1000 text-left font-normal text-base font-tektur">
+        <p className="text-black-shade-1000 text-left font-normal text-base font-robotoMono">
           Let&apos;s take a quick tour of Xcan.
         </p>
       ),
       disableBeacon: true,
       placement: "center" as Placement,
       title: (
-        <h1 className="text-blue-shade-100 text-left font-semibold text-xl font-tektur ml-[10px]">
+        <h1 className="text-blue-shade-100 text-left font-semibold text-xl font-robotoMono ml-[10px]">
           WELCOME!
         </h1>
       ),
       locale: {
-        skip: <p className="font-tektur font-semibold text-[13px]">Skip</p>,
+        skip: <p className="font-robotoMono font-semibold text-[13px]">Skip</p>,
       },
     },
     {
       target: ".wallet",
       content: (
-        <p className="text-black-shade-1000 text-left font-normal text-base font-tektur">
+        <p className="text-black-shade-1000 text-left font-normal text-base font-robotoMono">
           Connect your wallet to get started.
         </p>
       ),
       disableBeacon: true,
       placement: "bottom" as Placement,
       title: (
-        <h1 className="text-blue-shade-100 text-left font-semibold text-xl font-tektur ml-[10px]">
+        <h1 className="text-blue-shade-100 text-left font-semibold text-xl font-robotoMono ml-[10px]">
           CONNECT WALLET
         </h1>
       ),
       locale: {
-        skip: <p className="font-tektur font-semibold text-[13px]">Skip</p>,
+        skip: <p className="font-robotoMono font-semibold text-[13px]">Skip</p>,
       },
     },
     {
       target: ".dao",
       content: (
-        <p className="text-black-shade-1000 text-left font-normal text-base font-tektur">
+        <p className="text-black-shade-1000 text-left font-normal text-base font-robotoMono">
           Discover all the DAOs listed on our platform.
         </p>
       ),
       disableBeacon: true,
       placement: "bottom" as Placement,
       title: (
-        <h1 className="text-blue-shade-100 text-left font-semibold text-xl font-tektur ml-[10px]">
+        <h1 className="text-blue-shade-100 text-left font-semibold text-xl font-robotoMono ml-[10px]">
           EXPLORE DAOs
         </h1>
       ),
       locale: {
-        skip: <p className="font-tektur font-semibold text-[13px]">Skip</p>,
+        skip: <p className="font-robotoMono font-semibold text-[13px]">Skip</p>,
       },
     },
     {
       target: ".office",
       content: (
-        <p className="text-black-shade-1000 text-left font-normal text-base font-tektur">
+        <p className="text-black-shade-1000 text-left font-normal text-base font-robotoMono">
           View ongoing, upcoming, and recorded office hours taken on Xcan.
         </p>
       ),
       disableBeacon: true,
       placement: "bottom" as Placement,
       title: (
-        <h1 className="text-blue-shade-100 text-left font-semibold text-xl font-tektur ml-[10px]">
+        <h1 className="text-blue-shade-100 text-left font-semibold text-xl font-robotoMono ml-[10px]">
           OFFICE HOURS
         </h1>
       ),
       locale: {
-        skip: <p className="font-tektur font-semibold text-[13px]">Skip</p>,
+        skip: <p className="font-robotoMono font-semibold text-[13px]">Skip</p>,
       },
     },
     {
       target: ".session",
       content: (
-        <p className="text-black-shade-1000 text-left font-normal text-base font-tektur">
+        <p className="text-black-shade-1000 text-left font-normal text-base font-robotoMono">
           Watch recorded sessions and connect with available experts.
         </p>
       ),
       disableBeacon: true,
       placement: "bottom" as Placement,
       title: (
-        <h1 className="text-blue-shade-100 text-left font-semibold text-xl font-tektur ml-[10px]">
+        <h1 className="text-blue-shade-100 text-left font-semibold text-xl font-robotoMono ml-[10px]">
           SESSIONS
         </h1>
       ),
       locale: {
-        skip: <p className="font-tektur font-semibold text-[13px]">Skip</p>,
+        skip: <p className="font-robotoMono font-semibold text-[13px]">Skip</p>,
       },
     },
     {
       target: ".gitbook",
       content: (
-        <p className="text-black-shade-1000 text-left font-normal text-base font-tektur">
+        <p className="text-black-shade-1000 text-left font-normal text-base font-robotoMono">
           Access detailed information and feature updates in our Gitbook.
         </p>
       ),
       disableBeacon: true,
       placement: "bottom" as Placement,
       title: (
-        <h1 className="text-blue-shade-100 text-left font-semibold text-xl font-tektur ml-[10px]">
+        <h1 className="text-blue-shade-100 text-left font-semibold text-xl font-robotoMono ml-[10px]">
           GITBOOK DOC
         </h1>
       ),
       locale: {
-        skip: <p className="font-tektur font-semibold text-[13px]">Skip</p>,
+        skip: <p className="font-robotoMono font-semibold text-[13px]">Skip</p>,
       },
     },
     {
       target: "body",
       content: (
-        <p className="text-black-shade-1000 text-left font-normal text-base font-tektur">
+        <p className="text-black-shade-1000 text-left font-normal text-base font-robotoMono">
           You&apos;re all set! Begin your web3 journey now.
         </p>
       ),
@@ -177,10 +177,10 @@ function Sidebar() {
       placement: "center" as Placement,
       bodyClass: "tour-step-background",
       locale: {
-        skip: <p className="font-tektur font-semibold text-[13px]">Skip</p>,
+        skip: <p className="font-robotoMono font-semibold text-[13px]">Skip</p>,
       },
       // title: (
-      //   <h1 className="text-blue-shade-100 text-left font-semibold text-xl font-tektur ml-[10px]">
+      //   <h1 className="text-blue-shade-100 text-left font-semibold text-xl font-robotoMono ml-[10px]">
       //     PROFILE
       //   </h1>
       // ),

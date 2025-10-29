@@ -126,8 +126,8 @@ function MintedNFTs() {
         <div className="flex gap-2 0.5xs:gap-4 rounded-xl text-sm flex-wrap mt-6">
           <button
             className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md ${active === "Sessions"
-                ? "text-blue-shade-200 font-semibold bg-[#f5f5f5]"
-                : "text-[#3E3D3D] bg-white"
+              ? "text-blue-shade-200 font-semibold bg-[#f5f5f5]"
+              : "text-[#3E3D3D] bg-white"
               }`}
             onClick={() => handleOption("Sessions")}
           >
@@ -136,14 +136,14 @@ function MintedNFTs() {
           </button>
           <button
             className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md ${active === "OfficeHours"
-                ? "text-blue-shade-200 font-semibold bg-[#f5f5f5]"
-                : "text-[#3E3D3D] bg-white"
+              ? "text-blue-shade-200 font-semibold bg-[#f5f5f5]"
+              : "text-[#3E3D3D] bg-white"
               }`}
             onClick={() => handleOption("OfficeHours")}
           >
             <Clock size={16} className="drop-shadow-lg" />
             Lectures
-          </button>     
+          </button>
         </div>
 
         {dataLoading ? (
@@ -152,7 +152,7 @@ function MintedNFTs() {
           </div>
         ) : mintedNFTs.length > 0 ? (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 sm:gap-10 py-8 font-tektur">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 sm:gap-10 py-8 font-robotoMono">
               {mintedNFTs.map((nft) => (
                 <NFTTile
                   key={nft.id}

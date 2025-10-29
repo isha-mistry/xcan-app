@@ -11,10 +11,6 @@ import axios from "axios";
 import { connectDB } from "@/config/connectDB";
 import {
   ATTESTATION_ARB_URL,
-  ATTESTATION_OP_URL,
-  BASE_URL,
-  OFFCHAIN_ARB_ATTESTATION_BASE_URL,
-  OFFCHAIN_OP_ATTESTATION_BASE_URL,
   SCHEMA_ID,
   SOCKET_BASE_URL,
 } from "@/config/constants";

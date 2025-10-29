@@ -21,7 +21,7 @@ export default function Home() {
   };
 
   return (
-    <main className="min-h-screen bg-dark-primary font-tektur relative">
+    <main className="min-h-screen bg-dark-primary font-robotoMono relative">
       {/* Hero Section */}
       <section className="min-h-[85vh] py-6 flex items-center justify-center overflow-hidden">
         <div className="container mx-auto px-4">

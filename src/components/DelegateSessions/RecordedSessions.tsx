@@ -196,7 +196,7 @@ function RecordedSessions() {
   return (
     <>
       <div className="">
-        <div className="flex my-4 justify-end md:justify-start items-center gap-2 sm:gap-3 md:gap-4 font-tektur px-4 sm:px-0">
+        <div className="flex my-4 justify-end md:justify-start items-center gap-2 sm:gap-3 md:gap-4 font-robotoMono px-4 sm:px-0">
           {/* <div
             style={{ background: "rgba(238, 237, 237, 0.36)" }}
             className="hidden md:flex border-[0.5px] border-black w-1/3 rounded-full"

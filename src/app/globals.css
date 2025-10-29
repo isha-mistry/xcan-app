@@ -11,6 +11,7 @@ body {
   min-height: 100vh;
   background-color: "bg-gradient-to-br from-blue-shade-400 to-blue-shade-300";
   color: #ffffff;
+  font-family: var(--font-robotoMono);
 }
 
 .maskAvatar {

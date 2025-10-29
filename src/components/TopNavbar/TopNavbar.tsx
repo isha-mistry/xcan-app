@@ -102,7 +102,7 @@ function TopNavbar() {
 
   return (
     <>
-      <div className="relative z-10 flex justify-between items-center w-screen px-4 font-tektur py-8">
+      <div className="relative z-10 flex justify-between items-center w-screen px-4 font-robotoMono py-8">
         <div className="flex gap-2 items-center">
           <Link href="/" className="flex items-center gap-2">
             <Image
@@ -115,7 +115,7 @@ function TopNavbar() {
             <span className="text-white text-[26px] font-bold">Xcan</span>
           </Link>
           {/* <Link
-            className="text-black font-semibold text-[28px] font-tektur flex items-center mt-[4px]"
+            className="text-black font-semibold text-[28px] font-robotoMono flex items-center mt-[4px]"
             href={isConnected ? "/" : ""}
           >
 

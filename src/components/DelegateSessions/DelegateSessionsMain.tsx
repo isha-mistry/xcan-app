@@ -23,14 +23,14 @@ function DelegateSessionsMain() {
         <Heading />
       </div>
 
-      <div className="relative w-full px-4 md:px-6 lg:px-14 pb-8 font-tektur">
+      <div className="relative w-full px-4 md:px-6 lg:px-14 pb-8 font-robotoMono">
         {/* <div className="max-w-7xl mx-auto"> */}
         <div className="bg-blue-shade-500 rounded-xl shadow-lg p-6 mb-8 border border-blue-shade-200">
           <div className="flex gap-2 0.5xs:gap-4 rounded-xl text-sm flex-wrap mb-6">
             <Tooltip
               showArrow
               content={
-                <div className="font-tektur">
+                <div className="font-robotoMono">
                   Explore available experts by date and time to book
                   sessions and unlock Web3 opportunities.
                 </div>
@@ -53,7 +53,7 @@ function DelegateSessionsMain() {
             <Tooltip
               showArrow
               content={
-                <div className="font-tektur">
+                <div className="font-robotoMono">
                   Browse previously recorded sessions.
                 </div>
               }

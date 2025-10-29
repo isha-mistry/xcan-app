@@ -67,7 +67,7 @@ const WatchSocialLinks = ({
 
   return (
     <>
-      <div className="font-tektur 1.7xl:text-lg  text-base w-full">
+      <div className="font-robotoMono 1.7xl:text-lg  text-base w-full">
         <div className="flex mb-5">
           <p className="font-medium xl:text-base 1.7xl:text-lg">Social Links</p>
         </div>

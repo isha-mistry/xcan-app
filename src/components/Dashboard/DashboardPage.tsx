@@ -157,8 +157,8 @@ const StatsCard: React.FC<{ title: string; value: number; icon: React.ReactNode;
   <div className="bg-gradient-to-br from-blue-shade-500/50 to-blue-shade-300/50 backdrop-blur-sm border border-blue-shade-200/30 rounded-2xl p-6 hover:border-blue-shade-100/50 transition-all duration-300 hover:shadow-lg hover:shadow-blue-shade-100/10">
     <div className="flex items-center justify-between">
       <div>
-        <p className="text-dark-text-secondary text-sm font-medium font-poppins">{title}</p>
-        <p className="text-3xl font-bold text-dark-text-primary font-tektur mt-1">{value.toLocaleString()}</p>
+        <p className="text-dark-text-secondary text-sm font-medium font-robotoMono">{title}</p>
+        <p className="text-3xl font-bold text-dark-text-primary font-robotoMono mt-1">{value.toLocaleString()}</p>
       </div>
       <div className={`p-4 rounded-xl bg-gradient-to-br ${gradient}`}>
         {icon}
@@ -215,7 +215,7 @@ const DashboardPage: React.FC = () => {
         border: '1px solid #123099',
         borderRadius: '12px',
         fontSize: '14px',
-        fontFamily: 'var(--font-poppins)'
+        fontFamily: 'var(--font-robotoMono)'
       }
     });
   };
@@ -246,7 +246,7 @@ const DashboardPage: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-dark-primary via-dark-secondary to-dark-tertiary flex items-center justify-center font-tektur">
+      <div className="min-h-screen bg-gradient-to-br from-dark-primary via-dark-secondary to-dark-tertiary flex items-center justify-center font-robotoMono">
         <div className="text-center space-y-6 p-8">
           <div className="relative">
             <div className="animate-spin-subtle rounded-full h-20 w-20 border-4 border-blue-shade-100/30 border-t-blue-shade-100 mx-auto"></div>
@@ -263,7 +263,7 @@ const DashboardPage: React.FC = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-dark-primary via-dark-secondary to-dark-tertiary flex items-center justify-center font-tektur">
+      <div className="min-h-screen bg-gradient-to-br from-dark-primary via-dark-secondary to-dark-tertiary flex items-center justify-center font-robotoMono">
         <div className="text-center space-y-6 bg-gradient-to-br from-blue-shade-500/50 to-blue-shade-300/50 backdrop-blur-sm border border-red-500/30 p-10 rounded-2xl shadow-2xl max-w-md">
           <div className="text-red-400">
             <svg className="w-20 h-20 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -286,12 +286,12 @@ const DashboardPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-dark-primary via-dark-secondary to-dark-tertiary text-dark-text-primary py-8 px-4 sm:px-6 lg:px-8 font-poppins">
+    <div className="min-h-screen bg-gradient-to-br from-dark-primary via-dark-secondary to-dark-tertiary text-dark-text-primary py-8 px-4 sm:px-6 lg:px-8 font-robotoMono">
       <div className="max-w-7xl mx-auto">
         {/* Header Section */}
         <div className="mb-12 animate-fadeIn">
           <div className="text-center mb-8">
-            <h1 className="text-5xl sm:text-6xl font-extrabold text-transparent bg-gradient-to-r from-blue-shade-100 via-white to-blue-shade-100 bg-clip-text mb-4 font-tektur">
+            <h1 className="text-5xl sm:text-6xl font-extrabold text-transparent bg-gradient-to-r from-blue-shade-100 via-white to-blue-shade-100 bg-clip-text mb-4 font-robotoMono">
               User Dashboard
             </h1>
             <p className="text-dark-text-secondary text-lg max-w-2xl mx-auto">
@@ -394,16 +394,16 @@ const DashboardPage: React.FC = () => {
             <table className="min-w-full divide-y divide-blue-shade-200/20">
               <thead className="bg-gradient-to-r from-blue-shade-500/50 to-blue-shade-300/50">
                 <tr>
-                  <th className="px-8 py-6 text-left text-sm font-bold text-dark-text-primary uppercase tracking-wider font-tektur">
+                  <th className="px-8 py-6 text-left text-sm font-bold text-dark-text-primary uppercase tracking-wider font-robotoMono">
                     Wallet Address
                   </th>
-                  <th className="px-8 py-6 text-left text-sm font-bold text-dark-text-primary uppercase tracking-wider font-tektur">
+                  <th className="px-8 py-6 text-left text-sm font-bold text-dark-text-primary uppercase tracking-wider font-robotoMono">
                     Social Connections
                   </th>
-                  <th className="px-8 py-6 text-left text-sm font-bold text-dark-text-primary uppercase tracking-wider font-tektur">
+                  <th className="px-8 py-6 text-left text-sm font-bold text-dark-text-primary uppercase tracking-wider font-robotoMono">
                     NFT Minted
                   </th>
-                  <th className="px-8 py-6 text-left text-sm font-bold text-dark-text-primary uppercase tracking-wider font-tektur">
+                  <th className="px-8 py-6 text-left text-sm font-bold text-dark-text-primary uppercase tracking-wider font-robotoMono">
                     NFT Details
                   </th>
                 </tr>

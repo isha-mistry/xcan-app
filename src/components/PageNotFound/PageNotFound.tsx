@@ -10,7 +10,7 @@ function PageNotFound() {
     //     <p className="text-lg text-gray-800 font-semibold">Page not found</p>
     //   </div>
     // </div>
-    <div className="flex flex-col gap-8 justify-center h-screen items-center w-[40%] mx-auto font-tektur">
+    <div className="flex flex-col gap-8 justify-center h-screen items-center w-[40%] mx-auto font-robotoMono">
       <Image alt="image" src={not_found}></Image>
       <div className="font-bold text-3xl animate-fadeIn bg-gradient-to-r from-blue-shade-100 to-blue-shade-200 bg-clip-text text-transparent">
         Page not found

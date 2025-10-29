@@ -415,7 +415,7 @@ const WatchFreeCollect = ({
   };
 
   return (
-    <div className="font-tektur overflow-hidden bg-gradient-to-br p-1 rounded-3xl transition-all duration-300 hover:shadow-lg">
+    <div className="font-robotoMono overflow-hidden bg-gradient-to-br p-1 rounded-3xl transition-all duration-300 hover:shadow-lg">
       <div className="bg-white rounded-3xl overflow-hidden">
         <div className="flex justify-between items-center w-full bg-blue-600 py-4 px-6 1.5lg:px-3 1.5xl:px-6">
           <div className="flex items-center space-x-2 animate-fade-in">

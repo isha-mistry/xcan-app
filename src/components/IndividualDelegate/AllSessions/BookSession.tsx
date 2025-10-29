@@ -545,7 +545,7 @@ function BookSession({ props }: { props: Type }) {
 
       {isOpen && (
         <div
-          className="font-tektur z-[70] fixed inset-0 flex items-center justify-center backdrop-blur-md"
+          className="font-robotoMono z-[70] fixed inset-0 flex items-center justify-center backdrop-blur-md"
           style={{ boxShadow: " 0px 0px 45px -17px rgba(0,0,0,0.75)" }}
         >
           <div className="bg-[#0f172a] border border-[#dce4f6] rounded-[41px] overflow-hidden shadow-lg w-full max-w-lg mx-4">

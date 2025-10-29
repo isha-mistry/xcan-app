@@ -141,7 +141,7 @@ function FollowingModal({
 
   return (
     <div
-      className="font-tektur z-[70] fixed inset-0 flex items-center justify-center backdrop-blur-md"
+      className="font-robotoMono z-[70] fixed inset-0 flex items-center justify-center backdrop-blur-md"
       onClick={() => setIsFollowingModalOpen(false)}
     >
       <div

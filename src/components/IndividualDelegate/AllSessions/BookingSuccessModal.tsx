@@ -61,7 +61,7 @@ function BookingSuccessModal({
     <>
       {isOpen && (
         <>
-          <div className="fixed inset-0 z-50 flex items-center justify-center font-tektur">
+          <div className="fixed inset-0 z-50 flex items-center justify-center font-robotoMono">
             <div
               className="absolute inset-0 backdrop-blur-md"
               onClick={onClose}></div>

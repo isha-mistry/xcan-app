@@ -136,7 +136,7 @@ function UpdateSessionDetails({ roomId }: { roomId: string }) {
   };
 
   return (
-    <div className="font-tektur">
+    <div className="font-robotoMono">
       {!dataLoading ? (
         address?.toLowerCase() === data?.host_address.toLowerCase() ? (
           <div className="py-5 px-16 ">
@@ -168,8 +168,8 @@ function UpdateSessionDetails({ roomId }: { roomId: string }) {
                 <Button
                   onClick={() => setViewMode("edit")}
                   className={`rounded-l-full ${viewMode === "edit"
-                      ? "bg-black text-white"
-                      : "bg-white border border-black text-black"
+                    ? "bg-black text-white"
+                    : "bg-white border border-black text-black"
                     }`}
                 >
                   Edit
@@ -177,8 +177,8 @@ function UpdateSessionDetails({ roomId }: { roomId: string }) {
                 <Button
                   onClick={() => setViewMode("preview")}
                   className={`rounded-r-full ${viewMode === "preview"
-                      ? "bg-black text-white"
-                      : "bg-white border border-black text-black"
+                    ? "bg-black text-white"
+                    : "bg-white border border-black text-black"
                     }`}
                 >
                   Preview

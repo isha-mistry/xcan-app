@@ -225,7 +225,7 @@ function DaoOfficeHours() {
         <Heading />
       </div>
 
-      <div className="relative w-full px-4 md:px-6 lg:px-14 pb-8 font-tektur">
+      <div className="relative w-full px-4 md:px-6 lg:px-14 pb-8 font-robotoMono">
         <div className="bg-blue-shade-500 rounded-xl shadow-lg p-6 mb-8 border border-blue-shade-200">
           {/* Tab buttons */}
           <div className="flex gap-2 0.5xs:gap-4 rounded-xl text-sm flex-wrap mb-6">
@@ -235,7 +235,7 @@ function DaoOfficeHours() {
                 : "text-dark-text-secondary bg-blue-shade-500"
                 }`}
               onClick={() => handleNavigation(path + '?hours=ongoing', 'Lectures Navigation', 'Live Tab Clicked', 'Live')}
-            > 
+            >
               <Clock size={16} className="drop-shadow-lg" />
               Live
             </button>
@@ -254,7 +254,7 @@ function DaoOfficeHours() {
                 ? "text-gray-200 font-semibold bg-blue-shade-300"
                 : "text-dark-text-secondary bg-blue-shade-500"
                 }`}
-                onClick={() => handleNavigation(path + "?hours=recorded", 'Lectures Navigation', 'Recorded Tab Clicked', 'Recorded')}
+              onClick={() => handleNavigation(path + "?hours=recorded", 'Lectures Navigation', 'Recorded Tab Clicked', 'Recorded')}
             >
               <BookOpen size={16} className="drop-shadow-lg" />
               Recorded
@@ -267,7 +267,7 @@ function DaoOfficeHours() {
             <input
               type="text"
               placeholder="Search by title or host address"
-              className="w-full pl-3 pr-4 py-3 font-tektur text-base bg-transparent outline-none text-gray-100 placeholder-gray-400"
+              className="w-full pl-3 pr-4 py-3 font-robotoMono text-base bg-transparent outline-none text-gray-100 placeholder-gray-400"
               value={searchQuery}
               onChange={(e) => handleSearch(e.target.value)}
             />

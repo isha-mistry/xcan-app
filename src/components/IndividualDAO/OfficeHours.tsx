@@ -176,8 +176,8 @@ function OfficeHours({ props }: { props: string }) {
               : "text-[#3E3D3D] bg-white"
               }`}
             onClick={() =>
-              router.push(`${path}?active=lectures&lectures=recorded`)  
-              }
+              router.push(`${path}?active=lectures&lectures=recorded`)
+            }
           >
             <BookOpen size={16} className="drop-shadow-lg" />
             Library
@@ -189,7 +189,7 @@ function OfficeHours({ props }: { props: string }) {
           <input
             type="text"
             placeholder="Search by title and host address"
-            className="w-[100%] pl-2 pr-4 py-1.5 font-tektur md:py-2 text-sm bg-transparent outline-none"
+            className="w-[100%] pl-2 pr-4 py-1.5 font-robotoMono md:py-2 text-sm bg-transparent outline-none"
             value={searchInput}
             onChange={handleSearchChange}
             onKeyPress={handleKeyPress}

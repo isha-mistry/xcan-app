@@ -59,7 +59,7 @@ function ConnectWalletHomePage({ onClose }: ConnectWalletHomePageProps) {
                   size={16}
                   className="mr-2 size-5  group-hover:rotate-6 transition-transform"
                 />
-                <span className="font-tektur mt-1 ">Connect Wallet</span>
+                <span className="font-robotoMono mt-1 ">Connect Wallet</span>
               </button>
             </div>
           </div>

@@ -165,7 +165,7 @@ function UserOfficeHours() {
               : "text-[#3E3D3D] bg-white"
               }`}
             onClick={() =>
-              router.push(path + "?active=lectures&lectures=schedule")    
+              router.push(path + "?active=lectures&lectures=schedule")
             }
           >
             <CalendarCheck size={16} className="drop-shadow-lg" />
@@ -230,7 +230,7 @@ function UserOfficeHours() {
             <input
               type="text"
               placeholder="Search by title or host address"
-              className="w-[100%] pl-2 pr-4 py-1.5 font-tektur md:py-2 text-sm bg-transparent outline-none"
+              className="w-[100%] pl-2 pr-4 py-1.5 font-robotoMono md:py-2 text-sm bg-transparent outline-none"
               value={searchQuery}
               onChange={(e) => handleSearch(e.target.value)}
             />

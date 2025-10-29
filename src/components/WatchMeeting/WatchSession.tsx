@@ -188,14 +188,14 @@ function WatchSession({
                     <Tooltip
                       showArrow
                       content={
-                        <div className="font-tektur">Offchain Attestation</div>
+                        <div className="font-robotoMono">Offchain Attestation</div>
                       }
                       placement="top"
                       className="rounded-md bg-opacity-90 max-w-96 bg-gray-700"
                       closeDelay={1}
                     >
                       <Link
-                        href={ `https://arbitrum.easscan.org/offchain/attestation/view/${data.uid_host}`
+                        href={`https://arbitrum.easscan.org/offchain/attestation/view/${data.uid_host}`
                           // data.uid_host
                           //   ? `${daoConfigs[data.dao_name.toLowerCase()]
                           //     .attestationUrl
@@ -229,14 +229,14 @@ function WatchSession({
                   <Tooltip
                     showArrow
                     content={
-                      <div className="font-tektur">Onchain Attestation</div>
+                      <div className="font-robotoMono">Onchain Attestation</div>
                     }
                     placement="top"
                     className="rounded-md bg-opacity-90 max-w-96 bg-gray-700"
                     closeDelay={1}
                   >
                     <Link
-                      href={ `https://arbitrum.easscan.org/attestation/view/${data.onchain_host_uid}`
+                      href={`https://arbitrum.easscan.org/attestation/view/${data.onchain_host_uid}`
                         // data.onchain_host_uid
                         //   ? `${daoConfigs[data.dao_name.toLowerCase()]
                         //     .attestationUrl
@@ -364,7 +364,7 @@ function WatchSession({
                         <Tooltip
                           showArrow
                           content={
-                            <div className="font-tektur">
+                            <div className="font-robotoMono">
                               Offchain Attestation
                             </div>
                           }
@@ -373,7 +373,7 @@ function WatchSession({
                           closeDelay={1}
                         >
                           <Link
-                            href={ `https://arbitrum.easscan.org/offchain/attestation/view/${attendee.attendee_uid}`
+                            href={`https://arbitrum.easscan.org/offchain/attestation/view/${attendee.attendee_uid}`
                               // daoConfigs
                               //   ? `${daoConfigs[data.dao_name.toLowerCase()]
                               //     .attestationUrl
@@ -401,7 +401,7 @@ function WatchSession({
                         <Tooltip
                           showArrow
                           content={
-                            <div className="font-tektur">
+                            <div className="font-robotoMono">
                               Onchain Attestation
                             </div>
                           }

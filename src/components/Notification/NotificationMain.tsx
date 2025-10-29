@@ -452,7 +452,7 @@ function NotificationMain() {
           },
         }}
       /> */}
-      <div className="font-tektur mb-12">
+      <div className="font-robotoMono mb-12">
         <div className="pt-2 xs:pt-4 sm:pt-6 px-4 md:px-6 lg:px-14">
           <Heading />
         </div>

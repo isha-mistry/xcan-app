@@ -59,7 +59,7 @@ function EditSessionDetails({
     <div className="relative">
       <div className="absolute top-0 right-0">
         <Button
-          className="border-blue-shade-100 text-blue-shade-100 border rounded-full font-tektur font-semibold text-xs bg-white"
+          className="border-blue-shade-100 text-blue-shade-100 border rounded-full font-robotoMono font-semibold text-xs bg-white"
           onClick={() => toast("Coming Soon! 🚀")}
         >
           Generate Title and Description
@@ -67,7 +67,7 @@ function EditSessionDetails({
       </div>
       <div>
         <div className="">
-          <div className="text-xl font-semibold mb-2 text-gray-100 font-tektur">
+          <div className="text-xl font-semibold mb-2 text-gray-100 font-robotoMono">
             Thumbnail Image
           </div>
           <div className="flex gap-3 items-center">
@@ -112,7 +112,7 @@ function EditSessionDetails({
                   />
                 </label>
                 <Button
-                  className="bg-blue-shade-200 text-white py-5 px-4 text-xs font-medium rounded-full font-tektur"
+                  className="bg-blue-shade-200 text-white py-5 px-4 text-xs font-medium rounded-full font-robotoMono"
                   onClick={getRandomImage}
                 >
                   Add Random Image
@@ -122,8 +122,8 @@ function EditSessionDetails({
             </div>
           </div>
         </div>
-        <div className="py-3 font-tektur">
-          <div className="text-xl mb-2 font-semibold text-gray-100 font-tektur">
+        <div className="py-3 font-robotoMono">
+          <div className="text-xl mb-2 font-semibold text-gray-100 font-robotoMono">
             Session Title
           </div>
           <div className="relative">
@@ -135,7 +135,7 @@ function EditSessionDetails({
               onChange={handleTitleChange}
               maxLength={100}
             />
-            <div className="absolute top-3 right-4 text-[14px] font-medium text-gray-300 pe-1 font-tektur">
+            <div className="absolute top-3 right-4 text-[14px] font-medium text-gray-300 pe-1 font-robotoMono">
               {sessionDetails.title.length}/100
             </div>
           </div>
@@ -143,18 +143,18 @@ function EditSessionDetails({
         <div className="py-3">
           <div className="flex justify-between items-center mb-2">
             <div>
-              <div className="text-xl font-semibold text-gray-100 font-tektur">
+              <div className="text-xl font-semibold text-gray-100 font-robotoMono">
                 Session Description
               </div>
             </div>
             <div
-                className={`rounded-lg  px-4 py-1 text-xs border ${sessionDetails.description.length < 600
-                  ? "bg-red-500"
-                  : sessionDetails.description.length <= 1000
-                    ? "bg-yellow-500"
-                    : sessionDetails.description.length <= 1500
-                      ? "bg-green-700"
-                      : "bg-yellow-700"
+              className={`rounded-lg  px-4 py-1 text-xs border ${sessionDetails.description.length < 600
+                ? "bg-red-500"
+                : sessionDetails.description.length <= 1000
+                  ? "bg-yellow-500"
+                  : sessionDetails.description.length <= 1500
+                    ? "bg-green-700"
+                    : "bg-yellow-700"
                 } text-white`}
             >
               {getDescriptionStatus(sessionDetails.description.length)}

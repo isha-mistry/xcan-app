@@ -97,7 +97,7 @@ function SchedulingSuccessModal({
                 <div className="flex justify-between">
                   <Tooltip
                     showArrow
-                    content={<div className="font-tektur">Copied</div>}
+                    content={<div className="font-robotoMono">Copied</div>}
                     placement="bottom"
                     className="rounded-md bg-opacity-90 text-white bg-gray-700"
                     closeDelay={1}

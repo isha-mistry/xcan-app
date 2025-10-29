@@ -7,7 +7,7 @@
   /* Increase the height of the editor */
   .ql-editor {
     min-height: 200px !important; /* Adjust the value as needed */
-    font-family: 'poppins' !important;
+    font-family: var(--font-robotoMono) !important;
   }
 
   .ql-toolbar{

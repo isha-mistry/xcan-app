@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Poppins, Tektur } from "next/font/google";
+import { Roboto_Mono } from "next/font/google";
 import localFonts from "next/font/local";
 import "./globals.css";
 import RootProviders from "./providers/root-providers";
@@ -10,25 +10,11 @@ import TopNavbar from "@/components/TopNavbar/TopNavbar";
 import RouteProtectionWrapper from "@/components/RouteProtectionWrapper";
 import { Toaster } from "react-hot-toast";
 
-const poppins = Poppins({
+const robotoMono = Roboto_Mono({
   subsets: ["latin"],
-  weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
-  variable: "--font-poppins",
+  weight: ["100", "200", "300", "400", "500", "600", "700"],
+  variable: "--font-roboto-mono",
 });
-
-const tektur = Tektur({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800", "900"],
-  variable: "--font-tektur",
-});
-// const quanty = localFonts({
-//   src: [
-//     {
-//       path: "../assets/fonts/quanty.ttf",
-//     },
-//   ],
-//   variable: "--font-quanty",
-// });
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://inorbit-edu.vercel.app/"),
@@ -80,7 +66,7 @@ export default function RootLayout({
     <html lang="en">
       <head>
       </head>
-      <body className={`${tektur.variable} ${poppins.variable} bg-dark-primary text-dark-text-primary`}>
+      <body className={`${robotoMono.variable} bg-dark-primary text-dark-text-primary`}>
         <ProgressBarProvider>
           <Suspense>
             <RootProviders>

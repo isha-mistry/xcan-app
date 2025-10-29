@@ -105,7 +105,7 @@ const ExploreDAOs = () => {
         <Heading />
       </div>
 
-      <div className="relative w-full px-4 md:px-6 lg:px-14 pb-8 font-tektur">
+      <div className="relative w-full px-4 md:px-6 lg:px-14 pb-8 font-robotoMono">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -132,7 +132,7 @@ const ExploreDAOs = () => {
             <input
               type="text"
               placeholder="Search DAOs"
-              className="w-full pl-3 pr-4 py-3 font-tektur text-base bg-transparent outline-none text-dark-text-primary placeholder-dark-text-tertiary"
+              className="w-full pl-3 pr-4 py-3 font-robotoMono text-base bg-transparent outline-none text-dark-text-primary placeholder-dark-text-tertiary"
               value={searchQuery}
               onChange={(e) => handleSearchChange(e.target.value)}
             />

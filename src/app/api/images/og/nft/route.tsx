@@ -110,7 +110,7 @@ export async function GET(req: NextRequest) {
         </div>
         <div
           style={{
-            fontFamily: "poppins",
+            fontFamily: "roboto-mono",
             fontSize: "36px",
             fontWeight: "bold",
             color: "white",

@@ -16,7 +16,7 @@ function SessionPreview({
     <>
       {/* {data ? ( */}
       <div className="">
-        <div className="space-y-5 font-tektur pb-10">
+        <div className="space-y-5 font-robotoMono pb-10">
           <WatchSessionVideo
             data={data}
             collection={collection}

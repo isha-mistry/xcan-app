@@ -65,10 +65,10 @@ const StyledMDEditorWrapper = styled.div`
   }
   .w-md-editor-content {
     margin: 12px 0 12px 0 !important;
-    font-family: "Poppins", sans-serif !important;
+    font-family: var(--font-robotoMono) !important;
   }
   .wmde-markdown {
-    font-family: "Poppins", sans-serif !important;
+    font-family: var(--font-robotoMono) !important;
   }
   .wmde-markdown ul {
     list-style-type: disc !important;

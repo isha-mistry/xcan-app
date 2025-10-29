@@ -97,7 +97,7 @@ const SidebarMainMobile = () => {
           </div>
           <div className={`flex border border-l-0 h-16`}></div>
           <Link
-            className="ml-1 xs:ml-2 sm:ml-4 mt-[2px] xs:mt-[3px] text-black font-semibold text-[20px] xs:text-[24px] sm:text-[28px] md:text-[32px] font-tektur flex items-center"
+            className="ml-1 xs:ml-2 sm:ml-4 mt-[2px] xs:mt-[3px] text-black font-semibold text-[20px] xs:text-[24px] sm:text-[28px] md:text-[32px] font-robotoMono flex items-center"
             href={"/"}
           >
             <Image
@@ -119,7 +119,7 @@ const SidebarMainMobile = () => {
 
       <div
         ref={sidebarRef}
-        className={`fixed inset-y-0 left-0 w-full font-tektur bg-blue-shade-200 text-white transform z-50 ${isOpen ? "translate-x-0" : "-translate-x-full"
+        className={`fixed inset-y-0 left-0 w-full font-robotoMono bg-blue-shade-200 text-white transform z-50 ${isOpen ? "translate-x-0" : "-translate-x-full"
           } transition-transform duration-500 ease-in-out`}
         onClick={handleSidebarClick}
       >
@@ -135,7 +135,7 @@ const SidebarMainMobile = () => {
               <HiArrowSmLeft className="size-6" />
             </button>
             <Link
-              className="ml-5 text-white font-semibold text-[26px] font-tektur"
+              className="ml-5 text-white font-semibold text-[26px] font-robotoMono"
               href={"https://inorbit-edu.vercel.app/"}
             >
               Xcan

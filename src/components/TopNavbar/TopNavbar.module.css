@@ -1,5 +1,5 @@
 .customTooltip {
-  font-family: var(--font-tektur);
+  font-family: var(--font-robotoMono);
   transform-origin: center;
   animation: expandTooltip 0.3s ease-out forwards;
 }

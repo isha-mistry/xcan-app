@@ -182,10 +182,10 @@ function DelegatesSession({ props }: { props: string }) {
     );
 
   return (
-    <div className="font-tektur">
+    <div className="font-robotoMono">
       {/* <div
         style={{ background: "rgba(238, 237, 237, 0.36)" }}
-        className="flex border-[0.5px] border-black w-1/3 rounded-full my-4 font-tektur"
+        className="flex border-[0.5px] border-black w-1/3 rounded-full my-4 font-robotoMono"
       >
         <input
           type="text"
@@ -227,7 +227,7 @@ function DelegatesSession({ props }: { props: string }) {
           <input
             type="text"
             placeholder="Search by title and host address"
-            className="w-[100%] pl-2 pr-4 py-1.5 font-tektur md:py-2 text-sm bg-transparent outline-none"
+            className="w-[100%] pl-2 pr-4 py-1.5 font-robotoMono md:py-2 text-sm bg-transparent outline-none"
             value={searchQuery}
             onChange={(e) => handleSearchChange(e.target.value)}
           />

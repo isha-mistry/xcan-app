@@ -81,9 +81,7 @@ const config: Config = {
         "gradient-end": "#06b6d4", // cyan-500
       },
       fontFamily: {
-        // quanty: ["var(--font-quanty)"],
-        poppins: ["var(--font-poppins)"],
-        tektur: ["var(--font-tektur)"],
+        robotoMono: ["var(--font-roboto-mono)"],
       },
       keyframes: {
         fadeIn: {

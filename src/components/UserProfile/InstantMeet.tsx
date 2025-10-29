@@ -251,7 +251,7 @@ function InstantMeet() {
           <div className="grid gris-cols-4 2md:grid-cols-7 rounded-3xl border-solid border-2 border-[#F9F9F9]-900">
             <div className="col-span-4 border-solid border-b-2 2md:border-b-0 2md:border-r-2 border-[#F9F9F9]-900">
               <div className="p-6 xs:p-10 xm:p-14">
-                <div className="text-white text-2xl xs:text-3xl font-semibold font-tektur text-center">
+                <div className="text-white text-2xl xs:text-3xl font-semibold font-robotoMono text-center">
                   Start an Instant Meeting
                 </div>
                 <div className="grid grid-cols-2 xm:grid-cols-3 xm:grid-rows-2 text-xs xs:text-sm gap-6 xs:gap-11 font-semibold pt-8 text-[#3E3D3D] text-center">
@@ -260,7 +260,7 @@ function InstantMeet() {
                       key={index}
                       content={
                         <div className="px-1 py-3 w-80 ">
-                          <div className="font-tektur text-white text-center">
+                          <div className="font-robotoMono text-white text-center">
                             {data.description}
                           </div>
                         </div>
@@ -342,7 +342,7 @@ function InstantMeet() {
       <Modal
         isOpen={isOpen}
         onClose={handleCloseModal}
-        className="font-tektur dark"
+        className="font-robotoMono dark"
         placement="center"
         backdrop="blur"
         classNames={{

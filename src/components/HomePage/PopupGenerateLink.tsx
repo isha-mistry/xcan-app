@@ -135,7 +135,7 @@ function PopupGenerateLink({ onclose, dao }: PopupProps) {
               Get More Delegations with Farcaster Frames
             </h2>
 
-            <p className="text-left font-tektur text-xs 0.5xs:text-sm text-gray-700 mb-6 leading-relaxed bg-blue-50 p-4 rounded-lg shadow-inner">
+            <p className="text-left font-robotoMono text-xs 0.5xs:text-sm text-gray-700 mb-6 leading-relaxed bg-blue-50 p-4 rounded-lg shadow-inner">
               Copy your personalized link and share it as a Farcaster frame to
               stand out. Frames make it easy to highlight your role and invite
               others to delegate their tokens to you.
@@ -169,7 +169,7 @@ function PopupGenerateLink({ onclose, dao }: PopupProps) {
               </div>
             </div>
 
-            <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-2xl p-3 xs:p-4 flex justify-between  w-full shadow-sm font-tektur gap-1">
+            <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-2xl p-3 xs:p-4 flex justify-between  w-full shadow-sm font-robotoMono gap-1">
               <div>
                 <div className="flex gap-1.5 xs:gap-3 my-2">
                   <Image

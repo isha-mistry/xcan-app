@@ -82,7 +82,7 @@ function ReferralsMain() {
 
   return (
     <>
-      <div className="font-tektur">{renderContent()}</div>
+      <div className="font-robotoMono">{renderContent()}</div>
     </>
   );
 }

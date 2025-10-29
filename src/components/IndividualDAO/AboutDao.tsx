@@ -105,133 +105,133 @@ const AboutDao = ({ props }: { props: string }) => {
   // Conditionally define the links based on the presence of community_and_resources
   const links: LinkData[] = text?.community_and_resources
     ? [
-        {
-          name: "Website",
-          href: text.community_and_resources.website,
-          icon: FaGlobe,
-          color: "text-blue-500",
-        },
-        {
-          name: "Dashboard",
-          href: text.community_and_resources.dashboard,
-          icon: MdOutlineDashboardCustomize,
-          color: "text-purple-600",
-        },
-        {
-          name: "Community Hub",
-          href: text.community_and_resources.communityHub,
-          icon: FaUsers,
-          color: "text-[#000]",
-        },
-        {
-          name: "Warpcast",
-          href: text.community_and_resources.warpcast,
-          icon: FaSatelliteDish,
-          color: "text-purple-600",
-        },
-        {
-          name: "Guild",
-          href: text.community_and_resources.guild,
-          icon: FaGuilded,
-          color: "text-[#000]",
-        },
-        {
-          name: "Manifesto",
-          href: text.community_and_resources.manifesto,
-          icon: IoDocumentText,
-          color: "text-yellow-500",
-        },
-        {
-          name: "LGL Join Video",
-          href: text.community_and_resources.LGLJoinVideo,
-          icon: RiRecordCircleFill,
-          color: "text-blue-600",
-        },
-        {
-          name: "Telegram",
-          href: text.community_and_resources.telegram,
-          icon: FaTelegramPlane,
-          color: "text-blue-500",
-        },
-        {
-          name: "Governance",
-          href: text.community_and_resources.governance,
-          icon: FaBalanceScale,
-          color: "text-purple-600",
-        },
-        {
-          name: "Forum",
-          href: text.community_and_resources.forum,
-          icon: FaEnvelope,
-          color: "text-[#36b0f7]",
-        },
-        {
-          name: "Bridge",
-          href: text.community_and_resources.bridge,
-          icon: FaBridge,
-          color: "text-[#000]",
-        },
-        {
-          name: "Docs",
-          href: text.community_and_resources.docs,
-          icon: FaBook,
-          color: "text-gray-700",
-        },
-        {
-          name: "Mirror",
-          href: text.community_and_resources.mirror,
-          icon: GoMirror,
-          color: "text-[#000]",
-        },
-        {
-          name: "Github",
-          href: text.community_and_resources.github,
-          icon: FaGithub,
-          color: "text-[#000]",
-        },
-        {
-          name: "Discord",
-          href: text.community_and_resources.discord,
-          icon: FaDiscord,
-          color: "text-[#5865F2]",
-        },
-        {
-          name: "Block Explorer",
-          href: text.community_and_resources.block_explorer,
-          icon: SiHiveBlockchain,
-          color: "text-[#000]",
-        },
-        {
-          name: "Twitter",
-          href: text.community_and_resources.twitter?.optimism,
-          icon: FaXTwitter,
-          color: "text-[#1DA1F2]",
-        },
-        {
-          name: "Gov Twitter",
-          href: text.community_and_resources.twitter?.gov,
-          icon: FaXTwitter,
-          color: "text-[#1DA1F2]",
-        },
-        {
-          name: "Twitter",
-          href: text.community_and_resources.twitter?.arbitrum,
-          icon: FaXTwitter,
-          color: "text-[#1DA1F2]",
-        },
-        {
-          name: "Dao Twitter",
-          href: text.community_and_resources.twitter?.dao,
-          icon: FaXTwitter,
-          color: "text-[#1DA1F2]",
-        },
-        {
-          name: "Twitter",
-          href: text.community_and_resources.twitter?.letsgrowdao,
-          icon: FaXTwitter,
-          color: "text-[#1DA1F2]",
-        },
-      ].filter((link) => link.href)
+      {
+        name: "Website",
+        href: text.community_and_resources.website,
+        icon: FaGlobe,
+        color: "text-blue-500",
+      },
+      {
+        name: "Dashboard",
+        href: text.community_and_resources.dashboard,
+        icon: MdOutlineDashboardCustomize,
+        color: "text-purple-600",
+      },
+      {
+        name: "Community Hub",
+        href: text.community_and_resources.communityHub,
+        icon: FaUsers,
+        color: "text-[#000]",
+      },
+      {
+        name: "Warpcast",
+        href: text.community_and_resources.warpcast,
+        icon: FaSatelliteDish,
+        color: "text-purple-600",
+      },
+      {
+        name: "Guild",
+        href: text.community_and_resources.guild,
+        icon: FaGuilded,
+        color: "text-[#000]",
+      },
+      {
+        name: "Manifesto",
+        href: text.community_and_resources.manifesto,
+        icon: IoDocumentText,
+        color: "text-yellow-500",
+      },
+      {
+        name: "LGL Join Video",
+        href: text.community_and_resources.LGLJoinVideo,
+        icon: RiRecordCircleFill,
+        color: "text-blue-600",
+      },
+      {
+        name: "Telegram",
+        href: text.community_and_resources.telegram,
+        icon: FaTelegramPlane,
+        color: "text-blue-500",
+      },
+      {
+        name: "Governance",
+        href: text.community_and_resources.governance,
+        icon: FaBalanceScale,
+        color: "text-purple-600",
+      },
+      {
+        name: "Forum",
+        href: text.community_and_resources.forum,
+        icon: FaEnvelope,
+        color: "text-[#36b0f7]",
+      },
+      {
+        name: "Bridge",
+        href: text.community_and_resources.bridge,
+        icon: FaBridge,
+        color: "text-[#000]",
+      },
+      {
+        name: "Docs",
+        href: text.community_and_resources.docs,
+        icon: FaBook,
+        color: "text-gray-700",
+      },
+      {
+        name: "Mirror",
+        href: text.community_and_resources.mirror,
+        icon: GoMirror,
+        color: "text-[#000]",
+      },
+      {
+        name: "Github",
+        href: text.community_and_resources.github,
+        icon: FaGithub,
+        color: "text-[#000]",
+      },
+      {
+        name: "Discord",
+        href: text.community_and_resources.discord,
+        icon: FaDiscord,
+        color: "text-[#5865F2]",
+      },
+      {
+        name: "Block Explorer",
+        href: text.community_and_resources.block_explorer,
+        icon: SiHiveBlockchain,
+        color: "text-[#000]",
+      },
+      {
+        name: "Twitter",
+        href: text.community_and_resources.twitter?.optimism,
+        icon: FaXTwitter,
+        color: "text-[#1DA1F2]",
+      },
+      {
+        name: "Gov Twitter",
+        href: text.community_and_resources.twitter?.gov,
+        icon: FaXTwitter,
+        color: "text-[#1DA1F2]",
+      },
+      {
+        name: "Twitter",
+        href: text.community_and_resources.twitter?.arbitrum,
+        icon: FaXTwitter,
+        color: "text-[#1DA1F2]",
+      },
+      {
+        name: "Dao Twitter",
+        href: text.community_and_resources.twitter?.dao,
+        icon: FaXTwitter,
+        color: "text-[#1DA1F2]",
+      },
+      {
+        name: "Twitter",
+        href: text.community_and_resources.twitter?.letsgrowdao,
+        icon: FaXTwitter,
+        color: "text-[#1DA1F2]",
+      },
+    ].filter((link) => link.href)
     : []; // Filter out links with no href
 
   const renderTechnologyFeatures = () => {
@@ -276,7 +276,7 @@ const AboutDao = ({ props }: { props: string }) => {
   };
 
   return (
-    <div className="container mx-auto md:px-4 py-12 font-tektur">
+    <div className="container mx-auto md:px-4 py-12 font-robotoMono">
       <motion.h1
         className="text-4xl font-bold mb-8 text-center text-blue-300"
         {...fadeInUp}
@@ -336,20 +336,20 @@ const AboutDao = ({ props }: { props: string }) => {
             <ul className="space-y-4">
               {text?.governance_and_dao_structure?.elements
                 ? text.governance_and_dao_structure.elements.map(
-                    (item, index) => (
-                      <li
-                        key={index}
-                        className="border-l-4 border-purple-500 pl-4"
-                      >
-                        <h4 className="font-semibold text-purple-600">
-                          {item.name}
-                        </h4>
-                        <p className="text-gray-200">{item.details}</p>
-                      </li>
-                    )
+                  (item, index) => (
+                    <li
+                      key={index}
+                      className="border-l-4 border-purple-500 pl-4"
+                    >
+                      <h4 className="font-semibold text-purple-600">
+                        {item.name}
+                      </h4>
+                      <p className="text-gray-200">{item.details}</p>
+                    </li>
                   )
+                )
                 : text?.governance_and_dao_structure?.houses
-                ? text.governance_and_dao_structure.houses.map(
+                  ? text.governance_and_dao_structure.houses.map(
                     (item, index) => (
                       <li
                         key={index}
@@ -362,7 +362,7 @@ const AboutDao = ({ props }: { props: string }) => {
                       </li>
                     )
                   )
-                : null}
+                  : null}
             </ul>
           </div>
         </motion.section>

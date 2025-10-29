@@ -116,7 +116,7 @@ function EventTile({ tileIndex, data: initialData, isEvent }: TileProps) {
           );
           setEnsGuestName(
             guestEnsData?.ensName ||
-              formatWalletAddress(data.attendees[0].attendee_address)
+            formatWalletAddress(data.attendees[0].attendee_address)
           );
           setEnsGuestAvatar(guestEnsData?.avatar || "");
         }
@@ -289,13 +289,12 @@ function EventTile({ tileIndex, data: initialData, isEvent }: TileProps) {
               {data.title}
             </div>
             <div
-              className={`rounded-md px-2 py-0.5 w-fit flex items-center text-xs ${
-                data.booking_status === "Approved"
+              className={`rounded-md px-2 py-0.5 w-fit flex items-center text-xs ${data.booking_status === "Approved"
                   ? "border border-lime-600 text-lime-600"
                   : data.booking_status === "Rejected"
-                  ? "border border-red-600 text-red-600"
-                  : "border border-yellow-500 text-yellow-500"
-              }`}
+                    ? "border border-red-600 text-red-600"
+                    : "border border-yellow-500 text-yellow-500"
+                }`}
             >
               {data.booking_status}
               {/* Approve */}
@@ -336,11 +335,10 @@ function EventTile({ tileIndex, data: initialData, isEvent }: TileProps) {
                     className="bg-gray-700"
                   >
                     <span
-                      className={`cursor-pointer text-xs sm:text-sm ${
-                        copyStates.guest.isAnimating
+                      className={`cursor-pointer text-xs sm:text-sm ${copyStates.guest.isAnimating
                           ? "text-blue-500"
                           : "text-gray-400 hover:text-gray-600"
-                      }`}
+                        }`}
                     >
                       <IoCopy
                         onClick={(event) => {
@@ -394,11 +392,10 @@ function EventTile({ tileIndex, data: initialData, isEvent }: TileProps) {
                   className="bg-gray-700"
                 >
                   <span
-                    className={`cursor-pointer text-xs sm:text-sm ${
-                      copyStates.host.isAnimating
+                    className={`cursor-pointer text-xs sm:text-sm ${copyStates.host.isAnimating
                         ? "text-blue-500"
                         : "text-gray-400 hover:text-gray-600"
-                    }`}
+                      }`}
                   >
                     <IoCopy
                       onClick={(event) => {
@@ -468,7 +465,7 @@ function EventTile({ tileIndex, data: initialData, isEvent }: TileProps) {
                   </div>
                 </Tooltip>
                 {isOpen && (
-                  <div className="font-tektur z-[70] fixed inset-0 flex items-center justify-center backdrop-blur-md">
+                  <div className="font-robotoMono z-[70] fixed inset-0 flex items-center justify-center backdrop-blur-md">
                     <div className="bg-white rounded-[41px] overflow-hidden shadow-lg w-1/2">
                       <div className="relative">
                         <div className="flex flex-col gap-1 text-white bg-[#292929] p-4 py-7">

@@ -34,7 +34,7 @@ function FeaturedArticles() {
 
   const [isButtonHovered, setIsButtonHovered] = useState(false);
   return (
-    <div className="w-full px-4 md:px-6 lg:px-14 pb-16 mt-8 font-tektur">
+    <div className="w-full px-4 md:px-6 lg:px-14 pb-16 mt-8 font-robotoMono">
       <motion.h2
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}

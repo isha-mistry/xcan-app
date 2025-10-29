@@ -74,7 +74,7 @@ function SpecificDAO({ props }: { props: { daoDelegates: string } }) {
 
   return (
     <>
-      <div className="font-tektur py-6" id="secondSection">
+      <div className="font-robotoMono py-6" id="secondSection">
         <div className="px-4 md:px-6 lg:px-14 pb-5 ">
           <IndividualDaoHeader />
           <div className="py-5">

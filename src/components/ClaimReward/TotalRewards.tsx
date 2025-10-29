@@ -243,7 +243,7 @@ function TotalRewards() {
 
   return (
     <>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:py-6 font-tektur">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:py-6 font-robotoMono">
         <div className="bg-gradient-to-br from-blue-500 to-purple-600 text-white rounded-lg overflow-hidden shadow-lg transition-all duration-300 hover:shadow-xl">
           <div className="p-6">
             <h2 className="text-2xl font-bold flex items-center mb-4">
@@ -307,8 +307,8 @@ function TotalRewards() {
                       onClick={() => handleClaim(network.chainId, network.accountBalance)}
                       disabled={claimingReward || network.accountBalance <= BigInt(0)}
                       className={`bg-gradient-to-r from-green-400 to-blue-500 text-white px-4 py-2 rounded-full transition-all duration-300 shadow-md hover:shadow-lg flex items-center justify-center min-w-[100px] ${(claimingReward || network.accountBalance <= BigInt(0))
-                          ? "opacity-50 cursor-not-allowed from-gray-400 to-gray-500"
-                          : "hover:from-green-500 hover:to-blue-600"
+                        ? "opacity-50 cursor-not-allowed from-gray-400 to-gray-500"
+                        : "hover:from-green-500 hover:to-blue-600"
                         }`}
                     >
                       {claimingReward && network.chainId == chainId ? (
