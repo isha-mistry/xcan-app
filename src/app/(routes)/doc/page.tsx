@@ -55,7 +55,7 @@ export default function DocPage() {
             <h4 className="font-semibold text-blue-100">How Modules Work</h4>
             <ul className="list-disc pl-6 text-blue-200">
               <li>Story + Quiz: Learn by story; pass quizzes (80% to proceed).</li>
-              <li>Coding Challenges: Code in browser, test, auto-save, earn points by difficulty.</li>
+              <li>Coding Challenges: Code in browser, test, auto-save.</li>
               <li>Certification unlocks when all chapters completed/passed.</li>
             </ul>
           </div>
@@ -84,13 +84,12 @@ export default function DocPage() {
           <div className="mt-2 text-blue-100 font-semibold">Host your own:</div>
           <ul className="list-disc pl-6 text-blue-200">
             <li>Set up your profile (bio, skills), pick schedule & duration.</li>
-            <li>Published to community, all recordings stored on IPFS.</li>
           </ul>
         </section>
         {/* Video Meetings */}
         <section className="mb-10">
           <h2 className="text-xl font-semibold mb-2">Video Meetings</h2>
-          <p className="text-blue-200">Crypto-native meetings: unique links, lobby device check, grid view, screen sharing, in-meeting chat, and blockchain-based attendance attestations.</p>
+          <p className="text-blue-200">Meetings: unique links, lobby device check, grid view, screen sharing, in-meeting chat, and blockchain-based attendance attestations.</p>
           <div className="font-semibold text-blue-100">Joining:</div>
           <ol className="list-decimal pl-6 text-blue-200">
             <li>Click meeting link</li>
@@ -100,8 +99,7 @@ export default function DocPage() {
           </ol>
           <div className="mt-2 text-blue-100 font-semibold">Meeting Features:</div>
           <ul className="list-disc pl-6 text-blue-200">
-            <li>Grid/carousel video, draggable PIP, control bar, raise hand, emojis, chat & participants sidebar.</li>
-            <li>Recording (host-only): saved to IPFS and profile.</li>
+            <li>Grid/carousel video, control bar, raise hand, emojis, chat & participants sidebar.</li>
             <li><b>Attendance attestations auto-issued if you attend ≥50%.</b></li>
           </ul>
           <div className="mt-2 text-blue-100 font-semibold">Etiquette:</div>
@@ -146,7 +144,7 @@ export default function DocPage() {
           <p className="text-blue-200">Attestations are cryptographic proof that you attended/participated—issued via Ethereum Attestation Service on Arbitrum Sepolia.</p>
           <ul className="list-disc pl-6 text-blue-200">
             <li>Permanent, verifiable, privacy-respecting, cannot be forged</li>
-            <li>Issued automatically for meetings (≥50% attendance) and certain tasks</li>
+            <li>Issued automatically for meetings (≥50% attendance)</li>
             <li>Share on LinkedIn, resumes, social – public on blockchain</li>
           </ul>
         </section>
@@ -156,9 +154,8 @@ export default function DocPage() {
           <ul className="list-disc pl-6 text-blue-200">
             <li>Overview: Personal info, stats, rank</li>
             <li>Challenges Tab: Completed challenges, difficulty, points, dates</li>
-            <li>Modules Tab: Progress, completion %, scores</li>
-            <li>NFTs Tab: Certification gallery with chain links</li>
-            <li>Total attestations—link to EAS Explorer for proofs</li>
+            <li>Modules Tab: Progress, completion %</li>
+            <li>NFTs Tab: Certification gallery with links</li>
           </ul>
         </section>
         {/* Best Practices */}
@@ -176,7 +173,6 @@ export default function DocPage() {
             <li>Never share private keys/seed phrases</li>
             <li>Only connect on official XCan domains</li>
             <li>Separate wallets for learning vs funds</li>
-            <li>Log out on shared computers; report suspicious behavior</li>
           </ul>
         </section>
         {/* FAQ */}
@@ -216,14 +212,15 @@ export default function DocPage() {
           <h2 className="text-xl font-semibold mb-2">Quick Links & Support</h2>
           <div className="font-semibold text-blue-100">Platforms</div>
           <ul className="list-disc pl-6 text-blue-200">
-            <li>Learning Platform: <Link href="https://modules.xcan.dev/" className="underline text-blue-100" target="_blank">modules.xcan.io</Link></li>
-            <li>Expert Sessions: <Link href="https://www.xcan.dev/" className="underline text-blue-100" target="_blank">app.xcan.io</Link></li>
+            <li>Learning Platform: <Link href="https://modules.xcan.dev/" className="underline text-blue-100" target="_blank">modules.xcan.dev</Link></li>
+            <li>Expert Sessions: <Link href="https://www.xcan.dev/" className="underline text-blue-100" target="_blank">www.xcan.dev</Link></li>
           </ul>
           <div className="font-semibold text-blue-100 mt-2">Other Links</div>
           <ul className="list-disc pl-6 text-blue-200">
-            <li>Your Profile: <Link href="https://modules.xcan.dev/profile" className="underline text-blue-100" target="_blank">app.xcan.io/profile</Link></li>
-            <li>Leaderboard: <Link href="https://modules.xcan.io/leaderboard" className="underline text-blue-100" target="_blank">modules.xcan.io/leaderboard</Link></li>
-            <li>NFT Certifications: <Link href="https://modules.xcan.io/nft" className="underline text-blue-100" target="_blank">modules.xcan.io/nft</Link></li>
+            <li>Your Profile: <Link href="https://modules.xcan.dev/profile" className="underline text-blue-100" target="_blank">modules.xcan.dev/profile</Link></li>
+            <li>Leaderboard: <Link href="https://modules.xcan.dev/leaderboard" className="underline text-blue-100" target="_blank">modules.xcan.dev/leaderboard</Link></li>
+            <li>NFT Certifications: <Link href="https://modules.xcan.dev/nft" className="underline text-blue-100" target="_blank">modules.xcan.dev/nft</Link></li>
+            <li>Twitter/X: <Link href="https://x.com/xcan_arbitrum" className="underline text-blue-100" target="_blank">x.com/xcan_arbitrum</Link></li>
           </ul>
         </section>
         <div className="mt-10 text-blue-200 italic text-center">Happy learning and collaborating with XCan!</div>
