@@ -136,7 +136,7 @@ function TopNavbar() {
                 Ecosystem
               </Link>
               <Link
-                href={`https://inorbit-modules.vercel.app/`}
+                href={`https://modules.xcan.dev/`}
                 target="_blank"
                 className={`${styles.item} text-blue-200 font-medium relative`}
               >
@@ -207,6 +207,15 @@ function TopNavbar() {
                   }`}
               >
                 Profile
+              </Link>
+              <Link
+                href={"/doc"}
+                className={`${styles.item} font-medium ${pathname === "/doc"
+                  ? `text-white ${styles.activeitem}`
+                  : "text-blue-200"
+                  }`}
+              >
+                Docs
               </Link>
             </div>
             <ConnectWalletWithENS />
