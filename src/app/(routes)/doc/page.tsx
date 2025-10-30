@@ -11,7 +11,7 @@ export default function DocPage() {
         {/* Overview */}
         <section className="mb-10">
           <h2 className="text-2xl font-semibold mb-2">What is XCan?</h2>
-          <p className="text-blue-200">XCan is a comprehensive Web3 ecosystem with three integrated platforms: <b>Learning Platform</b> for interactive courses and challenges, <b>Expert Sessions & Office Hours</b> for 1:1 or group mentorship, and <b>Video Meetings</b> for conferencing – all tied together with on-chain NFT Certifications and attendance Attestations.</p>
+          <p className="text-blue-200">XCan is a comprehensive Web3 ecosystem with three integrated platforms: <b>Learning Platform</b> for interactive courses and challenges, <b>Expert Sessions & Lectures</b> for 1:1 or group mentorship, and <b>Video Meetings</b> for conferencing – all tied together with on-chain NFT Certifications and attendance Attestations.</p>
         </section>
         {/* Getting Started */}
         <section className="mb-10">
@@ -19,7 +19,7 @@ export default function DocPage() {
           <h3 className="font-semibold text-blue-100 mt-2">Connect Your Wallet</h3>
           <ol className="list-decimal pl-6 text-blue-200">
             <li>Click <b>Connect Wallet</b> in the top right.</li>
-            <li>Pick MetaMask/Coinbase/WalletConnect or GitHub login.</li>
+            <li>Pick MetaMask/Coinbase/WalletConnect</li>
             <li>Sign the message (no gas fees).</li>
             <li>Your Web3 account is created automatically.</li>
           </ol>
@@ -43,7 +43,7 @@ export default function DocPage() {
             <li><b>DeFi on Arbitrum:</b> DEXs, vaults, security, 46 sections w/ quizzes. <span className="text-blue-400">Earn: DeFi Master NFT</span></li>
             <li><b>Cross-Chain Development:</b> Overview of Bridge mechanics, oracles, validators. <span className="text-blue-400">Earn: Cross-Chain Expert NFT</span></li>
             <li><b>Arbitrum Orbit:</b> Deploy + manage your own L3. <span className="text-blue-400">Earn: Orbit Builder NFT</span></li>
-            <li><b>Precompile Playground:</b> Code real optimizations & L2-L1 comms in-browser.</li>
+            <li><b>Precompile Playground:</b> Code real optimizations & L2-L1 comms in-browser.<span className="text-blue-400">Earn: Precompile Playground NFT</span></li>
             <li><b>Project Submission (Free):</b> Showcase, get feedback, build a visible portfolio.</li>
           </ul>
           <div className="mt-2">
@@ -69,12 +69,12 @@ export default function DocPage() {
         </section>
         {/* Expert Sessions */}
         <section className="mb-10">
-          <h2 className="text-xl font-semibold mb-2">Expert Sessions & Office Hours</h2>
-          <p className="text-blue-200">Connect with blockchain experts for guidance via bookable sessions or drop-in office hours.</p>
+          <h2 className="text-xl font-semibold mb-2">Expert Sessions & Lectures</h2>
+          <p className="text-blue-200">Connect with blockchain experts for guidance via bookable sessions or drop-in lectures.</p>
           <div className="font-semibold mt-1 text-blue-100">Difference:</div>
           <ul className="list-disc pl-6 text-blue-200">
             <li><b>Expert Sessions:</b> One-time, scheduled, dedicated meetings (project advice, code review, etc)</li>
-            <li><b>Office Hours:</b> Recurring, open-door Q&A—community and mentorship.</li>
+            <li><b>Lectures:</b> Recurring, open-door Q&A—community and mentorship.</li>
           </ul>
           <div className="mt-2 text-blue-100 font-semibold">How to book:</div>
           <ul className="list-disc pl-6 text-blue-200">
@@ -119,7 +119,7 @@ export default function DocPage() {
           </ul>
           <div className="mt-2 text-blue-100 font-semibold">Available Certifications:</div>
           <ol className="list-decimal pl-6 text-blue-200">
-            <li>First Blood – Create your account</li>
+            <li>First Blood – Complete 1st challenge in SpeedrunStylus</li>
             <li>Web3 Basics – Complete Web3 Basics</li>
             <li>Stylus Foundation – Complete Stylus Foundation</li>
             <li>Stylus Core – Complete Stylus Core Concepts</li>
@@ -166,7 +166,7 @@ export default function DocPage() {
             <li>Start with Web3 Basics, don’t skip chapters (they build up skills).</li>
             <li>Practice with Precompile Playground to reinforce learning.</li>
             <li>Set a regular time—do a chapter a session, build real projects.</li>
-            <li>Ask in office hours or expert sessions when stuck.</li>
+            <li>Ask in lectures or expert sessions when stuck.</li>
           </ul>
           <div className="font-semibold text-blue-100 mt-2">Security & Privacy</div>
           <ul className="list-disc pl-6 text-blue-200">
@@ -192,7 +192,7 @@ export default function DocPage() {
           </ul>
           <div className="font-semibold text-blue-100 mt-2">Sessions & Meetings</div>
           <ul className="list-disc pl-6 text-blue-200">
-            <li>Both sessions (scheduled) and office hours (recurring) are valuable—pick by your need.</li>
+            <li>Both sessions (scheduled) and lectures (recurring) are valuable—pick by your need.</li>
             <li>Always cancel early if you can't attend, to help others.</li>
             <li>Anyone can host sessions—just complete your profile & publish your slot.</li>
           </ul>
