@@ -208,6 +208,15 @@ function TopNavbar() {
               >
                 Profile
               </Link>
+              <Link
+                href={"/doc"}
+                className={`${styles.item} font-medium ${pathname === "/doc"
+                  ? `text-white ${styles.activeitem}`
+                  : "text-blue-200"
+                  }`}
+              >
+                Docs
+              </Link>
             </div>
             <ConnectWalletWithENS />
           </>
