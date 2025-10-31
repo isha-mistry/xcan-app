@@ -17,7 +17,7 @@ const robotoMono = Roboto_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://inorbit-edu.vercel.app/"),
+  metadataBase: new URL("https://xcan.dev/"),
   title: "Xcan",
   description: "Discover. Learn. Engage.",
   appleWebApp: {
@@ -33,7 +33,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Xcan",
     description: "Discover. Learn. Engage.",
-    url: "https://inorbit-app.vercel.app/",
+    url: "https://xcan.dev/",
     siteName: "Xcan",
 
     // images: [

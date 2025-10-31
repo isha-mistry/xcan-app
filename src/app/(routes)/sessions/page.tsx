@@ -3,14 +3,14 @@ import DelegateSessionsMain from "@/components/DelegateSessions/DelegateSessions
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://inorbit-edu.vercel.app/"),
+  metadataBase: new URL("https://xcan.dev/"),
   title: "Xcan",
   description: "Discover. Learn. Engage.",
   openGraph: {
     title: "Available Experts",
     description:
       "Explore available experts by date, and time to book sessions and unlock Web3 opportunities.",
-    // url: "https://inorbit-edu.vercel.app/available-delegates",
+    // url: "https://xcan.dev/available-delegates",
     siteName: "Xcan",
     // images: [
     //   {

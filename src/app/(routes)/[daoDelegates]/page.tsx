@@ -41,13 +41,13 @@ import { DEFAULT_METADATA } from "@/utils/metadataUtils";
 //   }
 
 //   return {
-//     metadataBase: new URL("https://inorbit-edu.vercel.app/"),
+//     metadataBase: new URL("https://xcan.dev/"),
 //     title: "Xcan",
 //     description: "Discover. Learn. Engage.",
 //     openGraph: {
 //       title: delegateMetadata.title,
 //       description: delegateMetadata.description,
-//       url: `https://inorbit-edu.vercel.app/${daoDelegates}`,
+//       url: `https://xcan.dev/${daoDelegates}`,
 //       siteName: "Xcan",
 //       images: [
 //         {

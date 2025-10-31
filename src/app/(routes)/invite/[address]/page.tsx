@@ -20,13 +20,13 @@ export async function generateMetadata(
     "https://gateway.lighthouse.storage/ipfs/bafkreidirbp5rpggihsab76teieq66wnj6lj75pjn2guhkvabfa3z53dzm";
 
   return {
-    metadataBase: new URL("https://inorbit-edu.vercel.app/"),
+    metadataBase: new URL("https://xcan.dev/"),
     title: "Xcan",
     description: "Discover. Learn. Engage.",
     openGraph: {
       title: title,
       description: description,
-      url: `https://inorbit-edu.vercel.app/invite/${params.address}`,
+      url: `https://xcan.dev/invite/${params.address}`,
       siteName: "Xcan",
       // images: [
       //   `${BASE_URL}/api/images/og/referral?inviteeName=${encodeURIComponent(

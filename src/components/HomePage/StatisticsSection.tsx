@@ -11,6 +11,7 @@ interface StatisticsData {
   totalSessions: number;
   totalOfficeHours: number;
   usersWithSocials: number;
+  usersWithGithub: number;
   totalNFTsMinted: number;
 }
 
@@ -40,32 +41,32 @@ const StatisticsSection = () => {
 
   const statsCards = [
     {
-      title: "Users Onboarded",
-      value: stats?.totalUsers || 0,
+      title: "Devs under training",
+      value: stats?.usersWithGithub || 0,
       icon: <Users className="w-6 h-6" />,
       gradient: "from-blue-500 to-blue-600",
-      description: "Active community members"
+      description: "Devs with GitHub connected"
     },
     {
-      title: "NFTs Claimed",
-      value: stats?.totalNFTsMinted || 0,
-      icon: <Award className="w-6 h-6" />,
-      gradient: "from-green-500 to-green-600",
-      description: "Total achievements unlocked"
-    },
-    {
-      title: "Social Connected",
-      value: stats?.usersWithSocials || 0,
-      icon: <Link className="w-6 h-6" />,
-      gradient: "from-purple-500 to-purple-600",
-      description: "Users with social profiles"
-    },
-    {
-      title: "Unique NFT Holders",
+      title: "Devs trained",
       value: stats?.totalNFTs || 0,
       icon: <Award className="w-6 h-6" />,
       gradient: "from-orange-500 to-orange-600",
-      description: "Users who claimed NFTs"
+      description: "Unique NFT holders"
+    },
+    {
+      title: "Certificates claimed as NFT",
+      value: stats?.totalNFTsMinted || 0,
+      icon: <Award className="w-6 h-6" />,
+      gradient: "from-green-500 to-green-600",
+      description: "NFT minted"
+    },
+    {
+      title: "Orbit chains launched",
+      valueText: "Coming soon",
+      icon: <Link className="w-6 h-6" />,
+      gradient: "from-purple-500 to-purple-600",
+      description: ""
     }
     // Commented out for now
     // {
@@ -141,14 +142,20 @@ const StatisticsSection = () => {
                 </div>
 
                 <div className="mb-2">
-                  <motion.div
-                    initial={{ scale: 0.8 }}
-                    whileInView={{ scale: 1 }}
-                    transition={{ duration: 0.5, delay: 0.2 }}
-                    className="text-3xl md:text-4xl font-bold text-white"
-                  >
-                    <AnimatedCounter value={card.value} duration={1.5} />+
-                  </motion.div>
+                  {"valueText" in card ? (
+                    <div className="text-2xl md:text-3xl font-semibold text-white">
+                      {card.valueText}
+                    </div>
+                  ) : (
+                    <motion.div
+                      initial={{ scale: 0.8 }}
+                      whileInView={{ scale: 1 }}
+                      transition={{ duration: 0.5, delay: 0.2 }}
+                      className="text-3xl md:text-4xl font-bold text-white"
+                    >
+                      <AnimatedCounter value={card.value} duration={1.5} />+
+                    </motion.div>
+                  )}
                 </div>
 
                 <h3 className="text-lg font-semibold text-white mb-2">

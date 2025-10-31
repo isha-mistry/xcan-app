@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 
 export const DEFAULT_METADATA: Metadata = {
-  metadataBase: new URL("https://inorbit-edu.vercel.app/"),
+  metadataBase: new URL("https://xcan.dev/"),
   title: "Xcan",
   description: "The requested page does not exist.",
   openGraph: {
     title: "Xcan - Page Not Found",
     description: "The requested page does not exist.",
-    url: "https://inorbit-edu.vercel.app/",
+    url: "https://xcan.dev/",
     siteName: "Xcan",
     // images: [
     //   {

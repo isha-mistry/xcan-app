@@ -136,7 +136,7 @@ const SidebarMainMobile = () => {
             </button>
             <Link
               className="ml-5 text-white font-semibold text-[26px] font-robotoMono"
-              href={"https://inorbit-edu.vercel.app/"}
+              href={"https://xcan.dev/"}
             >
               Xcan
             </Link>
@@ -161,7 +161,7 @@ const SidebarMainMobile = () => {
               </li>
               <li>
                 <Link
-                  href="https://inorbit-modules.vercel.app/"
+                  href="https://modules.xcan.dev/"
                   target="_blank"
                   className="block py-4 pl-6 sm:py-5 hover:bg-blue-shade-100 "
                 >

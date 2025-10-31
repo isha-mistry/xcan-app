@@ -136,7 +136,7 @@ function TopNavbar() {
                 Ecosystem
               </Link>
               <Link
-                href={`https://inorbit-modules.vercel.app/`}
+                href={`https://modules.xcan.dev/`}
                 target="_blank"
                 className={`${styles.item} text-blue-200 font-medium relative`}
               >

@@ -49,7 +49,7 @@ export default function Home() {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   className="bg-blue-shade-100 text-white px-8 py-3 rounded-full font-semibold hover:bg-blue-shade-300 transition-colors flex items-center justify-center gap-2"
-                  href={`https://inorbit-modules.vercel.app/`}
+                  href={`https://modules.xcan.dev/`}
                   target="_blank"
                 >
                   <Star className="w-5 h-5" />
@@ -202,7 +202,7 @@ export default function Home() {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             className="bg-blue-shade-100 text-white px-8 py-3 rounded-full font-semibold hover:bg-blue-shade-300 transition-colors"
-            href={`https://inorbit-modules.vercel.app/`}
+            href={`https://modules.xcan.dev/`}
             target="_blank"
           >
             Get Started
