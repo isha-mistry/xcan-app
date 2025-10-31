@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable react/no-unescaped-entities */
 
 import { useState } from "react";
 import { motion } from "framer-motion";
@@ -79,10 +80,10 @@ const item = {
             <div className="inline-flex items-center justify-center h-10 w-10 rounded-lg border border-white/50 bg-white/9">
               <FileText className="text-blue-500" size={20} />
             </div>
-            <span className="text-sm tracking-wider uppercase text-white/90">XCan Guide</span>
+            <span className="text-sm tracking-wider uppercase text-white/90">Xcan Guide</span>
           </div>
           <h1 className="text-3xl md:text-5xl font-bold tracking-tight bg-gradient-to-r from-[#63A7FA] via-white to-[#4185F3] bg-clip-text text-transparent">
-            Welcome to XCan - Learn, Play, Earn
+            Welcome to Xcan - Learn, Play, Earn
             </h1>
           <p className="mt-4 text-dark-text-secondary max-w-3xl">
             Your hub for Arbitrum learning, expert sessions, and on-chain credentials. Explore our
@@ -205,7 +206,7 @@ const item = {
                   <li>Your Web3 account is created automatically.</li>
                 </ol>
                 <div className="mt-3 text-white/70 italic">
-                  💡 <b>Your wallet</b> is your identity on XCan.
+                  💡 <b>Your wallet</b> is your identity on Xcan.
                 </div>
             </div>
               <div>
@@ -446,7 +447,7 @@ const item = {
                 <li>DeFi Master</li>
                 <li>Cross-Chain Expert</li>
                 <li>Orbit Builder</li>
-                <li>XCan Advocate</li>
+                <li>Xcan Advocate</li>
               </ol>
             </div>
             <div className="rounded-xl border border-white/10 bg-[#0B0A13]/60 p-4">
@@ -528,7 +529,7 @@ const item = {
               <div className="font-semibold text-white/90 flex items-center gap-2"><ShieldCheck size={16} className="text-green-shade-100" /> Security & Privacy</div>
               <ul className="list-disc pl-6 text-white/75 mt-2 space-y-1">
                 <li>Never share private keys/seed phrases.</li>
-                <li>Only connect on official XCan domains.</li>
+                <li>Only connect on official Xcan domains.</li>
                 <li>Use separate wallets for funds and learning.</li>
               </ul>
             </div>
@@ -561,7 +562,7 @@ const item = {
               qa: [
                 { q: "Is coding required?", a: "Not for basics. Quizzes are retakeable with 80% to pass." },
                 { q: "How much do modules cost?", a: "Modules are $50 each. Project Submission is free." },
-                { q: "What if I’m stuck?", a: "Use hints, revisit theory, join lectures, or ask in expert sessions." },
+                { q: "What if I am stuck?", a: "Use hints, revisit theory, join lectures, or ask in expert sessions." },
               ],
             },{
               title: "Sessions & Meetings",
@@ -638,7 +639,7 @@ const item = {
               </div>
             </div>
             <div className="mt-8 text-white/75 italic text-center">
-              Happy learning and collaborating with XCan!
+              Happy learning and collaborating with Xcan!
             </div>
           </motion.div>
         </motion.section>
