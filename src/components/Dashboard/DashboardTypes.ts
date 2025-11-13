@@ -53,4 +53,6 @@ export interface DashboardResponse {
   success: boolean;
   data: DashboardUser[];
   count: number;
+  totalNftsMinted: number;
+  totalNftsMintedForUsers?: number;
 }

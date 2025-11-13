@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState, useEffect } from 'react';
-import { DashboardUser } from './DashboardTypes';
+import { DashboardUser, DashboardResponse } from './DashboardTypes';
 import { toast } from 'react-hot-toast';
 
 // Social Media Icons Component
@@ -36,9 +36,11 @@ const SocialIcon: React.FC<{ platform: string; className?: string }> = ({ platfo
 const StatusBadge: React.FC<{ hasNFT: boolean; totalMinted?: number }> = ({ hasNFT, totalMinted }) => {
   if (!hasNFT) {
     return (
-      <div className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-shade-200/20 text-dark-text-secondary border border-blue-shade-200/30">
-        <div className="w-1.5 h-1.5 rounded-full mr-1.5 bg-blue-shade-200" />
-        Pending
+      <div className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-gradient-to-r from-blue-shade-200 to-purple-500/20 text-dark-text-secondary border border-blue-shade-200/30">
+        {/* <svg className="w-3.5 h-3.5 mr-1.5 text-blue-shade-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+        </svg> */}
+        Not minted
       </div>
     );
   }
@@ -47,40 +49,6 @@ const StatusBadge: React.FC<{ hasNFT: boolean; totalMinted?: number }> = ({ hasN
     <div className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-shade-100/20 text-green-shade-100 border border-green-shade-100/30">
       <div className="w-1.5 h-1.5 rounded-full mr-1.5 bg-green-shade-100" />
       {totalMinted} NFT{totalMinted && totalMinted > 1 ? 's' : ''}
-    </div>
-  );
-};
-
-// Compact NFT Levels Display Component
-const NFTLevelsDisplay: React.FC<{ nftData: any; totalMinted: number }> = ({ nftData, totalMinted }) => {
-  if (!nftData || !nftData.mintedLevels || nftData.mintedLevels.length === 0) {
-    return (
-      <div className="flex items-center justify-start py-2">
-        <span className="text-dark-text-tertiary text-xs italic">No NFTs claimed</span>
-      </div>
-    );
-  }
-
-  // Sort completed levels by level number
-  const completedLevels = nftData.mintedLevels.sort((a: any, b: any) => a.level - b.level);
-
-  return (
-    <div className="flex items-center gap-1">
-      <span className="text-xs text-dark-text-secondary mr-2">{totalMinted}/7</span>
-      <div className="flex gap-0.5">
-        {completedLevels.map((levelData: any) => (
-          <div
-            key={levelData.level}
-            className="w-6 h-6 rounded-md border-2 flex items-center justify-center cursor-pointer transition-all duration-200 bg-green-shade-100/20 border-green-shade-100 text-green-shade-100 hover:bg-green-shade-100/30"
-            title={`Level ${levelData.level}: ${levelData.levelName} - Click to view transaction`}
-            onClick={() => {
-              window.open(`https://sepolia.arbiscan.io/tx/${levelData.transactionHash}`, '_blank');
-            }}
-          >
-            <span className="text-xs font-medium">{levelData.level}</span>
-          </div>
-        ))}
-      </div>
     </div>
   );
 };
@@ -169,12 +137,12 @@ const StatsCard: React.FC<{ title: string; value: number; icon: React.ReactNode;
 
 // Main Dashboard Component
 const DashboardPage: React.FC = () => {
-  const [users, setUsers] = useState<DashboardUser[]>([]);
+  const [users, setUsers] = useState<DashboardResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const usersPerPage = 20;
+  const usersPerPage = 30;
 
   useEffect(() => {
     fetchUsers();
@@ -194,7 +162,7 @@ const DashboardPage: React.FC = () => {
       console.log("dashboard data: ", data);
 
       if (data.success) {
-        setUsers(data.data);
+        setUsers(data);
       } else {
         setError('Failed to fetch users');
       }
@@ -224,11 +192,11 @@ const DashboardPage: React.FC = () => {
     return `${address.slice(0, 8)}...${address.slice(-6)}`;
   };
 
-  const filteredUsers = users.filter(user =>
+  const filteredUsers = users?.data?.filter(user =>
     user.address.toLowerCase().includes(searchTerm.toLowerCase()) ||
     user.socialHandles?.githubUsername?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     user.nftData?.githubUsername?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  ) || [];
 
   const indexOfLastUser = currentPage * usersPerPage;
   const indexOfFirstUser = indexOfLastUser - usersPerPage;
@@ -237,12 +205,21 @@ const DashboardPage: React.FC = () => {
 
   const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
 
+  console.log("data: ", users);
+
+  // Calculate pagination display
+  const startRange = filteredUsers.length > 0 ? indexOfFirstUser + 1 : 0;
+  const endRange = Math.min(indexOfLastUser, filteredUsers.length);
+  const showingText = filteredUsers.length > 0
+    ? `Showing ${startRange}-${endRange} of ${filteredUsers.length} user${filteredUsers.length !== 1 ? 's' : ''}`
+    : 'No users found';
+
   // Calculate stats
-  const totalUsers = users.length;
-  const totalNFTsMinted = users.reduce((sum, user) => sum + user.totalNftsMinted, 0);
-  const usersWithSocials = users.filter(user =>
+  const totalUsers = users?.count || 0;
+  const totalNFTsMinted = users?.totalNftsMinted || 0;
+  const usersWithSocials = users?.data?.filter(user =>
     Object.values(user.connectedSocials).some(connected => connected)
-  ).length;
+  ).length || 0;
 
   if (loading) {
     return (
@@ -381,9 +358,12 @@ const DashboardPage: React.FC = () => {
           {/* Results Info */}
           <div className="text-center mt-5">
             <p className="text-dark-text-secondary text-sm font-medium">
-              Showing{' '}
-              <span className="text-blue-shade-100 font-semibold">{filteredUsers.length}</span> of{' '}
-              <span className="text-blue-shade-100 font-semibold">{users.length}</span> users
+              {showingText}
+              {searchTerm && filteredUsers.length > 0 && (
+                <span className="text-dark-text-tertiary ml-2">
+                  (from {users?.count || 0} total)
+                </span>
+              )}
             </p>
           </div>
         </div>
@@ -403,9 +383,6 @@ const DashboardPage: React.FC = () => {
                   <th className="px-8 py-6 text-left text-sm font-bold text-dark-text-primary uppercase tracking-wider font-robotoMono">
                     NFT Minted
                   </th>
-                  <th className="px-8 py-6 text-left text-sm font-bold text-dark-text-primary uppercase tracking-wider font-robotoMono">
-                    NFT Details
-                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-blue-shade-200/10">
@@ -416,9 +393,11 @@ const DashboardPage: React.FC = () => {
                     style={{ animationDelay: `${index * 50}ms` }}
                   >
                     <td className="px-8 py-6 whitespace-nowrap">
-                      <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-shade-100 to-blue-shade-200 flex items-center justify-center text-white font-bold text-sm">
-                          {user.address.slice(2, 4).toUpperCase()}
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-shade-100/20 to-blue-shade-200/20 border border-blue-shade-200/30 flex items-center justify-center">
+                          <svg className="w-5 h-5 text-blue-shade-100" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                          </svg>
                         </div>
                         <div>
                           <span className="text-dark-text-primary font-mono text-sm font-medium">
@@ -444,9 +423,6 @@ const DashboardPage: React.FC = () => {
                         hasNFT={user.totalNftsMinted > 0}
                         totalMinted={user.totalNftsMinted}
                       />
-                    </td>
-                    <td className="px-8 py-6">
-                      <NFTLevelsDisplay nftData={user.nftData} totalMinted={user.totalNftsMinted} />
                     </td>
                   </tr>
                 ))}
@@ -474,70 +450,132 @@ const DashboardPage: React.FC = () => {
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="mt-12 flex justify-center">
-            <nav className="relative z-0 inline-flex rounded-2xl shadow-2xl bg-gradient-to-r from-blue-shade-500/50 to-blue-shade-300/50 backdrop-blur-sm border border-blue-shade-200/30 p-2" aria-label="Pagination">
+          <div className="mt-12 flex flex-col items-center space-y-4">
+            {/* Page Info */}
+            <div className="text-dark-text-secondary text-sm font-medium">
+              Page <span className="text-blue-shade-100 font-semibold">{currentPage}</span> of <span className="text-blue-shade-100 font-semibold">{totalPages}</span>
+            </div>
+
+            {/* Pagination Controls */}
+            <nav className="relative z-0 inline-flex items-center rounded-2xl shadow-2xl bg-gradient-to-r from-blue-shade-500/50 to-blue-shade-300/50 backdrop-blur-sm border border-blue-shade-200/30 p-2 gap-2" aria-label="Pagination">
+              {/* Previous Button */}
               <button
                 onClick={() => paginate(currentPage - 1)}
                 disabled={currentPage === 1}
-                className="relative inline-flex items-center px-6 py-3 rounded-xl border-0 bg-transparent text-sm font-medium text-dark-text-primary hover:bg-blue-shade-100/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 disabled:hover:bg-transparent"
+                className="relative inline-flex items-center px-4 py-2.5 rounded-xl border-0 bg-transparent text-sm font-medium text-dark-text-primary hover:bg-blue-shade-100/20 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-300 disabled:hover:bg-transparent group"
+                aria-label="Previous page"
               >
-                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                 </svg>
-                Previous
               </button>
 
-              <div className="flex items-center space-x-1 mx-4">
-                {Array.from({ length: Math.min(totalPages, 7) }, (_, i) => {
-                  let pageNumber;
-                  if (totalPages <= 7) {
-                    pageNumber = i + 1;
-                  } else if (currentPage <= 4) {
-                    pageNumber = i + 1;
-                  } else if (currentPage >= totalPages - 3) {
-                    pageNumber = totalPages - 6 + i;
+              {/* Page Numbers */}
+              <div className="flex items-center space-x-1">
+                {(() => {
+                  const pages = [];
+                  const maxVisible = 5; // Maximum page buttons to show (not including first, last, and ellipsis)
+                  
+                  if (totalPages <= maxVisible + 2) {
+                    // Show all pages if total is small
+                    for (let i = 1; i <= totalPages; i++) {
+                      pages.push(i);
+                    }
                   } else {
-                    pageNumber = currentPage - 3 + i;
+                    // Always show first page
+                    pages.push(1);
+                    
+                    if (currentPage <= 3) {
+                      // Near the start
+                      for (let i = 2; i <= Math.min(4, totalPages - 1); i++) {
+                        pages.push(i);
+                      }
+                      pages.push('ellipsis-end');
+                    } else if (currentPage >= totalPages - 2) {
+                      // Near the end
+                      pages.push('ellipsis-start');
+                      for (let i = Math.max(totalPages - 3, 2); i < totalPages; i++) {
+                        pages.push(i);
+                      }
+                    } else {
+                      // In the middle
+                      pages.push('ellipsis-start');
+                      pages.push(currentPage - 1);
+                      pages.push(currentPage);
+                      pages.push(currentPage + 1);
+                      pages.push('ellipsis-end');
+                    }
+                    
+                    // Always show last page
+                    pages.push(totalPages);
                   }
-
-                  return (
-                    <button
-                      key={pageNumber}
-                      onClick={() => paginate(pageNumber)}
-                      className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold rounded-xl transition-all duration-300 ${currentPage === pageNumber
-                        ? 'bg-gradient-to-r from-blue-shade-100 to-blue-shade-200 text-white shadow-lg transform scale-105'
-                        : 'text-dark-text-primary hover:bg-blue-shade-100/20 hover:text-white'
+                  
+                  return pages.map((page, index) => {
+                    if (typeof page === 'string') {
+                      // Ellipsis
+                      return (
+                        <span key={page} className="px-2 text-dark-text-secondary">
+                          ···
+                        </span>
+                      );
+                    }
+                    
+                    const isActive = currentPage === page;
+                    
+                    return (
+                      <button
+                        key={page}
+                        onClick={() => paginate(page)}
+                        className={`relative inline-flex items-center justify-center min-w-[40px] px-3 py-2 text-sm font-semibold rounded-xl transition-all duration-300 ${
+                          isActive
+                            ? 'bg-gradient-to-r from-blue-shade-100 to-blue-shade-200 text-white shadow-lg shadow-blue-shade-100/25 scale-105'
+                            : 'text-dark-text-primary hover:bg-blue-shade-100/20 hover:text-white hover:scale-105'
                         }`}
-                    >
-                      {pageNumber}
-                    </button>
-                  );
-                })}
-
-                {totalPages > 7 && currentPage < totalPages - 3 && (
-                  <>
-                    <span className="text-dark-text-secondary px-2">...</span>
-                    <button
-                      onClick={() => paginate(totalPages)}
-                      className="relative inline-flex items-center px-4 py-2 text-sm font-semibold rounded-xl text-dark-text-primary hover:bg-blue-shade-100/20 hover:text-white transition-all duration-300"
-                    >
-                      {totalPages}
-                    </button>
-                  </>
-                )}
+                        aria-label={`Go to page ${page}`}
+                        aria-current={isActive ? 'page' : undefined}
+                      >
+                        {page}
+                      </button>
+                    );
+                  });
+                })()}
               </div>
 
+              {/* Next Button */}
               <button
                 onClick={() => paginate(currentPage + 1)}
                 disabled={currentPage === totalPages}
-                className="relative inline-flex items-center px-6 py-3 rounded-xl border-0 bg-transparent text-sm font-medium text-dark-text-primary hover:bg-blue-shade-100/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 disabled:hover:bg-transparent"
+                className="relative inline-flex items-center px-4 py-2.5 rounded-xl border-0 bg-transparent text-sm font-medium text-dark-text-primary hover:bg-blue-shade-100/20 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-300 disabled:hover:bg-transparent group"
+                aria-label="Next page"
               >
-                Next
-                <svg className="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                 </svg>
               </button>
             </nav>
+
+            {/* Quick Jump (Optional - shows for many pages) */}
+            {totalPages > 10 && (
+              <div className="flex items-center gap-3">
+                <span className="text-dark-text-secondary text-sm">Jump to:</span>
+                <input
+                  type="number"
+                  min="1"
+                  max={totalPages}
+                  placeholder="Page"
+                  className="w-20 px-3 py-2 text-sm rounded-lg bg-blue-shade-500/50 border border-blue-shade-200/30 text-dark-text-primary placeholder-dark-text-secondary/50 focus:outline-none focus:ring-2 focus:ring-blue-shade-100/50 transition-all"
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter') {
+                      const value = parseInt((e.target as HTMLInputElement).value);
+                      if (value >= 1 && value <= totalPages) {
+                        paginate(value);
+                        (e.target as HTMLInputElement).value = '';
+                      }
+                    }
+                  }}
+                />
+              </div>
+            )}
           </div>
         )}
 

@@ -27,6 +27,7 @@ export default function RouteProtectionWrapper({ children }: RouteProtectionWrap
   const publicRoutes = [
     "/", // Home page
     "/dashboard", // Dashboard page - accessible to all users
+    "/doc"
   ];
 
   const isPublicRoute = publicRoutes.includes(pathname);

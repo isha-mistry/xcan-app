@@ -20,6 +20,7 @@ export async function GET(req: NextRequest, res: NextResponse) {
       "challenges-stylus-core-concepts",
       "challenges-web3-basics",
       "foundation-users",
+      "advocates",
     ];
 
     const countClaimedInCollection = async (

@@ -32,7 +32,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: "Xcan",
-    description: "Discover. Learn. Engage.",
+    description: "Learn. Experience. Build.",
     url: "https://xcan.dev/",
     siteName: "Xcan",
 
