@@ -43,6 +43,7 @@ interface OfficeHoursTileProps {
   isOngoing?: boolean;
   isUserProfile?: boolean;
   isRecorded?: boolean;
+  isUploaded?: boolean;
   data: OfficeHoursProps[];
 }
 
@@ -55,6 +56,7 @@ interface GTMEvent {
 }
 
 const OfficeHourTile = ({
+  isUploaded,
   isHosted,
   isAttended,
   isUpcoming,
@@ -87,6 +89,8 @@ const OfficeHourTile = ({
   const router = useRouter();
   const { address } = useAccount();
   const { isConnected } = useConnection()
+
+  console.log("data: ", data);
 
   useEffect(() => {
     setLocalData(data);
@@ -244,18 +248,18 @@ const OfficeHourTile = ({
     >
       {localData.map((data: OfficeHoursProps, index: number) => (
         <div
-          className={`border border-[#D9D9D9] sm:rounded-3xl ${isRecorded ? "cursor-pointer" : ""
+          className={`border border-[#D9D9D9] sm:rounded-3xl ${isRecorded || isUploaded ? "cursor-pointer" : ""
             }`}
           key={index}
           onClick={() => {
-            isRecorded && router.push(`/watch/${data.meetingId}`);
+            (isRecorded || isUploaded) && router.push(`/watch/${data.meetingId}`);
           }}
         >
           <div
             className={`w-full h-44 sm:rounded-t-3xl bg-black object-cover object-center relative `}
           >
             <Image
-              src={`https://gateway.lighthouse.storage/ipfs/${data.thumbnail_image}`}
+              src={isUploaded ? data.thumbnail_image : `https://gateway.lighthouse.storage/ipfs/${data.thumbnail_image}`}
               alt=""
               width={200}
               height={200}

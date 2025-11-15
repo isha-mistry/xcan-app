@@ -43,6 +43,8 @@ import { getDaoName } from "@/utils/chainUtils";
 import { checkLetsGrowDAODelegateStatus } from "@/utils/checkLetsGrowDAODelegateStatus"
 import { useConnection } from "@/app/hooks/useConnection";
 import { RiTelegram2Fill } from "react-icons/ri";
+import UploadVideoButton from "../ComponentUtils/UploadVideoButton";
+import UploadedVideosTab from "../ComponentUtils/UploadedVideosTab";
 interface Following {
   follower_address: string;
   isFollowing: boolean;
@@ -93,6 +95,7 @@ function MainProfile() {
     { name: "Sessions", value: "sessions" },
     { name: "Lectures", value: "lectures" },
     ...(selfDelegate ? [{ name: "Instant Meet", value: "instant-meet" }] : []),
+    { name: "Uploaded", value: "uploaded" },
   ];
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -643,10 +646,11 @@ function MainProfile() {
                     </Tooltip>
                   </div>
                 </div>
-                <div>
+                <div className="flex gap-2">
                   <button className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white sm:text-lg px-6 py-1 rounded-full" onClick={() => {
                     router.push(`/invite`)
                   }}  >Invite</button>
+                  <UploadVideoButton userAddress={address || ""} />
                 </div>
               </div>
             </div>
@@ -743,6 +747,15 @@ function MainProfile() {
                 Instant Meet
               </button>
               }
+              <button
+                className={`border-b-2 py-3 xs:py-4 px-2 outline-none flex-shrink-0 ${searchParams.get("active") === "uploaded"
+                  ? "text-blue-300 font-semibold border-b-2 border-blue-300"
+                  : "border-transparent"
+                  }`}
+                onClick={() => router.push(path + "?active=uploaded")}
+              >
+                Uploaded
+              </button>
             </div>
 
             <div>
@@ -775,6 +788,14 @@ function MainProfile() {
               {searchParams.get("active") === "instant-meet" ? (
                 <div className="pt-2 xs:pt-4 sm:pt-6 px-4 md:px-6 lg:px-14">
                   <InstantMeet />
+                </div>
+              ) : (
+                ""
+              )}
+
+              {searchParams.get("active") === "uploaded" ? (
+                <div className="pt-2 xs:pt-4 sm:pt-6 px-4 md:px-6 lg:px-14">
+                  <UploadedVideosTab userAddress={address || ""} />
                 </div>
               ) : (
                 ""

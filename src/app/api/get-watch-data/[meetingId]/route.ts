@@ -5,6 +5,7 @@ import {
   Meeting,
   OfficeHoursDocument,
 } from "@/types/OfficeHoursTypes";
+import { UploadedVideo } from "@/types/UploadedVideoTypes";
 
 type Params = {
   meetingId: string;
@@ -19,6 +20,7 @@ export async function GET(req: NextRequest, context: { params: Params }) {
     const db = client.db();
     const meetingsCollection = db.collection("sessions");
     const officeHoursCollection = db.collection("office_hours");
+    const recordedVideosCollection = db.collection("uploaded_videos");
     const delegatesCollection = db.collection("users");
 
     // First try to find in meetings collection
@@ -32,6 +34,12 @@ export async function GET(req: NextRequest, context: { params: Params }) {
         "meetings.meetingId": meetingId,
       })
       .toArray()) as unknown as OfficeHoursDocument[];
+
+    const recordedVideosDocuments = await recordedVideosCollection
+      .find({
+        youtube_video_id: meetingId,
+      })
+      .toArray();
 
     if (meetingsDocuments.length > 0) {
       const mergedData = await Promise.all(
@@ -128,6 +136,23 @@ export async function GET(req: NextRequest, context: { params: Params }) {
           { status: 404 }
         );
       }
+    } else if (recordedVideosDocuments.length > 0) {
+      const mergedData = await Promise.all(
+        recordedVideosDocuments.map(async (recordedVideo) => {
+          return {
+            host_address: recordedVideo.user_address,
+            video_uri: recordedVideo.video_link,
+            thumbnail_url: recordedVideo.thumbnail_url,
+            slot_time: recordedVideo.created_at,
+            ...recordedVideo,
+          };
+        })
+      );
+      client.close();
+      return NextResponse.json(
+        { success: true, data: mergedData },
+        { status: 200 }
+      );
     } else {
       client.close();
       return NextResponse.json({ success: true, data: null }, { status: 404 });

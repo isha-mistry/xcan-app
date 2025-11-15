@@ -24,9 +24,10 @@ import OfficeHoursAlertMessage from "../AlertMessage/OfficeHoursAlertMessage";
 import { OfficeHoursProps } from "@/types/OfficeHoursTypes";
 import OfficeHourTile from "../ComponentUtils/OfficeHourTile";
 import RecordedSessionsSkeletonLoader from "../SkeletonLoader/RecordedSessionsSkeletonLoader";
-import { BookOpen, Calendar, Clock } from "lucide-react";
+import { BookOpen, Calendar, Clock, VideoIcon } from "lucide-react";
 import NoResultsFound from "@/utils/Noresult";
 import useSWR from 'swr'
+import UploadedVideosTab from "../ComponentUtils/UploadedVideosTab";
 interface Type {
   img: StaticImageData;
   title: string;
@@ -60,6 +61,7 @@ function DaoOfficeHours() {
     ongoing: [] as OfficeHoursProps[],
     upcoming: [] as OfficeHoursProps[],
     recorded: [] as OfficeHoursProps[],
+    uploaded: [] as OfficeHoursProps[],
   });
 
   // Filtered data based on search
@@ -67,6 +69,7 @@ function DaoOfficeHours() {
     ongoing: [] as OfficeHoursProps[],
     upcoming: [] as OfficeHoursProps[],
     recorded: [] as OfficeHoursProps[],
+    uploaded: [] as OfficeHoursProps[],
   });
 
   // Fetch data from API
@@ -124,9 +127,10 @@ function DaoOfficeHours() {
   useEffect(() => {
     if (data) {
       const processedData = {
-        ongoing: data.data.ongoing,
-        upcoming: data.data.upcoming,
-        recorded: data.data.recorded,
+        ongoing: data.data.ongoing || [],
+        upcoming: data.data.upcoming || [],
+        recorded: data.data.recorded || [],
+        uploaded: [] as OfficeHoursProps[],
       };
 
       setOriginalData(processedData);
@@ -164,6 +168,11 @@ function DaoOfficeHours() {
           item.title.toLowerCase().includes(term) ||
           item.host_address.toLowerCase().includes(term)
       ),
+      uploaded: originalData.uploaded.filter(
+        (item) =>
+          item.title.toLowerCase().includes(term) ||
+          item.host_address.toLowerCase().includes(term)
+      ),
     };
 
     setFilteredData(newFilteredData);
@@ -191,6 +200,7 @@ function DaoOfficeHours() {
       ongoing: filterBySearchAndDao(originalData.ongoing),
       upcoming: filterBySearchAndDao(originalData.upcoming),
       recorded: filterBySearchAndDao(originalData.recorded),
+      uploaded: filterBySearchAndDao(originalData.uploaded),
     };
 
     setFilteredData(newFilteredData);
@@ -259,6 +269,16 @@ function DaoOfficeHours() {
               <BookOpen size={16} className="drop-shadow-lg" />
               Recorded
             </button>
+            <button
+              className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-blue-shade-300 shadow-md ${searchParams.get("hours") === "uploaded"
+                ? "text-gray-200 font-semibold bg-blue-shade-300"
+                : "text-dark-text-secondary bg-blue-shade-500"
+                }`}
+              onClick={() => handleNavigation(path + "?hours=uploaded", 'Lectures Navigation', 'Uploaded Tab Clicked', 'Uploaded')}
+            >
+              <VideoIcon size={16} className="drop-shadow-lg" />
+              Uploaded
+            </button>
           </div>
 
           {/* Search bar */}
@@ -275,7 +295,9 @@ function DaoOfficeHours() {
 
           {/* Content */}
           <div className="mt-6">
-            {dataLoading ? (
+            {searchParams.get("hours") === "uploaded" ? (
+              <UploadedVideosTab />
+            ) : dataLoading ? (
               <RecordedSessionsSkeletonLoader />
             ) : getCurrentData().length > 0 ? (
               <OfficeHourTile

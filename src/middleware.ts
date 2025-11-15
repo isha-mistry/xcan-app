@@ -204,6 +204,7 @@ export const config = {
     "/api/update-attestation-uid/:path*",
     "/api/update-office-hours/:path*",
     "/api/update-recorded-session/:path*",
-    "/api/track-delegation/:path*"
+    "/api/track-delegation/:path*",
+    "/api/upload-video/:path*",
   ],
 };

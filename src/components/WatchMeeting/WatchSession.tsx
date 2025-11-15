@@ -41,6 +41,12 @@ import { formatTimeAgo } from "@/utils/getRelativeTime";
 import { daoConfigs } from "@/config/daos";
 import styles from "./WatchSession.module.css"
 
+// Check if URL is a YouTube link
+function isYouTubeUrl(url: string): boolean {
+  if (!url) return false;
+  return /(?:youtube\.com|youtu\.be)/.test(url);
+}
+
 interface Attendee extends DynamicAttendeeInterface {
   profileInfo: UserProfileInterface;
 }
@@ -70,6 +76,14 @@ function WatchSession({
   const [shareModal, setShareModal] = useState(false);
   const router = useRouter();
   const path = usePathname();
+  const [isYouTubeVideo, setIsYouTubeVideo] = useState(false);
+
+  // Check if video is a YouTube link
+  useEffect(() => {
+    if (data.video_uri) {
+      setIsYouTubeVideo(isYouTubeUrl(data.video_uri));
+    }
+  }, [data.video_uri]);
 
   const userImages = [
     user1,
@@ -268,29 +282,33 @@ function WatchSession({
             </div>
 
             <div className="flex gap-[10px]">
-              <div className="flex items-center gap-1">
-                <IoMdEye size={20} />
-                <div className="text-[#dbdbdb]">
-                  {formatViews(data?.views ?? 0)} views
-                </div>
-              </div>
-              <div className="flex items-center gap-1">
-                <Image
-                  src={time}
-                  alt="image"
-                  width={100}
-                  height={100}
-                  priority
-                  className="w-5 h-5"
-                />
-                <div className="text-[#dbdbdb]">
-                  {collection === "sessions"
-                    ? formatTimeAgo(data.slot_time)
-                    : collection === "office_hours"
-                      ? formatTimeAgo(data.startTime)
-                      : ""}
-                </div>
-              </div>
+              {!isYouTubeVideo && (
+                <>
+                  <div className="flex items-center gap-1">
+                    <IoMdEye size={20} />
+                    <div className="text-[#dbdbdb]">
+                      {formatViews(data?.views ?? 0)} views
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Image
+                      src={time}
+                      alt="image"
+                      width={100}
+                      height={100}
+                      priority
+                      className="w-5 h-5"
+                    />
+                    <div className="text-[#dbdbdb]">
+                      {collection === "sessions"
+                        ? formatTimeAgo(data.slot_time)
+                        : collection === "office_hours"
+                          ? formatTimeAgo(data.startTime)
+                          : ""}
+                    </div>
+                  </div>
+                </>
+              )}
               {path.includes("/watch") && (
                 <>
                   <div
@@ -315,136 +333,138 @@ function WatchSession({
               )}
             </div>
           </div>
-          <div>
-            <div
-              className="flex items-center border border-[#8E8E8E] bg-white w-fit rounded-md px-3 font-medium py-1 gap-2 cursor-pointer"
-              onClick={() => setShowPopup(!showPopup)}
-            >
-              <div className="text-[#292929] text-sm">Guest</div>
+          {!isYouTubeVideo && (
+            <div>
               <div
-                className={
-                  showPopup
-                    ? "rotate-180 duration-200 ease-in-out"
-                    : "duration-200 ease-in-out"
-                }
+                className="flex items-center border border-[#8E8E8E] bg-white w-fit rounded-md px-3 font-medium py-1 gap-2 cursor-pointer"
+                onClick={() => setShowPopup(!showPopup)}
               >
-                <IoMdArrowDropdown color="#4F4F4F" />
+                <div className="text-[#292929] text-sm">Guest</div>
+                <div
+                  className={
+                    showPopup
+                      ? "rotate-180 duration-200 ease-in-out"
+                      : "duration-200 ease-in-out"
+                  }
+                >
+                  <IoMdArrowDropdown color="#4F4F4F" />
+                </div>
               </div>
-            </div>
-            {showPopup && (
-              <div
-                className={`absolute bg-[#1c2634] text-gray-100 rounded-xl mt-1 py-2 duration-200 ease-in-out z-30 ${styles.customScrollbar}`}
-                style={{ boxShadow: "0px 4px 9.1px 0px rgba(0,0,0,0.04)", maxHeight: "300px", overflowY: "auto" }}
-              >
-                {data.attendees.map((attendee, index) => (
-                  <div key={index}>
-                    <div className="flex items-center text-sm gap-3 px-6  py-[10px] justify-between">
-                      <div className="flex gap-3">
-                        <div>
-                          <Image
-                            src={
-                              attendee.profileInfo?.image
-                                ? `https://gateway.lighthouse.storage/ipfs/${attendee.profileInfo.image}`
-                                : getRandomUserImage()
-                            }
-                            alt="image"
-                            width={100}
-                            height={100}
-                            className="rounded-full h-5 w-5"
-                            priority
-                          />
-                        </div>
-                        <div>
-                          {attendee.attendee_address.slice(0, 6) +
-                            "..." +
-                            attendee.attendee_address.slice(-4)}{" "}
-                        </div>
-                      </div>
-                      {attendee.attendee_uid ? (
-                        <Tooltip
-                          showArrow
-                          content={
-                            <div className="font-robotoMono">
-                              Offchain Attestation
-                            </div>
-                          }
-                          placement="top"
-                          className="rounded-md bg-opacity-90 max-w-96 bg-gray-700"
-                          closeDelay={1}
-                        >
-                          <Link
-                            href={`https://arbitrum.easscan.org/offchain/attestation/view/${attendee.attendee_uid}`
-                              // daoConfigs
-                              //   ? `${daoConfigs[data.dao_name.toLowerCase()]
-                              //     .attestationUrl
-                              //   }/${attendee.attendee_uid}`
-                              //   : ""
-                            }
-                            target="_blank"
-                          >
+              {showPopup && (
+                <div
+                  className={`absolute bg-[#1c2634] text-gray-100 rounded-xl mt-1 py-2 duration-200 ease-in-out z-30 ${styles.customScrollbar}`}
+                  style={{ boxShadow: "0px 4px 9.1px 0px rgba(0,0,0,0.04)", maxHeight: "300px", overflowY: "auto" }}
+                >
+                  {data.attendees.map((attendee, index) => (
+                    <div key={index}>
+                      <div className="flex items-center text-sm gap-3 px-6  py-[10px] justify-between">
+                        <div className="flex gap-3">
+                          <div>
                             <Image
-                              src={offChain_link}
+                              src={
+                                attendee.profileInfo?.image
+                                  ? `https://gateway.lighthouse.storage/ipfs/${attendee.profileInfo.image}`
+                                  : getRandomUserImage()
+                              }
                               alt="image"
-                              height={100}
                               width={100}
-                              className="w-6 h-6"
+                              height={100}
+                              className="rounded-full h-5 w-5"
                               priority
-                              quality={100}
                             />
-                          </Link>
-                        </Tooltip>
-                      ) : (
-                        <></>
-                      )}
+                          </div>
+                          <div>
+                            {attendee.attendee_address.slice(0, 6) +
+                              "..." +
+                              attendee.attendee_address.slice(-4)}{" "}
+                          </div>
+                        </div>
+                        {attendee.attendee_uid ? (
+                          <Tooltip
+                            showArrow
+                            content={
+                              <div className="font-robotoMono">
+                                Offchain Attestation
+                              </div>
+                            }
+                            placement="top"
+                            className="rounded-md bg-opacity-90 max-w-96 bg-gray-700"
+                            closeDelay={1}
+                          >
+                            <Link
+                              href={`https://arbitrum.easscan.org/offchain/attestation/view/${attendee.attendee_uid}`
+                                // daoConfigs
+                                //   ? `${daoConfigs[data.dao_name.toLowerCase()]
+                                //     .attestationUrl
+                                //   }/${attendee.attendee_uid}`
+                                //   : ""
+                              }
+                              target="_blank"
+                            >
+                              <Image
+                                src={offChain_link}
+                                alt="image"
+                                height={100}
+                                width={100}
+                                className="w-6 h-6"
+                                priority
+                                quality={100}
+                              />
+                            </Link>
+                          </Tooltip>
+                        ) : (
+                          <></>
+                        )}
 
-                      {attendee.onchain_attendee_uid ? (
-                        <Tooltip
-                          showArrow
-                          content={
-                            <div className="font-robotoMono">
-                              Onchain Attestation
-                            </div>
-                          }
-                          placement="top"
-                          className="rounded-md bg-opacity-90 max-w-96 bg-gray-700"
-                          closeDelay={1}
-                        >
-                          <Link
-                            href={
-                              `https://arbitrum.easscan.org/attestation/view/${attendee.onchain_attendee_uid}`
-                              // data.dao_name === "optimism" ||
-                              // data.dao_name === "Optimism"
-                              //   ? `https://optimism.easscan.org/attestation/view/${attendee.onchain_attendee_uid}`
-                              //   : data.dao_name === "arbitrum" ||
-                              //     data.dao_name === "Arbitrum"
-                              //   ? `https://arbitrum.easscan.org/attestation/view/${attendee.onchain_attendee_uid}`
-                              //   : ""
+                        {attendee.onchain_attendee_uid ? (
+                          <Tooltip
+                            showArrow
+                            content={
+                              <div className="font-robotoMono">
+                                Onchain Attestation
+                              </div>
                             }
-                            target="_blank"
+                            placement="top"
+                            className="rounded-md bg-opacity-90 max-w-96 bg-gray-700"
+                            closeDelay={1}
                           >
-                            <Image
-                              alt="image"
-                              src={onChain_link}
-                              className="w-6 h-6"
-                              width={100}
-                              height={100}
-                              priority
-                              quality={100}
-                            />
-                          </Link>
-                        </Tooltip>
-                      ) : (
-                        <></>
+                            <Link
+                              href={
+                                `https://arbitrum.easscan.org/attestation/view/${attendee.onchain_attendee_uid}`
+                                // data.dao_name === "optimism" ||
+                                // data.dao_name === "Optimism"
+                                //   ? `https://optimism.easscan.org/attestation/view/${attendee.onchain_attendee_uid}`
+                                //   : data.dao_name === "arbitrum" ||
+                                //     data.dao_name === "Arbitrum"
+                                //   ? `https://arbitrum.easscan.org/attestation/view/${attendee.onchain_attendee_uid}`
+                                //   : ""
+                              }
+                              target="_blank"
+                            >
+                              <Image
+                                alt="image"
+                                src={onChain_link}
+                                className="w-6 h-6"
+                                width={100}
+                                height={100}
+                                priority
+                                quality={100}
+                              />
+                            </Link>
+                          </Tooltip>
+                        ) : (
+                          <></>
+                        )}
+                      </div>
+                      {index !== data.attendees.length - 1 && (
+                        <div className="border border-[#D9D9D9]"></div>
                       )}
                     </div>
-                    {index !== data.attendees.length - 1 && (
-                      <div className="border border-[#D9D9D9]"></div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {sessionDetails.description.length > 0 ? (
