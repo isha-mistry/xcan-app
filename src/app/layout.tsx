@@ -9,6 +9,7 @@ import SidebarMainMobile from "@/components/MainSidebar/SidebarMainMobile";
 import TopNavbar from "@/components/TopNavbar/TopNavbar";
 import RouteProtectionWrapper from "@/components/RouteProtectionWrapper";
 import { Toaster } from "react-hot-toast";
+import Footer from "@/components/Footer/Footer";
 
 const robotoMono = Roboto_Mono({
   subsets: ["latin"],
@@ -81,6 +82,7 @@ export default function RootLayout({
                   <div className="pt-6">
                     {children}
                   </div>
+                  <Footer />
                 </div>
               </RouteProtectionWrapper>
             </RootProviders>
