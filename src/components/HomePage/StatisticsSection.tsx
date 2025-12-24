@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Users, Award, Video, Clock, TrendingUp, Star, Link } from "lucide-react";
 import AnimatedCounter from "./AnimatedCounter";
 
@@ -15,15 +15,47 @@ interface StatisticsData {
   totalNFTsMinted: number;
 }
 
+interface CachedStatistics {
+  data: StatisticsData;
+  timestamp: number;
+}
+
+const CACHE_KEY = "inorbit_statistics";
+const CACHE_DURATION = 30 * 60 * 1000; // 30 minutes in milliseconds
+
+// Safe localStorage wrapper
+const safeLocalStorage = {
+  getItem: (key: string): string | null => {
+    if (typeof window !== "undefined") {
+      try {
+        return localStorage.getItem(key);
+      } catch (e) {
+        return null;
+      }
+    }
+    return null;
+  },
+  setItem: (key: string, value: string): void => {
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.setItem(key, value);
+      } catch (e) {
+        // Ignore errors
+      }
+    }
+  },
+};
+
 const StatisticsSection = () => {
   const [stats, setStats] = useState<StatisticsData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
-  useEffect(() => {
-    fetchStatistics();
-  }, []);
+  const fetchStatistics = useCallback(async (isBackgroundRefresh = false) => {
+    if (isBackgroundRefresh) {
+      setIsRefreshing(true);
+    }
 
-  const fetchStatistics = async () => {
     try {
       const response = await fetch('/api/statistics');
       const data = await response.json();
@@ -31,13 +63,46 @@ const StatisticsSection = () => {
       if (data.success) {
         console.log("stats: ", data.data);
         setStats(data.data);
+
+        // Cache the data
+        const cacheData: CachedStatistics = {
+          data: data.data,
+          timestamp: Date.now(),
+        };
+        safeLocalStorage.setItem(CACHE_KEY, JSON.stringify(cacheData));
       }
     } catch (error) {
       console.error('Error fetching statistics:', error);
     } finally {
       setLoading(false);
+      setIsRefreshing(false);
     }
-  };
+  }, []);
+
+  // Load cached data immediately
+  useEffect(() => {
+    const cachedData = safeLocalStorage.getItem(CACHE_KEY);
+    if (cachedData) {
+      try {
+        const parsed: CachedStatistics = JSON.parse(cachedData);
+        const now = Date.now();
+
+        // Check if cache is still valid
+        if (now - parsed.timestamp < CACHE_DURATION) {
+          setStats(parsed.data);
+          setLoading(false);
+          // Still fetch fresh data in background
+          fetchStatistics(true);
+          return;
+        }
+      } catch (e) {
+        // Invalid cache, continue to fetch
+      }
+    }
+
+    // No valid cache, fetch immediately
+    fetchStatistics(false);
+  }, [fetchStatistics]);
 
   const statsCards = [
     {
@@ -81,18 +146,36 @@ const StatisticsSection = () => {
     // }
   ];
 
-  if (loading) {
-    return (
-      <section className="py-20 bg-gradient-to-br from-blue-shade-400 to-blue-shade-300">
-        <div className="container mx-auto px-4">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto"></div>
-            <p className="text-dark-text-secondary mt-4">Loading statistics...</p>
-          </div>
+  // Skeleton Loader Component
+  const StatCardSkeleton = ({ index }: { index: number }) => (
+    <motion.div
+      initial={{ opacity: 0, y: 30 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.6, delay: index * 0.1 }}
+      className="group relative bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-8 h-full"
+    >
+      {/* Icon skeleton */}
+      <div className="mb-6 flex items-start justify-between">
+        <div className="p-3 rounded-xl bg-white/10 border border-white/20">
+          <div className="w-6 h-6 bg-white/20 rounded animate-pulse" />
         </div>
-      </section>
-    );
-  }
+        <div className="w-5 h-5 bg-white/10 rounded animate-pulse" />
+      </div>
+
+      {/* Value skeleton */}
+      <div className="mb-4">
+        <div className="h-16 bg-white/20 rounded-lg animate-pulse mb-2" />
+      </div>
+
+      {/* Title skeleton */}
+      <div className="h-6 bg-white/20 rounded animate-pulse mb-2 w-3/4" />
+
+      {/* Description skeleton */}
+      <div className="h-4 bg-white/10 rounded animate-pulse w-full" />
+      <div className="h-4 bg-white/10 rounded animate-pulse w-2/3 mt-2" />
+    </motion.div>
+  );
 
   return (
     <section className="py-24 bg-gradient-to-b from-blue-shade-400 via-blue-shade-300 to-blue-shade-400 relative overflow-hidden">
@@ -129,56 +212,78 @@ const StatisticsSection = () => {
 
         {/* Statistics Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {statsCards.map((card, index) => (
-            <motion.div
-              key={card.title}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: index * 0.1 }}
-              whileHover={{ y: -8 }}
-              className="group relative bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-8 h-full hover:bg-white/15 hover:border-white/30 transition-all duration-300"
-            >
-              {/* Icon with accent */}
-              <div className="mb-6 flex items-start justify-between">
-                <div className="p-3 rounded-xl bg-white/10 border border-white/20 group-hover:bg-white/20 transition-colors">
-                  {card.icon}
-                </div>
-                <Star className="w-5 h-5 text-yellow-300 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              </div>
-
-              {/* Value */}
-              <div className="mb-4">
-                {"valueText" in card ? (
-                  <div className="text-4xl md:text-5xl font-bold text-white mb-2">
-                    {card.valueText}
+          {loading ? (
+            // Show skeleton loaders while loading
+            Array.from({ length: 4 }).map((_, index) => (
+              <StatCardSkeleton key={`skeleton-${index}`} index={index} />
+            ))
+          ) : (
+            // Show actual stats cards
+            statsCards.map((card, index) => (
+              <motion.div
+                key={card.title}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6, delay: index * 0.1 }}
+                whileHover={{ y: -8 }}
+                className="group relative bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-8 h-full hover:bg-white/15 hover:border-white/30 transition-all duration-300"
+              >
+                {/* Icon with accent */}
+                <div className="mb-6 flex items-start justify-between">
+                  <div className="p-3 rounded-xl bg-white/10 border border-white/20 group-hover:bg-white/20 transition-colors">
+                    {card.icon}
                   </div>
-                ) : (
-                  <motion.div
-                    initial={{ scale: 0.8 }}
-                    whileInView={{ scale: 1 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.5, delay: 0.2 }}
-                    className="text-4xl md:text-5xl lg:text-6xl font-black text-white mb-2 leading-none"
-                  >
-                    <AnimatedCounter value={card.value} duration={1.5} />
-                    <span className="text-3xl md:text-4xl">+</span>
-                  </motion.div>
-                )}
-              </div>
+                  <Star className="w-5 h-5 text-yellow-300 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                </div>
 
-              {/* Title */}
-              <h3 className="text-lg font-semibold text-white mb-2">
-                {card.title}
-              </h3>
+                {/* Value */}
+                <div className="mb-4">
+                  {"valueText" in card ? (
+                    <div className="text-4xl md:text-5xl font-bold text-white mb-2">
+                      {card.valueText}
+                    </div>
+                  ) : (
+                    <motion.div
+                      initial={{ scale: 0.8 }}
+                      whileInView={{ scale: 1 }}
+                      viewport={{ once: true }}
+                      transition={{ duration: 0.5, delay: 0.2 }}
+                      className="text-4xl md:text-5xl lg:text-6xl font-black text-white mb-2 leading-none"
+                    >
+                      <AnimatedCounter value={card.value} duration={1.5} />
+                      <span className="text-3xl md:text-4xl">+</span>
+                    </motion.div>
+                  )}
+                </div>
 
-              {/* Description */}
-              <p className="text-blue-100 text-sm leading-relaxed">
-                {card.description}
-              </p>
-            </motion.div>
-          ))}
+                {/* Title */}
+                <h3 className="text-lg font-semibold text-white mb-2">
+                  {card.title}
+                </h3>
+
+                {/* Description */}
+                <p className="text-blue-100 text-sm leading-relaxed">
+                  {card.description}
+                </p>
+              </motion.div>
+            ))
+          )}
         </div>
+
+        {/* Refresh indicator */}
+        {isRefreshing && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="text-center mt-6"
+          >
+            <p className="text-blue-100 text-sm flex items-center justify-center gap-2">
+              <div className="w-4 h-4 border-2 border-blue-100 border-t-transparent rounded-full animate-spin" />
+              Refreshing statistics...
+            </p>
+          </motion.div>
+        )}
 
         {/* Additional Stats Row */}
         {/* <motion.div
