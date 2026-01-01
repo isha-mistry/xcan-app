@@ -27,7 +27,8 @@ export default function RouteProtectionWrapper({ children }: RouteProtectionWrap
   const publicRoutes = [
     "/", // Home page
     "/dashboard", // Dashboard page - accessible to all users
-    "/doc"
+    "/doc",
+    "/orbit-chains" // Orbit chains dashboard - accessible to all users
   ];
 
   const isPublicRoute = publicRoutes.includes(pathname);

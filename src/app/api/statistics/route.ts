@@ -71,6 +71,9 @@ export async function GET(req: NextRequest, res: NextResponse) {
       }
     };
 
+    // Get orbit chains collection
+    const orbitChainsCollection = userDb.collection("deployed-orbit-chains");
+
     // Fetch statistics in parallel
     const [
       totalUsers,
@@ -79,6 +82,7 @@ export async function GET(req: NextRequest, res: NextResponse) {
       usersWithSocials,
       usersWithGithub,
       legacyTotalMintedAgg,
+      totalOrbitChains,
     ] = await Promise.all([
       // Total users
       usersCollection.countDocuments({}),
@@ -115,6 +119,9 @@ export async function GET(req: NextRequest, res: NextResponse) {
           },
         ])
         .toArray(),
+
+      // Total orbit chains deployed
+      orbitChainsCollection.countDocuments({ status: "orbit_deployed" }),
     ]);
 
     // Legacy totals from minted-nft collection
@@ -166,6 +173,7 @@ export async function GET(req: NextRequest, res: NextResponse) {
         usersWithSocials,
         usersWithGithub,
         totalNFTsMinted: totalMinted,
+        totalOrbitChains,
       },
     });
   } catch (error) {

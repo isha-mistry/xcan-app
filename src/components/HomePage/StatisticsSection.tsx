@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { useState, useEffect, useCallback } from "react";
 import { Users, Award, Video, Clock, TrendingUp, Star, Link } from "lucide-react";
+import { useRouter } from "next/navigation";
 import AnimatedCounter from "./AnimatedCounter";
 
 interface StatisticsData {
@@ -13,12 +14,29 @@ interface StatisticsData {
   usersWithSocials: number;
   usersWithGithub: number;
   totalNFTsMinted: number;
+  totalOrbitChains: number;
 }
 
 interface CachedStatistics {
   data: StatisticsData;
   timestamp: number;
 }
+
+type StatCard = {
+  title: string;
+  value: number;
+  icon: React.ReactNode;
+  description: string;
+  clickable?: boolean;
+  route?: string;
+} | {
+  title: string;
+  valueText: string;
+  icon: React.ReactNode;
+  description: string;
+  clickable?: boolean;
+  route?: string;
+};
 
 const CACHE_KEY = "inorbit_statistics";
 const CACHE_DURATION = 30 * 60 * 1000; // 30 minutes in milliseconds
@@ -47,6 +65,7 @@ const safeLocalStorage = {
 };
 
 const StatisticsSection = () => {
+  const router = useRouter();
   const [stats, setStats] = useState<StatisticsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -104,7 +123,7 @@ const StatisticsSection = () => {
     fetchStatistics(false);
   }, [fetchStatistics]);
 
-  const statsCards = [
+  const statsCards: StatCard[] = [
     {
       title: "Devs under training",
       value: stats?.usersWithGithub || 0,
@@ -125,9 +144,11 @@ const StatisticsSection = () => {
     },
     {
       title: "Orbit chains launched",
-      valueText: "Coming soon",
+      value: stats?.totalOrbitChains || 0,
       icon: <Link className="w-6 h-6 text-purple-400" />,
-      description: ""
+      description: "Total deployed chains",
+      clickable: true,
+      route: "/orbit-chains"
     }
     // Commented out for now
     // {
@@ -227,7 +248,13 @@ const StatisticsSection = () => {
                 viewport={{ once: true }}
                 transition={{ duration: 0.6, delay: index * 0.1 }}
                 whileHover={{ y: -8 }}
-                className="group relative bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-8 h-full hover:bg-white/15 hover:border-white/30 transition-all duration-300"
+                onClick={() => {
+                  if ("clickable" in card && card.clickable && "route" in card && card.route) {
+                    router.push(card.route);
+                  }
+                }}
+                className={`group relative bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-8 h-full hover:bg-white/15 hover:border-white/30 transition-all duration-300 ${"clickable" in card && card.clickable ? "cursor-pointer" : ""
+                  }`}
               >
                 {/* Icon with accent */}
                 <div className="mb-6 flex items-start justify-between">
@@ -239,9 +266,9 @@ const StatisticsSection = () => {
 
                 {/* Value */}
                 <div className="mb-4">
-                  {"valueText" in card ? (
+                  {"valueText" in card && card.valueText ? (
                     <div className="text-4xl md:text-5xl font-bold text-white mb-2">
-                      {card.valueText}
+                      {String(card.valueText)}
                     </div>
                   ) : (
                     <motion.div
@@ -251,7 +278,7 @@ const StatisticsSection = () => {
                       transition={{ duration: 0.5, delay: 0.2 }}
                       className="text-4xl md:text-5xl lg:text-6xl font-black text-white mb-2 leading-none"
                     >
-                      <AnimatedCounter value={card.value} duration={1.5} />
+                      <AnimatedCounter value={"value" in card ? card.value : 0} duration={1.5} />
                       <span className="text-3xl md:text-4xl">+</span>
                     </motion.div>
                   )}
