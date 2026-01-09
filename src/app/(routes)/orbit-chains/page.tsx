@@ -300,14 +300,14 @@ const OrbitChainsPage = () => {
               <div className="absolute top-0 right-0 w-24 h-24 bg-blue-shade-100/10 rounded-bl-full opacity-50 group-hover:opacity-75 transition-opacity" />
               <div className="relative">
                 <div className="flex items-center gap-3 mb-2">
-                  <div className="p-2 rounded-lg bg-blue-shade-100/10 border border-blue-shade-100/20">
+                  <div className="p-2 rounded-lg bg-white opacity-80 border border-white/20">
                     <LinkIcon className="w-5 h-5 text-blue-shade-100" />
                   </div>
                   <div className="text-dark-text-secondary text-xs uppercase tracking-wider font-semibold">
                     Total Chains
                   </div>
                 </div>
-                <div className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-shade-100 to-blue-shade-200 bg-clip-text text-transparent">
+                <div className="text-4xl md:text-5xl font-bold color-white opacity-80">
                   {chains.length}
                 </div>
               </div>
@@ -333,7 +333,7 @@ const OrbitChainsPage = () => {
                 </div>
               </div>
             </motion.div>
-            
+
             {/* Unique Users Card */}
             <motion.div
               whileHover={{ scale: 1.02, y: -2 }}

@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { useState, useEffect, useCallback } from "react";
-import { Users, Award, Video, Clock, TrendingUp, Star, Link } from "lucide-react";
+import { Users, Award, Video, Clock, TrendingUp, Star, Link, GraduationCap } from "lucide-react";
 import { useRouter } from "next/navigation";
 import AnimatedCounter from "./AnimatedCounter";
 
@@ -15,6 +15,7 @@ interface StatisticsData {
   usersWithGithub: number;
   totalNFTsMinted: number;
   totalOrbitChains: number;
+  totalAdvocates: number;
 }
 
 interface CachedStatistics {
@@ -149,6 +150,12 @@ const StatisticsSection = () => {
       description: "Total deployed chains",
       clickable: true,
       route: "/orbit-chains"
+    },
+    {
+      title: "Stylus Advocates Trained",
+      value: stats?.totalAdvocates || 0,
+      icon: <GraduationCap className="w-6 h-6 text-cyan-400" />,
+      description: "Certified Stylus advocates"
     }
     // Commented out for now
     // {
@@ -232,10 +239,10 @@ const StatisticsSection = () => {
         </motion.div>
 
         {/* Statistics Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
           {loading ? (
             // Show skeleton loaders while loading
-            Array.from({ length: 4 }).map((_, index) => (
+            Array.from({ length: 5 }).map((_, index) => (
               <StatCardSkeleton key={`skeleton-${index}`} index={index} />
             ))
           ) : (
