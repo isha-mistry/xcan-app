@@ -10,66 +10,8 @@ export async function GET(req: NextRequest, res: NextResponse) {
     const userDb = userClient.db("inorbit_modules");
     const usersCollection = userDb.collection("users");
     const nftsCollection = userDb.collection("minted-nft");
-
-    // Challenge-wise collections that may contain certification arrays
-    const challengeCollectionNames = [
-      "challenges-cross-chain",
-      "challenges-master-defi",
-      "challenges-orbit-chain",
-      "challenges-precompiles-overview",
-      "challenges-stylus-core-concepts",
-      "challenges-web3-basics",
-      "foundation-users",
-      "advocates",
-    ];
-
-    const countClaimedInCollection = async (
-      collectionName: string
-    ): Promise<number> => {
-      try {
-        const col = userDb.collection(collectionName);
-        const result = await col
-          .aggregate([
-            {
-              $match: {
-                certification: { $exists: true, $type: "array", $ne: [] },
-              },
-            },
-            { $unwind: "$certification" },
-            { $match: { "certification.claimed": true } },
-            { $count: "total" },
-          ])
-          .toArray();
-        return result.length > 0 ? result[0].total : 0;
-      } catch {
-        return 0;
-      }
-    };
-
-    const distinctHoldersInCollection = async (
-      collectionName: string
-    ): Promise<string[]> => {
-      try {
-        const col = userDb.collection(collectionName);
-        const result = await col
-          .aggregate([
-            {
-              $match: {
-                certification: { $exists: true, $type: "array", $ne: [] },
-              },
-            },
-            { $unwind: "$certification" },
-            { $match: { "certification.claimed": true } },
-            { $group: { _id: "$userAddress" } },
-          ])
-          .toArray();
-        return result
-          .map((d: any) => (d._id || "").toLowerCase())
-          .filter(Boolean);
-      } catch {
-        return [];
-      }
-    };
+    const userModulesCollection = userDb.collection("user-modules");
+    const foundationUsersCollection = userDb.collection("foundation-users");
 
     // Get orbit chains collection
     const orbitChainsCollection = userDb.collection("deployed-orbit-chains");
@@ -86,6 +28,12 @@ export async function GET(req: NextRequest, res: NextResponse) {
       legacyTotalMintedAgg,
       totalOrbitChains,
       totalAdvocates,
+      userModulesCertCount,
+      userModulesHolders,
+      foundationUsersCertCount,
+      foundationUsersHolders,
+      advocatesCertCount,
+      advocatesHolders,
     ] = await Promise.all([
       // Total users
       usersCollection.countDocuments({}),
@@ -126,6 +74,112 @@ export async function GET(req: NextRequest, res: NextResponse) {
       // Total orbit chains deployed
       orbitChainsCollection.countDocuments({ status: "orbit_deployed" }),
       advocatesCollection.countDocuments({}),
+
+      // Count total claimed certifications from user-modules collection
+      userModulesCollection
+        .aggregate([
+          {
+            $project: {
+              userAddress: 1,
+              modules: { $objectToArray: "$modules" },
+            },
+          },
+          { $unwind: "$modules" },
+          {
+            $match: {
+              "modules.v.certification": {
+                $exists: true,
+                $type: "array",
+                $ne: [],
+              },
+            },
+          },
+          { $unwind: "$modules.v.certification" },
+          { $match: { "modules.v.certification.claimed": true } },
+          { $count: "total" },
+        ])
+        .toArray(),
+
+      // Get distinct holders from user-modules collection
+      userModulesCollection
+        .aggregate([
+          {
+            $project: {
+              userAddress: 1,
+              modules: { $objectToArray: "$modules" },
+            },
+          },
+          { $unwind: "$modules" },
+          {
+            $match: {
+              "modules.v.certification": {
+                $exists: true,
+                $type: "array",
+                $ne: [],
+              },
+            },
+          },
+          { $unwind: "$modules.v.certification" },
+          { $match: { "modules.v.certification.claimed": true } },
+          { $group: { _id: "$userAddress" } },
+        ])
+        .toArray(),
+
+      // Count total claimed certifications from foundation-users collection
+      foundationUsersCollection
+        .aggregate([
+          {
+            $match: {
+              certification: { $exists: true, $type: "array", $ne: [] },
+            },
+          },
+          { $unwind: "$certification" },
+          { $match: { "certification.claimed": true } },
+          { $count: "total" },
+        ])
+        .toArray(),
+
+      // Get distinct holders from foundation-users collection
+      foundationUsersCollection
+        .aggregate([
+          {
+            $match: {
+              certification: { $exists: true, $type: "array", $ne: [] },
+            },
+          },
+          { $unwind: "$certification" },
+          { $match: { "certification.claimed": true } },
+          { $group: { _id: "$userAddress" } },
+        ])
+        .toArray(),
+
+      // Count total claimed certifications from advocates collection
+      advocatesCollection
+        .aggregate([
+          {
+            $match: {
+              certification: { $exists: true, $type: "array", $ne: [] },
+            },
+          },
+          { $unwind: "$certification" },
+          { $match: { "certification.claimed": true } },
+          { $count: "total" },
+        ])
+        .toArray(),
+
+      // Get distinct holders from advocates collection
+      advocatesCollection
+        .aggregate([
+          {
+            $match: {
+              certification: { $exists: true, $type: "array", $ne: [] },
+            },
+          },
+          { $unwind: "$certification" },
+          { $match: { "certification.claimed": true } },
+          { $group: { _id: "$userAddress" } },
+        ])
+        .toArray(),
     ]);
 
     // Legacy totals from minted-nft collection
@@ -136,32 +190,50 @@ export async function GET(req: NextRequest, res: NextResponse) {
       { totalMinted: { $gt: 0 } }
     );
 
-    // Challenge totals in parallel
-    const [challengeClaimedCounts, challengeHoldersArrays] = await Promise.all([
-      Promise.all(
-        challengeCollectionNames.map((name) => countClaimedInCollection(name))
-      ),
-      Promise.all(
-        challengeCollectionNames.map((name) =>
-          distinctHoldersInCollection(name)
-        )
-      ),
-    ]);
+    // Get claimed certifications count from user-modules
+    const userModulesTotalMinted =
+      userModulesCertCount.length > 0 ? userModulesCertCount[0].total : 0;
 
-    // Combine minted totals: legacy + challenges
-    const totalMinted = challengeClaimedCounts.reduce(
-      (sum, n) => sum + (Number(n) || 0),
-      legacyTotalMinted
-    );
+    // Get unique holders from user-modules
+    const userModulesHoldersList = userModulesHolders
+      .map((d: any) => (d._id || "").toLowerCase())
+      .filter(Boolean);
 
-    // Unique holders across legacy and challenges
+    // Get claimed certifications count from foundation-users
+    const foundationUsersTotalMinted =
+      foundationUsersCertCount.length > 0
+        ? foundationUsersCertCount[0].total
+        : 0;
+
+    // Get unique holders from foundation-users
+    const foundationUsersHoldersList = foundationUsersHolders
+      .map((d: any) => (d._id || "").toLowerCase())
+      .filter(Boolean);
+
+    // Get claimed certifications count from advocates
+    const advocatesTotalMinted =
+      advocatesCertCount.length > 0 ? advocatesCertCount[0].total : 0;
+
+    // Get unique holders from advocates
+    const advocatesHoldersList = advocatesHolders
+      .map((d: any) => (d._id || "").toLowerCase())
+      .filter(Boolean);
+
+    // Combine minted totals: minted-nft + user-modules + foundation-users + advocates
+    const totalMinted =
+      legacyTotalMinted +
+      userModulesTotalMinted +
+      foundationUsersTotalMinted +
+      advocatesTotalMinted;
+
+    // Unique holders across minted-nft, user-modules, foundation-users, and advocates
     const uniqueHolders = new Set<string>();
     legacyHolders.forEach(
       (addr) => addr && uniqueHolders.add(String(addr).toLowerCase())
     );
-    challengeHoldersArrays.forEach((arr) =>
-      arr.forEach((addr) => uniqueHolders.add(addr))
-    );
+    userModulesHoldersList.forEach((addr) => uniqueHolders.add(addr));
+    foundationUsersHoldersList.forEach((addr) => uniqueHolders.add(addr));
+    advocatesHoldersList.forEach((addr) => uniqueHolders.add(addr));
     const totalNFTs = uniqueHolders.size;
 
     // Close database connections

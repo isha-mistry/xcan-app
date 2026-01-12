@@ -102,7 +102,7 @@ function TopNavbar() {
 
   return (
     <>
-      <div className="relative z-10 flex justify-between items-center w-screen px-4 font-robotoMono py-8">
+      <div className="relative z-50 flex justify-between items-center w-screen px-4 font-robotoMono py-8">
         <div className="flex gap-2 items-center">
           <Link href="/" className="flex items-center gap-2">
             <Image

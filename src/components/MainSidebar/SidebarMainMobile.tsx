@@ -72,6 +72,19 @@ const SidebarMainMobile = () => {
     toggleSidebar();
   };
 
+  // Lock body scroll when sidebar is open (mobile)
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isOpen]);
+
   const handleProfileClick = (e: React.MouseEvent) => {
     e.preventDefault();
     if (!authenticated || !address || !isConnected) {
@@ -86,7 +99,8 @@ const SidebarMainMobile = () => {
   };
 
   return (
-    <div className="relative z-10">
+    // High z-index so mobile sidebar sits above home content
+    <div className="relative z-[60]">
       <div className="bg-dark-secondary flex items-center justify-between w-full border-b-1 p-1">
         <div className="flex">
           <div
@@ -117,9 +131,14 @@ const SidebarMainMobile = () => {
         </div> */}
       </div>
 
+      {/* Backdrop */}
+      {isOpen && (
+        <div className="fixed inset-0 z-40 bg-black/60" onClick={toggleSidebar} />
+      )}
+
       <div
         ref={sidebarRef}
-        className={`fixed inset-y-0 left-0 w-full font-robotoMono bg-blue-shade-200 text-white transform z-50 ${isOpen ? "translate-x-0" : "-translate-x-full"
+        className={`fixed inset-y-0 left-0 w-full font-robotoMono bg-blue-shade-200 text-white transform z-[9999] ${isOpen ? "translate-x-0" : "-translate-x-full"
           } transition-transform duration-500 ease-in-out`}
         onClick={handleSidebarClick}
       >
@@ -168,7 +187,7 @@ const SidebarMainMobile = () => {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center">
                       <FiCodesandbox className="size-5 mr-4" />
-                      <span>Xcan</span>
+                      <span>Modules (by Xcan)</span>
                     </div>
                     <FiArrowUpRight className="w-5 h-5" />
                   </div>
@@ -282,9 +301,9 @@ const SidebarMainMobile = () => {
                 <button
                   // href={`/profile/${address}?active=info`}
                   onClick={handleProfileClick}
-                  className="block py-4 pl-6 sm:py-5 hover:bg-blue-shade-100"
+                  className="flex w-full py-4 pl-6 sm:py-5 hover:bg-blue-shade-100"
                 >
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between w-full">
                     <div className="flex items-center">
                       <FaUser className="size-5 mr-4" />
                       <span>Profile</span>
