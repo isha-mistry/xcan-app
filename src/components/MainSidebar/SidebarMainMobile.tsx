@@ -1,54 +1,32 @@
 "use client";
-import { IoClose, IoMenu } from "react-icons/io5";
-import React, { useState, useRef, useEffect } from "react";
+import React, { useRef, useEffect } from "react";
 import Link from "next/link";
-import { HiArrowSmLeft } from "react-icons/hi";
-import { IoIosRocket, IoMdNotifications } from "react-icons/io";
-import { SiGitbook } from "react-icons/si";
-import { PiUsersThreeFill } from "react-icons/pi";
-import { FaBusinessTime, FaCodeBranch, FaUser } from "react-icons/fa6";
-import { BiSolidMessageSquareAdd, BiSolidWallet } from "react-icons/bi";
-import { FiArrowUpRight, FiCodesandbox } from "react-icons/fi";
-import { useSidebar } from "../../app/hooks/useSidebar";
-import { Badge, Tooltip, VisuallyHidden } from "@nextui-org/react";
 import Image from "next/image";
-import styles from "./sidebar.module.css";
 import { usePathname } from "next/navigation";
-import { useSession } from "next-auth/react";
-import { ConnectWallet } from "../ConnectWallet/ConnectWallet";
-import cclogo from "@/assets/images/daos/CCLogo.png";
-import { IoGiftSharp } from "react-icons/io5";
-import ConnectWalletWithENS from "../ConnectWallet/ConnectWalletWithENS";
 import { usePrivy } from "@privy-io/react-auth";
-import logo from "@/assets/images/icon.svg";
-import ConnectYourWallet from "../ComponentUtils/ConnectYourWallet";
+import { IoClose, IoGiftSharp } from "react-icons/io5";
+import { IoMdNotifications } from "react-icons/io";
+import { PiUsersThreeFill } from "react-icons/pi";
+import { FaBusinessTime, FaUser } from "react-icons/fa6";
+import { FiArrowUpRight, FiCodesandbox } from "react-icons/fi";
 import { MdHub } from "react-icons/md";
+import { useSidebar } from "../../app/hooks/useSidebar";
+import ConnectWalletWithENS from "../ConnectWallet/ConnectWalletWithENS";
+import logo from "@/assets/images/icon.svg";
+import { motion, AnimatePresence } from "framer-motion";
+import { useSidebarStore } from "@/store/sidebarStore";
 
 const SidebarMainMobile = () => {
-  const [isOpen, setIsOpen] = useState(false);
+  const { isOpen, setOpen } = useSidebarStore();
   const pathname = usePathname();
   const { authenticated, login } = usePrivy();
   const {
     storedDao,
-    handleMouseOver,
-    handleMouseOut,
     handleBadgeClick,
-    badgeVisiblity,
-    isPageLoading,
-    session,
-    status,
     address,
     isConnected,
   } = useSidebar();
   const sidebarRef = useRef<HTMLDivElement | null>(null);
-
-  const sessionLoading = status === "loading";
-  const isLoginPage = pathname === "/login";
-  const authenticationCheck = isConnected || authenticated;
-
-  const toggleSidebar = () => {
-    setIsOpen(!isOpen);
-  };
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -56,30 +34,25 @@ const SidebarMainMobile = () => {
         sidebarRef.current &&
         !sidebarRef.current.contains(event.target as Node)
       ) {
-        setIsOpen(false);
+        setOpen(false);
       }
     };
 
-    document.addEventListener("mousedown", handleClickOutside);
+    if (isOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, []);
+  }, [isOpen, setOpen]);
 
-  const handleSidebarClick = (event: React.MouseEvent) => {
-    // Prevent the click event from propagating to parent elements
-    event.stopPropagation();
-    toggleSidebar();
-  };
-
-  // Lock body scroll when sidebar is open (mobile)
+  // Lock body scroll when sidebar is open
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = "hidden";
     } else {
       document.body.style.overflow = "";
     }
-
     return () => {
       document.body.style.overflow = "";
     };
@@ -88,244 +61,113 @@ const SidebarMainMobile = () => {
   const handleProfileClick = (e: React.MouseEvent) => {
     e.preventDefault();
     if (!authenticated || !address || !isConnected) {
-      // Show Privy modal if wallet is not connected
       login();
     } else {
-      // Redirect to profile if wallet is connected
       window.location.href = `/profile/${address}?active=info`;
     }
-    // Close sidebar after action
-    setIsOpen(false);
+    setOpen(false);
   };
 
+  const menuItems = [
+    { label: "Ecosystem", href: "/ecosystem", icon: <MdHub className="size-5" /> },
+    {
+      label: "Modules",
+      subLabel: "BY XCAN",
+      href: "https://modules.xcan.dev/",
+      icon: <FiCodesandbox className="size-5" />,
+      external: true
+    },
+    { label: "Dashboard", href: "/dashboard", icon: <FaUser className="size-5" /> },
+    { label: "Lectures", href: "/lectures?hours=ongoing", icon: <FaBusinessTime className="size-5" /> },
+    { label: "Expert Sessions", href: "/sessions?active=availableExperts", icon: <PiUsersThreeFill className="size-5" /> },
+    { label: "Claim Rewards", href: "/claim-rewards", icon: <IoGiftSharp className="size-5" />, mobileOnly: true },
+    { label: "Notification", href: "/notifications?active=all", icon: <IoMdNotifications className="size-5" /> },
+  ];
+
   return (
-    // High z-index so mobile sidebar sits above home content
-    <div className="relative z-[60]">
-      <div className="bg-dark-secondary flex items-center justify-between w-full border-b-1 p-1">
-        <div className="flex">
-          <div
-            className={`bg-blue-shade-200 text-white text-lg font-bold p-1.5 rounded-full cursor-pointer my-4 mx-2 0.2xs:mx-4`}
-            onClick={toggleSidebar}
-          >
-            <IoMenu className="size-6" />
-          </div>
-          <div className={`flex border border-l-0 h-16`}></div>
-          <Link
-            className="ml-1 xs:ml-2 sm:ml-4 mt-[2px] xs:mt-[3px] text-black font-semibold text-[20px] xs:text-[24px] sm:text-[28px] md:text-[32px] font-robotoMono flex items-center"
-            href={"/"}
-          >
-            <Image
-              src={logo}
-              alt={"Xcan Logo"}
-              width={200}
-              height={200}
-              className="h-8 w-8 xs:h-9 xs:w-9 sm:h-10 sm:w-10 md:h-11 md:w-11"
-            />
-            <span className="text-white text-[18px] sm:text-[22px] md:text-[26px] ml-1 xs:ml-2">
-              Xcan
-            </span>
-          </Link>
-        </div>
-        {/* <div className="mr-2 xm:mr-4">
-          {<ConnectWalletWithENS />}
-        </div> */}
-      </div>
-
-      {/* Backdrop */}
+    <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-40 bg-black/60" onClick={toggleSidebar} />
-      )}
+        <>
+          {/* Backdrop */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setOpen(false)}
+            className="fixed inset-0 z-[1000] bg-black/60 backdrop-blur-sm lg:hidden"
+          />
 
-      <div
-        ref={sidebarRef}
-        className={`fixed inset-y-0 left-0 w-full font-robotoMono bg-blue-shade-200 text-white transform z-[9999] ${isOpen ? "translate-x-0" : "-translate-x-full"
-          } transition-transform duration-500 ease-in-out`}
-        onClick={handleSidebarClick}
-      >
-        <div className="">
-          <div className="flex absolute top-4 left-4 items-center">
-            <button
-              className=" text-white border-white border rounded-full p-1.5"
-              onClick={(e) => {
-                e.stopPropagation();
-                toggleSidebar();
-              }}
-            >
-              <HiArrowSmLeft className="size-6" />
-            </button>
-            <Link
-              className="ml-5 text-white font-semibold text-[26px] font-robotoMono"
-              href={"https://xcan.dev/"}
-            >
-              Xcan
-            </Link>
-          </div>
+          {/* Drawer */}
+          <motion.div
+            ref={sidebarRef}
+            initial={{ x: "-100%" }}
+            animate={{ x: 0 }}
+            exit={{ x: "-100%" }}
+            transition={{ type: "spring", damping: 25, stiffness: 200 }}
+            className="fixed inset-y-0 left-0 w-[85%] max-w-sm bg-[#07090D]/95 backdrop-blur-2xl border-r border-white/10 z-[1001] lg:hidden flex flex-col font-robotoMono overflow-hidden"
+          >
+            {/* Header */}
+            <div className="p-6 flex items-center justify-between border-b border-white/5">
+              <Link href="/" className="flex items-center gap-3" onClick={() => setOpen(false)}>
+                <Image src={logo} alt="logo" width={32} height={32} />
+                <span className="text-white text-xl font-black font-unbounded tracking-tighter">Xcan</span>
+              </Link>
+              <button
+                onClick={() => setOpen(false)}
+                className="p-2 text-white/60 hover:text-white rounded-full transition-colors"
+              >
+                <IoClose className="size-6" />
+              </button>
+            </div>
 
-          <nav className="mt-20 mr-6">
-            <ul className="">
-              <li>
-                <Link
-                  href="/ecosystem"
-                  className="block py-4 pl-6 sm:py-5 hover:bg-blue-shade-100 "
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center">
-                      <MdHub className="size-5 mr-4" />
-                      <span>Ecosystem</span>
+            {/* Navigation */}
+            <nav className="flex-1 overflow-y-auto px-4 py-6">
+              <div className="space-y-1">
+                {menuItems.map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    target={item.external ? "_blank" : undefined}
+                    onClick={() => setOpen(false)}
+                    className={`flex items-center justify-between p-4 rounded-2xl transition-all group ${pathname === item.href ? "bg-white/10 text-white" : "text-white/60 hover:bg-white/5 hover:text-white"
+                      }`}
+                  >
+                    <div className="flex items-center gap-4">
+                      {item.icon}
+                      <div className="flex flex-col">
+                        <span className="font-bold text-sm tracking-widest uppercase">{item.label}</span>
+                        {item.subLabel && (
+                          <span className="text-[8px] text-blue-400 font-bold opacity-80">{item.subLabel}</span>
+                        )}
+                      </div>
                     </div>
-                    <FiArrowUpRight className="w-5 h-5" />
-                  </div>
-                </Link>
-                <div className="h-[0.1px] w-full bg-white"></div>
-              </li>
-              <li>
-                <Link
-                  href="https://modules.xcan.dev/"
-                  target="_blank"
-                  className="block py-4 pl-6 sm:py-5 hover:bg-blue-shade-100 "
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center">
-                      <FiCodesandbox className="size-5 mr-4" />
-                      <span>Modules (by Xcan)</span>
-                    </div>
-                    <FiArrowUpRight className="w-5 h-5" />
-                  </div>
-                </Link>
-                <div className="h-[0.1px] w-full bg-white"></div>
-              </li>
-              <li>
-                <Link
-                  href={"/dashboard"}
-                  className="block py-4 pl-6 sm:py-5 hover:bg-blue-shade-100 "
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center">
-                      <FaUser className="size-5 mr-4" />
-                      <span>Dashboard</span>
-                    </div>
-                    <FiArrowUpRight className="w-5 h-5" />
-                  </div>
-                </Link>
-                <div className="h-[0.1px] w-full bg-white"></div>
-              </li>
-              <li>
-                <Link
-                  href={"/lectures?hours=ongoing"}
-                  className="block py-4 pl-6 sm:py-5 hover:bg-blue-shade-100"
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center">
-                      <FaBusinessTime className="size-5 mr-4" />
-                      <span>Lectures</span>
-                    </div>
-                    <FiArrowUpRight className="w-5 h-5" />
-                  </div>
-                </Link>
-                <div className="h-[0.1px] w-full bg-white"></div>
-              </li>
-              <li>
-                <Link
-                  href={"/sessions?active=availableExperts"}
-                  className="block py-4 pl-6 sm:py-5 hover:bg-blue-shade-100"
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center">
-                      <PiUsersThreeFill className="size-5 mr-4" />
-                      <span>Experts Sessions</span>
-                    </div>
-                    <FiArrowUpRight className="w-5 h-5" />
-                  </div>
-                </Link>
-                <div className="h-[0.1px] w-full bg-white"></div>
-              </li>
-              {/* <li>
-                <Link
-                  href={"/invite"}
-                  className="block py-4 pl-6 sm:py-5 hover:bg-blue-shade-100"
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center">
-                      <BiSolidMessageSquareAdd className="size-5 mr-4" />
-                      <span>Invite</span>
-                    </div>
-                    <FiArrowUpRight className="w-5 h-5" />
-                  </div>
-                </Link>
-                <div className="h-[0.1px] w-full bg-white"></div>
-              </li> */}
-              <li className=" md:hidden">
-                <Link
-                  href={"/claim-rewards"}
-                  className="block py-4 pl-6 sm:py-5 hover:bg-blue-shade-100"
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center">
-                      <IoGiftSharp className="size-5 mr-4" />
-                      <span>Claim Rewards</span>
-                    </div>
-                    <FiArrowUpRight className="w-5 h-5" />
-                  </div>
-                </Link>
-                <div className="h-[0.1px] w-full bg-white"></div>
-              </li>
-              <li>
-                <Link
-                  href={"/notifications?active=all"}
-                  className="block py-4 pl-6 sm:py-5 hover:bg-blue-shade-100"
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center">
-                      <IoMdNotifications className="size-5 mr-4" />
-                      <span>Notification</span>
-                    </div>
-                    <FiArrowUpRight className="w-5 h-5" />
-                  </div>
-                </Link>
-                <div className="h-[0.1px] w-full bg-white"></div>
-              </li>
+                    <FiArrowUpRight className="w-4 h-4 opacity-40 group-hover:opacity-100 transition-opacity" />
+                  </Link>
+                ))}
 
-              {/* <Link href="#" className="block py-4 pl-6 sm:py-5 hover:bg-blue-shade-100">
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center">
-                      <BiSolidWallet className="size-5 mr-4" />
-                      <span>Wallet</span>
-                    </div>
-                    <FiArrowUpRight className="w-5 h-5" />
-                  </div>
-                </Link> */}
-              {/* {!isConnected || !session ? (
-                <ConnectYourWallet />
-              ) : ( */}
-              <li>
                 <button
-                  // href={`/profile/${address}?active=info`}
                   onClick={handleProfileClick}
-                  className="flex w-full py-4 pl-6 sm:py-5 hover:bg-blue-shade-100"
+                  className="w-full flex items-center justify-between p-4 rounded-2xl text-white/60 hover:bg-white/5 hover:text-white transition-all group"
                 >
-                  <div className="flex items-center justify-between w-full">
-                    <div className="flex items-center">
-                      <FaUser className="size-5 mr-4" />
-                      <span>Profile</span>
-                    </div>
-                    <FiArrowUpRight className="w-5 h-5" />
+                  <div className="flex items-center gap-4">
+                    <FaUser className="size-5" />
+                    <span className="font-bold text-sm tracking-widest uppercase">Profile</span>
                   </div>
+                  <FiArrowUpRight className="w-4 h-4 opacity-40 group-hover:opacity-100 transition-opacity" />
                 </button>
-              </li>
-              {/* )} */}
-            </ul>
-          </nav>
+              </div>
+            </nav>
 
-          <>
-            <div className=" flex flex-col w-[90%] gap-2 absolute bottom-4 mx-[5%] ">
+            {/* Footer */}
+            <div className="p-6 border-t border-white/5 bg-white/5">
               <ConnectWalletWithENS />
             </div>
-          </>
-
-        </div>
-      </div>
-    </div >
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
   );
 };
 
 export default SidebarMainMobile;
+

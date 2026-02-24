@@ -206,12 +206,12 @@ const StatisticsSection = () => {
   );
 
   return (
-    <section className="py-24 bg-gradient-to-b from-blue-shade-400 via-blue-shade-300 to-blue-shade-400 relative overflow-hidden">
-      {/* Background Pattern */}
-      <div className="absolute inset-0 opacity-10">
+    <section className="py-20 bg-[#07090D] relative overflow-hidden">
+      {/* Background Pattern - Subtle Grid */}
+      <div className="absolute inset-0 opacity-[0.03]">
         <div className="absolute inset-0" style={{
-          backgroundImage: `radial-gradient(circle at 2px 2px, white 1px, transparent 0)`,
-          backgroundSize: '40px 40px'
+          backgroundImage: `linear-gradient(#ffffff 1px, transparent 1px), linear-gradient(90deg, #ffffff 1px, transparent 1px)`,
+          backgroundSize: '60px 60px'
         }} />
       </div>
 
@@ -222,87 +222,101 @@ const StatisticsSection = () => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="text-center mb-20"
+          className="text-center mb-16"
         >
-          <div className="inline-block bg-dark-tertiary/80 backdrop-blur-sm border border-white/20 px-8 py-3 rounded-full mb-8">
-            <span className="text-white font-semibold flex items-center justify-center gap-2 text-lg">
-              <TrendingUp className="w-5 h-5" />
+          <div className="inline-flex items-center gap-2 bg-white/5 backdrop-blur-sm border border-white/10 px-6 py-2 rounded-full mb-6">
+            <TrendingUp className="w-4 h-4 text-blue-400" />
+            <span className="text-blue-100 font-bold text-[10px] uppercase tracking-[0.2em]">
               Platform Statistics
             </span>
           </div>
-          <h2 className="text-5xl md:text-6xl font-bold mb-6 text-white">
+          <h2 className="text-3xl md:text-5xl font-unbounded font-black mb-4 text-white tracking-[-0.04em]">
             Growing Together
           </h2>
-          <p className="text-xl md:text-2xl text-blue-100 max-w-3xl mx-auto leading-relaxed">
+          <p className="text-base md:text-lg text-white/40 max-w-2xl mx-auto leading-relaxed font-medium">
             Join thousands of learners and experts who are already part of our thriving community
           </p>
         </motion.div>
 
         {/* Statistics Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
-          {loading ? (
-            // Show skeleton loaders while loading
-            Array.from({ length: 5 }).map((_, index) => (
-              <StatCardSkeleton key={`skeleton-${index}`} index={index} />
-            ))
-          ) : (
-            // Show actual stats cards
-            statsCards.map((card, index) => (
-              <motion.div
-                key={card.title}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
-                whileHover={{ y: -8 }}
-                onClick={() => {
-                  if ("clickable" in card && card.clickable && "route" in card && card.route) {
-                    router.push(card.route);
-                  }
-                }}
-                className={`group relative bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-8 h-full hover:bg-white/15 hover:border-white/30 transition-all duration-300 ${"clickable" in card && card.clickable ? "cursor-pointer" : ""
-                  }`}
-              >
-                {/* Icon with accent */}
-                <div className="mb-6 flex items-start justify-between">
-                  <div className="p-3 rounded-xl bg-white/10 border border-white/20 group-hover:bg-white/20 transition-colors">
-                    {card.icon}
-                  </div>
-                  <Star className="w-5 h-5 text-yellow-300 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                </div>
+        <div className="relative">
+          {/* Background Decorative Blobs */}
+          <div className="absolute top-1/2 left-1/4 -translate-y-1/2 w-48 h-48 bg-blue-500/5 blur-[80px] rounded-full pointer-events-none" />
+          <div className="absolute top-1/2 right-1/4 -translate-y-1/2 w-48 h-48 bg-purple-500/5 blur-[80px] rounded-full pointer-events-none" />
 
-                {/* Value */}
-                <div className="mb-4">
-                  {"valueText" in card && card.valueText ? (
-                    <div className="text-4xl md:text-5xl font-bold text-white mb-2">
-                      {String(card.valueText)}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 md:gap-6">
+            {loading ? (
+              // Show skeleton loaders while loading
+              Array.from({ length: 5 }).map((_, index) => (
+                <StatCardSkeleton key={`skeleton-${index}`} index={index} />
+              ))
+            ) : (
+              // Show actual stats cards
+              statsCards.map((card, index) => (
+                <motion.div
+                  key={card.title}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.8, delay: index * 0.1, ease: [0.16, 1, 0.3, 1] }}
+                  whileHover={{
+                    y: -8,
+                    scale: 1.01,
+                    transition: { duration: 0.4, ease: "easeOut" }
+                  }}
+                  onClick={() => {
+                    if ("clickable" in card && card.clickable && "route" in card && card.route) {
+                      router.push(card.route);
+                    }
+                  }}
+                  className={`group relative bg-white/[0.02] backdrop-blur-3xl border border-white/10 rounded-[32px] p-6 h-full hover:bg-white/[0.05] hover:border-blue-500/30 transition-all duration-500 overflow-hidden ${"clickable" in card && card.clickable ? "cursor-pointer" : ""
+                    }`}
+                >
+                  {/* Inner Glow Effect on Hover */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+
+                  {/* Icon with accent */}
+                  <div className="relative z-10 mb-6 flex items-start justify-between">
+                    <div className="p-3.5 rounded-2xl bg-white/5 border border-white/10 group-hover:bg-blue-500/10 group-hover:border-blue-500/30 transition-all duration-500">
+                      <div className="w-5 h-5 flex items-center justify-center">
+                        {card.icon}
+                      </div>
                     </div>
-                  ) : (
-                    <motion.div
-                      initial={{ scale: 0.8 }}
-                      whileInView={{ scale: 1 }}
-                      viewport={{ once: true }}
-                      transition={{ duration: 0.5, delay: 0.2 }}
-                      className="text-4xl md:text-5xl lg:text-6xl font-black text-white mb-2 leading-none"
-                    >
-                      <AnimatedCounter value={"value" in card ? card.value : 0} duration={1.5} />
-                      <span className="text-3xl md:text-4xl">+</span>
-                    </motion.div>
-                  )}
-                </div>
+                  </div>
 
-                {/* Title */}
-                <h3 className="text-lg font-semibold text-white mb-2">
-                  {card.title}
-                </h3>
+                  {/* Value */}
+                  <div className="relative z-10 mb-4">
+                    {"valueText" in card && card.valueText ? (
+                      <div className="text-3xl md:text-4xl font-black text-white mb-1 tracking-tighter">
+                        {String(card.valueText)}
+                      </div>
+                    ) : (
+                      <motion.div
+                        initial={{ scale: 0.9, opacity: 0 }}
+                        whileInView={{ scale: 1, opacity: 1 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.8, delay: 0.3 }}
+                        className="text-3xl lg:text-4xl font-black font-mono text-white mb-1 leading-none tracking-tighter"
+                      >
+                        <AnimatedCounter value={"value" in card ? card.value : 0} duration={2} />
+                        <span className="text-xl font-medium text-blue-400 ml-0.5">+</span>
+                      </motion.div>
+                    )}
+                  </div>
 
-                {/* Description */}
-                <p className="text-blue-100 text-sm leading-relaxed">
-                  {card.description}
-                </p>
-              </motion.div>
-            ))
-          )}
+                  {/* Title */}
+                  <h3 className="relative z-10 font-unbounded text-sm font-bold text-white/70 mb-2 group-hover:text-white transition-colors uppercase tracking-wider">
+                    {card.title}
+                  </h3>
+
+                  {/* Description */}
+                  <p className="relative z-10 text-white/30 text-[11px] font-medium leading-relaxed group-hover:text-white/50 transition-colors">
+                    {card.description}
+                  </p>
+                </motion.div>
+              ))
+            )}
+          </div>
         </div>
 
         {/* Refresh indicator */}

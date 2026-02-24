@@ -82,6 +82,8 @@ const config: Config = {
       },
       fontFamily: {
         robotoMono: ["var(--font-roboto-mono)"],
+        unbounded: ["var(--font-unbounded)"],
+        quanty: ["var(--font-quanty)"],
       },
       keyframes: {
         fadeIn: {

@@ -46,18 +46,18 @@ function FAQRow({ question, answer }: { question: string; answer: string }) {
 }
 
 export default function DocPage() {
-const container = {
-  hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: { staggerChildren: 0.12 },
-  },
-};
+  const container = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: { staggerChildren: 0.12 },
+    },
+  };
 
-const item = {
-  hidden: { y: 16, opacity: 0 },
+  const item = {
+    hidden: { y: 16, opacity: 0 },
     show: { y: 0, opacity: 1, transition: { duration: 0.45, ease: "easeOut" } },
-};
+  };
 
   return (
     <div className="relative w-full px-6 md:px-10 lg:px-16 xl:px-24 py-10 md:py-14 text-blue-50">
@@ -84,28 +84,28 @@ const item = {
           </div>
           <h1 className="text-3xl md:text-5xl font-bold tracking-tight bg-gradient-to-r from-[#63A7FA] via-white to-[#4185F3] bg-clip-text text-transparent">
             Welcome to Xcan - Learn, Play, Earn
-            </h1>
+          </h1>
           <p className="mt-4 text-dark-text-secondary max-w-3xl">
             Your hub for Arbitrum learning, expert sessions, and on-chain credentials. Explore our
             gamified tracks, unlock certifications, and level up your Web3 career.
-            </p>
+          </p>
 
           <div className="mt-6 flex flex-wrap gap-3">
-              <Link
+            <Link
               href="#get-started"
               className="inline-flex items-center gap-2 rounded-full px-5 py-2 text-white bg-blue-shade-100 hover:bg-blue-600 transition"
-              >
+            >
               <Sparkles size={16} /> Get Started
-              </Link>
-              <Link
+            </Link>
+            <Link
               href="https://modules.xcan.dev/leaderboard"
               target="_blank"
               className="inline-flex items-center gap-2 rounded-full px-5 py-2 bg-dark-tertiary text-dark-text-primary hover:bg-dark-accent transition"
-              >
+            >
               <Trophy size={16} /> Leaderboard
-              </Link>
-            </div>
-          </motion.div>
+            </Link>
+          </div>
+        </motion.div>
 
         {/* Sticky in-page navigation */}
         <div className="sticky top-4 z-20 mb-4">
@@ -142,7 +142,7 @@ const item = {
           viewport={{ once: true, margin: "-100px" }}
           className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-12"
         >
-          {[ 
+          {[
             {
               icon: <BookOpen size={20} className="text-blue-200" />,
               title: "Learning Platform",
@@ -174,8 +174,8 @@ const item = {
               </div>
               <p className="relative mt-3 text-white/75">{f.desc}</p>
             </motion.div>
-            ))}
-          </motion.div>
+          ))}
+        </motion.div>
 
         {/* Getting Started */}
         <motion.section
@@ -208,7 +208,7 @@ const item = {
                 <div className="mt-3 text-white/70 italic">
                   💡 <b>Your wallet</b> is your identity on Xcan.
                 </div>
-            </div>
+              </div>
               <div>
                 <h3 className="font-semibold text-white/90 flex items-center gap-2">
                   <Users size={18} className="text-blue-200" /> Complete Your Profile
@@ -412,7 +412,7 @@ const item = {
               <li>Keep video on, use headphones, no disruptive behavior.</li>
             </ul>
           </motion.div>
-          </motion.section>
+        </motion.section>
 
         {/* NFT Certifications */}
         <motion.section
@@ -502,7 +502,7 @@ const item = {
             <li>Modules: Progress, completion %</li>
             <li>NFTs: Certification gallery with links</li>
           </motion.ul>
-          </motion.section>
+        </motion.section>
 
         {/* Best Practices */}
         <motion.section
@@ -524,7 +524,7 @@ const item = {
                 <li>Set a cadence - one chapter per session.</li>
                 <li>Ask in lectures or expert sessions when stuck.</li>
               </ul>
-              </div>
+            </div>
             <div className="rounded-xl border border-white/10 bg-[#0B0A13]/60 p-4">
               <div className="font-semibold text-white/90 flex items-center gap-2"><ShieldCheck size={16} className="text-green-shade-100" /> Security & Privacy</div>
               <ul className="list-disc pl-6 text-white/75 mt-2 space-y-1">
@@ -556,7 +556,7 @@ const item = {
                 { q: "Do I need ETH to begin?", a: "Only for minting and advanced challenges; normal use is free." },
                 { q: "Which network is used?", a: "Arbitrum Sepolia (testnet) for credentials and attestations." },
               ],
-            },{
+            }, {
               title: "Learning Platform",
               icon: <BookOpen size={18} className="text-blue-200" />,
               qa: [
@@ -564,7 +564,7 @@ const item = {
                 { q: "How much do modules cost?", a: "Modules are $50 each. Project Submission is free." },
                 { q: "What if I am stuck?", a: "Use hints, revisit theory, join lectures, or ask in expert sessions." },
               ],
-            },{
+            }, {
               title: "Sessions & Meetings",
               icon: <CalendarDays size={18} className="text-green-shade-100" />,
               qa: [
@@ -572,7 +572,7 @@ const item = {
                 { q: "Can I host?", a: "Yes. Complete your profile and publish your slot." },
                 { q: "Cancellation policy?", a: "Cancel early so others can take the slot." },
               ],
-            },{
+            }, {
               title: "NFTs & Certificates",
               icon: <Award size={18} className="text-blue-200" />,
               qa: [
@@ -588,8 +588,8 @@ const item = {
                 <div className="mt-3 space-y-2">
                   {block.qa.map((pair, idx) => (
                     <FAQRow key={idx} question={pair.q} answer={pair.a} />
-              ))}
-            </div>
+                  ))}
+                </div>
               </div>
             ))}
           </motion.div>

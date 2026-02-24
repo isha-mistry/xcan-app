@@ -26,9 +26,17 @@ export default function RouteProtectionWrapper({ children }: RouteProtectionWrap
   // Public routes that don't require authentication
   const publicRoutes = [
     "/", // Home page
-    "/dashboard", // Dashboard page - accessible to all users
+    "/members", // Dashboard page - accessible to all users
     "/doc",
-    "/orbit-chains" // Orbit chains dashboard - accessible to all users
+    "/ecosystem",
+    "/sessions",
+    "/lectures",
+    "/notifications",
+    "/claim-rewards",
+    "/invite",
+    "/orbit-chains",
+    "/meeting",
+    "/watch",
   ];
 
   const isPublicRoute = publicRoutes.includes(pathname);

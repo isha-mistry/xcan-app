@@ -230,7 +230,7 @@ const DashboardPage: React.FC = () => {
             <div className="absolute inset-0 rounded-full h-20 w-20 border-4 border-transparent border-t-blue-shade-200 animate-spin mx-auto"></div>
           </div>
           <div className="space-y-2">
-            <p className="text-dark-text-primary text-xl font-semibold">Loading Dashboard</p>
+            <p className="text-dark-text-primary text-xl font-semibold">Loading Members</p>
             <p className="text-dark-text-secondary text-sm">Fetching user data...</p>
           </div>
         </div>
@@ -269,7 +269,7 @@ const DashboardPage: React.FC = () => {
         <div className="mb-12 animate-fadeIn">
           <div className="text-center mb-8">
             <h1 className="text-5xl sm:text-6xl font-extrabold text-transparent bg-gradient-to-r from-blue-shade-100 via-white to-blue-shade-100 bg-clip-text mb-4 font-robotoMono">
-              User Dashboard
+              Members Overview
             </h1>
             <p className="text-dark-text-secondary text-lg max-w-2xl mx-auto">
               Comprehensive overview of all registered users, their social connections, and NFT claims

@@ -9,7 +9,7 @@
 
 body {
   min-height: 100vh;
-  background-color: "bg-gradient-to-br from-blue-shade-400 to-blue-shade-300";
+  background-color: #07090D;
   color: #ffffff;
   font-family: var(--font-robotoMono);
 }

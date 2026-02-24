@@ -116,57 +116,55 @@ export default function ConnectWalletWithENS() {
     user?.google || user?.farcaster || displayAddress !== null;
 
   return (
-    <div className="relative" ref={dropdownRef}>
+    <div className="relative font-robotoMono" ref={dropdownRef}>
       {!isWalletConnected || !authenticated ? (
         <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
           onClick={handleLogin}
           className="flex items-center justify-center 
-            bg-gradient-to-br from-blue-500 to-[#4e72b1]
-            text-white p-3 sm:px-6 sm:py-3 rounded-full 
-            shadow-lg hover:shadow-xl 
+            bg-white text-black px-5 py-2.5 rounded-full 
+            text-[11px] font-bold uppercase tracking-widest
             transition-all duration-300 
             group relative overflow-hidden"
         >
-          <BiSolidWallet className="sm:mr-2 size-5 group-hover:rotate-12 transition-transform" />
-          <span className="hidden sm:block font-semibold">Connect Wallet</span>
-          <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+          <BiSolidWallet className="mr-2 size-4 group-hover:rotate-12 transition-transform" />
+          <span className="font-bold">Connect Wallet</span>
+          <div className="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
         </motion.button>
       ) : (
         <div className="relative">
           <motion.button
-            whileHover={{ scale: 1.03 }}
-            whileTap={{ scale: 0.97 }}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-            className="flex items-center 
-              bg-gradient-to-br from-blue-50 to-blue-100 
-              text-blue-800 px-4 py-2 rounded-full 
-              shadow-md hover:shadow-lg 
-              hover:rounded-full
+            className={`flex items-center 
+              px-5 py-2.5 rounded-full 
+              text-[11px] font-bold uppercase tracking-widest
               transition-all duration-300 
-              group relative"
+              group relative border border-white/10
+              ${isDropdownOpen ? 'bg-white text-black' : 'bg-white/5 text-white/60 hover:text-white hover:bg-white/10'}
+            `}
           >
-            <BiSolidWallet className="mr-2 size-6 text-blue-600 group-hover:rotate-6 transition-transform" />
-            <span className="font-medium">
+            <BiSolidWallet className={`mr-2 size-4 transition-transform group-hover:rotate-6 ${isDropdownOpen ? 'text-black' : 'text-blue-400'}`} />
+            <span>
               {displayAddress && truncateAddress(displayAddress)}
             </span>
-            <div className="absolute inset-0 bg-blue-500/10 opacity-0 group-hover:opacity-100 transition-opacity hover:rounded-full"></div>
           </motion.button>
 
           <AnimatePresence>
             {isDropdownOpen && (
               <motion.div
-                initial={{ opacity: 0, y: -10 }}
+                initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                className="absolute right-0 mt-2 w-64 bg-white 
-                  rounded-xl shadow-2xl ring-2 ring-blue-100 
-                  overflow-hidden z-50"
+                exit={{ opacity: 0, y: 10 }}
+                className="absolute right-0 mt-3 w-64 bg-[#0D1117] backdrop-blur-2xl
+                  rounded-2xl shadow-2xl border border-white/10 
+                  overflow-hidden z-50 p-2"
               >
-                <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-4">
-                  <p className="text-sm text-gray-600">Connected as:</p>
-                  <p className="font-bold text-blue-800 truncate">
+                <div className="p-3 mb-1 border-b border-white/5 pb-4">
+                  <p className="text-[9px] text-white/30 uppercase font-black tracking-[0.2em] mb-1.5">Connected as</p>
+                  <p className="text-[12px] text-blue-400 font-bold truncate">
                     {user?.google?.email ||
                       user?.farcaster?.displayName ||
                       ensName ||
@@ -174,20 +172,21 @@ export default function ConnectWalletWithENS() {
                   </p>
                 </div>
 
-                <div className="divide-y divide-blue-100">
+                <div className="space-y-1">
                   {displayAddress && (
                     <button
                       onClick={handleCopyAddress}
                       className="w-full flex items-center justify-between 
-                        px-4 py-3 text-sm text-gray-700 
-                        hover:bg-blue-50 transition-colors 
+                        px-4 py-3 text-[11px] font-bold uppercase tracking-wider
+                        text-white/60 hover:text-white hover:bg-white/5
+                        rounded-xl transition-all 
                         group relative"
                     >
                       <div className="flex items-center">
                         {copiedAddress ? (
-                          <CheckIcon className="mr-2 size-5 text-green-500" />
+                          <CheckIcon className="mr-2 size-4 text-green-500" />
                         ) : (
-                          <FiCopy className="mr-2 size-5 text-blue-500" />
+                          <FiCopy className="mr-2 size-4 text-blue-400" />
                         )}
                         {copiedAddress ? "Copied!" : "Copy Address"}
                       </div>
@@ -197,12 +196,13 @@ export default function ConnectWalletWithENS() {
                   <button
                     onClick={handleLogout}
                     className="w-full flex items-center justify-between 
-                      px-4 py-3 text-sm text-red-600 
-                      hover:bg-red-50 transition-colors 
+                      px-4 py-3 text-[11px] font-bold uppercase tracking-wider
+                      text-red-400/80 hover:text-red-400 hover:bg-red-400/10 
+                      rounded-xl transition-all 
                       group relative"
                   >
                     <div className="flex items-center">
-                      <FiLogOut className="mr-2 size-5" />
+                      <FiLogOut className="mr-2 size-4" />
                       Logout
                     </div>
                   </button>

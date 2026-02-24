@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import { Roboto_Mono } from "next/font/google";
-import localFonts from "next/font/local";
+import { Roboto_Mono, Unbounded } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 import RootProviders from "./providers/root-providers";
 import { Suspense } from "react";
@@ -15,6 +15,16 @@ const robotoMono = Roboto_Mono({
   subsets: ["latin"],
   weight: ["100", "200", "300", "400", "500", "600", "700"],
   variable: "--font-roboto-mono",
+});
+
+const unbounded = Unbounded({
+  subsets: ["latin"],
+  variable: "--font-unbounded",
+});
+
+const quanty = localFont({
+  src: "../assets/fonts/quanty.ttf",
+  variable: "--font-quanty",
 });
 
 export const metadata: Metadata = {
@@ -67,19 +77,17 @@ export default function RootLayout({
     <html lang="en">
       <head>
       </head>
-      <body className={`${robotoMono.variable} bg-dark-primary text-dark-text-primary`}>
+      <body className={`${robotoMono.variable} ${unbounded.variable} ${quanty.variable} bg-dark-primary text-dark-text-primary`}>
         <ProgressBarProvider>
           <Suspense>
             <RootProviders>
               <RouteProtectionWrapper>
-                <div className="">
-                  <div className="lg:hidden w-full bg-dark-secondary border border-dark-accent">
-                    <SidebarMainMobile />
-                  </div>
-                  <div className="hidden lg:flex items-center bg-dark-secondary ">
+                <div className="relative">
+                  <SidebarMainMobile />
+                  <div className="sticky top-0 z-[100]">
                     <TopNavbar />
                   </div>
-                  <div className="pt-6">
+                  <div className="pt-0">
                     {children}
                   </div>
                   <Footer />
