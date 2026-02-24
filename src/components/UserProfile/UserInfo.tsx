@@ -20,7 +20,7 @@ interface userInfoProps {
 
 const StyledMDEditorWrapper = styled.div`
   .w-md-editor {
-    background-color: #12203b !important;
+    background-color: rgba(255, 255, 255, 0.02) !important;
     color: #ffffff !important;
   }
 
@@ -31,14 +31,14 @@ const StyledMDEditorWrapper = styled.div`
   }
 
   .wmde-markdown {
-    background-color: #12203b !important;
-    color: #ffffff !important;
+    background-color: transparent !important;
+    color: rgba(255, 255, 255, 0.7) !important;
   }
 
   .w-md-editor-toolbar {
     height: auto !important;
     border-radius: 20px 20px 0 0 !important;
-    background-color: #242424 !important;
+    background-color: rgba(255, 255, 255, 0.05) !important;
     flex-wrap: wrap;
     justify-content: flex-start;
     padding: 5px;
@@ -174,7 +174,7 @@ function UserInfo({
   const [isMobile, setIsMobile] = useState(false);
   // console.log(isLoadingStatus);
   const router = useRouter();
-  
+
   const blocks = [
     {
       number: sessionHostCount,
@@ -194,7 +194,7 @@ function UserInfo({
     {
       number: officehoursAttendCount,
       desc: "Lectures attended",
-      ref: `/profile/${address}}?active=lectures&lectures=attended`,  
+      ref: `/profile/${address}}?active=lectures&lectures=attended`,
     },
   ];
 
@@ -318,23 +318,23 @@ function UserInfo({
       <div className="pt-4">
         <div className="flex gap-2 0.5xs:gap-4 rounded-xl text-sm flex-wrap">
           <button
-            className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md ${activeButton === "onchain"
-              ? "text-blue-shade-100 font-semibold bg-[#f5f5f5]"
-              : "text-[#3E3D3D] bg-white"
+            className={`py-2 px-6 flex gap-2 items-center rounded-full transition-all duration-300 whitespace-nowrap text-[11px] font-black uppercase tracking-widest border ${activeButton === "onchain"
+              ? "text-black bg-white border-white scale-105 shadow-[0_0_20px_rgba(255,255,255,0.1)]"
+              : "text-white/40 bg-white/5 border-white/5 hover:text-white hover:bg-white/10 hover:border-white/10"
               } `}
             onClick={() => fetchAttestation("onchain")}
           >
-            <Link size={16} className="drop-shadow-lg" />
+            <Link size={14} className={activeButton === "onchain" ? "text-black" : "text-blue-400"} />
             Onchain
           </button>
           <button
-            className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-[#f5f5f5] shadow-md ${activeButton === "offchain"
-              ? "text-blue-shade-100 font-semibold bg-[#f5f5f5]"
-              : "text-[#3E3D3D] bg-white"
+            className={`py-2 px-6 flex gap-2 items-center rounded-full transition-all duration-300 whitespace-nowrap text-[11px] font-black uppercase tracking-widest border ${activeButton === "offchain"
+              ? "text-black bg-white border-white scale-105 shadow-[0_0_20px_rgba(255,255,255,0.1)]"
+              : "text-white/40 bg-white/5 border-white/5 hover:text-white hover:bg-white/10 hover:border-white/10"
               }`}
             onClick={() => fetchAttestation("offchain")}
           >
-            <Cloud size={16} className="drop-shadow-lg" />
+            <Cloud size={14} className={activeButton === "offchain" ? "text-black" : "text-blue-400"} />
             Offchain
           </button>
         </div>
@@ -374,13 +374,13 @@ function UserInfo({
             {isEditing ? (
               <>
                 <button
-                  className="bg-blue-shade-100 text-white text-sm py-1 px-3 rounded-full font-semibold mr-2"
+                  className="bg-white/5 hover:bg-white/10 text-white/60 text-[10px] font-black uppercase tracking-widest py-2 px-6 border border-white/5 rounded-full transition-all mr-2"
                   onClick={handleCancelClick}
                 >
                   Cancel
                 </button>
                 <button
-                  className="bg-blue-shade-100 text-white text-sm py-1 px-3 rounded-full font-semibold"
+                  className="bg-blue-600 hover:bg-blue-500 text-white text-[10px] font-black uppercase tracking-widest py-2 px-6 rounded-full transition-all shadow-lg hover:shadow-blue-500/20"
                   onClick={handleSaveClick}
                 >
                   {loading ? "Saving" : "Save"}
@@ -388,7 +388,7 @@ function UserInfo({
               </>
             ) : (
               <button
-                className="bg-blue-shade-100 text-white text-sm py-1 px-4  rounded-full font-semibold"
+                className="bg-blue-600 hover:bg-blue-500 text-white text-[10px] font-black uppercase tracking-widest py-2 px-8 rounded-full transition-all shadow-lg hover:shadow-blue-500/20"
                 onClick={() => setEditing(true)}
               >
                 Edit

@@ -24,7 +24,7 @@ function UploadVideoButton({ userAddress }: UploadVideoButtonProps) {
   return (
     <>
       <button
-        className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white sm:text-lg px-6 py-1 rounded-full flex items-center gap-2"
+        className="bg-blue-600 hover:bg-blue-500 text-white font-black text-xs uppercase tracking-widest px-6 py-1 rounded-full flex items-center gap-2"
         onClick={onOpen}
       >
         <Upload size={16} />

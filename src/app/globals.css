@@ -1,3 +1,22 @@
+:root {
+  --background: #07090D;
+  --foreground: #ffffff;
+  
+  --primary: #3b82f6; /* blue-500 */
+  --primary-glow: rgba(59, 130, 246, 0.1);
+  --primary-accent: #60a5fa; /* blue-400 */
+  
+  --surface: #0b0f17;
+  --surface-accent: #171d51;
+  --surface-card: rgba(255, 255, 255, 0.02);
+  
+  --text-primary: #ffffff;
+  --text-secondary: rgba(255, 255, 255, 0.6);
+  --text-muted: rgba(255, 255, 255, 0.3);
+  
+  --border: rgba(255, 255, 255, 0.1);
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -9,8 +28,8 @@
 
 body {
   min-height: 100vh;
-  background-color: #07090D;
-  color: #ffffff;
+  background-color: var(--background);
+  color: var(--foreground);
   font-family: var(--font-robotoMono);
 }
 
@@ -30,10 +49,30 @@ body::-webkit-scrollbar {
 }
 
 body::-webkit-scrollbar-track {
-  background-color: #1a1a1a;
+  background-color: #0d1117;
 }
 
 body::-webkit-scrollbar-thumb {
   background-color: #333333;
   border-radius: 5rem;
 }
+
+/* Technical Theme Utilities */
+.glass-container {
+  @apply backdrop-blur-xl border border-white/10;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%);
+}
+
+.technical-glow {
+  box-shadow: 0 0 20px rgba(59, 130, 246, 0.2);
+}
+
+@keyframes technical-pulse {
+  0%, 100% { opacity: 0.5; transform: scale(1); }
+  50% { opacity: 0.8; transform: scale(1.05); }
+}
+
+.animate-technical-pulse {
+  animation: technical-pulse 4s ease-in-out infinite;
+}
+

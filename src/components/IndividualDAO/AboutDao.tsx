@@ -109,37 +109,37 @@ const AboutDao = ({ props }: { props: string }) => {
         name: "Website",
         href: text.community_and_resources.website,
         icon: FaGlobe,
-        color: "text-blue-500",
+        color: "text-blue-400",
       },
       {
         name: "Dashboard",
         href: text.community_and_resources.dashboard,
         icon: MdOutlineDashboardCustomize,
-        color: "text-purple-600",
+        color: "text-blue-500",
       },
       {
         name: "Community Hub",
         href: text.community_and_resources.communityHub,
         icon: FaUsers,
-        color: "text-[#000]",
+        color: "text-blue-400",
       },
       {
         name: "Warpcast",
         href: text.community_and_resources.warpcast,
         icon: FaSatelliteDish,
-        color: "text-purple-600",
+        color: "text-blue-500",
       },
       {
         name: "Guild",
         href: text.community_and_resources.guild,
         icon: FaGuilded,
-        color: "text-[#000]",
+        color: "text-blue-400",
       },
       {
         name: "Manifesto",
         href: text.community_and_resources.manifesto,
         icon: IoDocumentText,
-        color: "text-yellow-500",
+        color: "text-blue-500",
       },
       {
         name: "LGL Join Video",
@@ -151,43 +151,43 @@ const AboutDao = ({ props }: { props: string }) => {
         name: "Telegram",
         href: text.community_and_resources.telegram,
         icon: FaTelegramPlane,
-        color: "text-blue-500",
+        color: "text-blue-400",
       },
       {
         name: "Governance",
         href: text.community_and_resources.governance,
         icon: FaBalanceScale,
-        color: "text-purple-600",
+        color: "text-blue-500",
       },
       {
         name: "Forum",
         href: text.community_and_resources.forum,
         icon: FaEnvelope,
-        color: "text-[#36b0f7]",
+        color: "text-blue-400",
       },
       {
         name: "Bridge",
         href: text.community_and_resources.bridge,
         icon: FaBridge,
-        color: "text-[#000]",
+        color: "text-blue-500",
       },
       {
         name: "Docs",
         href: text.community_and_resources.docs,
         icon: FaBook,
-        color: "text-gray-700",
+        color: "text-white/60",
       },
       {
         name: "Mirror",
         href: text.community_and_resources.mirror,
         icon: GoMirror,
-        color: "text-[#000]",
+        color: "text-white/80",
       },
       {
         name: "Github",
         href: text.community_and_resources.github,
         icon: FaGithub,
-        color: "text-[#000]",
+        color: "text-white",
       },
       {
         name: "Discord",
@@ -199,7 +199,7 @@ const AboutDao = ({ props }: { props: string }) => {
         name: "Block Explorer",
         href: text.community_and_resources.block_explorer,
         icon: SiHiveBlockchain,
-        color: "text-[#000]",
+        color: "text-blue-400",
       },
       {
         name: "Twitter",
@@ -231,6 +231,7 @@ const AboutDao = ({ props }: { props: string }) => {
         icon: FaXTwitter,
         color: "text-[#1DA1F2]",
       },
+
     ].filter((link) => link.href)
     : []; // Filter out links with no href
 
@@ -278,31 +279,32 @@ const AboutDao = ({ props }: { props: string }) => {
   return (
     <div className="container mx-auto md:px-4 py-12 font-robotoMono">
       <motion.h1
-        className="text-4xl font-bold mb-8 text-center text-blue-300"
+        className="text-4xl font-black mb-8 text-center text-white font-unbounded tracking-tight"
         {...fadeInUp}
       >
         About Arbitrum Ecosystem
       </motion.h1>
 
       <motion.section className="mb-16" {...fadeInUp}>
-        <h2 className="text-3xl font-semibold mb-6 text-blue-400">
+        <h2 className="text-3xl font-black mb-6 text-white font-unbounded tracking-tight">
           Mission and Vision
         </h2>
-        <div className="bg-[#46464645] shadow-lg rounded-xl p-5 md:p-8">
-          <div className="mb-6">
-            <h3 className="text-xl font-semibold mb-3 text-blue-400">
-              Mission:
+        <div className="bg-white/[0.03] backdrop-blur-xl border border-white/10 shadow-2xl rounded-3xl p-6 md:p-10">
+          <div className="mb-8">
+            <h3 className="text-sm uppercase tracking-[0.2em] font-bold mb-4 text-blue-400">
+              Mission
             </h3>
-            <p className="text-gray-200">{text?.mission_and_vision?.mission}</p>
+            <p className="text-white/70 leading-relaxed text-lg">{text?.mission_and_vision?.mission}</p>
           </div>
           <div>
-            <h3 className="text-xl font-semibold mb-3 text-blue-400">
-              Vision:
+            <h3 className="text-sm uppercase tracking-[0.2em] font-bold mb-4 text-blue-400">
+              Vision
             </h3>
-            <ul className="list-disc pl-6 space-y-2">
+            <ul className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {text?.mission_and_vision?.vision?.map((item, index) => (
-                <li key={index} className="text-gray-200">
-                  {item}
+                <li key={index} className="flex items-start gap-3 text-white/60 bg-white/5 p-4 rounded-2xl border border-white/5">
+                  <span className="text-blue-500 mt-1">•</span>
+                  <span>{item}</span>
                 </li>
               ))}
             </ul>
@@ -312,11 +314,11 @@ const AboutDao = ({ props }: { props: string }) => {
 
       {text?.technology && (
         <motion.section className="mb-16" {...fadeInUp}>
-          <h2 className="text-3xl font-semibold mb-6 text-blue-400">
+          <h2 className="text-3xl font-black mb-6 text-white font-unbounded tracking-tight">
             Technology
           </h2>
-          <div className="bg-[#46464645] shadow-lg rounded-xl p-5 md:p-8">
-            <p className="text-gray-200 mb-4">
+          <div className="bg-white/[0.03] backdrop-blur-xl border border-white/10 shadow-2xl rounded-3xl p-6 md:p-10">
+            <p className="text-white/70 leading-relaxed text-lg mb-8">
               {text?.technology?.description}
             </p>
             {renderTechnologyFeatures()}
@@ -326,25 +328,25 @@ const AboutDao = ({ props }: { props: string }) => {
 
       {text?.governance_and_dao_structure && (
         <motion.section className="mb-16" {...fadeInUp}>
-          <h2 className="text-3xl font-semibold mb-6 text-blue-400">
+          <h2 className="text-3xl font-black mb-6 text-white font-unbounded tracking-tight">
             Governance and DAO Structure
           </h2>
-          <div className="bg-[#46464645] shadow-lg rounded-xl p-5 md:p-8">
-            <p className="text-gray-200 mb-4">
+          <div className="bg-white/[0.03] backdrop-blur-xl border border-white/10 shadow-2xl rounded-3xl p-6 md:p-10">
+            <p className="text-white/70 leading-relaxed text-lg mb-8">
               {text?.governance_and_dao_structure?.description}
             </p>
-            <ul className="space-y-4">
+            <ul className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {text?.governance_and_dao_structure?.elements
                 ? text.governance_and_dao_structure.elements.map(
                   (item, index) => (
                     <li
                       key={index}
-                      className="border-l-4 border-purple-500 pl-4"
+                      className="border-l-4 border-blue-500 pl-4 bg-white/5 p-4 rounded-r-2xl"
                     >
-                      <h4 className="font-semibold text-purple-600">
+                      <h4 className="font-bold text-blue-400 mb-1 uppercase tracking-wider text-xs">
                         {item.name}
                       </h4>
-                      <p className="text-gray-200">{item.details}</p>
+                      <p className="text-white/60 text-sm">{item.details}</p>
                     </li>
                   )
                 )
@@ -353,12 +355,12 @@ const AboutDao = ({ props }: { props: string }) => {
                     (item, index) => (
                       <li
                         key={index}
-                        className="border-l-4 border-purple-500 pl-4"
+                        className="border-l-4 border-blue-500 pl-4 bg-white/5 p-4 rounded-r-2xl"
                       >
-                        <h4 className="font-semibold text-purple-600">
+                        <h4 className="font-bold text-blue-400 mb-1 uppercase tracking-wider text-xs">
                           {item.name}
                         </h4>
-                        <p className="text-gray-200">{item.details}</p>
+                        <p className="text-white/60 text-sm">{item.details}</p>
                       </li>
                     )
                   )
@@ -399,7 +401,7 @@ const AboutDao = ({ props }: { props: string }) => {
       )}
 
       <motion.section {...fadeInUp}>
-        <h2 className="text-3xl font-semibold mb-6 text-blue-400">
+        <h2 className="text-3xl font-black mb-6 text-white font-unbounded tracking-tight">
           Community and Resources
         </h2>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -412,12 +414,12 @@ const AboutDao = ({ props }: { props: string }) => {
               className="block"
             >
               <motion.div
-                className="bg-white shadow-md rounded-lg p-4 flex items-center space-x-3 cursor-pointer hover:bg-gray-50 transition duration-300"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+                className="bg-white/[0.03] backdrop-blur-xl border border-white/10 shadow-xl rounded-2xl p-4 flex items-center space-x-3 cursor-pointer hover:bg-white/[0.08] hover:border-blue-500/30 transition duration-300"
+                whileHover={{ scale: 1.02, y: -2 }}
+                whileTap={{ scale: 0.98 }}
               >
                 <link.icon className={`${link.color} text-2xl`} />
-                <span className="text-gray-700 font-medium">{link.name}</span>
+                <span className="text-white/70 font-bold uppercase tracking-wider text-[10px]">{link.name}</span>
               </motion.div>
             </Link>
           ))}

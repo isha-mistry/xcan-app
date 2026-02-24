@@ -493,13 +493,13 @@ function ScheduledUserSessions() {
 
   return (
     <>
-      <div className="flex flex-col md:flex-row justify-center gap-8 md:gap-10 1.5lg:gap-20 sm:p-4">
+      <div className="flex flex-col md:flex-row justify-center gap-8 md:gap-10 1.5lg:gap-16 sm:p-2">
         {/* First box- left side */}
         <div
-          className={`w-full md:w-auto p-6 xs:p-8 bg-gradient-to-br from-slate-700 to-transparent rounded-2xl ${styles.boxshadow} basis-1/2`}
+          className="w-full md:w-auto p-6 xs:p-10 bg-white/[0.03] backdrop-blur-xl rounded-3xl border border-white/10 shadow-2xl basis-1/2"
         >
-          <div className="mb-4">
-            <label className="text-gray-300 font-semibold flex items-center">
+          <div className="mb-6">
+            <label className="text-white font-bold mb-3 flex items-center tracking-tight opacity-80 uppercase text-xs">
               Select Time Slot Size:
               <Tooltip
                 content={
@@ -510,32 +510,32 @@ function ScheduledUserSessions() {
                     dates of your sessions.
                   </div>
                 }
-                className="bg-gray-700"
+                className="bg-slate-900 border border-white/10"
                 showArrow
                 placement="right"
                 delay={1}
               >
                 <span className="px-2">
-                  <FaCircleInfo className="cursor-pointer text-blue-500" />
+                  <FaCircleInfo className="cursor-pointer text-primary" />
                 </span>
               </Tooltip>
             </label>
             <select
               value={timeSlotSizeMinutes}
               onChange={(e: any) => setTimeSlotSizeMinutes(e.target.value)}
-              className="border border-gray-300 rounded px-3 py-2 mt-1 w-full cursor-pointer bg-transparent"
+              className="w-full px-5 py-4 text-white bg-white/[0.05] border border-white/10 rounded-2xl focus:ring-2 focus:ring-primary/40 focus:border-primary/50 transition-all outline-none cursor-pointer appearance-none"
             >
               {/* <option value={15}>15 minutes</option> */}
-              <option value={30}>30 minutes</option>
-              <option value={45} disabled>
+              <option value={30} className="bg-slate-900">30 minutes</option>
+              <option value={45} disabled className="bg-slate-900">
                 {/* 45 minutes (Under development - It will be live soon) */}
                 45 minutes (Under development)
               </option>
             </select>
           </div>
 
-          <div className="mb-4">
-            <label className="text-gray-300 font-semibold flex items-center">
+          <div className="mb-6">
+            <label className="text-white font-bold mb-3 flex items-center tracking-tight opacity-80 uppercase text-xs">
               Select Date:
               <Tooltip
                 content={
@@ -546,10 +546,10 @@ function ScheduledUserSessions() {
                 showArrow
                 placement="right"
                 delay={1}
-                className="bg-gray-700"
+                className="bg-slate-900 border border-white/10"
               >
                 <span className="px-2">
-                  <FaCircleInfo className="cursor-pointer text-blue-500" />
+                  <FaCircleInfo className="cursor-pointer text-primary" />
                 </span>
               </Tooltip>
             </label>
@@ -557,14 +557,14 @@ function ScheduledUserSessions() {
               type="date"
               value={selectedDate}
               onChange={(e) => setSelectedDate(e.target.value)}
-              className="border border-gray-300 rounded px-3 py-2 mt-1 w-full bg-transparent cursor-pointer hover:border-gray-300 focus:border-gray-300 focus:ring-1 focus:ring-gray-300 outline-none transition-colors duration-200 [&::-webkit-calendar-picker-indicator]:cursor-pointer"
+              className="w-full px-5 py-4 text-white bg-white/[0.05] border border-white/10 rounded-2xl focus:ring-2 focus:ring-primary/40 focus:border-primary/50 transition-all outline-none cursor-pointer [&::-webkit-calendar-picker-indicator]:invert [&::-webkit-calendar-picker-indicator]:opacity-50 [&::-webkit-calendar-picker-indicator]:cursor-pointer"
               min={formattedDate}
               onClick={(e) => e.currentTarget.showPicker()}
             />
           </div>
 
-          <div className="flex flex-col mb-4">
-            <label className="text-gray-300 font-semibold flex items-center">
+          <div className="flex flex-col mb-8">
+            <label className="text-white font-bold mb-4 flex items-center tracking-tight opacity-80 uppercase text-xs">
               Select Available Time:
               <Tooltip
                 content={
@@ -575,97 +575,97 @@ function ScheduledUserSessions() {
                 showArrow
                 placement="right"
                 delay={1}
-                className="bg-gray-700"
+                className="bg-slate-900 border border-white/10"
               >
                 <span className="px-2">
-                  <FaCircleInfo className="cursor-pointer text-blue-500" />
+                  <FaCircleInfo className="cursor-pointer text-primary" />
                 </span>
               </Tooltip>
             </label>
 
-            <div className="grid grid-cols-1 xm:grid-cols-2 md:grid-cols-1 xl:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 xm:grid-cols-2 lg:grid-cols-2 gap-6 mb-6">
               <div>
-                <label className="text-gray-300 mt-2">Start Time</label>
-                <div className="rounded-md flex items-center space-x-2">
+                <label className="text-white/60 text-xs font-bold uppercase mb-2 block tracking-wider">Start Time</label>
+                <div className="flex items-center space-x-2">
                   <select
                     value={startTime.hour}
-                    className="p-2 border rounded cursor-pointer bg-slate-700"
+                    className="flex-1 p-3 bg-white/[0.05] border border-white/10 rounded-xl text-white outline-none focus:border-primary/50 cursor-pointer"
                     onChange={(e) =>
                       handleTimeChange("start", "hour", e.target.value)
                     }
                   >
                     {[...Array(12)].map((_, i) => (
-                      <option key={i} value={String(i + 1).padStart(2, "0")}>
+                      <option key={i} value={String(i + 1).padStart(2, "0")} className="bg-slate-900">
                         {String(i + 1).padStart(2, "0")}
                       </option>
                     ))}
                   </select>
-                  <span>:</span>
+                  <span className="text-white/40">:</span>
                   <select
                     value={startTime.minute}
-                    className="p-2 border rounded cursor-pointer bg-slate-700"
+                    className="flex-1 p-3 bg-white/[0.05] border border-white/10 rounded-xl text-white outline-none focus:border-primary/50 cursor-pointer"
                     onChange={(e) =>
                       handleTimeChange("start", "minute", e.target.value)
                     }
                   >
-                    <option value="00">00</option>
-                    <option value="30">30</option>
+                    <option value="00" className="bg-slate-900">00</option>
+                    <option value="30" className="bg-slate-900">30</option>
                   </select>
                   <select
                     value={startTime.ampm}
-                    className="p-2 border rounded cursor-pointer bg-slate-700"
+                    className="flex-1 p-3 bg-white/[0.05] border border-white/10 rounded-xl text-white outline-none focus:border-primary/50 cursor-pointer"
                     onChange={(e) =>
                       handleTimeChange("start", "ampm", e.target.value)
                     }
                   >
-                    <option value="AM">AM</option>
-                    <option value="PM">PM</option>
+                    <option value="AM" className="bg-slate-900">AM</option>
+                    <option value="PM" className="bg-slate-900">PM</option>
                   </select>
                 </div>
               </div>
               <div>
-                <label className="text-gray-300 mt-1">End Time</label>
-                <div className="rounded-md flex items-center space-x-2">
+                <label className="text-white/60 text-xs font-bold uppercase mb-2 block tracking-wider">End Time</label>
+                <div className="flex items-center space-x-2">
                   <select
                     value={endTime.hour}
-                    className="p-2 border rounded cursor-pointer bg-slate-700"
+                    className="flex-1 p-3 bg-white/[0.05] border border-white/10 rounded-xl text-white outline-none focus:border-primary/50 cursor-pointer"
                     onChange={(e) =>
                       handleTimeChange("end", "hour", e.target.value)
                     }
                   >
                     {[...Array(12)].map((_, i) => (
-                      <option key={i} value={String(i + 1).padStart(2, "0")}>
+                      <option key={i} value={String(i + 1).padStart(2, "0")} className="bg-slate-900">
                         {String(i + 1).padStart(2, "0")}
                       </option>
                     ))}
                   </select>
-                  <span>:</span>
+                  <span className="text-white/40">:</span>
                   <select
                     value={endTime.minute}
-                    className="p-2 border rounded cursor-pointer bg-slate-700"
+                    className="flex-1 p-3 bg-white/[0.05] border border-white/10 rounded-xl text-white outline-none focus:border-primary/50 cursor-pointer"
                     onChange={(e) =>
                       handleTimeChange("end", "minute", e.target.value)
                     }
                   >
-                    <option value="00">00</option>
-                    <option value="30">30</option>
+                    <option value="00" className="bg-slate-900">00</option>
+                    <option value="30" className="bg-slate-900">30</option>
                   </select>
                   <select
                     value={endTime.ampm}
-                    className="p-2 border rounded cursor-pointer bg-slate-700"
+                    className="flex-1 p-3 bg-white/[0.05] border border-white/10 rounded-xl text-white outline-none focus:border-primary/50 cursor-pointer"
                     onChange={(e) =>
                       handleTimeChange("end", "ampm", e.target.value)
                     }
                   >
-                    <option value="AM">AM</option>
-                    <option value="PM">PM</option>
+                    <option value="AM" className="bg-slate-900">AM</option>
+                    <option value="PM" className="bg-slate-900">PM</option>
                   </select>
                 </div>
               </div>
             </div>
 
-            <div className="mt-4">
-              <label className="text-gray-300 font-semibold flex items-center">
+            <div className="mb-8">
+              <label className="text-white font-bold mb-3 flex items-center tracking-tight opacity-80 uppercase text-xs">
                 Total Session Count:
                 <Tooltip
                   content={
@@ -678,14 +678,14 @@ function ScheduledUserSessions() {
                   showArrow
                   placement="right"
                   delay={1}
-                  className="bg-gray-700"
+                  className="bg-slate-900 border border-white/10"
                 >
                   <span className="px-2">
-                    <FaCircleInfo className="cursor-pointer text-blue-500" />
+                    <FaCircleInfo className="cursor-pointer text-primary" />
                   </span>
                 </Tooltip>
               </label>
-              <div className="border border-gray-300 rounded px-3 py-2 mt-1 w-full cursor-pointer ">
+              <div className="w-full px-5 py-4 text-white bg-white/[0.05] border border-white/10 rounded-2xl font-bold">
                 {sessions}
               </div>
             </div>
@@ -733,15 +733,13 @@ function ScheduledUserSessions() {
           <button
             onClick={handleAddSelectedDate}
             disabled={areAllSlotsPast()}
-            className={`bg-blue-shade-100 hover:bg-blue-shade-200 text-white font-semibold py-2 px-4 rounded-md shadow-md transition duration-300 ease-in-out ${areAllSlotsPast()
-              ? "opacity-50 cursor-not-allowed"
-              : "cursor-pointer"
+            className={`w-full py-4 px-6 rounded-2xl text-base font-bold transition-all duration-300 flex items-center justify-center gap-3 border ${areAllSlotsPast()
+                ? "bg-white/5 text-white/20 border-white/5 cursor-not-allowed"
+                : "bg-primary text-white hover:bg-primary-accent shadow-[0_4px_20px_rgba(59,130,246,0.3)] border-primary/50 active:scale-[0.98]"
               }`}
           >
-            <span className="flex items-center gap-3">
-              <FaPlus className="" />
-              Add Session
-            </span>
+            <FaPlus className="text-sm" />
+            Add Session
           </button>
 
           <div className="mt-6">
@@ -784,10 +782,10 @@ function ScheduledUserSessions() {
 
           <button
             onClick={() => handleApplyWithCheck()}
-            className={`${createSessionLoading
-              ? "bg-green-400 cursor-not-allowed"
-              : "bg-green-600 hover:bg-green-700"
-              } text-white font-bold py-3 px-4 rounded-3xl mt-4 w-[160px] flex justify-center items-center`}
+            className={`w-[200px] py-4 px-6 rounded-3xl mt-8 font-bold transition-all duration-300 flex justify-center items-center shadow-lg active:scale-95 ${createSessionLoading
+                ? "bg-green-600/50 cursor-not-allowed text-white/50"
+                : "bg-green-600 text-white hover:bg-green-500 shadow-green-900/20"
+              }`}
             disabled={createSessionLoading}
           >
             {createSessionLoading ? (
@@ -808,7 +806,7 @@ function ScheduledUserSessions() {
 
         {/* Second box- right side */}
         <div
-          className={`w-full md:w-auto p-6 xs:p-8 bg-gradient-to-br from-slate-700 to-transparent bg-opacity-70 rounded-2xl ${styles.boxshadow} basis-1/2`}
+          className={`w-full md:w-auto p-6 xs:p-8 bg-white/[0.03] backdrop-blur-xl rounded-3xl border border-white/10 ${styles.boxshadow} basis-1/2`}
         >
           <AvailableUserSessions
             scheduledSuccess={scheduledSuccess}

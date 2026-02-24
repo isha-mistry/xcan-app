@@ -327,30 +327,23 @@ function NotificationMain() {
 
     if (!address) {
       return (
-        <div className="flex flex-col justify-center items-center min-h-[16rem] px-4 sm:px-6 md:px-8 py-12 sm:py-16 md:py-20">
+        <div className="flex flex-col justify-center items-center min-h-[50vh] px-4">
           <div
-            className="backdrop-blur-lg rounded-3xl p-8 sm:p-10 md:p-12 max-w-md w-full mx-auto 
-        shadow-[0_20px_50px_rgba(59,130,246,0.15)] hover:shadow-[0_25px_60px_rgba(59,130,246,0.2)]
-        border border-blue-100 transition-all duration-500"
+            className="bg-white/[0.03] backdrop-blur-xl rounded-[32px] p-8 sm:p-12 max-w-md w-full mx-auto 
+        shadow-2xl border border-white/10 transition-all duration-500 hover:border-primary/30 group"
           >
             <div className="flex flex-col items-center space-y-8">
               {/* Enhanced Animated Icon Container */}
-              <div className="relative group">
+              <div className="relative">
                 <div
-                  className="absolute inset-0 rounded-full blur-2xl opacity-40 group-hover:opacity-60 
-              transition-all duration-500 animate-pulse"
+                  className="absolute inset-0 bg-primary/20 rounded-full blur-3xl group-hover:bg-primary/30 transition-all duration-500 animate-pulse"
                 ></div>
                 <div
-                  className="absolute inset-0 bg-gradient-to-r from-blue-300/40 to-blue-200/40 rounded-full 
-              blur-xl rotate-180 transform group-hover:rotate-0 transition-transform duration-700"
-                ></div>
-                <div
-                  className="relative bg-gradient-to-br from-blue-300 to-blue-400 p-6 rounded-full
-              shadow-[0_8px_20px_rgba(59,130,246,0.3)] group-hover:shadow-[0_10px_25px_rgba(59,130,246,0.35)]
-              transform transition-all duration-300 group-hover:scale-105"
+                  className="relative bg-gradient-to-br from-primary to-primary-accent p-7 rounded-[24px]
+              shadow-[0_10px_30px_rgba(59,130,246,0.3)] transform transition-all duration-500 group-hover:scale-110 group-hover:rotate-3"
                 >
                   <Wallet
-                    className="w-12 h-12 sm:w-14 sm:h-14 text-white transform group-hover:rotate-12 transition-transform duration-300"
+                    className="w-14 h-14 text-white"
                     strokeWidth={1.5}
                   />
                 </div>
@@ -359,15 +352,12 @@ function NotificationMain() {
               {/* Enhanced Text Content */}
               <div className="text-center space-y-4">
                 <h3
-                  className="text-xl sm:text-2xl md:text-3xl font-bold 
-              bg-gradient-to-r from-blue-400 to-blue-300 bg-clip-text text-transparent
-              tracking-tight"
+                  className="text-2xl sm:text-3xl font-bold text-white tracking-tight font-unbounded"
                 >
-                  Connect Your Wallet
+                  Connect Wallet
                 </h3>
-                <p className="text-sm sm:text-base text-gray-400/90 max-w-sm leading-relaxed">
-                  Please connect your wallet and sign in to view your
-                  notifications and activity.
+                <p className="text-sm sm:text-base text-white/50 max-w-sm leading-relaxed">
+                  Join the community to view your notifications and stay updated with your activity.
                 </p>
               </div>
             </div>
@@ -393,21 +383,19 @@ function NotificationMain() {
 
     if (filteredNotifications.length === 0) {
       return (
-        <div className="flex flex-col justify-center items-center min-h-[16rem] px-4 py-8">
+        <div className="flex flex-col justify-center items-center min-h-[40vh] px-4 py-8">
           <div
-            className="bg-white/80 backdrop-blur-lg rounded-3xl p-8 sm:p-10 shadow-[0_20px_50px_rgba(59,130,246,0.15)] 
-        border border-blue-100 transform transition-all duration-500 hover:shadow-[0_25px_60px_rgba(59,130,246,0.2)]"
+            className="bg-white/[0.03] backdrop-blur-xl rounded-[32px] p-10 sm:p-14 border border-white/10 shadow-2xl group"
           >
             <div className="flex flex-col items-center space-y-6">
-              <div className="relative group">
-                <div className="absolute inset-0 bg-blue-200 rounded-full blur-xl opacity-30 group-hover:opacity-50 animate-pulse"></div>
+              <div className="relative">
+                <div className="absolute inset-0 bg-primary/10 rounded-full blur-2xl group-hover:bg-primary/20 transition-all duration-500 animate-pulse"></div>
                 <div
-                  className="relative bg-gradient-to-br from-blue-300 to-blue-400 p-5 rounded-full
-              shadow-[0_8px_16px_rgba(59,130,246,0.2)]
-              transform transition-all duration-300 group-hover:scale-105"
+                  className="relative bg-white/5 p-6 rounded-[20px] border border-white/10
+              shadow-lg transform transition-all duration-500 group-hover:scale-110"
                 >
                   <BellOff
-                    className="w-8 h-8 sm:w-10 sm:h-10 text-white transform group-hover:rotate-12 transition-transform duration-300"
+                    className="w-10 h-10 text-white/40 group-hover:text-primary transition-colors duration-500"
                     strokeWidth={1.5}
                   />
                 </div>
@@ -415,10 +403,11 @@ function NotificationMain() {
 
               <div className="text-center space-y-2">
                 <h3
-                  className="text-xl sm:text-2xl font-semibold bg-gradient-to-r from-blue-500 to-blue-400 bg-clip-text text-transparent"
+                  className="text-2xl font-bold text-white tracking-tight font-unbounded opacity-60"
                 >
-                  No New Notifications
+                  No Notifications
                 </h3>
+                <p className="text-white/30 text-sm">We'll notify represent you when something happens.</p>
               </div>
             </div>
           </div>
@@ -457,12 +446,12 @@ function NotificationMain() {
           <Heading />
         </div>
         <div
-          className="md:hidden mt-4 px-8 xs:px-4 sm:px-8 py-2 sm:py-[10px] bg-[#c2defd22]"
+          className="md:hidden mt-4 px-8 xs:px-4 sm:px-8 py-2 sm:py-[10px] bg-white/[0.02] border-y border-white/5"
           ref={dropdownRef}
           onMouseLeave={handleMouseLeave}
         >
           <div
-            className="w-full flex justify-between items-center text-left font-normal rounded-full capitalize text-lg text-gray-200 bg-[#455670] px-4 py-2 cursor-pointer"
+            className="w-full flex justify-between items-center text-left font-bold rounded-full capitalize text-sm text-white bg-white/5 border border-white/10 px-4 py-2.5 cursor-pointer backdrop-blur-xl"
             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
             onMouseEnter={handleMouseEnter}
           >
@@ -476,45 +465,45 @@ function NotificationMain() {
             className={`w-[calc(100vw-3rem)] mt-1 overflow-hidden transition-all duration-700 ease-in-out ${isDropdownOpen ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"
               }`}
           >
-            <div className="p-2 border border-white-shade-100 rounded-xl bg-[#455670] shadow-md">
+            <div className="p-2 border border-white/10 rounded-2xl bg-slate-900 shadow-2xl">
               {tabs.map((tab, index) => (
                 <React.Fragment key={tab.value}>
                   <div
                     onClick={() => handleTabChange(tab.value)}
-                    className="px-3 py-2 rounded-lg transition duration-300 ease-in-out hover:bg-[#24344ece] capitalize text-base cursor-pointer"
+                    className="px-4 py-3 rounded-xl transition duration-300 ease-in-out hover:bg-white/5 capitalize text-sm font-bold text-white/70 hover:text-white cursor-pointer"
                   >
                     {tab.name}
                   </div>
-                  {index !== tabs.length - 1 && <hr className="my-1" />}
+                  {index !== tabs.length - 1 && <hr className="my-1 border-white/5" />}
                 </React.Fragment>
               ))}
             </div>
           </div>
         </div>
-        <div className="hidden md:flex bg-[#c2defd22]">
-          <div className="flex gap-8 1.5lg:gap-12 lg:pl-16 pl-8">
+        <div className="hidden md:flex bg-white/[0.02] border-y border-white/5 overflow-x-auto">
+          <div className="flex gap-10 lg:pl-16 pl-8">
             <button
-              className={`py-4 px-2 outline-none ${searchParams.get("active") === "all"
-                ? "text-blue-300 font-semibold border-b-2 border-blue-300"
-                : "border-transparent"
+              className={`py-4 px-2 outline-none text-sm font-bold tracking-wide uppercase transition-all duration-300 ${searchParams.get("active") === "all" || !searchParams.get("active")
+                ? "text-primary border-b-2 border-primary"
+                : "text-white/50 border-b-2 border-transparent hover:text-white"
                 }`}
               onClick={() => router.push(path + "?active=all")}
             >
               All
             </button>
             <button
-              className={`py-4 px-2 outline-none ${searchParams.get("active") === "sessionBookings"
-                ? "text-blue-300 font-semibold border-b-2 border-blue-300"
-                : "border-transparent"
+              className={`py-4 px-2 outline-none text-sm font-bold tracking-wide uppercase transition-all duration-300 ${searchParams.get("active") === "sessionBookings"
+                ? "text-primary border-b-2 border-primary"
+                : "text-white/50 border-b-2 border-transparent hover:text-white"
                 }`}
               onClick={() => router.push(path + "?active=sessionBookings")}
             >
               Meetings
             </button>
             <button
-              className={`py-4 px-2 outline-none ${searchParams.get("active") === "recordedSessions"
-                ? "text-blue-300 font-semibold border-b-2 border-blue-300"
-                : "border-transparent"
+              className={`py-4 px-2 outline-none text-sm font-bold tracking-wide uppercase transition-all duration-300 ${searchParams.get("active") === "recordedSessions"
+                ? "text-primary border-b-2 border-primary"
+                : "text-white/50 border-b-2 border-transparent hover:text-white"
                 }`}
               // onClick={() => router.push(path + "?active=recordedSessions")}
               onClick={() => toast("Coming Soon 🚀")}
@@ -522,42 +511,42 @@ function NotificationMain() {
               Recorded Sessions
             </button>
             <button
-              className={`py-4 px-2 outline-none ${searchParams.get("active") === "attestations"
-                ? "text-blue-300 font-semibold border-b-2 border-blue-300"
-                : "border-transparent"
+              className={`py-4 px-2 outline-none text-sm font-bold tracking-wide uppercase transition-all duration-300 ${searchParams.get("active") === "attestations"
+                ? "text-primary border-b-2 border-primary"
+                : "text-white/50 border-b-2 border-transparent hover:text-white"
                 }`}
               onClick={() => router.push(path + "?active=attestations")}
             >
               Attestations
             </button>
             <button
-              className={`py-4 px-2 outline-none ${searchParams.get("active") === "officeHours"
-                ? "text-blue-300 font-semibold border-b-2 border-blue-300"
-                : "border-transparent"
+              className={`py-4 px-2 outline-none text-sm font-bold tracking-wide uppercase transition-all duration-300 ${searchParams.get("active") === "lectures" || searchParams.get("active") === "officeHours"
+                ? "text-primary border-b-2 border-primary"
+                : "text-white/50 border-b-2 border-transparent hover:text-white"
                 }`}
               onClick={() => router.push(path + "?active=lectures")}
             >
               Lectures
             </button>
           </div>
-          <div className="hidden 2md:block ml-auto 1.5lg:pe-16 pe-8">
+          <div className="hidden 2md:flex items-center ml-auto 1.5lg:pe-16 pe-8">
             <button
-              className="my-4 py-2 px-4 border w-52 border-blue-300 text-blue-300 rounded-xl flex items-center shadow-md hover:bg-blue-shade-100 hover:text-white transition duration-300 ease-in-out font-bold"
+              className="py-2 px-6 border border-primary/50 text-white bg-primary/10 rounded-lg flex items-center shadow-lg hover:bg-primary hover:text-white transition duration-300 ease-in-out font-bold text-xs uppercase tracking-wider"
               onClick={handleMarkAllAsRead}
               disabled={markAllReadCalling}
             >
-              <PiEnvelopeOpen className="h-5 w-5 mr-2" />
+              <PiEnvelopeOpen className="h-4 w-4 mr-2" />
               {buttonText}
             </button>
           </div>
         </div>
-        <div className="flex justify-end 2md:hidden ml-auto pe-8">
+        <div className="flex justify-start 2md:hidden ml-auto px-4 mt-4">
           <button
-            className="my-4 py-2 px-4 border w-52 border-blue-300 text-blue-300 rounded-xl flex items-center shadow-md hover:bg-blue-shade-100 hover:text-white transition duration-300 ease-in-out font-bold"
+            className="py-2.5 px-6 border border-primary/50 text-white bg-primary/10 rounded-2xl flex items-center shadow-lg hover:bg-primary hover:text-white transition duration-300 ease-in-out font-bold text-xs uppercase tracking-wider"
             onClick={handleMarkAllAsRead}
             disabled={markAllReadCalling}
           >
-            <PiEnvelopeOpen className="h-5 w-5 mr-2" />
+            <PiEnvelopeOpen className="h-4 w-4 mr-2" />
             {buttonText}
           </button>
         </div>

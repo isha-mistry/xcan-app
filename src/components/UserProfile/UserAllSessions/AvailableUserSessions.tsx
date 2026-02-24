@@ -80,22 +80,22 @@ function AvailableUserSessions({
 
   return (
     <div className="">
-      <h1 className="text-white font-semibold 1.5lg:text-2xl text-xl mb-4 flex justify-center">
+      <h1 className="text-white/80 font-bold text-lg mb-6 flex justify-center uppercase tracking-widest font-unbounded">
         Your Scheduled Availability
       </h1>
       {dataLoading ? (
-        <div className="flex justify-center items-center">
+        <div className="flex justify-center items-center py-10">
           <Grid
             visible={true}
             height="40"
             width="40"
-            color="#0E76FD"
+            color="#3b82f6"
             ariaLabel="grid-loading"
             radius="12.5"
           />
         </div>
       ) : data.length > 0 ? (
-        <>
+        <div className="space-y-8">
           {data.some((item: any) => item.timeSlotSizeMinutes === 15) && (
             <TimeSlotTable
               title="15 Minutes"
@@ -123,9 +123,9 @@ function AvailableUserSessions({
               triggerUpdate={() => setUpdateTrigger((prev) => prev + 1)}
             />
           )}
-        </>
+        </div>
       ) : (
-        <div className="text-center text-gray-400">
+        <div className="text-center text-white/40 py-10 bg-white/[0.03] border border-white/10 rounded-3xl backdrop-blur-xl">
           No Scheduled Available Time
         </div>
       )}
@@ -253,36 +253,40 @@ function TimeSlotTable({
 
   return (
     <>
-      <p className="text-gray-300 font-semibold my-2">{title}:</p>
-      <div className="space-y-4">
+      <p className="text-white/60 font-bold mb-4 flex items-center tracking-tight uppercase text-xs">
+        <span className="bg-primary/20 text-primary px-3 py-1 rounded-md mr-3 border border-primary/20">
+          {title}
+        </span>
+      </p>
+      <div className="grid grid-cols-1 xm:grid-cols-2 gap-4">
         <AnimatePresence>
           {data.map((item: any, index: number) =>
             item.dateAndRanges.map((dateRange: any, subIndex: number) =>
               dateRange.timeRanges.map((timeRange: any, timeIndex: number) => (
                 <motion.div
                   key={`${index}-${subIndex}-${timeIndex}`}
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 10 }}
-                  className="bg-gray-800 shadow-lg border border-gray-700 rounded-lg p-4 flex justify-between items-center"
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  className="bg-white/[0.03] backdrop-blur-xl border border-white/10 rounded-2xl p-5 flex justify-between items-center group hover:bg-white/[0.06] transition-all duration-300 shadow-xl"
                 >
-                  <div>
-                    <p className="font-semibold text-white">
+                  <div className="space-y-1">
+                    <p className="font-bold text-white font-robotoMono">
                       {convertUTCToLocalDate(dateRange.date)}
                     </p>
-                    <p className="text-gray-300">{convertUTCToLocalTime(dateRange.date, timeRange)}</p>
+                    <p className="text-sm text-white/50">{convertUTCToLocalTime(dateRange.date, timeRange)}</p>
                   </div>
-                  <div className="flex xs:space-x-2">
+                  <div className="flex items-center space-x-2">
                     <button
-                      className="p-2 text-blue-400 hover:text-blue-300 transition-colors"
+                      className="p-3 bg-white/5 text-primary hover:bg-primary hover:text-white rounded-xl transition-all duration-300 border border-white/5 hover:border-primary/50"
                       onClick={handleButtonClick}
                     >
-                      <FaPencilAlt />
+                      <FaPencilAlt className="w-4 h-4" />
                     </button>
                     <button
-                      className={`p-2 text-red-400 hover:text-red-300 transition-colors ${deleting === dateRange.date
-                          ? "opacity-50 cursor-not-allowed"
-                          : ""
+                      className={`p-3 bg-white/5 text-red-500 hover:bg-red-500 hover:text-white rounded-xl transition-all duration-300 border border-white/5 hover:border-red-500/50 ${deleting === dateRange.date
+                        ? "opacity-50 cursor-not-allowed"
+                        : ""
                         }`}
                       onClick={() => {
                         handleDeleteButtonClick({
@@ -293,15 +297,16 @@ function TimeSlotTable({
                       }}
                       disabled={deleting === dateRange.date}
                     >
-                      <ImBin />
+                      <ImBin className="w-4 h-4" />
                     </button>
                   </div>
                 </motion.div>
+
               ))
             )
           )}
         </AnimatePresence>
-      </div>
+      </div >
     </>
   );
 }

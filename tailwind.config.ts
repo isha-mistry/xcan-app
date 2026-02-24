@@ -46,39 +46,43 @@ const config: Config = {
       colors: {
         // Dark theme colors
         dark: {
-          primary: "#0A142A",
-          secondary: "#0D1527",
-          tertiary: "#0D1A34",
-          accent: "#171D51",
+          primary: "var(--background)",
+          secondary: "var(--surface)",
+          tertiary: "var(--surface-accent)",
+          accent: "var(--primary)",
           text: {
-            primary: "#ffffff",
-            secondary: "#a0a0a0",
-            tertiary: "#707070",
+            primary: "var(--text-primary)",
+            secondary: "var(--text-secondary)",
+            tertiary: "var(--text-muted)",
           },
         },
-        // Updated blue shades for dark theme
-        "blue-shade-100": "#123099", // Primary blue
-        "blue-shade-200": "#171D51", // Secondary blue
-        "blue-shade-300": "#02052E", // Dark blue
-        "blue-shade-400": "#050B1A", // Very dark blue
-        "blue-shade-500": "#0D1A34", // Medium blue
-        "blue-shade-600": "#0D1527", // Light blue
-        "blue-shade-700": "#0A142A", // Lightest blue
-        "blue-shade-800": "#02052E", // Dark blue for borders
-        "black-shade-100": "#7C7C7C",
-        "black-shade-200": "#DEDEDE",
-        "black-shade-300": "#F6F6F6",
-        "black-shade-400": "#CCCCCC",
-        "black-shade-500": "#4F4F4F",
-        "black-shade-600": "#F5F5F5",
-        "black-shade-700": "#D9D9D9",
-        "black-shade-800": "#EDEDED",
-        "black-shade-900": "#B9B9B9",
-        "black-shade-1000": "#3E3D3D",
+        // Harmonized blue shades based on homepage theme
+        "blue-shade-100": "#3b82f6", // Primary blue (blue-500)
+        "blue-shade-200": "#171D51", // Deep blue
+        "blue-shade-300": "#02052E", // Darker blue
+        "blue-shade-400": "#60a5fa", // Light blue accent (blue-400)
+        "blue-shade-500": "#0D1A34", // Surface blue
+        "blue-shade-600": "#0D1527", // Light surface blue
+        "blue-shade-700": "var(--background)", // Match background
+        "blue-shade-800": "#02052E", // Border blue
+        
+        // Muted black/grey shades for dark theme consistency
+        "black-shade-100": "rgba(255, 255, 255, 0.5)",
+        "black-shade-200": "rgba(255, 255, 255, 0.7)",
+        "black-shade-300": "rgba(255, 255, 255, 0.9)",
+        "black-shade-400": "rgba(255, 255, 255, 0.4)",
+        "black-shade-500": "rgba(255, 255, 255, 0.3)",
+        "black-shade-600": "rgba(255, 255, 255, 0.05)",
+        "black-shade-700": "rgba(255, 255, 255, 0.15)",
+        "black-shade-800": "rgba(255, 255, 255, 0.03)",
+        "black-shade-900": "rgba(255, 255, 255, 0.2)",
+        "black-shade-1000": "rgba(255, 255, 255, 0.25)",
+
         "green-shade-100": "#00CE78",
         "green-shade-200": "#25d366",
         "gradient-start": "#4ade80", // green-400
         "gradient-end": "#06b6d4", // cyan-500
+
       },
       fontFamily: {
         robotoMono: ["var(--font-roboto-mono)"],

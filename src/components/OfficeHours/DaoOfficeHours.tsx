@@ -230,64 +230,64 @@ function DaoOfficeHours() {
   };
 
   return (
-    <div className="min-h-screen ">
+    <div className="min-h-screen">
       <div className="pt-2 xs:pt-4 sm:pt-6 px-4 md:px-6 lg:px-14">
         <Heading />
       </div>
 
       <div className="relative w-full px-4 md:px-6 lg:px-14 pb-8 font-robotoMono">
-        <div className="bg-blue-shade-500 rounded-xl shadow-lg p-6 mb-8 border border-blue-shade-200">
+        <div className="bg-white/[0.03] backdrop-blur-xl rounded-3xl p-6 sm:p-8 mb-8 border border-white/10 shadow-2xl">
           {/* Tab buttons */}
-          <div className="flex gap-2 0.5xs:gap-4 rounded-xl text-sm flex-wrap mb-6">
+          <div className="flex gap-2 0.5xs:gap-3 rounded-xl text-sm flex-wrap mb-8">
             <button
-              className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-blue-shade-300 shadow-md ${searchParams.get("hours") === "ongoing"
-                ? "text-gray-200 font-semibold bg-blue-shade-300"
-                : "text-dark-text-secondary bg-blue-shade-500"
+              className={`py-2.5 px-5 flex gap-2 items-center rounded-full transition-all duration-300 whitespace-nowrap border ${searchParams.get("hours") === "ongoing"
+                  ? "text-white font-semibold bg-primary/20 border-primary/50 shadow-[0_0_15px_rgba(59,130,246,0.3)]"
+                  : "text-white/60 bg-white/5 border-white/10 hover:bg-white/10 hover:text-white"
                 }`}
               onClick={() => handleNavigation(path + '?hours=ongoing', 'Lectures Navigation', 'Live Tab Clicked', 'Live')}
             >
-              <Clock size={16} className="drop-shadow-lg" />
+              <Clock size={16} className={searchParams.get("hours") === "ongoing" ? "text-primary" : "text-white/40"} />
               Live
             </button>
             <button
-              className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-blue-shade-300 shadow-md ${searchParams.get("hours") === "upcoming"
-                ? "text-gray-200 font-semibold bg-blue-shade-300"
-                : "text-dark-text-secondary bg-blue-shade-500"
+              className={`py-2.5 px-5 flex gap-2 items-center rounded-full transition-all duration-300 whitespace-nowrap border ${searchParams.get("hours") === "upcoming"
+                  ? "text-white font-semibold bg-primary/20 border-primary/50 shadow-[0_0_15px_rgba(59,130,246,0.3)]"
+                  : "text-white/60 bg-white/5 border-white/10 hover:bg-white/10 hover:text-white"
                 }`}
               onClick={() => handleNavigation(path + "?hours=upcoming", 'Lectures Navigation', 'Scheduled Tab Clicked', 'Scheduled')}
             >
-              <Calendar size={16} className="drop-shadow-lg" />
+              <Calendar size={16} className={searchParams.get("hours") === "upcoming" ? "text-primary" : "text-white/40"} />
               Scheduled
             </button>
             <button
-              className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-blue-shade-300 shadow-md ${searchParams.get("hours") === "recorded"
-                ? "text-gray-200 font-semibold bg-blue-shade-300"
-                : "text-dark-text-secondary bg-blue-shade-500"
+              className={`py-2.5 px-5 flex gap-2 items-center rounded-full transition-all duration-300 whitespace-nowrap border ${searchParams.get("hours") === "recorded"
+                  ? "text-white font-semibold bg-primary/20 border-primary/50 shadow-[0_0_15px_rgba(59,130,246,0.3)]"
+                  : "text-white/60 bg-white/5 border-white/10 hover:bg-white/10 hover:text-white"
                 }`}
               onClick={() => handleNavigation(path + "?hours=recorded", 'Lectures Navigation', 'Recorded Tab Clicked', 'Recorded')}
             >
-              <BookOpen size={16} className="drop-shadow-lg" />
+              <BookOpen size={16} className={searchParams.get("hours") === "recorded" ? "text-primary" : "text-white/40"} />
               Recorded
             </button>
             <button
-              className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-blue-shade-300 shadow-md ${searchParams.get("hours") === "uploaded"
-                ? "text-gray-200 font-semibold bg-blue-shade-300"
-                : "text-dark-text-secondary bg-blue-shade-500"
+              className={`py-2.5 px-5 flex gap-2 items-center rounded-full transition-all duration-300 whitespace-nowrap border ${searchParams.get("hours") === "uploaded"
+                  ? "text-white font-semibold bg-primary/20 border-primary/50 shadow-[0_0_15px_rgba(59,130,246,0.3)]"
+                  : "text-white/60 bg-white/5 border-white/10 hover:bg-white/10 hover:text-white"
                 }`}
               onClick={() => handleNavigation(path + "?hours=uploaded", 'Lectures Navigation', 'Uploaded Tab Clicked', 'Uploaded')}
             >
-              <VideoIcon size={16} className="drop-shadow-lg" />
+              <VideoIcon size={16} className={searchParams.get("hours") === "uploaded" ? "text-primary" : "text-white/40"} />
               Uploaded
             </button>
           </div>
 
           {/* Search bar */}
-          <div className="flex items-center rounded-full shadow-lg bg-[#c2defd22] text-white cursor-pointer w-full max-w-md mb-6">
-            <CiSearch className="text-xl text-gray-400 ml-4" />
+          <div className="flex items-center rounded-2xl bg-white/[0.05] border border-white/10 text-white cursor-pointer w-full max-w-md mb-8 focus-within:border-primary/50 focus-within:bg-white/[0.08] transition-all group">
+            <CiSearch className="text-xl text-white/40 ml-4 group-focus-within:text-primary transition-colors" />
             <input
               type="text"
               placeholder="Search by title or host address"
-              className="w-full pl-3 pr-4 py-3 font-robotoMono text-base bg-transparent outline-none text-gray-100 placeholder-gray-400"
+              className="w-full pl-3 pr-4 py-3.5 font-robotoMono text-base bg-transparent outline-none text-white placeholder-white/30"
               value={searchQuery}
               onChange={(e) => handleSearch(e.target.value)}
             />

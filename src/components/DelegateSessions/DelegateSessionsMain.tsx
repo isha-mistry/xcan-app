@@ -25,7 +25,7 @@ function DelegateSessionsMain() {
 
       <div className="relative w-full px-4 md:px-6 lg:px-14 pb-8 font-robotoMono">
         {/* <div className="max-w-7xl mx-auto"> */}
-        <div className="bg-blue-shade-500 rounded-xl shadow-lg p-6 mb-8 border border-blue-shade-200">
+        <div className="bg-white/[0.03] backdrop-blur-xl rounded-2xl shadow-2xl p-6 mb-8 border border-white/10">
           <div className="flex gap-2 0.5xs:gap-4 rounded-xl text-sm flex-wrap mb-6">
             <Tooltip
               showArrow
@@ -40,13 +40,13 @@ function DelegateSessionsMain() {
               closeDelay={1}
             >
               <button
-                className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-blue-shade-300 shadow-md ${searchParams.get("active") === "availableExperts"
-                  ? "text-gray-200 font-semibold bg-blue-shade-300"
-                  : "text-gray-300 bg-blue-shade-500"
+                className={`py-2 px-6 flex gap-2 items-center rounded-full transition-all duration-300 whitespace-nowrap text-[11px] font-black uppercase tracking-widest border ${searchParams.get("active") === "availableExperts"
+                  ? "text-black bg-white border-white scale-105 shadow-[0_0_20px_rgba(255,255,255,0.1)]"
+                  : "text-white/40 bg-white/5 border-white/5 hover:text-white hover:bg-white/10 hover:border-white/10"
                   }`}
                 onClick={() => router.push(path + "?active=availableExperts")}
               >
-                <Users size={16} className="drop-shadow-lg" />
+                <Users size={14} className={searchParams.get("active") === "availableExperts" ? "text-black" : "text-blue-400"} />
                 Available Experts
               </button>
             </Tooltip>
@@ -62,13 +62,13 @@ function DelegateSessionsMain() {
               closeDelay={1}
             >
               <button
-                className={`py-2 px-4 flex gap-1 items-center rounded-full transition-all duration-200 whitespace-nowrap hover:bg-gray-700 shadow-md ${searchParams.get("active") === "recordedSessions"
-                  ? "text-gray-200 font-semibold bg-blue-shade-300"
-                  : "text-gray-300 bg-blue-shade-500"
+                className={`py-2 px-6 flex gap-2 items-center rounded-full transition-all duration-300 whitespace-nowrap text-[11px] font-black uppercase tracking-widest border ${searchParams.get("active") === "recordedSessions"
+                  ? "text-black bg-white border-white scale-105 shadow-[0_0_20px_rgba(255,255,255,0.1)]"
+                  : "text-white/40 bg-white/5 border-white/5 hover:text-white hover:bg-white/10 hover:border-white/10"
                   }`}
                 onClick={() => router.push(path + "?active=recordedSessions")}
               >
-                <BookOpen size={16} className="drop-shadow-lg" />
+                <BookOpen size={14} className={searchParams.get("active") === "recordedSessions" ? "text-black" : "text-blue-400"} />
                 Library
               </button>
             </Tooltip>

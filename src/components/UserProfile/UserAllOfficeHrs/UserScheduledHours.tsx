@@ -723,12 +723,12 @@ const UserScheduledHours: React.FC<{
       {/* Header Section */}
       <div className="mb-8">
         {/* Schedule Details Card */}
-        <div className="bg-gradient-to-br from-slate-700 to-transparent rounded-2xl shadow-md p-3 0.2xs:p-4 sm:p-6 mb-8 transition-all hover:shadow-lg">
-          <div className="space-y-6">
+        <div className="bg-white/[0.03] backdrop-blur-xl rounded-2xl shadow-xl p-6 xs:p-8 mb-8 border border-white/10 transition-all hover:shadow-2xl">
+          <div className="space-y-8">
             <div className="space-y-4">
               <label htmlFor="title" className="block">
-                <span className="text-lg font-semibold text-gray-100 mb-2 flex items-center">
-                  <CalendarIcon className="w-5 h-5 mr-2 text-gray-100" />
+                <span className="text-base font-bold text-white mb-3 flex items-center tracking-wide uppercase opacity-80">
+                  <CalendarIcon className="w-5 h-5 mr-3 text-primary" />
                   Title
                 </span>
                 <input
@@ -737,7 +737,7 @@ const UserScheduledHours: React.FC<{
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder="Enter a title for your schedule"
-                  className="w-full px-4 py-3 text-gray-100 bg-slate-800 bg-opacity-20 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-200 focus:border-blue-500 transition-all"
+                  className="w-full px-5 py-4 text-white bg-white/[0.05] border border-white/10 rounded-2xl focus:ring-2 focus:ring-primary/40 focus:border-primary/50 transition-all outline-none placeholder:text-white/20"
                   disabled={isLoadingSchedules}
                 />
               </label>
@@ -745,8 +745,8 @@ const UserScheduledHours: React.FC<{
 
             <div className="space-y-4">
               <label htmlFor="description" className="block">
-                <span className="text-lg font-semibold text-gray-100 mb-2 flex items-center">
-                  <AlertCircle className="w-5 h-5 mr-2 text-gray-100" />
+                <span className="text-base font-bold text-white mb-3 flex items-center tracking-wide uppercase opacity-80">
+                  <AlertCircle className="w-5 h-5 mr-3 text-primary" />
                   Description
                 </span>
                 <textarea
@@ -755,7 +755,7 @@ const UserScheduledHours: React.FC<{
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="Describe the purpose of this schedule..."
                   rows={3}
-                  className="w-full px-4 py-3 text-gray-100 bg-slate-800 bg-opacity-20 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-200 focus:border-blue-500 transition-all"
+                  className="w-full px-5 py-4 text-white bg-white/[0.05] border border-white/10 rounded-2xl focus:ring-2 focus:ring-primary/40 focus:border-primary/50 transition-all outline-none placeholder:text-white/20 resize-none"
                   disabled={isLoadingSchedules}
                 />
               </label>
@@ -764,15 +764,17 @@ const UserScheduledHours: React.FC<{
         </div>
 
         {/* Schedule Availability Section */}
-        <div className="bg-gradient-to-br from-slate-700 to-transparent rounded-2xl shadow-md p-3 0.2xs:p-4 sm:p-6 transition-all hover:shadow-lg relative">
+        <div className="bg-white/[0.03] backdrop-blur-xl rounded-2xl shadow-xl p-6 xs:p-8 border border-white/10 transition-all hover:shadow-2xl relative">
 
-          <div className="flex items-center mb-6">
-            <Clock className="w-6 h-6 text-blue-100 mr-3" />
+          <div className="flex items-center mb-10">
+            <div className="bg-primary/10 p-3 rounded-xl mr-4 border border-primary/20">
+              <Clock className="w-6 h-6 text-primary" />
+            </div>
             <div>
-              <h3 className="text-xl font-semibold text-gray-100">
+              <h3 className="text-xl font-bold text-white tracking-tight">
                 Schedule Availability
               </h3>
-              <p className="text-sm text-gray-200 mt-1">
+              <p className="text-sm text-white/50 mt-1">
                 All times shown in {timezone}
               </p>
             </div>
@@ -788,24 +790,25 @@ const UserScheduledHours: React.FC<{
       </div>
 
       {/* Save Button */}
-      <button
-        onClick={handleSave}
-        disabled={!isScheduleValid || isLoadingSchedules}
-        className={`w-full sm:w-auto sm:min-w-[200px] mt-4 py-4 px-6 rounded-2xl text-base font-medium transition-all ${!isScheduleValid || isLoadingSchedules
-          ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-          : "bg-blue-600 text-white hover:bg-blue-700 shadow-md hover:shadow-lg active:transform active:scale-95"
-          } relative bottom-auto left-auto right-auto`}
-      >
-        {isSaving ? (
-          <div className="flex items-center justify-center">
-            <Loader2 className="w-5 h-5 text-white animate-spin mr-2" />
-            Saving...
-          </div>
-        ) : (
-          "Save Schedule"
-        )}
-      </button>
-      {/* </div> */}
+      <div className="flex justify-start">
+        <button
+          onClick={handleSave}
+          disabled={!isScheduleValid || isLoadingSchedules}
+          className={`w-full sm:w-auto sm:min-w-[220px] mt-8 py-4 px-8 rounded-2xl text-base font-bold transition-all duration-300 ${!isScheduleValid || isLoadingSchedules
+            ? "bg-white/5 text-white/20 border border-white/5 cursor-not-allowed"
+            : "bg-primary text-white hover:bg-primary-accent shadow-[0_4px_20px_rgba(59,130,246,0.4)] hover:shadow-[0_6px_25px_rgba(59,130,246,0.5)] active:scale-95 border border-primary/50"
+            }`}
+        >
+          {isSaving ? (
+            <div className="flex items-center justify-center">
+              <Loader2 className="w-5 h-5 text-white animate-spin mr-2" />
+              Saving...
+            </div>
+          ) : (
+            "Save Schedule"
+          )}
+        </button>
+      </div>
     </div>
   );
 };

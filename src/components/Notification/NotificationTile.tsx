@@ -58,7 +58,7 @@ function NotificationTile({ data, index, length }: NotificationTileProps) {
           >
             <BiLinkExternal
               size={18}
-              className="text-black hover:text-blue-600 transition-colors duration-200"
+              className="text-gray-200 hover:text-blue-600 transition-colors duration-200"
               title="Open link in new tab"
             />
           </Link>
@@ -72,33 +72,36 @@ function NotificationTile({ data, index, length }: NotificationTileProps) {
   return (
     <>
       <div
-        className={`flex flex-col md:flex-row justify-between items-start md:items-center rounded-lg transition-all duration-200 ease-in-out hover:shadow-sm p-3 md:p-5 cursor-pointer hover:scale-[100.3%] mb-[6px]
-          shadow-lg space-y-3 md:space-y-0 border border-dark-accent
-          text-dark-text-primary ${readStatus ? "bg-dark-secondary" : "bg-dark-tertiary"}`}
+        className={`flex flex-col md:flex-row justify-between items-start md:items-center rounded-2xl transition-all duration-300 ease-in-out hover:shadow-2xl p-4 md:p-6 cursor-pointer hover:scale-[1.01] mb-4 border shadow-xl group
+          ${readStatus 
+            ? "bg-white/[0.02] border-white/5 opacity-70" 
+            : "bg-white/[0.05] border-white/10"
+          } 
+          hover:bg-white/[0.08] hover:border-primary/30`}
         onClick={handleTileRedirection}
       >
-        <div className="flex flex-col md:flex-row gap-3 md:gap-5 w-full md:w-auto">
-          <div className="flex justify-between">
+        <div className="flex flex-col md:flex-row gap-4 md:gap-6 w-full md:w-auto">
+          <div className="flex justify-between items-start">
             <div
-              className="flex items-center justify-center rounded-full h-12 w-12 md:h-14 md:w-14 md:min-w-14 shadow-inner transition-colors duration-200 bg-blue-shade-400"
+              className="flex items-center justify-center rounded-2xl h-14 w-14 md:min-w-14 shadow-inner transition-all duration-300 group-hover:scale-110 bg-primary/20 text-primary border border-primary/20"
               style={{ backgroundColor: getBackgroundColor(tileData) }}
             >
               {getIcon(tileData)}
             </div>
             <div
-              className={`text-xs text-dark-text-secondary font-semibold min-w-24 flex md:hidden items-center justify-end md:justify-center`}
+              className="text-[10px] text-white/30 font-bold uppercase tracking-widest flex md:hidden items-center justify-end bg-white/5 px-2 py-1 rounded-md"
             >
               {formatTimestampOrDate(data.createdAt)}
             </div>
           </div>
-          <div className="flex flex-col gap-1 justify-center">
+          <div className="flex flex-col gap-2 justify-center min-w-0">
             <h1
-              className={`font-semibold text-sm flex gap-2 items-center text-dark-text-primary`}
+              className="font-bold text-base flex gap-2 items-center text-white font-robotoMono group-hover:text-primary transition-colors"
             >
               {data.notification_title}
               {renderTitleContent()}
             </h1>
-            <p className="font-normal text-sm text-dark-text-secondary">
+            <p className="font-normal text-sm text-white/50 leading-relaxed line-clamp-2">
               {data.content.includes("Reason:")
                 ? data.content.split("Reason:").map((part, index) =>
                   index === 0 ? (
@@ -106,7 +109,7 @@ function NotificationTile({ data, index, length }: NotificationTileProps) {
                   ) : (
                     <span key={index}>
                       <br />
-                      <strong>Reason:</strong> {part.trim()}
+                      <strong className="text-white/70">Reason:</strong> {part.trim()}
                     </span>
                   )
                 )
@@ -115,7 +118,7 @@ function NotificationTile({ data, index, length }: NotificationTileProps) {
           </div>
         </div>
         <div
-          className={`text-xs text-dark-text-secondary font-semibold min-w-24 hidden md:flex items-center justify-start md:justify-center`}
+          className="text-[10px] text-white/20 font-bold uppercase tracking-widest hidden md:flex items-center justify-start bg-white/5 px-3 py-1.5 rounded-lg whitespace-nowrap"
         >
           {formatTimestampOrDate(data.createdAt)}
         </div>

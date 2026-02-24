@@ -332,18 +332,17 @@ function Sidebar() {
               ></Image>
             </Link>
             <Tooltip
-              // content="DAOs"
               content={<div className={`${styles.customTooltip}`}>DAOs</div>}
               placement="right"
-              className="rounded-md bg-opacity-90 bg-gray-700"
+              className="rounded-md bg-opacity-90 bg-[#0D1117] border border-white/10"
               closeDelay={1}
             >
               {/* <Link href={"/"}> */}
               <Link
                 href={"/"}
-                className={`dao cursor-pointer xl:w-11 xl:h-11 2xl:w-12 2xl:h-12 2.5xl:w-14 2.5xl:h-14 rounded-full flex items-center justify-center border border-white bg-blue-shade-800 w-10 h-10 ${styles.icon3d
+                className={`dao cursor-pointer xl:w-11 xl:h-11 2xl:w-12 2xl:h-12 2.5xl:w-14 2.5xl:h-14 rounded-full flex items-center justify-center border border-white/10 bg-white/5 hover:bg-white/10 w-10 h-10 transition-all ${styles.icon3d
                   } ${pathname.endsWith(`/`)
-                    ? "border-white border-2 rounded-full"
+                    ? "border-blue-500 border-2 rounded-full bg-blue-500/10 shadow-[0_0_15px_rgba(59,130,246,0.3)]"
                     : ""
                   }`}
               >
@@ -358,15 +357,15 @@ function Sidebar() {
                 <div className={`${styles.customTooltip}`}>Office Hours</div>
               }
               placement="right"
-              className="rounded-md bg-opacity-90 bg-gray-700"
+              className="rounded-md bg-opacity-90 bg-[#0D1117] border border-white/10"
               closeDelay={1}
             >
               {/* <Link href={"/lectures?hours=ongoing"}> */}
               <Link
                 href={"/lectures?hours=ongoing"}
-                className={`office cursor-pointer xl:w-11 xl:h-11 2xl:w-12 2xl:h-12 2.5xl:w-14 2.5xl:h-14 rounded-full flex items-center justify-center border border-white bg-blue-shade-800 w-10 h-10 ${styles.icon3d
+                className={`office cursor-pointer xl:w-11 xl:h-11 2xl:w-12 2xl:h-12 2.5xl:w-14 2.5xl:h-14 rounded-full flex items-center justify-center border border-white/10 bg-white/5 hover:bg-white/10 w-10 h-10 transition-all ${styles.icon3d
                   } ${pathname.includes(`/lectures`)
-                    ? "border-white border-2 rounded-full"
+                    ? "border-blue-500 border-2 rounded-full bg-blue-500/10 shadow-[0_0_15px_rgba(59,130,246,0.3)]"
                     : ""
                   }`}
               >
@@ -381,15 +380,15 @@ function Sidebar() {
                 <div className={`${styles.customTooltip}`}>Sessions</div>
               }
               placement="right"
-              className="rounded-md bg-opacity-90 bg-gray-700"
+              className="rounded-md bg-opacity-90 bg-[#0D1117] border border-white/10"
               closeDelay={1}
             >
               {/* <Link href={"/sessions?active=recordedSessions"}> */}
               <Link
                 href={"/sessions?active=availableExperts"}
-                className={`session cursor-pointer xl:w-11 xl:h-11 2xl:w-12 2xl:h-12 2.5xl:w-14 2.5xl:h-14 rounded-full flex items-center justify-center border border-white bg-blue-shade-800 w-10 h-10 ${styles.icon3d
+                className={`session cursor-pointer xl:w-11 xl:h-11 2xl:w-12 2xl:h-12 2.5xl:w-14 2.5xl:h-14 rounded-full flex items-center justify-center border border-white/10 bg-white/5 hover:bg-white/10 w-10 h-10 transition-all ${styles.icon3d
                   } ${pathname.includes(`/sessions`)
-                    ? "border-white border-2 rounded-full"
+                    ? "border-blue-500 border-2 rounded-full bg-blue-500/10 shadow-[0_0_15px_rgba(59,130,246,0.3)]"
                     : ""
                   }`}
               >
@@ -402,15 +401,15 @@ function Sidebar() {
             <Tooltip
               content={<div className={`${styles.customTooltip}`}>Invite</div>}
               placement="right"
-              className="rounded-md bg-opacity-90 bg-gray-700"
+              className="rounded-md bg-opacity-90 bg-[#0D1117] border border-white/10"
               closeDelay={1}
             >
               {/* <Link href={"/sessions?active=recordedSessions"}> */}
               <Link
                 href={"/invite"}
-                className={`cursor-pointer xl:w-11 xl:h-11 2xl:w-12 2xl:h-12 2.5xl:w-14 2.5xl:h-14 rounded-full flex items-center justify-center border border-white bg-blue-shade-800 w-10 h-10 ${styles.icon3d
+                className={`cursor-pointer xl:w-11 xl:h-11 2xl:w-12 2xl:h-12 2.5xl:w-14 2.5xl:h-14 rounded-full flex items-center justify-center border border-white/10 bg-white/5 hover:bg-white/10 w-10 h-10 transition-all ${styles.icon3d
                   } ${pathname.includes(`/invite`)
-                    ? "border-white border-2 rounded-full"
+                    ? "border-blue-500 border-2 rounded-full bg-blue-500/10 shadow-[0_0_15px_rgba(59,130,246,0.3)]"
                     : ""
                   }`}
               >
@@ -423,7 +422,7 @@ function Sidebar() {
           </div>
           <div className="h-full">
             <div
-              className={`flex flex-col items-center gap-y-4 py-7 h-full bg-blue-shade-300 rounded-2xl overflow-y-auto ${styles.scrollbar}`}
+              className={`flex flex-col items-center gap-y-4 py-7 h-full bg-white/[0.02] border border-white/5 rounded-2xl overflow-y-auto ${styles.scrollbar}`}
             >
               {storedDao ? (
                 storedDao.map((data, index) => (
@@ -435,8 +434,8 @@ function Sidebar() {
                   >
                     <Badge
                       isInvisible={!badgeVisiblity[index]}
-                      content={<IoClose />}
-                      className="p-[0.1rem] cursor-pointer border-blue-shade-300"
+                      content={<IoClose className="text-white" />}
+                      className="p-[0.1rem] cursor-pointer border-white/10 bg-red-500"
                       color="danger"
                       size="sm"
                       onClick={() => handleBadgeClick(data[0])}
@@ -448,7 +447,7 @@ function Sidebar() {
                           </div>
                         }
                         placement="right"
-                        className="rounded-md bg-opacity-90 bg-gray-700"
+                        className="rounded-md bg-opacity-90 bg-[#0D1117] border border-white/10"
                         closeDelay={1}
                       >
                         <Link href={`/${data[0]}?active=about`}>
@@ -482,17 +481,17 @@ function Sidebar() {
                 <div className={`${styles.customTooltip}`}>Docs</div>
               }
               placement="right"
-              className="rounded-md bg-opacity-90 bg-gray-700"
+              className="rounded-md bg-opacity-90 bg-[#0D1117] border border-white/10"
               closeDelay={1}
             >
               {/* <Link href={"https://docs.chora.club/"} target="_blank"> */}
               <Link
                 href={"https://docs.chora.club/"}
                 target="_blank"
-                className={`gitbook cursor-pointer xl:w-11 xl:h-11 2xl:w-12 2xl:h-12 2.5xl:w-14 2.5xl:h-14 rounded-full flex items-center justify-center bg-white w-10 h-10 ${styles.icon3d} ${styles.whiteBg}`}
+                className={`gitbook cursor-pointer xl:w-11 xl:h-11 2xl:w-12 2xl:h-12 2.5xl:w-14 2.5xl:h-14 rounded-full flex items-center justify-center bg-white/5 border border-white/10 hover:bg-white/10 w-10 h-10 transition-all ${styles.icon3d}`}
               >
                 <SiGitbook
-                  className={`size-5 text-blue-shade-200 ${styles.iconInner}`}
+                  className={`size-5 text-blue-400 group-hover:text-blue-300 ${styles.iconInner}`}
                 />
               </Link>
               {/* </Link> */}
@@ -504,15 +503,15 @@ function Sidebar() {
                   <div className={`${styles.customTooltip}`}>Wallet</div>
                 }
                 placement="right"
-                className="rounded-md bg-opacity-90 bg-gray-700"
+                className="rounded-md bg-opacity-90 bg-[#0D1117] border border-white/10"
                 closeDelay={1}
               >
                 {isPageLoading || sessionLoading ? (
                   <div
-                    className={`cursor-pointer xl:w-11 xl:h-11 2xl:w-12 2xl:h-12 2.5xl:w-14 2.5xl:h-14 rounded-full flex items-center justify-center bg-white w-10 h-10 ${styles.icon3d} ${styles.whiteBg}`}
+                    className={`cursor-pointer xl:w-11 xl:h-11 2xl:w-12 2xl:h-12 2.5xl:w-14 2.5xl:h-14 rounded-full flex items-center justify-center bg-white/5 border border-white/10 hover:bg-white/10 w-10 h-10 transition-all ${styles.icon3d}`}
                   >
                     <FaUser
-                      className={`size-5 text-blue-shade-200 ${styles.iconInner}`}
+                      className={`size-5 text-blue-400 group-hover:text-blue-300 ${styles.iconInner}`}
                     />
                   </div>
                 ) : (
@@ -525,16 +524,16 @@ function Sidebar() {
                   <div className={`${styles.customTooltip}`}>Profile</div>
                 }
                 placement="right"
-                className="rounded-md bg-opacity-90 bg-gray-700"
+                className="rounded-md bg-opacity-90 bg-[#0D1117] border border-white/10"
                 closeDelay={1}
               >
                 <div
-                  className={`cursor-pointer xl:w-11 xl:h-11 2xl:w-12 2xl:h-12 2.5xl:w-14 2.5xl:h-14 rounded-full flex items-center justify-center bg-white w-10 h-10 ${styles.icon3d} ${styles.whiteBg}`}
+                  className={`cursor-pointer xl:w-11 xl:h-11 2xl:w-12 2xl:h-12 2.5xl:w-14 2.5xl:h-14 rounded-full flex items-center justify-center bg-white/5 border border-white/10 hover:bg-white/10 w-10 h-10 transition-all ${styles.icon3d}`}
                   // onClick={() => router.push(`/profile/${walletAddress}?active=info`)}
                   onClick={HandleRedirect}
                 >
                   <FaUser
-                    className={`size-5 text-blue-shade-200 ${styles.iconInner}`}
+                    className={`size-5 text-blue-400 group-hover:text-blue-300 ${styles.iconInner}`}
                   />
                 </div>
               </Tooltip>

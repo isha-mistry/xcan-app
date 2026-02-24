@@ -479,8 +479,8 @@ function MainProfile() {
                 className={`${userData.displayImage ? "h-full" : "h-[80vw] xs:h-auto"
                   } relative object-cover rounded-3xl w-full xs:w-auto`}
                 style={{
-                  backgroundColor: "#fcfcfc",
-                  border: "2px solid #E9E9E9 ",
+                  backgroundColor: "rgba(255, 255, 255, 0.02)",
+                  border: "1px solid rgba(255, 255, 255, 0.1)",
                 }}
               >
                 <div className="w-full h-full xs:w-28 xs:h-28 sm:w-36 sm:h-36 lg:w-40 lg:h-40 flex items-center justify-center ">
@@ -507,7 +507,7 @@ function MainProfile() {
 
               <div className="pl-4 md:px-4 mt-4 xs:mt-0 md:mt-2 lg:mt-4 w-full xs:w-auto">
                 <div className=" flex items-center py-1">
-                  <div className="font-bold text-[22px] xs:text-xl sm:text-xl lg:text-[22px] pr-4">
+                  <div className="font-black text-[22px] xs:text-xl sm:text-xl lg:text-[22px] pr-4 text-white font-unbounded tracking-tight">
                     {userData.displayName ? (
                       userData.displayName
                     ) : (
@@ -628,7 +628,7 @@ function MainProfile() {
                       className="bg-gray-700"
                     >
                       <Button
-                        className="bg-gray-200 hover:bg-gray-300 text-xs sm:text-sm "
+                        className="bg-white/5 hover:bg-white/10 text-white/60 text-xs sm:text-sm border border-white/10 rounded-full"
                         onPress={() => {
                           if (typeof window === "undefined") return;
                           navigator.clipboard.writeText(
@@ -640,14 +640,14 @@ function MainProfile() {
                           }, 3000);
                         }}
                       >
-                        <IoShareSocialSharp />
+                        <IoShareSocialSharp className="text-blue-400" />
                         {isCopied ? "Copied" : "Share profile"}
                       </Button>
                     </Tooltip>
                   </div>
                 </div>
                 <div className="flex gap-2">
-                  <button className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white sm:text-lg px-6 py-1 rounded-full" onClick={() => {
+                  <button className="bg-blue-600 hover:bg-blue-500 text-white font-black text-xs uppercase tracking-widest px-6 py-2 rounded-full transition-all shadow-lg hover:shadow-blue-500/20" onClick={() => {
                     router.push(`/invite`)
                   }}  >Invite</button>
                   <UploadVideoButton userAddress={address || ""} />
@@ -661,12 +661,12 @@ function MainProfile() {
 
           <div className=" ">
             <div
-              className="md:hidden mt-4 px-8 xs:px-4 sm:px-8 py-2 sm:py-[10px] bg-[#c2defd22]"
+              className="md:hidden mt-4 px-8 xs:px-4 sm:px-8 py-2 sm:py-[10px] bg-white/[0.02] border-y border-white/5"
               ref={dropdownRef}
               onMouseLeave={handleMouseLeave}
             >
               <div
-                className="w-full flex justify-between items-center text-left font-normal rounded-full capitalize text-lg text-gray-200 bg-[#455670] px-4 py-2 cursor-pointer"
+                className="w-full flex justify-between items-center text-left font-bold rounded-full capitalize text-sm text-white bg-white/5 border border-white/10 px-4 py-2.5 cursor-pointer backdrop-blur-xl"
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                 onMouseEnter={handleMouseEnter}
               >
@@ -682,16 +682,16 @@ function MainProfile() {
                   : "max-h-0 opacity-0"
                   }`}
               >
-                <div className="p-2 border border-white-shade-100 rounded-xl bg-[#455670] shadow-md">
+                <div className="p-2 border border-white/10 rounded-2xl bg-[#0D1117] shadow-2xl">
                   {tabs.map((tab, index) => (
                     <React.Fragment key={tab.value}>
                       <div
                         onClick={() => handleTabChange(tab.value)}
-                        className="px-3 py-2 rounded-lg transition duration-300 ease-in-out hover:bg-[#24344ece] capitalize text-base cursor-pointer"
+                        className="px-4 py-3 rounded-xl transition duration-300 ease-in-out hover:bg-white/5 capitalize text-sm font-bold text-white/70 hover:text-white cursor-pointer"
                       >
                         {tab.name}
                       </div>
-                      {index !== tabs.length - 1 && <hr className="my-1" />}
+                      {index !== tabs.length - 1 && <hr className="my-1 border-white/5" />}
                     </React.Fragment>
                   ))}
                 </div>
@@ -699,12 +699,12 @@ function MainProfile() {
             </div>
 
             <div
-              className={`bg-[#c2defd22] hidden md:flex overflow-x-auto whitespace-nowrap gap-6 xs:gap-8 sm:gap-12 pl-6 xs:pl-8 sm:pl-16 ${style.hideScrollbarColor} ${style.scrollContainter}`}
+              className={`bg-white/[0.02] border-y border-white/5 hidden md:flex overflow-x-auto whitespace-nowrap gap-6 xs:gap-8 sm:gap-12 pl-6 xs:pl-8 sm:pl-16 ${style.hideScrollbarColor} ${style.scrollContainter}`}
             >
               <button
-                className={`border-b-2 py-3 xs:py-4 px-2 outline-none flex-shrink-0 ${searchParams.get("active") === "info"
-                  ? "text-blue-300 font-semibold border-b-2 border-blue-300"
-                  : "border-transparent"
+                className={`border-b-2 py-3 xs:py-4 px-2 outline-none flex-shrink-0 text-sm font-bold tracking-widest uppercase transition-all ${searchParams.get("active") === "info"
+                  ? "text-blue-400 border-blue-400"
+                  : "text-white/40 border-transparent hover:text-white/60"
                   }`}
                 onClick={() => router.push(path + "?active=info")}
               >
@@ -712,9 +712,9 @@ function MainProfile() {
               </button>
 
               <button
-                className={`border-b-2 py-3 xs:py-4 px-2 outline-none flex-shrink-0 ${searchParams.get("active") === "sessions"
-                  ? "text-blue-300 font-semibold border-b-2 border-blue-300"
-                  : "border-transparent"
+                className={`border-b-2 py-3 xs:py-4 px-2 outline-none flex-shrink-0 text-sm font-bold tracking-widest uppercase transition-all ${searchParams.get("active") === "sessions"
+                  ? "text-blue-400 border-blue-400"
+                  : "text-white/40 border-transparent hover:text-white/60"
                   }`}
                 onClick={() =>
                   router.push(
@@ -726,9 +726,9 @@ function MainProfile() {
                 Expert Sessions
               </button>
               <button
-                className={`border-b-2 py-3 xs:py-4 px-2 outline-none flex-shrink-0 ${searchParams.get("active") === "lectures"
-                  ? "text-blue-300 font-semibold border-b-2 border-blue-300"
-                  : "border-transparent"
+                className={`border-b-2 py-3 xs:py-4 px-2 outline-none flex-shrink-0 text-sm font-bold tracking-widest uppercase transition-all ${searchParams.get("active") === "lectures"
+                  ? "text-blue-400 border-blue-400"
+                  : "text-white/40 border-transparent hover:text-white/60"
                   }`}
                 onClick={() =>
                   router.push(path + "?active=lectures&lectures=schedule")
@@ -737,20 +737,19 @@ function MainProfile() {
                 Lectures
               </button>
 
-              {<button
-                className={`border-b-2 py-3 xs:py-4 px-2 outline-none flex-shrink-0 ${searchParams.get("active") === "instant-meet"
-                  ? "text-blue-300 font-semibold border-b-2 border-blue-300"
-                  : "border-transparent"
+              <button
+                className={`border-b-2 py-3 xs:py-4 px-2 outline-none flex-shrink-0 text-sm font-bold tracking-widest uppercase transition-all ${searchParams.get("active") === "instant-meet"
+                  ? "text-blue-400 border-blue-400"
+                  : "text-white/40 border-transparent hover:text-white/60"
                   }`}
                 onClick={() => router.push(path + "?active=instant-meet")}
               >
                 Instant Meet
               </button>
-              }
               <button
-                className={`border-b-2 py-3 xs:py-4 px-2 outline-none flex-shrink-0 ${searchParams.get("active") === "uploaded"
-                  ? "text-blue-300 font-semibold border-b-2 border-blue-300"
-                  : "border-transparent"
+                className={`border-b-2 py-3 xs:py-4 px-2 outline-none flex-shrink-0 text-sm font-bold tracking-widest uppercase transition-all ${searchParams.get("active") === "uploaded"
+                  ? "text-blue-400 border-blue-400"
+                  : "text-white/40 border-transparent hover:text-white/60"
                   }`}
                 onClick={() => router.push(path + "?active=uploaded")}
               >

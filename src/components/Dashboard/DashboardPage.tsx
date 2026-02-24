@@ -1,148 +1,95 @@
 "use client"
 
 import React, { useState, useEffect } from 'react';
-import { DashboardUser, DashboardResponse } from './DashboardTypes';
+import { DashboardResponse, DashboardUser } from './DashboardTypes';
 import { toast } from 'react-hot-toast';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+  Users,
+  Award,
+  Link as LinkIcon,
+  Search,
+  X,
+  Copy,
+  Github,
+  Twitter,
+  MessageSquare,
+  Send,
+  ExternalLink,
+  ChevronLeft,
+  ChevronRight,
+  Database
+} from 'lucide-react';
 
-// Social Media Icons Component
-const SocialIcon: React.FC<{ platform: string; className?: string }> = ({ platform, className = "w-6 h-6" }) => {
-  const icons = {
-    github: (
-      <svg className={className} fill="currentColor" viewBox="0 0 24 24">
-        <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
-      </svg>
-    ),
-    twitter: (
-      <svg className={className} fill="currentColor" viewBox="0 0 24 24">
-        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-      </svg>
-    ),
-    discord: (
-      <svg className={className} fill="currentColor" viewBox="0 0 24 24">
-        <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.196.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z" />
-      </svg>
-    ),
-    telegram: (
-      <svg className={className} fill="currentColor" viewBox="0 0 24 24">
-        <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z" />
-      </svg>
-    )
-  };
-
-  return icons[platform as keyof typeof icons] || null;
+// Social Media Icons Mapping
+const SocialIcon = ({ platform, className = "w-4 h-4" }: { platform: string, className?: string }) => {
+  switch (platform) {
+    case 'github': return <Github className={className} />;
+    case 'twitter': return <Twitter className={className} />;
+    case 'discord': return <MessageSquare className={className} />;
+    case 'telegram': return <Send className={className} />;
+    default: return null;
+  }
 };
 
-// Compact Status Badge Component
+// Enhanced Status Badge
 const StatusBadge: React.FC<{ hasNFT: boolean; totalMinted?: number }> = ({ hasNFT, totalMinted }) => {
   if (!hasNFT) {
     return (
-      <div className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-gradient-to-r from-blue-shade-200 to-purple-500/20 text-dark-text-secondary border border-blue-shade-200/30">
-        {/* <svg className="w-3.5 h-3.5 mr-1.5 text-blue-shade-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-        </svg> */}
-        Not minted
+      <div className="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase bg-white/5 text-white/40 border border-white/10 backdrop-blur-md">
+        Not Minted
       </div>
     );
   }
 
   return (
-    <div className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-shade-100/20 text-green-shade-100 border border-green-shade-100/30">
-      <div className="w-1.5 h-1.5 rounded-full mr-1.5 bg-green-shade-100" />
-      {totalMinted} NFT{totalMinted && totalMinted > 1 ? 's' : ''}
+    <div className="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase bg-green-500/10 text-green-400 border border-green-500/30 backdrop-blur-md shadow-[0_0_15px_rgba(34,197,94,0.1)]">
+      <div className="w-1.5 h-1.5 rounded-full mr-2 bg-green-400 animate-pulse" />
+      {totalMinted} {totalMinted === 1 ? 'NFT' : 'NFTs'}
     </div>
   );
 };
 
-// Social Links Component
-const SocialLinks: React.FC<{ socialHandles: any; connectedSocials: any }> = ({ socialHandles, connectedSocials }) => {
-  const socialPlatforms = [
-    {
-      key: 'github',
-      usernameKey: 'githubUsername',
-      color: 'text-dark-text-secondary hover:text-white',
-      url: (value: string) => `https://github.com/${value}`,
-      connected: connectedSocials?.github
-    },
-    {
-      key: 'twitter',
-      usernameKey: 'twitterUsername',
-      color: 'text-blue-400 hover:text-blue-300',
-      url: (value: string) => `https://x.com/${value}`,
-      connected: connectedSocials?.twitter
-    },
-    {
-      key: 'discord',
-      usernameKey: 'discordUsername',
-      color: 'text-indigo-400 hover:text-indigo-300',
-      url: (value: string) => `https://discord.com/users/${value}`,
-      connected: connectedSocials?.discord
-    },
-    {
-      key: 'telegram',
-      usernameKey: 'telegramUsername',
-      color: 'text-cyan-400 hover:text-cyan-300',
-      url: (value: string) => `https://t.me/${value}`,
-      connected: connectedSocials?.telegram
-    }
-  ];
+// Premium Stats Card
+const StatsCard: React.FC<{
+  title: string;
+  value: number;
+  icon: React.ElementType;
+  color: string;
+  delay: number;
+}> = ({ title, value, icon: Icon, color, delay }) => (
+  <motion.div
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.5, delay }}
+    className="relative group overflow-hidden"
+  >
+    <div className="absolute inset-0 bg-gradient-to-br from-white/[0.05] to-transparent pointer-events-none" />
+    <div className={`absolute -right-4 -top-4 w-24 h-24 bg-${color}/10 blur-3xl group-hover:bg-${color}/20 transition-all duration-500`} />
 
-  const availablePlatforms = socialPlatforms.filter(({ usernameKey, connected }) =>
-    socialHandles?.[usernameKey] && connected
-  );
-
-  return (
-    <div className="flex flex-wrap gap-3">
-      {availablePlatforms.length > 0 ? (
-        availablePlatforms.map(({ key, usernameKey, color, url }) => {
-          const value = socialHandles[usernameKey];
-          return (
-            <a
-              key={key}
-              href={url(value)}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={`${color} transform hover:scale-110 transition-all duration-300 p-2 rounded-lg hover:bg-blue-shade-200/20`}
-              title={`${key.charAt(0).toUpperCase() + key.slice(1)}: ${value}`}
-            >
-              <SocialIcon platform={key} />
-            </a>
-          );
-        })
-      ) : (
-        <span className="text-dark-text-tertiary text-sm italic">No social links</span>
-      )}
-    </div>
-  );
-};
-
-// Enhanced Stats Card Component
-const StatsCard: React.FC<{ title: string; value: number; icon: React.ReactNode; gradient?: string }> = ({
-  title,
-  value,
-  icon,
-  gradient = "from-blue-shade-100 to-blue-shade-200"
-}) => (
-  <div className="bg-gradient-to-br from-blue-shade-500/50 to-blue-shade-300/50 backdrop-blur-sm border border-blue-shade-200/30 rounded-2xl p-6 hover:border-blue-shade-100/50 transition-all duration-300 hover:shadow-lg hover:shadow-blue-shade-100/10">
-    <div className="flex items-center justify-between">
-      <div>
-        <p className="text-dark-text-secondary text-sm font-medium font-robotoMono">{title}</p>
-        <p className="text-3xl font-bold text-dark-text-primary font-robotoMono mt-1">{value.toLocaleString()}</p>
-      </div>
-      <div className={`p-4 rounded-xl bg-gradient-to-br ${gradient}`}>
-        {icon}
+    <div className="glass-container p-6 rounded-2xl relative z-10 hover:border-white/20 transition-all duration-300">
+      <div className="flex items-start justify-between">
+        <div>
+          <p className="text-white/50 text-xs font-bold tracking-widest uppercase mb-1 font-unbounded">{title}</p>
+          <h3 className="text-3xl font-black text-white font-unbounded tracking-tighter">
+            {value.toLocaleString()}
+          </h3>
+        </div>
+        <div className={`p-3 rounded-xl bg-gradient-to-br from-${color}/20 to-${color}/5 border border-${color}/20 text-white`}>
+          <Icon className="w-6 h-6" />
+        </div>
       </div>
     </div>
-  </div>
+  </motion.div>
 );
 
-// Main Dashboard Component
 const DashboardPage: React.FC = () => {
   const [users, setUsers] = useState<DashboardResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const usersPerPage = 30;
+  const usersPerPage = 15;
 
   useEffect(() => {
     fetchUsers();
@@ -151,23 +98,15 @@ const DashboardPage: React.FC = () => {
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/dashboard`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        }
-      });
+      const response = await fetch(`/api/dashboard`);
       const data = await response.json();
-
-      console.log("dashboard data: ", data);
-
       if (data.success) {
         setUsers(data);
       } else {
-        setError('Failed to fetch users');
+        setError('Failed to fetch user directory');
       }
     } catch (err) {
-      setError('An error occurred while fetching users');
+      setError('Communication breakdown with the nucleus');
       console.error(err);
     } finally {
       setLoading(false);
@@ -176,20 +115,17 @@ const DashboardPage: React.FC = () => {
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
-    toast.success('Address copied to clipboard!', {
+    toast.success('Address encrypted & copied', {
       style: {
         background: '#0D1527',
         color: '#ffffff',
-        border: '1px solid #123099',
+        border: '1px solid rgba(255,255,255,0.1)',
         borderRadius: '12px',
-        fontSize: '14px',
-        fontFamily: 'var(--font-robotoMono)'
+        fontSize: '12px',
+        fontWeight: 'bold',
+        fontFamily: 'var(--font-unbounded)'
       }
     });
-  };
-
-  const truncateAddress = (address: string) => {
-    return `${address.slice(0, 8)}...${address.slice(-6)}`;
   };
 
   const filteredUsers = users?.data?.filter(user =>
@@ -205,380 +141,243 @@ const DashboardPage: React.FC = () => {
 
   const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
 
-  console.log("data: ", users);
-
-  // Calculate pagination display
-  const startRange = filteredUsers.length > 0 ? indexOfFirstUser + 1 : 0;
-  const endRange = Math.min(indexOfLastUser, filteredUsers.length);
-  const showingText = filteredUsers.length > 0
-    ? `Showing ${startRange}-${endRange} of ${filteredUsers.length} user${filteredUsers.length !== 1 ? 's' : ''}`
-    : 'No users found';
-
-  // Calculate stats
+  // Stats calculation
   const totalUsers = users?.count || 0;
-  const totalNFTsMinted = users?.totalNftsMinted || 0;
-  const usersWithSocials = users?.data?.filter(user =>
-    Object.values(user.connectedSocials).some(connected => connected)
-  ).length || 0;
+  const totalNFTs = users?.totalNftsMinted || 0;
+  const socialReach = users?.data?.filter(u => Object.values(u.connectedSocials).some(v => v)).length || 0;
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-dark-primary via-dark-secondary to-dark-tertiary flex items-center justify-center font-robotoMono">
-        <div className="text-center space-y-6 p-8">
-          <div className="relative">
-            <div className="animate-spin-subtle rounded-full h-20 w-20 border-4 border-blue-shade-100/30 border-t-blue-shade-100 mx-auto"></div>
-            <div className="absolute inset-0 rounded-full h-20 w-20 border-4 border-transparent border-t-blue-shade-200 animate-spin mx-auto"></div>
-          </div>
-          <div className="space-y-2">
-            <p className="text-dark-text-primary text-xl font-semibold">Loading Members</p>
-            <p className="text-dark-text-secondary text-sm">Fetching user data...</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-dark-primary via-dark-secondary to-dark-tertiary flex items-center justify-center font-robotoMono">
-        <div className="text-center space-y-6 bg-gradient-to-br from-blue-shade-500/50 to-blue-shade-300/50 backdrop-blur-sm border border-red-500/30 p-10 rounded-2xl shadow-2xl max-w-md">
-          <div className="text-red-400">
-            <svg className="w-20 h-20 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-          </div>
-          <div className="space-y-3">
-            <h3 className="text-dark-text-primary text-xl font-semibold">Oops! Something went wrong</h3>
-            <p className="text-red-400 text-sm">{error}</p>
-          </div>
-          <button
-            onClick={fetchUsers}
-            className="px-8 py-3 bg-gradient-to-r from-blue-shade-100 to-blue-shade-200 text-white rounded-xl hover:from-blue-shade-200 hover:to-blue-shade-100 transition-all duration-300 font-medium transform hover:scale-105 shadow-lg hover:shadow-blue-shade-100/25"
-          >
-            Try Again
-          </button>
-        </div>
+      <div className="min-h-screen bg-black flex flex-col items-center justify-center relative overflow-hidden">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-blue-shade-100/10 blur-[120px] animate-pulse" />
+        <motion.div
+          animate={{ scale: [1, 1.1, 1], opacity: [0.5, 1, 0.5] }}
+          transition={{ duration: 2, repeat: Infinity }}
+          className="relative z-10 flex flex-col items-center"
+        >
+          <div className="w-16 h-16 border-4 border-white/10 border-t-white rounded-full animate-spin mb-6" />
+          <h2 className="text-white font-unbounded text-sm font-bold tracking-[0.3em] uppercase">Synchronizing Data</h2>
+        </motion.div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-dark-primary via-dark-secondary to-dark-tertiary text-dark-text-primary py-8 px-4 sm:px-6 lg:px-8 font-robotoMono">
-      <div className="max-w-7xl mx-auto">
-        {/* Header Section */}
-        <div className="mb-12 animate-fadeIn">
-          <div className="text-center mb-8">
-            <h1 className="text-5xl sm:text-6xl font-extrabold text-transparent bg-gradient-to-r from-blue-shade-100 via-white to-blue-shade-100 bg-clip-text mb-4 font-robotoMono">
-              Members Overview
-            </h1>
-            <p className="text-dark-text-secondary text-lg max-w-2xl mx-auto">
-              Comprehensive overview of all registered users, their social connections, and NFT claims
-            </p>
-          </div>
+    <div className="min-h-screen bg-transparent relative selection:bg-blue-500/30">
+      {/* Background Ambience & Technical Grid */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden">
+        {/* Technical Grid */}
+        <div
+          className="absolute inset-0 opacity-[0.03]"
+          style={{
+            backgroundImage: `radial-gradient(circle at 2px 2px, rgba(255,255,255,0.2) 1px, transparent 0)`,
+            backgroundSize: '40px 40px'
+          }}
+        />
 
-          {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <StatsCard
-              title="Total Users"
-              value={totalUsers}
-              icon={<svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z" />
-              </svg>}
-              gradient="from-blue-shade-100 to-blue-shade-200"
-            />
-            <StatsCard
-              title="NFTs Claimed"
-              value={totalNFTsMinted}
-              icon={<svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-              </svg>}
-              gradient="from-green-shade-100 to-green-shade-200"
-            />
-            <StatsCard
-              title="Social Connected"
-              value={usersWithSocials}
-              icon={<svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-              </svg>}
-              gradient="from-purple-500 to-purple-600"
-            />
-          </div>
+        <div className="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] bg-blue-shade-100/5 blur-[150px] rounded-full" />
+        <div className="absolute bottom-[-10%] left-[-10%] w-[40%] h-[40%] bg-purple-500/5 blur-[120px] rounded-full" />
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 py-16 relative z-10">
+        {/* Hero Header */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center mb-16"
+        >
+          <h1 className="text-2xl md:text-6xl font-black text-white font-unbounded tracking-tighter mb-4">
+            MEMBERS OVERVIEW
+          </h1>
+          <p className="text-white/40 max-w-xl mx-auto font-medium text-balance">
+            Registry of all protocol agents, cryptographic identifiers, and on-chain achievement metrics.
+          </p>
+        </motion.div>
+
+        {/* Dynamic Stats Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+          <StatsCard title="Total Users" value={totalUsers} icon={Users} color="blue-shade-100" delay={0.1} />
+          <StatsCard title="NFTs Claimed" value={totalNFTs} icon={Award} color="green-400" delay={0.2} />
+          <StatsCard title="Social Connected" value={socialReach} icon={LinkIcon} color="purple-400" delay={0.3} />
         </div>
 
-        {/* Search Section */}
-        <div className="mb-10">
-          <div className="relative max-w-3xl mx-auto">
-            {/* Search Icon */}
-            <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none transition-transform duration-300 ease-in-out">
-              <svg
-                className="h-6 w-6 text-dark-text-secondary/70 group-hover:text-dark-text-primary transition-colors duration-200"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                aria-hidden="true"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                />
-              </svg>
+        {/* Actions Bar */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+          className="flex flex-col md:flex-row gap-4 mb-8"
+        >
+          <div className="relative flex-1 group">
+            <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
+              <Search className="w-5 h-5 text-white/30 group-focus-within:text-blue-400 transition-colors" />
             </div>
-
-            {/* Search Input */}
             <input
               type="text"
-              className="block w-full pl-14 pr-12 py-4 rounded-xl bg-blue-shade-500 border-blue-900 text-dark-text-primary placeholder-dark-text-secondary/50 shadow-lg transition-all duration-300 ease-in-out text-lg hover:shadow-xl hover:border-blue-shade-300/30"
-              placeholder="Search by wallet address, GitHub username, or NFT data..."
+              placeholder="Search by wallet address or GitHub username"
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              aria-label="Search users by wallet address, GitHub username, or NFT data"
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                setCurrentPage(1);
+              }}
+              className="w-full bg-white/[0.03] border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-white placeholder:text-white/20 focus:outline-none focus:border-blue-500/50 focus:bg-white/[0.05] transition-all font-medium"
             />
-
-            {/* Clear Button */}
             {searchTerm && (
               <button
                 onClick={() => setSearchTerm('')}
-                className="absolute inset-y-0 right-0 pr-5 flex items-center text-dark-text-secondary/70 hover:text-dark-text-primary focus:outline-none transition-all duration-200 transform hover:scale-110 focus:scale-110"
-                aria-label="Clear search"
+                className="absolute inset-y-0 right-4 flex items-center text-white/20 hover:text-white"
               >
-                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
+                <X className="w-5 h-5" />
               </button>
             )}
           </div>
+        </motion.div>
 
-          {/* Results Info */}
-          <div className="text-center mt-5">
-            <p className="text-dark-text-secondary text-sm font-medium">
-              {showingText}
-              {searchTerm && filteredUsers.length > 0 && (
-                <span className="text-dark-text-tertiary ml-2">
-                  (from {users?.count || 0} total)
-                </span>
-              )}
-            </p>
-          </div>
-        </div>
+        {/* Directory Grid/Table */}
+        <div className="glass-container rounded-3xl overflow-hidden border-white/5 relative">
+          <div className="absolute inset-0 bg-gradient-to-b from-white/[0.02] to-transparent pointer-events-none" />
 
-        {/* Table Section */}
-        <div className="bg-gradient-to-br from-blue-shade-500/30 to-blue-shade-300/30 backdrop-blur-sm rounded-2xl shadow-2xl border border-blue-shade-200/30 overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-blue-shade-200/20">
-              <thead className="bg-gradient-to-r from-blue-shade-500/50 to-blue-shade-300/50">
-                <tr>
-                  <th className="px-8 py-6 text-left text-sm font-bold text-dark-text-primary uppercase tracking-wider font-robotoMono">
-                    Wallet Address
-                  </th>
-                  <th className="px-8 py-6 text-left text-sm font-bold text-dark-text-primary uppercase tracking-wider font-robotoMono">
-                    Social Connections
-                  </th>
-                  <th className="px-8 py-6 text-left text-sm font-bold text-dark-text-primary uppercase tracking-wider font-robotoMono">
-                    NFT Minted
-                  </th>
+          <div className="overflow-x-auto relative z-10">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-white/[0.08]">
+                  <th className="px-8 py-6 text-[10px] font-black text-white/40 uppercase tracking-[0.2em] font-unbounded">Wallet Address</th>
+                  <th className="px-8 py-6 text-[10px] font-black text-white/40 uppercase tracking-[0.2em] font-unbounded text-center">Social Connections</th>
+                  <th className="px-8 py-6 text-[10px] font-black text-white/40 uppercase tracking-[0.2em] font-unbounded text-right">NFTs Minted</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-blue-shade-200/10">
-                {currentUsers.map((user, index) => (
-                  <tr
-                    key={user._id}
-                    className="hover:bg-blue-shade-200/10 transition-all duration-300 group animate-slide-down"
-                    style={{ animationDelay: `${index * 50}ms` }}
-                  >
-                    <td className="px-8 py-6 whitespace-nowrap">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-shade-100/20 to-blue-shade-200/20 border border-blue-shade-200/30 flex items-center justify-center">
-                          <svg className="w-5 h-5 text-blue-shade-100" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
-                          </svg>
+              <tbody className="divide-y divide-white/[0.04]">
+                <AnimatePresence mode="popLayout">
+                  {currentUsers.map((user, idx) => (
+                    <motion.tr
+                      key={user._id}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.2, delay: idx * 0.05 }}
+                      className="group hover:bg-white/[0.02] transition-colors"
+                    >
+                      <td className="px-8 py-6">
+                        <div className="flex items-center gap-4">
+                          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-white/10 to-transparent border border-white/10 flex items-center justify-center group-hover:border-blue-500/30 group-hover:bg-blue-500/5 transition-all">
+                            <Database className="w-5 h-5 text-white/40 group-hover:text-blue-400" />
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-white font-robotoMono text-sm font-bold group-hover:text-blue-400 transition-colors">
+                                {user.address.slice(0, 8)}...{user.address.slice(-6)}
+                              </span>
+                              <button
+                                onClick={() => copyToClipboard(user.address)}
+                                className="opacity-0 group-hover:opacity-100 p-1.5 rounded-md hover:bg-white/10 text-white/40 hover:text-white transition-all"
+                              >
+                                <Copy className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          </div>
                         </div>
-                        <div>
-                          <span className="text-dark-text-primary font-mono text-sm font-medium">
-                            {truncateAddress(user.address)}
-                          </span>
-                          <button
-                            onClick={() => copyToClipboard(user.address)}
-                            className="ml-3 text-dark-text-secondary hover:text-blue-shade-100 transform hover:scale-110 transition-all duration-200 p-1 rounded-lg hover:bg-blue-shade-200/20"
-                            title="Copy full address"
-                          >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                            </svg>
-                          </button>
+                      </td>
+                      <td className="px-8 py-6">
+                        <div className="flex justify-center gap-2">
+                          {Object.entries(user.connectedSocials).map(([key, isConnected]) => {
+                            if (!isConnected) return null;
+                            const handle = user.socialHandles[key === 'github' ? 'githubUsername' : `${key}Username` as keyof typeof user.socialHandles];
+                            return (
+                              <a
+                                key={key}
+                                href={`https://${key === 'twitter' ? 'x.com' : key + '.com'}/${handle}`}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="w-9 h-9 flex items-center justify-center rounded-lg bg-white/[0.05] border border-white/10 text-white/50 hover:text-white hover:border-white/30 hover:bg-white/[0.08] transition-all"
+                                title={`${key}: ${handle}`}
+                              >
+                                <SocialIcon platform={key} />
+                              </a>
+                            );
+                          })}
+                          {!Object.values(user.connectedSocials).some(v => v) && (
+                            <span className="text-[10px] text-white/10 italic font-medium">No External Links</span>
+                          )}
                         </div>
-                      </div>
-                    </td>
-                    <td className="px-8 py-6">
-                      <SocialLinks socialHandles={user.socialHandles} connectedSocials={user.connectedSocials} />
-                    </td>
-                    <td className="px-8 py-6 whitespace-nowrap">
-                      <StatusBadge
-                        hasNFT={user.totalNftsMinted > 0}
-                        totalMinted={user.totalNftsMinted}
-                      />
-                    </td>
-                  </tr>
-                ))}
+                      </td>
+                      <td className="px-8 py-6 text-right">
+                        <StatusBadge hasNFT={user.totalNftsMinted > 0} totalMinted={user.totalNftsMinted} />
+                      </td>
+                    </motion.tr>
+                  ))}
+                </AnimatePresence>
               </tbody>
             </table>
+          </div>
+
+          {/* Pagination Controls */}
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6 p-8 border-t border-white/[0.08] bg-black/20">
+            <p className="text-xs font-bold text-white/30 tracking-widest uppercase font-unbounded">
+              Showing <span className="text-white">{indexOfFirstUser + 1}</span> — <span className="text-white">{Math.min(indexOfLastUser, filteredUsers.length)}</span> out of {filteredUsers.length}
+            </p>
+
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => paginate(currentPage - 1)}
+                disabled={currentPage === 1}
+                className="p-2.5 rounded-xl border border-white/10 text-white disabled:opacity-20 disabled:cursor-not-allowed hover:bg-white/5 transition-colors"
+              >
+                <ChevronLeft className="w-5 h-5" />
+              </button>
+
+              <div className="flex items-center bg-white/[0.03] border border-white/10 rounded-xl p-1">
+                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                  let pageNum = currentPage <= 3 ? i + 1 :
+                    currentPage >= totalPages - 2 ? totalPages - 4 + i :
+                      currentPage - 2 + i;
+                  if (pageNum < 1 || pageNum > totalPages) return null;
+
+                  return (
+                    <button
+                      key={pageNum}
+                      onClick={() => paginate(pageNum)}
+                      className={`min-w-[40px] h-10 rounded-lg text-xs font-bold transition-all ${currentPage === pageNum
+                        ? 'bg-blue-500 text-white shadow-[0_0_20px_rgba(59,130,246,0.4)]'
+                        : 'text-white/40 hover:text-white hover:bg-white/5'
+                        }`}
+                    >
+                      {pageNum}
+                    </button>
+                  );
+                })}
+              </div>
+
+              <button
+                onClick={() => paginate(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                className="p-2.5 rounded-xl border border-white/10 text-white disabled:opacity-20 disabled:cursor-not-allowed hover:bg-white/5 transition-colors"
+              >
+                <ChevronRight className="w-5 h-5" />
+              </button>
+            </div>
           </div>
         </div>
 
         {/* Empty State */}
-        {filteredUsers.length === 0 && searchTerm && (
-          <div className="text-center py-16 bg-gradient-to-br from-blue-shade-500/30 to-blue-shade-300/30 backdrop-blur-sm rounded-2xl mt-8 border border-blue-shade-200/30">
-            <svg className="w-16 h-16 text-dark-text-secondary mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.172 16.172a4 4 0 015.656 0M9 12h6m-6-4h6m2 5.291A7.962 7.962 0 0118 12a8 8 0 01-8 8 8 8 0 01-8-8 8 8 0 018-8c2.027 0 3.915.752 5.34 1.991" />
-            </svg>
-            <h3 className="text-dark-text-primary text-xl font-semibold mb-2">No users found</h3>
-            <p className="text-dark-text-secondary">Try adjusting your search terms or clearing the search.</p>
+        {filteredUsers.length === 0 && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="flex flex-col items-center justify-center py-32 text-center"
+          >
+            <div className="w-20 h-20 rounded-3xl bg-white/[0.02] border border-white/5 flex items-center justify-center mb-6">
+              <Database className="w-10 h-10 text-white/10" />
+            </div>
+            <h3 className="text-xl font-bold text-white font-unbounded mb-2">Null Result Returned</h3>
+            <p className="text-white/30 max-w-xs mx-auto">No cryptographic identifiers match your query parameters.</p>
             <button
               onClick={() => setSearchTerm('')}
-              className="mt-4 px-6 py-2 bg-gradient-to-r from-blue-shade-100 to-blue-shade-200 text-white rounded-xl hover:from-blue-shade-200 hover:to-blue-shade-100 transition-all duration-300 transform hover:scale-105"
+              className="mt-8 text-blue-400 text-[10px] font-black uppercase tracking-[0.2em] hover:text-blue-300 transition-colors"
             >
-              Clear Search
+              Clear Query Buffer
             </button>
-          </div>
+          </motion.div>
         )}
-
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="mt-12 flex flex-col items-center space-y-4">
-            {/* Page Info */}
-            <div className="text-dark-text-secondary text-sm font-medium">
-              Page <span className="text-blue-shade-100 font-semibold">{currentPage}</span> of <span className="text-blue-shade-100 font-semibold">{totalPages}</span>
-            </div>
-
-            {/* Pagination Controls */}
-            <nav className="relative z-0 inline-flex items-center rounded-2xl shadow-2xl bg-gradient-to-r from-blue-shade-500/50 to-blue-shade-300/50 backdrop-blur-sm border border-blue-shade-200/30 p-2 gap-2" aria-label="Pagination">
-              {/* Previous Button */}
-              <button
-                onClick={() => paginate(currentPage - 1)}
-                disabled={currentPage === 1}
-                className="relative inline-flex items-center px-4 py-2.5 rounded-xl border-0 bg-transparent text-sm font-medium text-dark-text-primary hover:bg-blue-shade-100/20 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-300 disabled:hover:bg-transparent group"
-                aria-label="Previous page"
-              >
-                <svg className="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                </svg>
-              </button>
-
-              {/* Page Numbers */}
-              <div className="flex items-center space-x-1">
-                {(() => {
-                  const pages = [];
-                  const maxVisible = 5; // Maximum page buttons to show (not including first, last, and ellipsis)
-                  
-                  if (totalPages <= maxVisible + 2) {
-                    // Show all pages if total is small
-                    for (let i = 1; i <= totalPages; i++) {
-                      pages.push(i);
-                    }
-                  } else {
-                    // Always show first page
-                    pages.push(1);
-                    
-                    if (currentPage <= 3) {
-                      // Near the start
-                      for (let i = 2; i <= Math.min(4, totalPages - 1); i++) {
-                        pages.push(i);
-                      }
-                      pages.push('ellipsis-end');
-                    } else if (currentPage >= totalPages - 2) {
-                      // Near the end
-                      pages.push('ellipsis-start');
-                      for (let i = Math.max(totalPages - 3, 2); i < totalPages; i++) {
-                        pages.push(i);
-                      }
-                    } else {
-                      // In the middle
-                      pages.push('ellipsis-start');
-                      pages.push(currentPage - 1);
-                      pages.push(currentPage);
-                      pages.push(currentPage + 1);
-                      pages.push('ellipsis-end');
-                    }
-                    
-                    // Always show last page
-                    pages.push(totalPages);
-                  }
-                  
-                  return pages.map((page, index) => {
-                    if (typeof page === 'string') {
-                      // Ellipsis
-                      return (
-                        <span key={page} className="px-2 text-dark-text-secondary">
-                          ···
-                        </span>
-                      );
-                    }
-                    
-                    const isActive = currentPage === page;
-                    
-                    return (
-                      <button
-                        key={page}
-                        onClick={() => paginate(page)}
-                        className={`relative inline-flex items-center justify-center min-w-[40px] px-3 py-2 text-sm font-semibold rounded-xl transition-all duration-300 ${
-                          isActive
-                            ? 'bg-gradient-to-r from-blue-shade-100 to-blue-shade-200 text-white shadow-lg shadow-blue-shade-100/25 scale-105'
-                            : 'text-dark-text-primary hover:bg-blue-shade-100/20 hover:text-white hover:scale-105'
-                        }`}
-                        aria-label={`Go to page ${page}`}
-                        aria-current={isActive ? 'page' : undefined}
-                      >
-                        {page}
-                      </button>
-                    );
-                  });
-                })()}
-              </div>
-
-              {/* Next Button */}
-              <button
-                onClick={() => paginate(currentPage + 1)}
-                disabled={currentPage === totalPages}
-                className="relative inline-flex items-center px-4 py-2.5 rounded-xl border-0 bg-transparent text-sm font-medium text-dark-text-primary hover:bg-blue-shade-100/20 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-300 disabled:hover:bg-transparent group"
-                aria-label="Next page"
-              >
-                <svg className="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </button>
-            </nav>
-
-            {/* Quick Jump (Optional - shows for many pages) */}
-            {totalPages > 10 && (
-              <div className="flex items-center gap-3">
-                <span className="text-dark-text-secondary text-sm">Jump to:</span>
-                <input
-                  type="number"
-                  min="1"
-                  max={totalPages}
-                  placeholder="Page"
-                  className="w-20 px-3 py-2 text-sm rounded-lg bg-blue-shade-500/50 border border-blue-shade-200/30 text-dark-text-primary placeholder-dark-text-secondary/50 focus:outline-none focus:ring-2 focus:ring-blue-shade-100/50 transition-all"
-                  onKeyPress={(e) => {
-                    if (e.key === 'Enter') {
-                      const value = parseInt((e.target as HTMLInputElement).value);
-                      if (value >= 1 && value <= totalPages) {
-                        paginate(value);
-                        (e.target as HTMLInputElement).value = '';
-                      }
-                    }
-                  }}
-                />
-              </div>
-            )}
-          </div>
-        )}
-
       </div>
     </div>
   );

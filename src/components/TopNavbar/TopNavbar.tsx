@@ -228,7 +228,7 @@ function TopNavbar() {
                 <DropdownItem
                   key="profile"
                   textValue="Profile"
-                  className="rounded-lg data-[hover=true]:bg-white/10 border-b border-white/5 pb-2"
+                  className="rounded-lg data-[hover=true]:bg-white/10 "
                 >
                   <Link
                     href={`/profile/${address}?active=info`}
@@ -240,7 +240,7 @@ function TopNavbar() {
                 <DropdownItem
                   key="inbox"
                   textValue="Inbox"
-                  className="rounded-lg data-[hover=true]:bg-white/10"
+                  className="rounded-lg data-[hover=true]:bg-white/10 border-b border-white/5 pb-2"
                 >
                   <Link
                     href="/notifications?active=all"
