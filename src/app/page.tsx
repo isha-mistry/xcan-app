@@ -125,7 +125,7 @@ export default function Home() {
                   <div className="absolute -inset-x-4 -inset-y-2 bg-blue-500/5 blur-[40px] -z-10 rounded-full opacity-50" />
                 </span>
               </motion.h1>
-
+      
               <motion.p
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}

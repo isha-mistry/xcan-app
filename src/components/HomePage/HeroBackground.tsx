@@ -323,39 +323,6 @@ const MouseGlow = () => {
 const HeroBackground = () => {
   return (
     <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none bg-[#07090D]">
-      {/* Ambient floating orbs */}
-      <FloatingOrb
-        color="rgba(59, 130, 246, 0.12)"
-        size={500}
-        initialX="15%"
-        initialY="10%"
-        duration={20}
-        delay={0}
-      />
-      <FloatingOrb
-        color="rgba(6, 182, 212, 0.08)"
-        size={600}
-        initialX="65%"
-        initialY="50%"
-        duration={25}
-        delay={3}
-      />
-      <FloatingOrb
-        color="rgba(99, 102, 241, 0.06)"
-        size={400}
-        initialX="40%"
-        initialY="70%"
-        duration={18}
-        delay={6}
-      />
-      <FloatingOrb
-        color="rgba(59, 130, 246, 0.05)"
-        size={350}
-        initialX="80%"
-        initialY="15%"
-        duration={22}
-        delay={2}
-      />
 
       {/* Interactive knowledge network canvas */}
       <div className="absolute inset-0 z-[1]">
