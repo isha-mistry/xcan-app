@@ -55,4 +55,5 @@ export interface DashboardResponse {
   count: number;
   totalNftsMinted: number;
   totalNftsMintedForUsers?: number;
+  usersWithSocials?: number;
 }

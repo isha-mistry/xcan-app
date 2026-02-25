@@ -106,7 +106,7 @@ const DashboardPage: React.FC = () => {
         setError('Failed to fetch user directory');
       }
     } catch (err) {
-      setError('Communication breakdown with the nucleus');
+      setError('Failed to fetch members');
       console.error(err);
     } finally {
       setLoading(false);
@@ -144,7 +144,7 @@ const DashboardPage: React.FC = () => {
   // Stats calculation
   const totalUsers = users?.count || 0;
   const totalNFTs = users?.totalNftsMinted || 0;
-  const socialReach = users?.data?.filter(u => Object.values(u.connectedSocials).some(v => v)).length || 0;
+  const socialReach = users?.usersWithSocials || 0;
 
   if (loading) {
     return (
@@ -190,7 +190,7 @@ const DashboardPage: React.FC = () => {
             MEMBERS OVERVIEW
           </h1>
           <p className="text-white/40 max-w-xl mx-auto font-medium text-balance">
-            Registry of all protocol agents, cryptographic identifiers, and on-chain achievement metrics.
+            Comprehensive overview of all registered users, their social connections, and NFTs claimed
           </p>
         </motion.div>
 
@@ -198,7 +198,7 @@ const DashboardPage: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
           <StatsCard title="Total Users" value={totalUsers} icon={Users} color="blue-shade-100" delay={0.1} />
           <StatsCard title="NFTs Claimed" value={totalNFTs} icon={Award} color="green-400" delay={0.2} />
-          <StatsCard title="Social Connected" value={socialReach} icon={LinkIcon} color="purple-400" delay={0.3} />
+          <StatsCard title="Socials Connected" value={socialReach} icon={LinkIcon} color="purple-400" delay={0.3} />
         </div>
 
         {/* Actions Bar */}
@@ -369,12 +369,12 @@ const DashboardPage: React.FC = () => {
               <Database className="w-10 h-10 text-white/10" />
             </div>
             <h3 className="text-xl font-bold text-white font-unbounded mb-2">Null Result Returned</h3>
-            <p className="text-white/30 max-w-xs mx-auto">No cryptographic identifiers match your query parameters.</p>
+            <p className="text-white/30 max-w-xs mx-auto">No users found matching your search criteria.</p>
             <button
               onClick={() => setSearchTerm('')}
               className="mt-8 text-blue-400 text-[10px] font-black uppercase tracking-[0.2em] hover:text-blue-300 transition-colors"
             >
-              Clear Query Buffer
+              Clear Query
             </button>
           </motion.div>
         )}

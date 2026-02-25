@@ -81,7 +81,7 @@ const OnChainCredentials = () => {
                   {badge.icon}
                 </div>
               </div>
-              <span className="text-[8px] font-black text-white/10 uppercase tracking-[0.2em] group-hover:text-blue-400/40 transition-colors">
+              <span className="text-[8px] font-black text-white/70 uppercase tracking-[0.2em] group-hover:text-blue-400/40 transition-colors">
                 {badge.name}
               </span>
             </motion.div>

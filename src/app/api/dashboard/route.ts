@@ -70,136 +70,252 @@ interface DashboardUser extends User {
 
 export const revalidate = 0;
 
+/**
+ * Normalizes a certification object from different collection schemas.
+ * - advocates use imageURL/metadataURL (uppercase)
+ * - user-modules & foundation-users use imageUrl/metadataUrl (camelCase)
+ */
+function normalizeCertToMintedLevel(cert: any): MintedLevel {
+  return {
+    level: cert.level,
+    levelKey: cert.levelName || `level-${cert.level}`,
+    levelName: cert.levelName,
+    transactionHash: cert.transactionHash || "",
+    metadataUrl: cert.metadataUrl || cert.metadataURL || "",
+    imageUrl: cert.imageUrl || cert.imageURL || "",
+    mintedAt:
+      cert.mintedAt instanceof Date
+        ? cert.mintedAt.toISOString()
+        : typeof cert.mintedAt === "string"
+        ? cert.mintedAt
+        : new Date().toISOString(),
+    network: "",
+  };
+}
+
 export async function GET(req: NextRequest, res: NextResponse) {
   try {
-    // Connect to user database
+    // Connect to database
     const userClient = await connectDB();
     const db = userClient.db("inorbit_modules");
     const usersCollection = db.collection<User>("users");
     const nftsCollection = db.collection<NFT>("minted-nft");
+    const userModulesCollection = db.collection("user-modules");
+    const foundationUsersCollection = db.collection("foundation-users");
+    const advocatesCollection = db.collection("advocates");
 
-    // Challenge collections that contain certification arrays
-    const challengeCollectionNames = [
-      "challenges-cross-chain",
-      "challenges-master-defi",
-      "challenges-orbit-chain",
-      "challenges-precompiles-overview",
-      "challenges-stylus-core-concepts",
-      "challenges-web3-basics",
-      "foundation-users",
-      "advocates",
-    ];
+    // ──────────────────────────────────────────────────────
+    // STEP 1: Fetch all data in PARALLEL
+    // ──────────────────────────────────────────────────────
+    const [
+      users,
+      usersWithSocials,
+      nfts,
+      legacyTotalMintedAgg,
+      userModulesCerts,
+      userModulesCertCount,
+      foundationUsersCerts,
+      foundationUsersCertCount,
+      advocatesCerts,
+      advocatesCertCount,
+    ] = await Promise.all([
+      // 1. All users (only needed fields)
+      usersCollection
+        .find(
+          {},
+          { projection: { address: 1, socialHandles: 1, createdAt: 1 } }
+        )
+        .toArray(),
 
-    // Helper function to count claimed certifications in a collection (matches statistics API)
-    const countClaimedInCollection = async (
-      collectionName: string
-    ): Promise<number> => {
-      try {
-        const col = db.collection(collectionName);
-        const result = await col
-          .aggregate([
-            {
-              $match: {
-                certification: { $exists: true, $type: "array", $ne: [] },
-              },
+      // 2. Users with at least one social connected (same query as statistics API)
+      usersCollection.countDocuments({
+        $or: [
+          { "socialHandles.githubUsername": { $exists: true, $ne: "" } },
+          { "socialHandles.twitterUsername": { $exists: true, $ne: "" } },
+          { "socialHandles.discordUsername": { $exists: true, $ne: "" } },
+          { "socialHandles.telegramUsername": { $exists: true, $ne: "" } },
+        ],
+      }),
+
+      // 3. All minted NFTs
+      nftsCollection.find({}).toArray(),
+
+      // 3. Legacy total minted count
+      nftsCollection
+        .aggregate([
+          { $group: { _id: null, total: { $sum: "$totalMinted" } } },
+        ])
+        .toArray(),
+
+      // 4. user-modules: extract claimed certs (nested in modules.{key}.certification[])
+      userModulesCollection
+        .aggregate([
+          {
+            $project: {
+              userAddress: 1,
+              modules: { $objectToArray: "$modules" },
             },
-            { $unwind: "$certification" },
-            { $match: { "certification.claimed": true } },
-            { $count: "total" },
-          ])
-          .toArray();
-        return result.length > 0 ? result[0].total : 0;
-      } catch (error) {
-        console.error(`Error counting claimed in ${collectionName}:`, error);
-        return 0;
-      }
-    };
-
-    // Helper function to extract claimed certifications from a challenge collection using aggregation
-    const getClaimedCertifications = async (
-      collectionName: string
-    ): Promise<
-      Array<{ userAddress: string; certification: Certification }>
-    > => {
-      try {
-        const collection = db.collection<ChallengeDocument>(collectionName);
-        const result = await collection
-          .aggregate([
-            {
-              $match: {
-                certification: { $exists: true, $type: "array", $ne: [] },
-                userAddress: { $exists: true, $nin: [null, ""] },
-              },
-            },
-            { $unwind: "$certification" },
-            { $match: { "certification.claimed": true } },
-            {
-              $project: {
-                userAddress: 1,
-                certification: 1,
-              },
-            },
-          ])
-          .toArray();
-        return result as Array<{
-          userAddress: string;
-          certification: Certification;
-        }>;
-      } catch (error) {
-        console.error(
-          `Error fetching claimed certifications from ${collectionName}:`,
-          error
-        );
-        return [];
-      }
-    };
-
-    // Fetch all users
-    const users = await usersCollection.find({}).toArray();
-
-    // Fetch all NFTs from minted-nft collection
-    const nfts = await nftsCollection.find({}).toArray();
-
-    // Calculate total from minted-nft collection using aggregation (matches statistics API)
-    const legacyTotalMintedAgg = await nftsCollection
-      .aggregate([
-        {
-          $group: {
-            _id: null,
-            total: { $sum: "$totalMinted" },
           },
-        },
-      ])
-      .toArray();
+          { $unwind: "$modules" },
+          {
+            $match: {
+              "modules.v.certification": {
+                $exists: true,
+                $type: "array",
+                $ne: [],
+              },
+            },
+          },
+          { $unwind: "$modules.v.certification" },
+          { $match: { "modules.v.certification.claimed": true } },
+          {
+            $project: {
+              userAddress: 1,
+              certification: "$modules.v.certification",
+            },
+          },
+        ])
+        .toArray(),
+
+      // 5. user-modules: total claimed count (for stats)
+      userModulesCollection
+        .aggregate([
+          {
+            $project: {
+              modules: { $objectToArray: "$modules" },
+            },
+          },
+          { $unwind: "$modules" },
+          {
+            $match: {
+              "modules.v.certification": {
+                $exists: true,
+                $type: "array",
+                $ne: [],
+              },
+            },
+          },
+          { $unwind: "$modules.v.certification" },
+          { $match: { "modules.v.certification.claimed": true } },
+          { $count: "total" },
+        ])
+        .toArray(),
+
+      // 6. foundation-users: extract claimed certs (uses walletAddress, top-level certification[])
+      foundationUsersCollection
+        .aggregate([
+          {
+            $match: {
+              certification: { $exists: true, $type: "array", $ne: [] },
+              walletAddress: { $exists: true, $nin: [null, ""] },
+            },
+          },
+          { $unwind: "$certification" },
+          { $match: { "certification.claimed": true } },
+          {
+            $project: {
+              userAddress: "$walletAddress", // normalize to userAddress
+              certification: 1,
+            },
+          },
+        ])
+        .toArray(),
+
+      // 7. foundation-users: total claimed count
+      foundationUsersCollection
+        .aggregate([
+          {
+            $match: {
+              certification: { $exists: true, $type: "array", $ne: [] },
+            },
+          },
+          { $unwind: "$certification" },
+          { $match: { "certification.claimed": true } },
+          { $count: "total" },
+        ])
+        .toArray(),
+
+      // 8. advocates: extract claimed certs (uses userAddress, top-level certification[])
+      advocatesCollection
+        .aggregate([
+          {
+            $match: {
+              certification: { $exists: true, $type: "array", $ne: [] },
+              userAddress: { $exists: true, $nin: [null, ""] },
+            },
+          },
+          { $unwind: "$certification" },
+          { $match: { "certification.claimed": true } },
+          {
+            $project: {
+              userAddress: 1,
+              certification: 1,
+            },
+          },
+        ])
+        .toArray(),
+
+      // 9. advocates: total claimed count
+      advocatesCollection
+        .aggregate([
+          {
+            $match: {
+              certification: { $exists: true, $type: "array", $ne: [] },
+            },
+          },
+          { $unwind: "$certification" },
+          { $match: { "certification.claimed": true } },
+          { $count: "total" },
+        ])
+        .toArray(),
+    ]);
+
+    // ──────────────────────────────────────────────────────
+    // STEP 2: Calculate total NFTs minted (matches statistics API)
+    // ──────────────────────────────────────────────────────
     const legacyTotalMinted =
       legacyTotalMintedAgg.length > 0 ? legacyTotalMintedAgg[0].total : 0;
+    const userModulesTotalMinted =
+      userModulesCertCount.length > 0 ? userModulesCertCount[0].total : 0;
+    const foundationUsersTotalMinted =
+      foundationUsersCertCount.length > 0
+        ? foundationUsersCertCount[0].total
+        : 0;
+    const advocatesTotalMinted =
+      advocatesCertCount.length > 0 ? advocatesCertCount[0].total : 0;
 
-    // Count claimed certifications from challenge collections in parallel (matches statistics API)
-    const challengeClaimedCounts = await Promise.all(
-      challengeCollectionNames.map((name) => countClaimedInCollection(name))
-    );
+    const totalNFTsMinted =
+      legacyTotalMinted +
+      userModulesTotalMinted +
+      foundationUsersTotalMinted +
+      advocatesTotalMinted;
 
-    // Calculate total NFTs minted (matches statistics API calculation)
-    const totalNFTsMinted = challengeClaimedCounts.reduce(
-      (sum, n) => sum + (Number(n) || 0),
-      legacyTotalMinted
-    );
-
-    // Fetch all claimed certifications from challenge collections in parallel using aggregation
-    const challengeCertificationsArrays = await Promise.all(
-      challengeCollectionNames.map((name) => getClaimedCertifications(name))
-    );
-
-    // Create a map to aggregate all NFTs by user address
+    // ──────────────────────────────────────────────────────
+    // STEP 3: Build NFTs-per-user map
+    // ──────────────────────────────────────────────────────
     const nftsByAddress = new Map<
       string,
       { mintedLevels: MintedLevel[]; totalMinted: number }
     >();
 
-    // Process minted-nft collection
+    // Helper to add a minted level to the map
+    const addToMap = (address: string, mintedLevel: MintedLevel) => {
+      const existing = nftsByAddress.get(address);
+      if (existing) {
+        existing.mintedLevels.push(mintedLevel);
+        existing.totalMinted += 1;
+      } else {
+        nftsByAddress.set(address, {
+          mintedLevels: [mintedLevel],
+          totalMinted: 1,
+        });
+      }
+    };
+
+    // 3a. Process minted-nft collection
     nfts.forEach((nft) => {
       const address = nft?.userAddress?.toLowerCase();
-      if (!address) return; // Skip if address is missing
+      if (!address) return;
 
       const existing = nftsByAddress.get(address);
       if (existing) {
@@ -213,48 +329,34 @@ export async function GET(req: NextRequest, res: NextResponse) {
       }
     });
 
-    // Process challenge collections - extract claimed certifications
-    challengeCertificationsArrays.forEach((certifications) => {
-      certifications.forEach(({ userAddress, certification: cert }) => {
-        const address = userAddress?.toLowerCase();
-        if (!address) return; // Skip if address is missing
-
-        // Transform certification to MintedLevel format
-        const mintedLevel: MintedLevel = {
-          level: cert.level,
-          levelKey: cert.levelName || `level-${cert.level}`,
-          levelName: cert.levelName,
-          transactionHash: cert.transactionHash,
-          metadataUrl: cert.metadataUrl,
-          imageUrl: cert.imageUrl,
-          mintedAt:
-            cert.mintedAt instanceof Date
-              ? cert.mintedAt.toISOString()
-              : typeof cert.mintedAt === "string"
-              ? cert.mintedAt
-              : new Date().toISOString(),
-          network: "", // Network info not available in challenge collections
-        };
-
-        const existing = nftsByAddress.get(address);
-        if (existing) {
-          existing.mintedLevels.push(mintedLevel);
-          existing.totalMinted += 1;
-        } else {
-          nftsByAddress.set(address, {
-            mintedLevels: [mintedLevel],
-            totalMinted: 1,
-          });
-        }
-      });
+    // 3b. Process user-modules certifications
+    userModulesCerts.forEach((item: any) => {
+      const address = item.userAddress?.toLowerCase();
+      if (!address) return;
+      addToMap(address, normalizeCertToMintedLevel(item.certification));
     });
 
-    // Combine user data with their NFTs
+    // 3c. Process foundation-users certifications (walletAddress → userAddress)
+    foundationUsersCerts.forEach((item: any) => {
+      const address = item.userAddress?.toLowerCase();
+      if (!address) return;
+      addToMap(address, normalizeCertToMintedLevel(item.certification));
+    });
+
+    // 3d. Process advocates certifications (imageURL/metadataURL)
+    advocatesCerts.forEach((item: any) => {
+      const address = item.userAddress?.toLowerCase();
+      if (!address) return;
+      addToMap(address, normalizeCertToMintedLevel(item.certification));
+    });
+
+    // ──────────────────────────────────────────────────────
+    // STEP 4: Combine user data with their NFTs
+    // ──────────────────────────────────────────────────────
     const dashboardUsers: DashboardUser[] = users.map((user) => {
       const address = user?.address?.toLowerCase();
       const nftData = nftsByAddress.get(address);
 
-      // Determine connected socials
       const connectedSocials = {
         github: !!user.socialHandles?.githubUsername,
         twitter: !!user.socialHandles?.twitterUsername,
@@ -262,10 +364,9 @@ export async function GET(req: NextRequest, res: NextResponse) {
         telegram: !!user.socialHandles?.telegramUsername,
       };
 
-      // Create NFT data structure matching the original format
       const combinedNftData: NFT | null = nftData
         ? {
-            _id: "", // Not needed for dashboard
+            _id: "",
             userAddress: user.address,
             githubUsername: user.socialHandles?.githubUsername || "",
             lastMintedAt:
@@ -290,7 +391,7 @@ export async function GET(req: NextRequest, res: NextResponse) {
       };
     });
 
-    // Calculate total NFTs minted across registered users (for dashboard display)
+    // Calculate total NFTs minted across registered users only
     const totalNftsMintedForUsers = dashboardUsers.reduce(
       (sum, user) => sum + (user.totalNftsMinted || 0),
       0
@@ -303,8 +404,9 @@ export async function GET(req: NextRequest, res: NextResponse) {
       success: true,
       data: dashboardUsers,
       count: dashboardUsers.length,
-      totalNftsMinted: totalNFTsMinted, // Total from all collections (matches statistics API)
-      totalNftsMintedForUsers: totalNftsMintedForUsers, // Total for registered users only
+      totalNftsMinted: totalNFTsMinted,
+      totalNftsMintedForUsers: totalNftsMintedForUsers,
+      usersWithSocials: usersWithSocials,
     });
   } catch (error) {
     console.error("Dashboard API Error:", error);

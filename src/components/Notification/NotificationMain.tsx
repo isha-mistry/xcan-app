@@ -368,13 +368,8 @@ function NotificationMain() {
 
     if (isLoading) {
       return (
-        <div className="flex justify-center items-center h-64">
-          <MagnifyingGlass
-            color={"#123abc"}
-            visible={isLoading}
-            height="80"
-            width="80"
-          />
+        <div className="w-full">
+          <NotificationSkeletonLoader />
         </div>
       );
     }
