@@ -103,6 +103,7 @@ function TopNavbar() {
       external: true
     },
     { label: "Members", href: "/members" },
+    { label: "Builder Pods", href: "/builder-pods" },
     { label: "Docs", href: "/doc" }
   ];
 
@@ -254,7 +255,7 @@ function TopNavbar() {
                     )}
                   </Link>
                 </DropdownItem>
-                
+
                 <DropdownItem
                   key="logout"
                   textValue="Logout"

@@ -60,6 +60,7 @@
     "luxon": "^3.4.4",
     "marked": "^13.0.2",
     "mongodb": "^6.7.0",
+    "mongoose": "^9.2.3",
     "next": "14.2.35",
     "next-auth": "^4.24.7",
     "next-nprogress-bar": "^2.3.12",
@@ -87,7 +88,8 @@
     "vercel": "^38.0.0",
     "viem": "^2.20.0",
     "wagmi": "^2.12.19",
-    "web-push": "^3.6.7"
+    "web-push": "^3.6.7",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@captainwalterdev/daytimescheduler": "^1.0.15",

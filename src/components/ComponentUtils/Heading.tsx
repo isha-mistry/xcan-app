@@ -17,6 +17,22 @@ const titles: TitlesMap = {
   "/claim-rewards": "Claim Rewards",
   "/optimism": "",
   "/arbitrum": "",
+  "/builder-pods": "Builder Pods",
+  "/builder-pods/register": "Register",
+  "/builder-pods/leaderboard": "Leaderboard",
+  "/builder-pods/analytics": "Analytics",
+  "/builder-pods/showcase": "Showcase",
+  "/builder-pods/showcase-submit": "Showcase Submit",
+  "/admin/builder-pods": "Admin — Builder Pods",
+  "/admin/builder-pods/members": "Admin — Members",
+  "/admin/builder-pods/colleges": "Admin — Colleges",
+  "/admin/builder-pods/deployments": "Admin — Deployments",
+  "/admin/builder-pods/lab-events": "Admin — Lab Events",
+  "/admin/builder-pods/badges": "Admin — Badges",
+  "/admin/builder-pods/showcases": "Admin — Showcases",
+  "/admin/builder-pods/milestones": "Admin — Milestones",
+  "/admin/builder-pods/audit-logs": "Admin — Audit Logs",
+  "/admin/builder-pods/export": "Admin — Export",
   // Add more URL mappings here as needed
 };
 
