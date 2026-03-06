@@ -48,7 +48,7 @@ export default function AdminDashboardPage() {
                 icon: Trophy,
                 color: "text-purple-400",
                 bg: "bg-purple-500/10",
-                href: "#",
+                href: "/admin/builder-pods/showcases",
             },
             {
                 label: "Total Colleges",

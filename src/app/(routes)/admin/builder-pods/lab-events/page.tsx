@@ -1,0 +1,263 @@
+"use client";
+import React, { useState } from "react";
+import useSWR, { mutate } from "swr";
+import Link from "next/link";
+import { motion } from "framer-motion";
+import {
+    ArrowLeft,
+    QrCode,
+    Plus,
+    Loader2,
+    Calendar,
+    Users,
+    Copy,
+    CheckCircle2,
+    Image as ImageIcon,
+} from "lucide-react";
+
+const fetcher = (url: string) => fetch(url).then((r) => r.json());
+
+export default function AdminLabEventsPage() {
+    const { data, isLoading } = useSWR(
+        "/api/admin/builder-pods/lab-events",
+        fetcher
+    );
+
+    const [showForm, setShowForm] = useState(false);
+    const [creating, setCreating] = useState(false);
+    const [copiedToken, setCopiedToken] = useState<string | null>(null);
+    const [qrModal, setQrModal] = useState<{ eventId: string; dataUrl: string | null; loading: boolean } | null>(null);
+    const [form, setForm] = useState({
+        eventName: "",
+        collegeSlug: "",
+        scheduledDate: "",
+        expectedAttendees: 30,
+    });
+
+    const events = data?.events ?? [];
+
+    const handleCreate = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setCreating(true);
+        try {
+            await fetch("/api/admin/builder-pods/lab-events", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(form),
+            });
+            mutate("/api/admin/builder-pods/lab-events");
+            setShowForm(false);
+            setForm({ eventName: "", collegeSlug: "", scheduledDate: "", expectedAttendees: 30 });
+        } catch (e) {
+            console.error(e);
+        } finally {
+            setCreating(false);
+        }
+    };
+
+    const copyToken = (token: string) => {
+        navigator.clipboard.writeText(token);
+        setCopiedToken(token);
+        setTimeout(() => setCopiedToken(null), 2000);
+    };
+
+    const viewQR = async (eventId: string) => {
+        setQrModal({ eventId, dataUrl: null, loading: true });
+        try {
+            const res = await fetch(`/api/admin/builder-pods/lab-events/${eventId}/qr`);
+            const data = await res.json();
+            setQrModal({ eventId, dataUrl: data.qr?.dataUrl || null, loading: false });
+        } catch {
+            setQrModal({ eventId, dataUrl: null, loading: false });
+        }
+    };
+
+    return (
+        <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-10 py-6">
+            <Link href="/admin/builder-pods" className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-white/30 hover:text-white/60 font-robotoMono mb-6 transition-colors">
+                <ArrowLeft className="w-3.5 h-3.5" />
+                Admin Dashboard
+            </Link>
+
+            <div className="flex items-center justify-between mb-8">
+                <div className="flex items-center gap-3">
+                    <QrCode className="w-5 h-5 text-cyan-400/40" />
+                    <h1 className="text-2xl font-black text-white font-unbounded tracking-tight">
+                        Lab Events
+                    </h1>
+                </div>
+                <button
+                    onClick={() => setShowForm(!showForm)}
+                    className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 text-[10px] font-bold font-robotoMono transition-all border border-cyan-500/10"
+                >
+                    <Plus className="w-3.5 h-3.5" />
+                    New Event
+                </button>
+            </div>
+
+            {/* Create Form */}
+            {showForm && (
+                <motion.form
+                    onSubmit={handleCreate}
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    className="glass-container rounded-2xl p-6 mb-6 max-w-2xl"
+                >
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="md:col-span-2">
+                            <label className="block text-[9px] font-bold uppercase tracking-widest text-white/20 font-robotoMono mb-1.5">Event Name *</label>
+                            <input
+                                type="text"
+                                value={form.eventName}
+                                onChange={(e) => setForm({ ...form, eventName: e.target.value })}
+                                placeholder="e.g. Builder Lab #3 - IIT Bombay"
+                                required
+                                className="w-full px-3 py-2.5 rounded-xl bg-white/[0.03] border border-white/[0.06] text-xs text-white/60 font-robotoMono placeholder:text-white/10 focus:outline-none focus:border-white/15 transition-colors"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-[9px] font-bold uppercase tracking-widest text-white/20 font-robotoMono mb-1.5">College Slug *</label>
+                            <input
+                                type="text"
+                                value={form.collegeSlug}
+                                onChange={(e) => setForm({ ...form, collegeSlug: e.target.value })}
+                                placeholder="e.g. iit-bombay"
+                                required
+                                className="w-full px-3 py-2.5 rounded-xl bg-white/[0.03] border border-white/[0.06] text-xs text-white/60 font-robotoMono placeholder:text-white/10 focus:outline-none focus:border-white/15 transition-colors"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-[9px] font-bold uppercase tracking-widest text-white/20 font-robotoMono mb-1.5">Scheduled Date</label>
+                            <input
+                                type="datetime-local"
+                                value={form.scheduledDate}
+                                onChange={(e) => setForm({ ...form, scheduledDate: e.target.value })}
+                                className="w-full px-3 py-2.5 rounded-xl bg-white/[0.03] border border-white/[0.06] text-xs text-white/60 font-robotoMono focus:outline-none focus:border-white/15 transition-colors"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-[9px] font-bold uppercase tracking-widest text-white/20 font-robotoMono mb-1.5">Expected Attendees</label>
+                            <input
+                                type="number"
+                                value={form.expectedAttendees}
+                                onChange={(e) => setForm({ ...form, expectedAttendees: parseInt(e.target.value) || 0 })}
+                                className="w-full px-3 py-2.5 rounded-xl bg-white/[0.03] border border-white/[0.06] text-xs text-white/60 font-robotoMono focus:outline-none focus:border-white/15 transition-colors"
+                            />
+                        </div>
+                    </div>
+                    <div className="mt-4 flex justify-end">
+                        <button
+                            type="submit"
+                            disabled={creating}
+                            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 text-[10px] font-bold font-robotoMono transition-all disabled:opacity-30"
+                        >
+                            {creating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Plus className="w-3.5 h-3.5" />}
+                            Create Event
+                        </button>
+                    </div>
+                </motion.form>
+            )}
+
+            {/* QR Modal */}
+            {qrModal && (
+                <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4" onClick={() => setQrModal(null)}>
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="glass-container rounded-2xl p-8 max-w-sm w-full text-center"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        {qrModal.loading ? (
+                            <Loader2 className="w-8 h-8 text-white/20 animate-spin mx-auto" />
+                        ) : qrModal.dataUrl ? (
+                            <img src={qrModal.dataUrl} alt="QR Code" className="w-64 h-64 mx-auto rounded-xl" />
+                        ) : (
+                            <p className="text-xs text-white/30 font-robotoMono">QR generation not available. Use the token directly.</p>
+                        )}
+                        <button
+                            onClick={() => setQrModal(null)}
+                            className="mt-4 px-4 py-2 rounded-lg bg-white/5 text-[10px] text-white/30 font-robotoMono hover:bg-white/10 transition-all"
+                        >
+                            Close
+                        </button>
+                    </motion.div>
+                </div>
+            )}
+
+            {/* Events List */}
+            {isLoading ? (
+                <div className="space-y-2">
+                    {Array.from({ length: 3 }).map((_, i) => (
+                        <div key={i} className="glass-container rounded-xl p-5 animate-pulse">
+                            <div className="h-4 w-48 bg-white/5 rounded-lg mb-2" />
+                            <div className="h-3 w-32 bg-white/5 rounded-lg" />
+                        </div>
+                    ))}
+                </div>
+            ) : events.length === 0 ? (
+                <div className="glass-container rounded-2xl p-12 text-center">
+                    <QrCode className="w-8 h-8 text-white/10 mx-auto mb-3" />
+                    <p className="text-sm text-white/30 font-robotoMono">No lab events yet</p>
+                </div>
+            ) : (
+                <div className="space-y-2">
+                    {events.map((event: any, index: number) => (
+                        <motion.div
+                            key={event._id}
+                            initial={{ opacity: 0, y: 8 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.25, delay: index * 0.03 }}
+                            className="glass-container rounded-xl p-5 hover:border-white/15 transition-all"
+                        >
+                            <div className="flex items-center gap-4">
+                                <div className="flex-1 min-w-0">
+                                    <div className="flex items-center gap-2 mb-1">
+                                        <span className="text-sm font-bold text-white font-robotoMono">
+                                            {event.eventName}
+                                        </span>
+                                        <span className={`px-1.5 py-0.5 rounded-full text-[8px] font-bold font-robotoMono ${event.qrIsActive ? "bg-green-500/10 text-green-400/60" : "bg-red-500/10 text-red-400/40"}`}>
+                                            {event.qrIsActive ? "Active" : "Inactive"}
+                                        </span>
+                                    </div>
+                                    <div className="flex items-center gap-3 text-[10px] text-white/15 font-robotoMono">
+                                        {event.scheduledDate && (
+                                            <div className="flex items-center gap-1">
+                                                <Calendar className="w-3 h-3" />
+                                                {new Date(event.scheduledDate).toLocaleDateString("en-IN")}
+                                            </div>
+                                        )}
+                                        <div className="flex items-center gap-1">
+                                            <Users className="w-3 h-3" />
+                                            {event.actualAttendees || 0}/{event.expectedAttendees || "?"} attendees
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="flex items-center gap-2">
+                                    <button
+                                        onClick={() => copyToken(event.qrToken)}
+                                        className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-[9px] text-white/30 font-robotoMono transition-all"
+                                    >
+                                        {copiedToken === event.qrToken ? (
+                                            <CheckCircle2 className="w-3 h-3 text-green-400" />
+                                        ) : (
+                                            <Copy className="w-3 h-3" />
+                                        )}
+                                        Token
+                                    </button>
+                                    <button
+                                        onClick={() => viewQR(event._id)}
+                                        className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/20 text-[9px] text-cyan-400/60 font-robotoMono transition-all"
+                                    >
+                                        <ImageIcon className="w-3 h-3" />
+                                        QR
+                                    </button>
+                                </div>
+                            </div>
+                        </motion.div>
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+}
