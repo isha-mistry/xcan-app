@@ -14,9 +14,10 @@ const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
 const STATUS_COLUMNS = [
     { key: "ideation", label: "Ideation", color: "text-gray-400", bg: "bg-gray-500/10" },
-    { key: "in_progress", label: "In Progress", color: "text-blue-400", bg: "bg-blue-500/10" },
+    { key: "architecture_finalized", label: "Architecture", color: "text-blue-400", bg: "bg-blue-500/10" },
+    { key: "prototype", label: "Prototype", color: "text-purple-400", bg: "bg-purple-500/10" },
     { key: "deployed", label: "Deployed", color: "text-green-400", bg: "bg-green-500/10" },
-    { key: "showcase_ready", label: "Showcase Ready", color: "text-purple-400", bg: "bg-purple-500/10" },
+    { key: "demo_ready", label: "Demo Ready", color: "text-amber-400", bg: "bg-amber-500/10" },
 ];
 
 export default function AdminProjectsPage() {
@@ -93,7 +94,7 @@ export default function AdminProjectsPage() {
                     <p className="text-sm text-white/30 font-robotoMono">Select a college to view projects</p>
                 </div>
             ) : projectsLoading ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
                     {STATUS_COLUMNS.map((col) => (
                         <div key={col.key} className="glass-container rounded-2xl p-4 animate-pulse">
                             <div className="h-4 w-24 bg-white/5 rounded-lg mb-4" />
@@ -105,7 +106,7 @@ export default function AdminProjectsPage() {
                     ))}
                 </div>
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
                     {STATUS_COLUMNS.map((col) => {
                         const colProjects = projects.filter((p: any) => p.status === col.key);
                         return (

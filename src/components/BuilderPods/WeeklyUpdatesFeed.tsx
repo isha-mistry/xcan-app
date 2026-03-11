@@ -1,7 +1,9 @@
 "use client";
 import React from "react";
+import Link from "next/link";
 import { motion } from "framer-motion";
-import { CalendarDays, Github, AlertTriangle, Target, CheckCircle } from "lucide-react";
+import { CalendarDays, Github, AlertTriangle, Target, CheckCircle, FileText } from "lucide-react";
+import WeeklyUpdateForm from "./WeeklyUpdateForm";
 
 interface UpdateData {
     _id: string;
@@ -19,11 +21,17 @@ interface UpdateData {
 interface WeeklyUpdatesFeedProps {
     updates: UpdateData[];
     isLoading?: boolean;
+    slug?: string;
+    isTeamLead?: boolean;
+    onRefresh?: () => void;
 }
 
 export default function WeeklyUpdatesFeed({
     updates,
     isLoading,
+    slug,
+    isTeamLead,
+    onRefresh,
 }: WeeklyUpdatesFeedProps) {
     if (isLoading) {
         return (
@@ -45,14 +53,33 @@ export default function WeeklyUpdatesFeed({
 
     return (
         <div className="mb-8">
-            <div className="flex items-center gap-3 mb-6">
-                <CalendarDays className="w-4 h-4 text-white/30" />
-                <h2 className="text-[11px] font-bold uppercase tracking-[0.2em] text-white/40 font-robotoMono">
-                    Weekly Updates
-                </h2>
-                <span className="px-2 py-0.5 rounded-full bg-white/5 text-[10px] font-bold text-white/30 font-robotoMono">
-                    {updates.length}
-                </span>
+            <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-3">
+                    <CalendarDays className="w-4 h-4 text-white/30" />
+                    <h2 className="text-[11px] font-bold uppercase tracking-[0.2em] text-white/40 font-robotoMono">
+                        Weekly Updates
+                    </h2>
+                    <span className="px-2 py-0.5 rounded-full bg-white/5 text-[10px] font-bold text-white/30 font-robotoMono">
+                        {updates.length}
+                    </span>
+                </div>
+                <div className="flex items-center gap-2">
+                    {isTeamLead && slug && (
+                        <WeeklyUpdateForm
+                            collegeSlug={slug}
+                            onSuccess={() => onRefresh?.()}
+                        />
+                    )}
+                    {slug && updates.length > 0 && (
+                        <Link
+                            href={`/builder-pods/${slug}/updates`}
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-[10px] font-bold text-white/40 font-robotoMono uppercase tracking-wider hover:bg-white/10 hover:text-white/60 transition-all"
+                        >
+                            <FileText className="w-3 h-3" />
+                            View All
+                        </Link>
+                    )}
+                </div>
             </div>
 
             {updates.length === 0 ? (

@@ -1,10 +1,10 @@
 "use client";
 import React from "react";
 import { useParams } from "next/navigation";
+import { usePrivy } from "@privy-io/react-auth";
 import useSWR from "swr";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import Heading from "@/components/ComponentUtils/Heading";
 import PodOverviewCard from "@/components/BuilderPods/PodOverviewCard";
 import MembersTable from "@/components/BuilderPods/MembersTable";
 import ProjectsGrid from "@/components/BuilderPods/ProjectsGrid";
@@ -15,8 +15,10 @@ const fetcher = (url: string) => fetch(url).then((res) => res.json());
 export default function CollegePodPage() {
     const params = useParams();
     const slug = params?.["college-slug"] as string;
+    const { user } = usePrivy();
+    const walletAddress = user?.wallet?.address ?? null;
 
-    const { data, isLoading, error } = useSWR(
+    const { data, isLoading, error, mutate } = useSWR(
         slug ? `/api/builder-pods/colleges/${slug}` : null,
         fetcher,
         { revalidateOnFocus: true }
@@ -26,6 +28,23 @@ export default function CollegePodPage() {
     const members = data?.members ?? [];
     const projects = data?.projects ?? [];
     const recentUpdates = data?.recentUpdates ?? [];
+
+    const wallet = walletAddress?.toLowerCase() ?? null;
+    const isMember =
+        wallet != null &&
+        members.some(
+            (m: any) =>
+                m.walletAddress === wallet &&
+                (m.status === "active" || m.status === "pending")
+        );
+
+    const isTeamLead =
+        wallet != null &&
+        projects.some((p: any) => p.teamLeader === wallet);
+
+    const handleDataRefresh = () => {
+        mutate();
+    };
 
     return (
         <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-10 py-6">
@@ -71,8 +90,23 @@ export default function CollegePodPage() {
                         }
                     />
                     <MembersTable members={members} isLoading={isLoading} />
-                    <ProjectsGrid projects={projects} isLoading={isLoading} />
-                    <WeeklyUpdatesFeed updates={recentUpdates} isLoading={isLoading} />
+
+                    <ProjectsGrid
+                        projects={projects}
+                        isLoading={isLoading}
+                        walletAddress={walletAddress}
+                        isMember={isMember}
+                        collegeSlug={slug}
+                        onRefresh={handleDataRefresh}
+                    />
+
+                    <WeeklyUpdatesFeed
+                        updates={recentUpdates}
+                        isLoading={isLoading}
+                        slug={slug}
+                        isTeamLead={isTeamLead}
+                        onRefresh={handleDataRefresh}
+                    />
                 </>
             )}
         </div>

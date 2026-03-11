@@ -37,6 +37,7 @@ export default function RouteProtectionWrapper({ children }: RouteProtectionWrap
     "/orbit-chains",
     "/meeting",
     "/watch",
+    "/builder-pods",
   ];
 
   const isPublicRoute = publicRoutes.includes(pathname);

@@ -76,7 +76,7 @@ export default function RegistrationForm({
                     success: true,
                     message: data.member.joinedViaQr
                         ? "🎉 Registered successfully via Builder Lab! You've earned the Builder Lab Participant badge."
-                        : "✅ Registration submitted! Your application is pending approval.",
+                        : "Registration submitted! Your application is pending approval.",
                 });
                 setForm({
                     name: "",
