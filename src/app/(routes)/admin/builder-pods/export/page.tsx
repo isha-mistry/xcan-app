@@ -18,7 +18,7 @@ export default function AdminExportPage() {
         setLoading(true);
         setExported(false);
         try {
-            const res = await fetch("/api/admin/builder-pods/export/report");
+            const res = await fetch("/api/admin/builder-pods/export/report", { credentials: "include" });
             const data = await res.json();
 
             // Download as JSON file

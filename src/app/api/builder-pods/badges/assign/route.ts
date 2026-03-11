@@ -3,17 +3,22 @@ import { dbConnect } from '@/lib/dbConnect';
 import { assignBadgeManually } from '@/lib/builder-pods/badges';
 import { AuditLog } from '@/models/AuditLog';
 import { Notification } from '@/models/Notification';
+import { ForbiddenError, getAuthContext, requireRole, UnauthorizedError } from '@/lib/rbac';
 
 // POST /api/builder-pods/badges/assign — manual badge assignment
 export async function POST(req: NextRequest) {
     try {
+        const ctx = await getAuthContext(req);
+        requireRole(ctx, 'super_admin');
+
         await dbConnect();
         const body = await req.json();
-        const { badgeSlug, walletAddress, adminWallet, collegeId, showcaseEventId } = body;
+        const { badgeSlug, walletAddress, collegeId, showcaseEventId } = body;
+        const adminWallet = ctx!.walletAddress;
 
-        if (!badgeSlug || !walletAddress || !adminWallet) {
+        if (!badgeSlug || !walletAddress) {
             return NextResponse.json(
-                { success: false, error: 'badgeSlug, walletAddress, and adminWallet are required' },
+                { success: false, error: 'badgeSlug and walletAddress are required' },
                 { status: 400 }
             );
         }
@@ -45,6 +50,12 @@ export async function POST(req: NextRequest) {
 
         return NextResponse.json({ success: true, badgeSlug }, { status: 201 });
     } catch (error: any) {
+        if (error instanceof UnauthorizedError) {
+            return NextResponse.json({ success: false, error: 'Not authenticated' }, { status: 401 });
+        }
+        if (error instanceof ForbiddenError) {
+            return NextResponse.json({ success: false, error: 'Admin access required' }, { status: 403 });
+        }
         console.error('Badge assignment error:', error);
         return NextResponse.json(
             { success: false, error: error.message || 'Internal Server Error' },

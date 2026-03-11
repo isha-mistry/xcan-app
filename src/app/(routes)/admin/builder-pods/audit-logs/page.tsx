@@ -12,7 +12,7 @@ import {
     User,
 } from "lucide-react";
 
-const fetcher = (url: string) => fetch(url).then((r) => r.json());
+const fetcher = (url: string) => fetch(url, { credentials: "include" }).then((r) => r.json());
 
 export default function AdminAuditLogsPage() {
     const [page, setPage] = useState(1);

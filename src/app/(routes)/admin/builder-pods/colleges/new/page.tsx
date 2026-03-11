@@ -42,6 +42,7 @@ export default function AddCollegePage() {
             const res = await fetch("/api/admin/builder-pods/colleges", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
+                credentials: "include",
                 body: JSON.stringify(form),
             });
             if (res.ok) {

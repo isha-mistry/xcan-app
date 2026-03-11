@@ -11,7 +11,7 @@ import {
     Shield,
 } from "lucide-react";
 
-const fetcher = (url: string) => fetch(url).then((r) => r.json());
+const fetcher = (url: string) => fetch(url, { credentials: "include" }).then((r) => r.json());
 
 const BADGE_SLUGS = [
     { slug: "builder_lab_participant", label: "Lab Participant", color: "text-cyan-400", bg: "bg-cyan-500/10" },
@@ -43,10 +43,8 @@ export default function AdminBadgesPage() {
             await fetch("/api/builder-pods/badges/assign", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    ...form,
-                    adminWallet: "admin",
-                }),
+                credentials: "include",
+                body: JSON.stringify(form),
             });
             setForm({ walletAddress: "", badgeSlug: "", collegeId: "" });
             if (walletSearch) mutate(`/api/builder-pods/badges/user/${walletSearch}`);

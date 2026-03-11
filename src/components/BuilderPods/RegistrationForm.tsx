@@ -22,10 +22,12 @@ interface CollegeOption {
 
 interface RegistrationFormProps {
     walletAddress: string | null;
+    initialQrToken?: string;
 }
 
 export default function RegistrationForm({
     walletAddress,
+    initialQrToken = "",
 }: RegistrationFormProps) {
     const [colleges, setColleges] = useState<CollegeOption[]>([]);
     const [loadingColleges, setLoadingColleges] = useState(true);
@@ -41,8 +43,14 @@ export default function RegistrationForm({
         programmingLevel: "",
         githubUsername: "",
         semester: "",
-        qrToken: "",
+        qrToken: initialQrToken,
     });
+
+    useEffect(() => {
+        if (initialQrToken && !form.qrToken) {
+            setForm((f) => ({ ...f, qrToken: initialQrToken }));
+        }
+    }, [initialQrToken]);
 
     useEffect(() => {
         fetch("/api/builder-pods/register")
@@ -64,10 +72,8 @@ export default function RegistrationForm({
             const res = await fetch("/api/builder-pods/register", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    walletAddress,
-                    ...form,
-                }),
+                credentials: "include",
+                body: JSON.stringify(form),
             });
 
             const data = await res.json();
@@ -254,11 +260,14 @@ export default function RegistrationForm({
                             onChange={(e) =>
                                 setForm((f) => ({ ...f, qrToken: e.target.value }))
                             }
+                            readOnly={!!initialQrToken}
                             placeholder="Paste QR token (if attending a lab)"
                             className={inputClass}
                         />
                         <p className="text-[10px] text-white/15 font-robotoMono mt-1">
-                            Optional. Scan the QR code at your Builder Lab event.
+                            {initialQrToken
+                                ? "Auto-filled from QR code scan."
+                                : "Optional. Scan the QR code at your Builder Lab event."}
                         </p>
                     </div>
 

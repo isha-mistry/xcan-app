@@ -4,14 +4,23 @@ import { College } from '@/models/College';
 import { PodMember } from '@/models/PodMember';
 import { LabEvent } from '@/models/LabEvent';
 import { awardBadgeOnEvent } from '@/lib/builder-pods/badges';
+import { getAuthContext } from '@/lib/rbac';
 
 export async function POST(req: NextRequest) {
     try {
         await dbConnect();
 
+        const ctx = await getAuthContext(req);
+        if (!ctx) {
+            return NextResponse.json(
+                { success: false, error: 'Connect your wallet to register' },
+                { status: 401 }
+            );
+        }
+        const walletAddress = ctx.walletAddress;
+
         const body = await req.json();
         const {
-            walletAddress,
             name,
             collegeSlug,
             programmingLevel,
@@ -20,9 +29,9 @@ export async function POST(req: NextRequest) {
             qrToken,
         } = body;
 
-        if (!walletAddress || !name || !collegeSlug) {
+        if (!name || !collegeSlug) {
             return NextResponse.json(
-                { success: false, error: 'walletAddress, name, and collegeSlug are required' },
+                { success: false, error: 'name and collegeSlug are required' },
                 { status: 400 }
             );
         }
