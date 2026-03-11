@@ -3,17 +3,22 @@ import { dbConnect } from '@/lib/dbConnect';
 import { PodMember } from '@/models/PodMember';
 import { AuditLog } from '@/models/AuditLog';
 import { Notification } from '@/models/Notification';
+import { getAuthContext, requireRole, UnauthorizedError, ForbiddenError } from '@/lib/rbac';
 
-// PATCH — assign role to a member or remove inactive member
+// PATCH — assign role to a member or change status (admin only)
 export async function PATCH(req: NextRequest) {
     try {
+        const ctx = await getAuthContext(req);
+        requireRole(ctx, 'super_admin');
+
         await dbConnect();
         const body = await req.json();
-        const { memberId, role, status, adminWallet } = body;
+        const { memberId, role, status } = body;
+        const adminWallet = ctx!.walletAddress;
 
-        if (!memberId || !adminWallet) {
+        if (!memberId) {
             return NextResponse.json(
-                { success: false, error: 'memberId and adminWallet are required' },
+                { success: false, error: 'memberId is required' },
                 { status: 400 }
             );
         }
@@ -71,7 +76,7 @@ export async function PATCH(req: NextRequest) {
         }
 
         await AuditLog.create({
-            actorWallet: adminWallet.toLowerCase(),
+            actorWallet: adminWallet,
             action: role ? 'member.role_assign' : 'member.status_update',
             entityType: 'PodMember',
             entityId: memberId,
@@ -83,11 +88,10 @@ export async function PATCH(req: NextRequest) {
             { success: true, member: { _id: member._id, role: member.role, status: member.status } },
             { status: 200 }
         );
-    } catch (error) {
+    } catch (error: any) {
+        if (error instanceof UnauthorizedError) return NextResponse.json({ success: false, error: 'Not authenticated' }, { status: 401 });
+        if (error instanceof ForbiddenError) return NextResponse.json({ success: false, error: 'Admin access required' }, { status: 403 });
         console.error('Role assignment error:', error);
-        return NextResponse.json(
-            { success: false, error: 'Internal Server Error' },
-            { status: 500 }
-        );
+        return NextResponse.json({ success: false, error: 'Internal Server Error' }, { status: 500 });
     }
 }

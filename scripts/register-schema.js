@@ -24,12 +24,15 @@ const SCHEMA_REGISTRY_ADDRESS = '0x0a7E2Ff54e76B8E6659aedc9103FB21c038050D0';
 
 // ── Badge attestation schema ─────────────────────────────────────────────────
 // Fields:
-//   badgeType  (string) — one of: builder_lab_participant, builder_pod_member,
-//                          builder_pod_lead, regional_showcase_finalist,
-//                          regional_showcase_winner
-//   college    (string) — college name the badge is associated with
-//   issuedAt   (uint256) — unix timestamp of badge issuance
-const SCHEMA = 'string badgeType, string college, uint256 issuedAt';
+//   badgeType      (string)  — slug: builder_lab_participant, builder_pod_member,
+//                              builder_pod_lead, regional_showcase_finalist,
+//                              regional_showcase_winner
+//   issuer         (string)  — always "Lampros DAO" — hard on-chain proof of issuer
+//   college        (string)  — college / pod name the badge is associated with
+//   programCohort  (string)  — batch year e.g. "2026" (useful for multi-year queries)
+//   walletAddress  (address) — student wallet (makes badges queryable by address on easscan)
+//   issuedAt       (uint256) — unix timestamp of badge issuance
+const SCHEMA = 'string badgeType, string issuer, string college, string programCohort, address walletAddress, uint256 issuedAt';
 
 async function registerSchema() {
   const RPC_URL = process.env.SEPOLIA_RPC;

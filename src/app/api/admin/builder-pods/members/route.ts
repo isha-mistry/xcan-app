@@ -4,10 +4,15 @@ import { PodMember } from '@/models/PodMember';
 import { College } from '@/models/College';
 import { AuditLog } from '@/models/AuditLog';
 import { Notification } from '@/models/Notification';
+import { getAuthContext, requireRole, UnauthorizedError, ForbiddenError } from '@/lib/rbac';
+import { awardBadgeOnEvent } from '@/lib/builder-pods/badges';
 
-// GET — list pending members
-export async function GET() {
+// GET — list pending members (admin only)
+export async function GET(req: NextRequest) {
     try {
+        const ctx = await getAuthContext(req);
+        requireRole(ctx, 'super_admin');
+
         await dbConnect();
 
         const pending = await PodMember.find({ status: 'pending' })
@@ -16,25 +21,28 @@ export async function GET() {
             .lean();
 
         return NextResponse.json({ success: true, members: pending }, { status: 200 });
-    } catch (error) {
+    } catch (error: any) {
+        if (error instanceof UnauthorizedError) return NextResponse.json({ success: false, error: 'Not authenticated' }, { status: 401 });
+        if (error instanceof ForbiddenError) return NextResponse.json({ success: false, error: 'Admin access required' }, { status: 403 });
         console.error('Error fetching pending members:', error);
-        return NextResponse.json(
-            { success: false, error: 'Internal Server Error' },
-            { status: 500 }
-        );
+        return NextResponse.json({ success: false, error: 'Internal Server Error' }, { status: 500 });
     }
 }
 
-// PATCH — approve or reject a member
+// PATCH — approve or reject a member (admin only)
 export async function PATCH(req: NextRequest) {
     try {
+        const ctx = await getAuthContext(req);
+        requireRole(ctx, 'super_admin');
+
         await dbConnect();
         const body = await req.json();
-        const { memberId, action, adminWallet } = body;
+        const { memberId, action } = body;
+        const adminWallet = ctx!.walletAddress; // taken from verified JWT, not body
 
-        if (!memberId || !action || !adminWallet) {
+        if (!memberId || !action) {
             return NextResponse.json(
-                { success: false, error: 'memberId, action, and adminWallet are required' },
+                { success: false, error: 'memberId and action are required' },
                 { status: 400 }
             );
         }
@@ -51,7 +59,7 @@ export async function PATCH(req: NextRequest) {
 
         if (action === 'approve') {
             member.status = 'active';
-            member.approvedBy = adminWallet.toLowerCase();
+            member.approvedBy = adminWallet;
             member.approvedAt = new Date();
             await member.save();
 
@@ -60,6 +68,11 @@ export async function PATCH(req: NextRequest) {
                 { _id: member.collegeId },
                 { $inc: { activeMemberCount: 1 } }
             );
+
+            // Auto-award "builder_pod_member" badge on approval
+            await awardBadgeOnEvent('pod_member_approved', member.walletAddress, {
+                collegeId: member.collegeId?.toString(),
+            });
 
             // Notify member
             await Notification.create({
@@ -79,9 +92,9 @@ export async function PATCH(req: NextRequest) {
             );
         }
 
-        // Audit log
+        // Audit log — actor wallet comes from JWT, not request body
         await AuditLog.create({
-            actorWallet: adminWallet.toLowerCase(),
+            actorWallet: adminWallet,
             action: `member.${action}`,
             entityType: 'PodMember',
             entityId: memberId,
@@ -93,11 +106,10 @@ export async function PATCH(req: NextRequest) {
             { success: true, member: { _id: member._id, status: member.status } },
             { status: 200 }
         );
-    } catch (error) {
+    } catch (error: any) {
+        if (error instanceof UnauthorizedError) return NextResponse.json({ success: false, error: 'Not authenticated' }, { status: 401 });
+        if (error instanceof ForbiddenError) return NextResponse.json({ success: false, error: 'Admin access required' }, { status: 403 });
         console.error('Member approval error:', error);
-        return NextResponse.json(
-            { success: false, error: 'Internal Server Error' },
-            { status: 500 }
-        );
+        return NextResponse.json({ success: false, error: 'Internal Server Error' }, { status: 500 });
     }
 }

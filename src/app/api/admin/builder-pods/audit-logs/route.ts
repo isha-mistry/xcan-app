@@ -1,10 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { dbConnect } from '@/lib/dbConnect';
 import { AuditLog } from '@/models/AuditLog';
+import { getAuthContext, requireRole, UnauthorizedError, ForbiddenError } from '@/lib/rbac';
 
 // GET /api/admin/builder-pods/audit-logs — paginated audit trail
 export async function GET(req: NextRequest) {
     try {
+        const ctx = await getAuthContext(req);
+        requireRole(ctx, 'super_admin');
+
         await dbConnect();
         const { searchParams } = new URL(req.url);
         const page = parseInt(searchParams.get('page') || '1');
@@ -30,7 +34,9 @@ export async function GET(req: NextRequest) {
             logs,
             pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
         }, { status: 200 });
-    } catch (error) {
+    } catch (error: any) {
+        if (error instanceof UnauthorizedError) return NextResponse.json({ success: false, error: 'Not authenticated' }, { status: 401 });
+        if (error instanceof ForbiddenError) return NextResponse.json({ success: false, error: 'Admin access required' }, { status: 403 });
         console.error('Audit logs error:', error);
         return NextResponse.json({ success: false, error: 'Internal Server Error' }, { status: 500 });
     }

@@ -22,7 +22,7 @@ export const EAS_CONTRACT_ADDRESS = '0xC2679fBD37d54388Ce493F1DB75320D236e1815e'
 export const SCHEMA_REGISTRY_ADDRESS = '0x0a7E2Ff54e76B8E6659aedc9103FB21c038050D0';
 export const EAS_CHAIN_ID = 11155111; // Ethereum Sepolia
 export const EAS_EXPLORER = 'https://sepolia.easscan.org';
-export const BADGE_SCHEMA = 'string badgeType, string college, uint256 issuedAt';
+export const BADGE_SCHEMA = 'string badgeType, string issuer, string college, string programCohort, address walletAddress, uint256 issuedAt';
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -36,6 +36,7 @@ interface AttestationParams {
     recipientWallet: string;
     badgeType: string;
     college: string;
+    programCohort?: string; // default: current year
 }
 
 // ── Core Functions ───────────────────────────────────────────────────────────
@@ -74,11 +75,15 @@ export async function issueOnChainAttestation(
 
     const schemaEncoder = new SchemaEncoder(BADGE_SCHEMA);
     const issuedAt = Math.floor(Date.now() / 1000);
+    const cohort = params.programCohort ?? String(new Date().getFullYear());
 
     const encodedData = schemaEncoder.encodeData([
-        { name: 'badgeType', value: params.badgeType, type: 'string' },
-        { name: 'college', value: params.college, type: 'string' },
-        { name: 'issuedAt', value: issuedAt.toString(), type: 'uint256' },
+        { name: 'badgeType',     value: params.badgeType,       type: 'string'  },
+        { name: 'issuer',        value: 'Lampros DAO',           type: 'string'  },
+        { name: 'college',       value: params.college,          type: 'string'  },
+        { name: 'programCohort', value: cohort,                  type: 'string'  },
+        { name: 'walletAddress', value: params.recipientWallet,  type: 'address' },
+        { name: 'issuedAt',      value: issuedAt.toString(),     type: 'uint256' },
     ]);
 
     const tx = await eas.attest({
