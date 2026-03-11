@@ -4,12 +4,27 @@ import { ShowcaseSubmission } from '@/models/ShowcaseSubmission';
 import { AuditLog } from '@/models/AuditLog';
 import { Notification } from '@/models/Notification';
 import { awardBadgeOnEvent } from '@/lib/builder-pods/badges';
+import {
+    getAuthContext, requireAnyRole,
+    buildCollegeFilter, verifyCollegeAccess,
+    UnauthorizedError, ForbiddenError
+} from '@/lib/rbac';
 
 // GET — list pending showcase submissions
-export async function GET() {
+// super_admin sees all, college_admin/mentor sees their college's
+export async function GET(req: NextRequest) {
     try {
+        const ctx = await getAuthContext(req);
+        requireAnyRole(ctx, ['super_admin', 'college_admin', 'mentor']);
+
         await dbConnect();
-        const pending = await ShowcaseSubmission.find({ status: { $in: ['pending', 'finalist'] } })
+
+        const collegeFilter = buildCollegeFilter(ctx!);
+
+        const pending = await ShowcaseSubmission.find({
+            status: { $in: ['pending', 'finalist'] },
+            ...collegeFilter,
+        })
             .populate('showcaseEventId', 'name eventDate')
             .populate('collegeId', 'name slug')
             .populate('projectId', 'name')
@@ -17,25 +32,29 @@ export async function GET() {
             .lean();
 
         return NextResponse.json({ success: true, submissions: pending }, { status: 200 });
-    } catch (error) {
+    } catch (error: any) {
+        if (error instanceof UnauthorizedError) return NextResponse.json({ success: false, error: 'Not authenticated' }, { status: 401 });
+        if (error instanceof ForbiddenError) return NextResponse.json({ success: false, error: 'Admin access required' }, { status: 403 });
         console.error('Admin showcases error:', error);
-        return NextResponse.json(
-            { success: false, error: 'Internal Server Error' },
-            { status: 500 }
-        );
+        return NextResponse.json({ success: false, error: 'Internal Server Error' }, { status: 500 });
     }
 }
 
 // PATCH — approve, mark finalist, or mark winner
+// super_admin can for any, college_admin/mentor for their college's
 export async function PATCH(req: NextRequest) {
     try {
+        const ctx = await getAuthContext(req);
+        requireAnyRole(ctx, ['super_admin', 'college_admin', 'mentor']);
+
         await dbConnect();
         const body = await req.json();
-        const { submissionId, status, placement, adminWallet } = body;
+        const { submissionId, status, placement } = body;
+        const adminWallet = ctx!.walletAddress;
 
-        if (!submissionId || !status || !adminWallet) {
+        if (!submissionId || !status) {
             return NextResponse.json(
-                { success: false, error: 'submissionId, status, and adminWallet are required' },
+                { success: false, error: 'submissionId and status are required' },
                 { status: 400 }
             );
         }
@@ -56,9 +75,12 @@ export async function PATCH(req: NextRequest) {
             );
         }
 
+        // Verify college-scoped access
+        verifyCollegeAccess(ctx!, submission.collegeId.toString());
+
         const oldStatus = submission.status;
         submission.status = status;
-        submission.reviewedBy = adminWallet.toLowerCase();
+        submission.reviewedBy = adminWallet;
         submission.reviewedAt = new Date();
 
         if (placement) {
@@ -67,7 +89,7 @@ export async function PATCH(req: NextRequest) {
 
         await submission.save();
 
-        // Award badges for finalist / winner
+        // Auto-award badges for finalist / winner
         if (status === 'finalist') {
             await awardBadgeOnEvent('showcase_finalist', submission.submittedBy, {
                 collegeId: submission.collegeId?.toString(),
@@ -95,7 +117,7 @@ export async function PATCH(req: NextRequest) {
         });
 
         await AuditLog.create({
-            actorWallet: adminWallet.toLowerCase(),
+            actorWallet: adminWallet,
             action: `showcase.${status}`,
             entityType: 'ShowcaseSubmission',
             entityId: submissionId,
@@ -104,11 +126,10 @@ export async function PATCH(req: NextRequest) {
         });
 
         return NextResponse.json({ success: true, status }, { status: 200 });
-    } catch (error) {
+    } catch (error: any) {
+        if (error instanceof UnauthorizedError) return NextResponse.json({ success: false, error: 'Not authenticated' }, { status: 401 });
+        if (error instanceof ForbiddenError) return NextResponse.json({ success: false, error: error.message }, { status: 403 });
         console.error('Showcase review error:', error);
-        return NextResponse.json(
-            { success: false, error: 'Internal Server Error' },
-            { status: 500 }
-        );
+        return NextResponse.json({ success: false, error: 'Internal Server Error' }, { status: 500 });
     }
 }

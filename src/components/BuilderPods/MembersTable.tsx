@@ -1,7 +1,7 @@
 "use client";
-import React from "react";
+import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { Users, Shield, Github, Award } from "lucide-react";
+import { Users, Shield, Github, Award, Copy, CheckCircle2 } from "lucide-react";
 
 interface MemberData {
     _id: string;
@@ -81,7 +81,7 @@ export default function MembersTable({
                     <table className="w-full">
                         <thead>
                             <tr className="border-b border-white/5">
-                                {["Name", "Role", "Status", "Level", "Modules", "Deploys", "Score"].map(
+                                {["Name", "Wallet", "Role", "Status", "Level", "Modules", "Deploys", "Score"].map(
                                     (h) => (
                                         <th
                                             key={h}
@@ -118,11 +118,8 @@ export default function MembersTable({
                                                     </a>
                                                 )}
                                             </div>
-                                            <span className="text-[10px] text-white/15 font-robotoMono">
-                                                {m.walletAddress.slice(0, 6)}...
-                                                {m.walletAddress.slice(-4)}
-                                            </span>
                                         </td>
+                                        <WalletCell address={m.walletAddress} />
                                         <td className="py-3 pr-4">
                                             <span
                                                 className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider font-robotoMono ${role.bg} ${role.text}`}
@@ -163,5 +160,38 @@ export default function MembersTable({
                 </div>
             )}
         </motion.div>
+    );
+}
+
+/** Inline wallet cell with copy button */
+function WalletCell({ address }: { address: string }) {
+    const [copied, setCopied] = useState(false);
+    const truncated = `${address.slice(0, 6)}...${address.slice(-4)}`;
+
+    const copy = () => {
+        navigator.clipboard.writeText(address);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 1500);
+    };
+
+    return (
+        <td className="py-3 pr-4">
+            <div className="flex items-center gap-1.5">
+                <span className="text-[11px] text-white/40 font-robotoMono">
+                    {truncated}
+                </span>
+                <button
+                    onClick={copy}
+                    className="p-0.5 rounded hover:bg-white/5 transition-colors"
+                    title="Copy full address"
+                >
+                    {copied ? (
+                        <CheckCircle2 className="w-3 h-3 text-green-400" />
+                    ) : (
+                        <Copy className="w-3 h-3 text-white/15 hover:text-white/30" />
+                    )}
+                </button>
+            </div>
+        </td>
     );
 }

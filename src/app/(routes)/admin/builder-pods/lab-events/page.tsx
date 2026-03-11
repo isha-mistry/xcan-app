@@ -26,7 +26,7 @@ export default function AdminLabEventsPage() {
     const [showForm, setShowForm] = useState(false);
     const [creating, setCreating] = useState(false);
     const [copiedToken, setCopiedToken] = useState<string | null>(null);
-    const [qrModal, setQrModal] = useState<{ eventId: string; dataUrl: string | null; loading: boolean } | null>(null);
+    const [qrModal, setQrModal] = useState<{ eventId: string; dataUrl: string | null; registrationUrl: string | null; loading: boolean } | null>(null);
     const [form, setForm] = useState({
         eventName: "",
         collegeSlug: "",
@@ -62,13 +62,13 @@ export default function AdminLabEventsPage() {
     };
 
     const viewQR = async (eventId: string) => {
-        setQrModal({ eventId, dataUrl: null, loading: true });
+        setQrModal({ eventId, dataUrl: null, registrationUrl: null, loading: true });
         try {
             const res = await fetch(`/api/admin/builder-pods/lab-events/${eventId}/qr`);
             const data = await res.json();
-            setQrModal({ eventId, dataUrl: data.qr?.dataUrl || null, loading: false });
+            setQrModal({ eventId, dataUrl: data.qr?.dataUrl || null, registrationUrl: data.qr?.registrationUrl || null, loading: false });
         } catch {
-            setQrModal({ eventId, dataUrl: null, loading: false });
+            setQrModal({ eventId, dataUrl: null, registrationUrl: null, loading: false });
         }
     };
 
@@ -170,9 +170,37 @@ export default function AdminLabEventsPage() {
                         {qrModal.loading ? (
                             <Loader2 className="w-8 h-8 text-white/20 animate-spin mx-auto" />
                         ) : qrModal.dataUrl ? (
-                            <img src={qrModal.dataUrl} alt="QR Code" className="w-64 h-64 mx-auto rounded-xl" />
+                            <>
+                                <img src={qrModal.dataUrl} alt="QR Code" className="w-64 h-64 mx-auto rounded-xl" />
+                                <a
+                                    href={qrModal.dataUrl}
+                                    download={`qr-${qrModal.eventId}.png`}
+                                    className="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-cyan-500/10 text-[10px] text-cyan-400 font-robotoMono hover:bg-cyan-500/20 transition-all"
+                                >
+                                    <ImageIcon className="w-3 h-3" />
+                                    Download QR Image
+                                </a>
+                            </>
                         ) : (
-                            <p className="text-xs text-white/30 font-robotoMono">QR generation not available. Use the token directly.</p>
+                            <p className="text-xs text-white/30 font-robotoMono">QR generation not available. Install: yarn add qrcode</p>
+                        )}
+                        {qrModal.registrationUrl && (
+                            <div className="mt-4 text-left">
+                                <p className="text-[9px] font-bold uppercase tracking-widest text-white/20 font-robotoMono mb-1">Registration URL</p>
+                                <div className="flex items-center gap-2 bg-white/[0.03] rounded-lg px-3 py-2 border border-white/[0.06]">
+                                    <span className="text-[10px] text-white/40 font-robotoMono truncate flex-1">
+                                        {qrModal.registrationUrl}
+                                    </span>
+                                    <button
+                                        onClick={() => {
+                                            navigator.clipboard.writeText(qrModal.registrationUrl!);
+                                        }}
+                                        className="p-1 rounded hover:bg-white/5 transition-colors"
+                                    >
+                                        <Copy className="w-3 h-3 text-white/20" />
+                                    </button>
+                                </div>
+                            </div>
                         )}
                         <button
                             onClick={() => setQrModal(null)}

@@ -3,33 +3,60 @@ import { dbConnect } from '@/lib/dbConnect';
 import { LabEvent } from '@/models/LabEvent';
 import { College } from '@/models/College';
 import { AuditLog } from '@/models/AuditLog';
+import {
+    getAuthContext, requireAnyRole,
+    buildCollegeFilter, verifyCollegeAccess,
+    UnauthorizedError, ForbiddenError
+} from '@/lib/rbac';
 import crypto from 'crypto';
 
 // GET — list all lab events
-export async function GET() {
+// super_admin sees all, college_admin sees only their college's events
+export async function GET(req: NextRequest) {
     try {
+        const ctx = await getAuthContext(req);
+        requireAnyRole(ctx, ['super_admin', 'college_admin']);
+
         await dbConnect();
-        const events = await LabEvent.find()
-            .populate('collegeId', 'name slug')
+
+        const collegeFilter = buildCollegeFilter(ctx!);
+
+        const events = await LabEvent.find(collegeFilter)
+            .populate('collegeId', 'name slug city state')
             .sort({ eventDate: -1 })
             .lean();
-        return NextResponse.json({ success: true, events }, { status: 200 });
-    } catch (error) {
+
+        // Attach registration URL to each event
+        const appUrl = process.env.NEXT_PUBLIC_LOCAL_BASE_URL || 'http://localhost:3000';
+        const eventsWithUrls = events.map((e: any) => ({
+            ...e,
+            registrationUrl: `${appUrl}/builder-pods/register?token=${e.qrToken}`,
+        }));
+
+        return NextResponse.json({ success: true, events: eventsWithUrls }, { status: 200 });
+    } catch (error: any) {
+        if (error instanceof UnauthorizedError) return NextResponse.json({ success: false, error: 'Not authenticated' }, { status: 401 });
+        if (error instanceof ForbiddenError) return NextResponse.json({ success: false, error: 'Admin access required' }, { status: 403 });
         console.error('Lab events list error:', error);
         return NextResponse.json({ success: false, error: 'Internal Server Error' }, { status: 500 });
     }
 }
 
 // POST — create a lab event + QR token
+// super_admin can create for any college, college_admin only for their own
 export async function POST(req: NextRequest) {
     try {
+        const ctx = await getAuthContext(req);
+        requireAnyRole(ctx, ['super_admin', 'college_admin']);
+
         await dbConnect();
         const body = await req.json();
-        const { collegeSlug, eventTitle, eventDate, venue, expectedAttendees, adminWallet } = body;
+        const { collegeSlug, eventName, eventDate, city, state, expectedAttendees, milestoneNumber } = body;
+        const adminWallet = ctx!.walletAddress;
 
-        if (!collegeSlug || !eventTitle || !adminWallet) {
+        if (!collegeSlug || !eventName) {
             return NextResponse.json(
-                { success: false, error: 'collegeSlug, eventTitle, and adminWallet are required' },
+                { success: false, error: 'collegeSlug and eventName are required' },
                 { status: 400 }
             );
         }
@@ -39,28 +66,34 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ success: false, error: 'College not found' }, { status: 404 });
         }
 
-        // Generate secure QR token
+        // Verify college-scoped access
+        verifyCollegeAccess(ctx!, college._id.toString());
+
+        // Generate secure random QR token
         const qrToken = crypto.randomBytes(16).toString('hex');
+        const appUrl = process.env.NEXT_PUBLIC_LOCAL_BASE_URL || 'http://localhost:3000';
 
         const event = await LabEvent.create({
             collegeId: college._id,
-            title: eventTitle.trim(),
-            eventDate: eventDate ? new Date(eventDate) : null,
-            venue: venue || null,
+            eventName: eventName.trim(),
+            eventDate: eventDate ? new Date(eventDate) : new Date(),
+            city: city || college.city,
+            state: state || college.state,
             expectedAttendees: expectedAttendees || null,
             qrToken,
             qrIsActive: true,
             qrExpiresAt: null,
             actualAttendees: 0,
-            createdBy: adminWallet.toLowerCase(),
+            createdBy: adminWallet,
+            milestoneNumber: milestoneNumber || null,
         });
 
         await AuditLog.create({
-            actorWallet: adminWallet.toLowerCase(),
+            actorWallet: adminWallet,
             action: 'lab_event.create',
             entityType: 'LabEvent',
             entityId: event._id.toString(),
-            newValue: { title: eventTitle, collegeSlug, qrToken },
+            newValue: { eventName, collegeSlug, qrToken },
         });
 
         return NextResponse.json(
@@ -68,14 +101,17 @@ export async function POST(req: NextRequest) {
                 success: true,
                 event: {
                     _id: event._id,
-                    title: event.title,
+                    eventName: event.eventName,
                     qrToken: event.qrToken,
-                    qrUrl: `${process.env.NEXT_PUBLIC_APP_URL || ''}/builder-pods/register?qr=${qrToken}`,
+                    registrationUrl: `${appUrl}/builder-pods/register?token=${qrToken}`,
+                    qrImageUrl: `/api/admin/builder-pods/lab-events/${event._id}/qr`,
                 },
             },
             { status: 201 }
         );
-    } catch (error) {
+    } catch (error: any) {
+        if (error instanceof UnauthorizedError) return NextResponse.json({ success: false, error: 'Not authenticated' }, { status: 401 });
+        if (error instanceof ForbiddenError) return NextResponse.json({ success: false, error: error.message }, { status: 403 });
         console.error('Lab event creation error:', error);
         return NextResponse.json({ success: false, error: 'Internal Server Error' }, { status: 500 });
     }

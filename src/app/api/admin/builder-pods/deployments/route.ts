@@ -5,38 +5,53 @@ import { PodMember } from '@/models/PodMember';
 import { College } from '@/models/College';
 import { AuditLog } from '@/models/AuditLog';
 import { Notification } from '@/models/Notification';
+import {
+    getAuthContext, requireAnyRole,
+    buildCollegeFilter, verifyCollegeAccess,
+    UnauthorizedError, ForbiddenError
+} from '@/lib/rbac';
 
 // GET — list pending (unverified) deployments
-export async function GET() {
+// super_admin sees all, college_admin/mentor sees only their college's
+export async function GET(req: NextRequest) {
     try {
+        const ctx = await getAuthContext(req);
+        requireAnyRole(ctx, ['super_admin', 'college_admin', 'mentor']);
+
         await dbConnect();
 
-        const pending = await Deployment.find({ isVerified: false })
+        const collegeFilter = buildCollegeFilter(ctx!);
+
+        const pending = await Deployment.find({ isVerified: false, ...collegeFilter })
             .populate('collegeId', 'name slug')
             .populate('projectId', 'name')
             .sort({ createdAt: -1 })
             .lean();
 
         return NextResponse.json({ success: true, deployments: pending }, { status: 200 });
-    } catch (error) {
+    } catch (error: any) {
+        if (error instanceof UnauthorizedError) return NextResponse.json({ success: false, error: 'Not authenticated' }, { status: 401 });
+        if (error instanceof ForbiddenError) return NextResponse.json({ success: false, error: 'Admin access required' }, { status: 403 });
         console.error('Admin deployments error:', error);
-        return NextResponse.json(
-            { success: false, error: 'Internal Server Error' },
-            { status: 500 }
-        );
+        return NextResponse.json({ success: false, error: 'Internal Server Error' }, { status: 500 });
     }
 }
 
 // PATCH — verify or reject a deployment
+// super_admin can verify any, college_admin can verify their own college's
 export async function PATCH(req: NextRequest) {
     try {
+        const ctx = await getAuthContext(req);
+        requireAnyRole(ctx, ['super_admin', 'college_admin']);
+
         await dbConnect();
         const body = await req.json();
-        const { deploymentId, action, adminWallet } = body;
+        const { deploymentId, action } = body;
+        const adminWallet = ctx!.walletAddress;
 
-        if (!deploymentId || !action || !adminWallet) {
+        if (!deploymentId || !action) {
             return NextResponse.json(
-                { success: false, error: 'deploymentId, action, and adminWallet are required' },
+                { success: false, error: 'deploymentId and action are required' },
                 { status: 400 }
             );
         }
@@ -49,13 +64,15 @@ export async function PATCH(req: NextRequest) {
             );
         }
 
+        // Verify college-scoped access
+        verifyCollegeAccess(ctx!, dep.collegeId.toString());
+
         if (action === 'verify') {
             dep.isVerified = true;
-            dep.verifiedBy = adminWallet.toLowerCase();
+            dep.verifiedBy = adminWallet;
             dep.verifiedAt = new Date();
             await dep.save();
 
-            // Increment member + college counters
             await PodMember.updateOne(
                 { walletAddress: dep.walletAddress, collegeId: dep.collegeId },
                 { $inc: { contractsDeployed: 1 } }
@@ -65,7 +82,6 @@ export async function PATCH(req: NextRequest) {
                 { $inc: { deploymentCount: 1 } }
             );
 
-            // Notify member
             await Notification.create({
                 walletAddress: dep.walletAddress,
                 type: 'deployment_verified',
@@ -83,7 +99,7 @@ export async function PATCH(req: NextRequest) {
         }
 
         await AuditLog.create({
-            actorWallet: adminWallet.toLowerCase(),
+            actorWallet: adminWallet,
             action: `deployment.${action}`,
             entityType: 'Deployment',
             entityId: deploymentId,
@@ -91,11 +107,10 @@ export async function PATCH(req: NextRequest) {
         });
 
         return NextResponse.json({ success: true, action }, { status: 200 });
-    } catch (error) {
+    } catch (error: any) {
+        if (error instanceof UnauthorizedError) return NextResponse.json({ success: false, error: 'Not authenticated' }, { status: 401 });
+        if (error instanceof ForbiddenError) return NextResponse.json({ success: false, error: error.message }, { status: 403 });
         console.error('Deployment verification error:', error);
-        return NextResponse.json(
-            { success: false, error: 'Internal Server Error' },
-            { status: 500 }
-        );
+        return NextResponse.json({ success: false, error: 'Internal Server Error' }, { status: 500 });
     }
 }

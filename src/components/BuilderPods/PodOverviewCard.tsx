@@ -33,6 +33,10 @@ interface PodOverviewCardProps {
 
 export default function PodOverviewCard({ college }: PodOverviewCardProps) {
     const isActive = college.status === "active";
+    const activePct =
+        college.memberCount > 0
+            ? Math.round((college.activeMemberCount / college.memberCount) * 100)
+            : 0;
 
     const stats = [
         {
@@ -43,11 +47,13 @@ export default function PodOverviewCard({ college }: PodOverviewCardProps) {
             bg: "bg-blue-500/10",
         },
         {
-            label: "Active",
-            value: college.activeMemberCount,
+            label: "Active Members",
+            value: `${activePct}%`,
+            subtitle: `${college.activeMemberCount}/${college.memberCount}`,
             icon: UserCheck,
             color: "text-green-400",
             bg: "bg-green-500/10",
+            pct: activePct,
         },
         {
             label: "Projects",
@@ -146,9 +152,22 @@ export default function PodOverviewCard({ college }: PodOverviewCardProps) {
                             <span className="text-xl font-black text-white font-unbounded">
                                 {stat.value}
                             </span>
+                            {(stat as any).subtitle && (
+                                <span className="text-[9px] text-white/15 font-robotoMono ml-1">
+                                    ({(stat as any).subtitle})
+                                </span>
+                            )}
                             <p className="text-[10px] font-bold uppercase tracking-widest text-white/25 font-robotoMono mt-0.5">
                                 {stat.label}
                             </p>
+                            {(stat as any).pct !== undefined && (
+                                <div className="w-full h-1 rounded-full bg-white/5 mt-2">
+                                    <div
+                                        className="h-full rounded-full bg-gradient-to-r from-green-500/60 to-green-400/40 transition-all"
+                                        style={{ width: `${(stat as any).pct}%` }}
+                                    />
+                                </div>
+                            )}
                         </div>
                     );
                 })}

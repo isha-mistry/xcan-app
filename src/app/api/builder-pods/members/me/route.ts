@@ -3,22 +3,19 @@ import { dbConnect } from '@/lib/dbConnect';
 import { PodMember } from '@/models/PodMember';
 import { UserBadge } from '@/models/UserBadge';
 import { Deployment } from '@/models/Deployment';
+import { getAuthContext, UnauthorizedError } from '@/lib/rbac';
 
+// GET — get current user's pod profile
+// Requires: any authenticated user (wallet from JWT/session)
 export async function GET(req: NextRequest) {
     try {
+        const ctx = await getAuthContext(req);
+        if (!ctx) throw new UnauthorizedError('Not authenticated');
+
         await dbConnect();
 
-        const url = new URL(req.url);
-        const wallet = url.searchParams.get('wallet');
-
-        if (!wallet) {
-            return NextResponse.json(
-                { success: false, error: 'wallet query param required' },
-                { status: 400 }
-            );
-        }
-
-        const w = wallet.toLowerCase();
+        // Wallet comes from verified auth context, not query param
+        const w = ctx.walletAddress;
 
         const [membership, badges, deployments] = await Promise.all([
             PodMember.findOne({ walletAddress: w, deletedAt: null })
@@ -49,7 +46,8 @@ export async function GET(req: NextRequest) {
                 rank: membership?.individualRank ?? null,
             },
         }, { status: 200 });
-    } catch (error) {
+    } catch (error: any) {
+        if (error instanceof UnauthorizedError) return NextResponse.json({ success: false, error: 'Not authenticated' }, { status: 401 });
         console.error('Error fetching user pod profile:', error);
         return NextResponse.json(
             { success: false, error: 'Internal Server Error' },

@@ -1,5 +1,6 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { dbConnect } from '@/lib/dbConnect';
+import { getAuthContext, requireRole, UnauthorizedError, ForbiddenError } from '@/lib/rbac';
 import { College } from '@/models/College';
 import { PodMember } from '@/models/PodMember';
 import { PodProject } from '@/models/PodProject';
@@ -10,8 +11,11 @@ import { ShowcaseSubmission } from '@/models/ShowcaseSubmission';
 import { ProgramMilestone } from '@/models/ProgramMilestone';
 
 // GET /api/admin/builder-pods/export/report — DAO report data export
-export async function GET() {
+export async function GET(req: NextRequest) {
     try {
+        const ctx = await getAuthContext(req);
+        requireRole(ctx, 'super_admin');
+
         await dbConnect();
 
         const [
@@ -78,7 +82,9 @@ export async function GET() {
         };
 
         return NextResponse.json({ success: true, report }, { status: 200 });
-    } catch (error) {
+    } catch (error: any) {
+        if (error instanceof UnauthorizedError) return NextResponse.json({ success: false, error: 'Not authenticated' }, { status: 401 });
+        if (error instanceof ForbiddenError) return NextResponse.json({ success: false, error: 'Admin access required' }, { status: 403 });
         console.error('DAO report export error:', error);
         return NextResponse.json({ success: false, error: 'Internal Server Error' }, { status: 500 });
     }

@@ -30,6 +30,12 @@ yarn-error.log*
 .env
 .env.me
 
+builder-pod-complete-files.md
+builder-pod-requirements.md
+builder-pod-system-design.md
+
+scripts/
+
 # vercel
 .vercel
 
