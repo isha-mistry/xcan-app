@@ -73,7 +73,7 @@ export default function RegistrationForm({
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 credentials: "include",
-                body: JSON.stringify(form),
+                body: JSON.stringify({ ...form, walletAddress }),
             });
 
             const data = await res.json();

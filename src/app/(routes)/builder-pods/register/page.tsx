@@ -10,6 +10,7 @@ import RegistrationForm from "@/components/BuilderPods/RegistrationForm";
 function RegisterContent() {
     const { user } = usePrivy();
     const walletAddress = user?.wallet?.address ?? null;
+    console.log("walletAddress", walletAddress);
     const searchParams = useSearchParams();
     const initialQrToken = searchParams.get("token") ?? "";
 

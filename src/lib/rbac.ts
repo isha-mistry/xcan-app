@@ -4,6 +4,7 @@ import { UserRole } from '@/models/PlatformRole';
 import { dbConnect } from '@/lib/dbConnect';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/auth-options';
+import { PrivyClient } from '@privy-io/server-auth';
 
 export type RoleSlug =
     | 'super_admin'
@@ -19,9 +20,10 @@ export interface AuthContext {
 }
 
 /**
- * Extract authenticated wallet from either:
+ * Extract authenticated wallet from one of three methods:
  *   1. Bearer JWT token in Authorization header (curl / Postman / scripts)
- *   2. NextAuth session cookie (browser-based admin pages)
+ *   2. NextAuth session cookie (SIWE-based browser sessions)
+ *   3. Privy token cookie (Privy-based browser sessions)
  *
  * Then lookup the wallet's assigned roles from the UserRole collection.
  */
@@ -40,7 +42,30 @@ export async function getAuthContext(req: NextRequest): Promise<AuthContext | nu
         }
     }
 
-    // ── Method 2: NextAuth session cookie ───────────────────────────────────
+    // ── Method 2: Privy token cookie ────────────────────────────────────────
+    if (!walletAddress) {
+        const privyToken = req.cookies.get('privy-token')?.value;
+        if (privyToken) {
+            try {
+                const privyClient = new PrivyClient(
+                    process.env.NEXT_PUBLIC_PRIVY_APP_ID!,
+                    process.env.PRIVY_SECRET!
+                );
+                const verifiedUser = await privyClient.verifyAuthToken(privyToken);
+                const privyUser = await privyClient.getUserById(verifiedUser.userId);
+                const wallet = privyUser.linkedAccounts.find(
+                    (a) => a.type === 'wallet'
+                ) as any;
+                if (wallet?.address) {
+                    walletAddress = (wallet.address as string).toLowerCase();
+                }
+            } catch {
+                // Invalid Privy token — fall through
+            }
+        }
+    }
+
+    // ── Method 3: NextAuth session cookie ───────────────────────────────────
     if (!walletAddress) {
         try {
             const session = await getServerSession(authOptions) as any;
