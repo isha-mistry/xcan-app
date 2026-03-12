@@ -106,7 +106,7 @@ export default function RegistrationForm({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="glass-container rounded-2xl p-6 md:p-8 max-w-2xl mx-auto"
+            className="glass-container rounded-2xl p-6 md:p-8 max-w-2xl mx-auto min-h-[550px]"
         >
             <h2 className="text-xl font-black text-white font-unbounded tracking-tight mb-1">
                 Join a Builder Pod

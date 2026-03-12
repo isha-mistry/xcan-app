@@ -12,14 +12,13 @@ import {
     ExternalLink,
     Shield,
 } from "lucide-react";
+import ConnectYourWallet from "../ComponentUtils/ConnectYourWallet";
+import { useAccount } from "wagmi";
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
-interface ProfilePodSectionProps {
-    walletAddress: string | null;
-}
-
-export default function ProfilePodSection({ walletAddress }: ProfilePodSectionProps) {
+export default function ProfilePodSection() {
+    const { address: walletAddress } = useAccount();
     const { data, isLoading } = useSWR(
         walletAddress
             ? `/api/builder-pods/members/me?wallet=${walletAddress}`
@@ -27,10 +26,16 @@ export default function ProfilePodSection({ walletAddress }: ProfilePodSectionPr
         fetcher
     );
 
-    if (!walletAddress) return null;
+    if (!walletAddress) {
+        return (
+            <div className="py-8">
+                <ConnectYourWallet showBg={false} />
+            </div>
+        );
+    }
     if (isLoading) {
         return (
-            <div className="glass-container rounded-2xl p-6 animate-pulse">
+            <div className="glass-container rounded-2xl p-6 animate-pulse min-h-[550px]">
                 <div className="h-5 w-40 bg-white/5 rounded-lg mb-4" />
                 <div className="h-20 bg-white/[0.02] rounded-xl" />
             </div>
@@ -73,8 +78,8 @@ export default function ProfilePodSection({ walletAddress }: ProfilePodSectionPr
                     </span>
                 </div>
                 <span className={`px-2 py-0.5 rounded-full text-[8px] font-bold uppercase font-robotoMono ${membership.status === "active"
-                        ? "bg-green-500/10 text-green-400"
-                        : "bg-amber-500/10 text-amber-400"
+                    ? "bg-green-500/10 text-green-400"
+                    : "bg-amber-500/10 text-amber-400"
                     }`}>
                     {membership.status}
                 </span>
