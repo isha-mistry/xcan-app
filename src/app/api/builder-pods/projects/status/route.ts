@@ -3,6 +3,7 @@ import { dbConnect } from '@/lib/dbConnect';
 import { PodProject } from '@/models/PodProject';
 import { AuditLog } from '@/models/AuditLog';
 import { Notification } from '@/models/Notification';
+import { recalculatePodScore } from '@/lib/builder-pods/leaderboard';
 
 // PATCH /api/builder-pods/projects/status — update project status or approve
 export async function PATCH(req: NextRequest) {
@@ -66,6 +67,9 @@ export async function PATCH(req: NextRequest) {
             oldValue: oldValues,
             newValue: newValues,
         });
+
+        // Inline leaderboard update for pod score
+        await recalculatePodScore(project.collegeId);
 
         return NextResponse.json(
             { success: true, project: { _id: project._id, status: project.status, isApproved: project.isApproved } },

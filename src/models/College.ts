@@ -62,8 +62,8 @@ const CollegeSchema = new Schema<ICollege>(
     { timestamps: true }
 );
 
-CollegeSchema.pre('save', async function () {
-    if (this.isModified('name') && !this.slug) {
+CollegeSchema.pre('validate', function () {
+    if (!this.slug && this.name) {
         this.slug = this.name
             .toLowerCase()
             .replace(/[^a-z0-9\s-]/g, '')

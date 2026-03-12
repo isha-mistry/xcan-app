@@ -4,7 +4,7 @@ import { UserRole } from '@/models/PlatformRole';
 import { dbConnect } from '@/lib/dbConnect';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/auth-options';
-import { PrivyClient } from '@privy-io/server-auth';
+import { getPrivyClient } from '@/lib/privy';
 
 export type RoleSlug =
     | 'super_admin'
@@ -47,10 +47,7 @@ export async function getAuthContext(req: NextRequest): Promise<AuthContext | nu
         const privyToken = req.cookies.get('privy-token')?.value;
         if (privyToken) {
             try {
-                const privyClient = new PrivyClient(
-                    process.env.NEXT_PUBLIC_PRIVY_APP_ID!,
-                    process.env.PRIVY_SECRET!
-                );
+                const privyClient = getPrivyClient();
                 const verifiedUser = await privyClient.verifyAuthToken(privyToken);
                 const privyUser = await privyClient.getUserById(verifiedUser.userId);
                 const wallet = privyUser.linkedAccounts.find(

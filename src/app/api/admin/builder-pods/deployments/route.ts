@@ -10,6 +10,7 @@ import {
     buildCollegeFilter, verifyCollegeAccess,
     UnauthorizedError, ForbiddenError
 } from '@/lib/rbac';
+import { recalculateMemberScore, recalculatePodScore } from '@/lib/builder-pods/leaderboard';
 
 // GET — list pending (unverified) deployments
 // super_admin sees all, college_admin/mentor sees only their college's
@@ -89,6 +90,14 @@ export async function PATCH(req: NextRequest) {
                 body: `Your deployment (${dep.txHash.slice(0, 10)}...) has been verified.`,
                 link: '/builder-pods',
             });
+
+            // Inline leaderboard update
+            const member = await PodMember.findOne({
+                walletAddress: dep.walletAddress,
+                collegeId: dep.collegeId,
+            });
+            if (member) await recalculateMemberScore(member._id);
+            await recalculatePodScore(dep.collegeId);
         } else if (action === 'reject') {
             await Deployment.findByIdAndDelete(deploymentId);
         } else {

@@ -8,7 +8,7 @@ export async function GET() {
 
         const pods = await LeaderboardScore.find()
             .populate('collegeId', 'name slug city state podName status')
-            .sort({ rank: 1, totalScore: -1 })
+            .sort({ totalScore: -1 })
             .lean();
 
         return NextResponse.json({ success: true, pods }, { status: 200 });

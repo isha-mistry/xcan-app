@@ -122,9 +122,32 @@ export async function POST(req: NextRequest) {
     }
 }
 
-export async function GET() {
+export async function GET(req: NextRequest) {
     try {
         await dbConnect();
+
+        const token = req.nextUrl.searchParams.get('token');
+
+        if (token) {
+            const event = await LabEvent.findOne({ qrToken: token, qrIsActive: true })
+                .populate('collegeId', 'name slug city state')
+                .lean() as any;
+
+            if (!event || !event.collegeId) {
+                return NextResponse.json(
+                    { success: false, error: 'Invalid or expired QR token' },
+                    { status: 404 }
+                );
+            }
+
+            return NextResponse.json({
+                success: true,
+                collegeSlug: event.collegeId.slug,
+                collegeName: event.collegeId.name,
+                eventName: event.eventName,
+            }, { status: 200 });
+        }
+
         const colleges = await College.find({ deletedAt: null, status: 'active' })
             .select('name slug city state')
             .sort({ name: 1 })
