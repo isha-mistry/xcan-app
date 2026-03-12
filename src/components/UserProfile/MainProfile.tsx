@@ -45,6 +45,7 @@ import { useConnection } from "@/app/hooks/useConnection";
 import { RiTelegram2Fill } from "react-icons/ri";
 import UploadVideoButton from "../ComponentUtils/UploadVideoButton";
 import UploadedVideosTab from "../ComponentUtils/UploadedVideosTab";
+import ProfileSection from "../BuilderPods/ProfileSection";
 interface Following {
   follower_address: string;
   isFollowing: boolean;
@@ -760,7 +761,8 @@ function MainProfile() {
             <div>
               {/* {console.log("loading states",selfDelegate,isDelegate,isDelegateLoading)  } */}
               {searchParams.get("active") === "info" ? (
-                <div className="pt-2 xs:pt-4 sm:pt-6 px-4 md:px-6 lg:px-14">
+                <div className="pt-2 xs:pt-4 sm:pt-6 px-4 md:px-6 lg:px-14 space-y-6">
+                  {address && <ProfileSection walletAddress={address} />}
                   <UserInfo
                     description={description}
                     onSaveButtonClick={(newDescription?: string) =>

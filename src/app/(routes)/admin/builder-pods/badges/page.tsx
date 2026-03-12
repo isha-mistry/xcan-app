@@ -6,9 +6,12 @@ import { motion } from "framer-motion";
 import {
     ArrowLeft,
     Award,
+    ExternalLink,
     Loader2,
     Search,
     Shield,
+    CheckCircle,
+    AlertCircle,
 } from "lucide-react";
 
 const fetcher = (url: string) => fetch(url, { credentials: "include" }).then((r) => r.json());
@@ -30,6 +33,7 @@ export default function AdminBadgesPage() {
     );
 
     const [assigning, setAssigning] = useState(false);
+    const [assignResult, setAssignResult] = useState<{ success: boolean; message: string } | null>(null);
     const [form, setForm] = useState({
         walletAddress: "",
         badgeSlug: "",
@@ -39,23 +43,30 @@ export default function AdminBadgesPage() {
     const handleAssign = async (e: React.FormEvent) => {
         e.preventDefault();
         setAssigning(true);
+        setAssignResult(null);
         try {
-            await fetch("/api/builder-pods/badges/assign", {
+            const res = await fetch("/api/builder-pods/badges/assign", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 credentials: "include",
                 body: JSON.stringify(form),
             });
-            setForm({ walletAddress: "", badgeSlug: "", collegeId: "" });
-            if (walletSearch) mutate(`/api/builder-pods/badges/user/${walletSearch}`);
-        } catch (e) {
-            console.error(e);
+            const data = await res.json();
+            if (data.success) {
+                setAssignResult({ success: true, message: `Badge "${form.badgeSlug}" assigned successfully.` });
+                setForm({ walletAddress: "", badgeSlug: "", collegeId: "" });
+                if (walletSearch) mutate(`/api/builder-pods/badges/user/${walletSearch}`);
+            } else {
+                setAssignResult({ success: false, message: data.error || "Failed to assign badge." });
+            }
+        } catch {
+            setAssignResult({ success: false, message: "Network error. Please try again." });
         } finally {
             setAssigning(false);
         }
     };
 
-    const badgeTypes = badgeTypesData?.badgeTypes ?? [];
+    const badgeTypes = badgeTypesData?.badges ?? [];
     const userBadges = userBadgesData?.badges ?? [];
 
     return (
@@ -138,6 +149,12 @@ export default function AdminBadgesPage() {
                             {assigning ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Shield className="w-3.5 h-3.5" />}
                             Assign Badge
                         </button>
+                        {assignResult && (
+                            <div className={`flex items-center gap-2 p-3 rounded-lg text-[10px] font-robotoMono ${assignResult.success ? "bg-green-500/5 text-green-400" : "bg-red-500/5 text-red-400"}`}>
+                                {assignResult.success ? <CheckCircle className="w-3.5 h-3.5 shrink-0" /> : <AlertCircle className="w-3.5 h-3.5 shrink-0" />}
+                                {assignResult.message}
+                            </div>
+                        )}
                     </div>
                 </motion.form>
 
@@ -181,7 +198,19 @@ export default function AdminBadgesPage() {
                                             </span>
                                             <p className="text-[9px] text-white/15 font-robotoMono">
                                                 {new Date(badge.assignedAt).toLocaleDateString("en-IN")}
-                                                {badge.attestationUid && " · Attested ✓"}
+                                                {badge.easUid && (
+                                                    <>
+                                                        {" · "}
+                                                        <a
+                                                            href={`https://sepolia.easscan.org/attestation/view/${badge.easUid}`}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="text-cyan-400/60 hover:text-cyan-400 inline-flex items-center gap-0.5"
+                                                        >
+                                                            Attested <ExternalLink className="w-2.5 h-2.5 inline" />
+                                                        </a>
+                                                    </>
+                                                )}
                                             </p>
                                         </div>
                                     </div>

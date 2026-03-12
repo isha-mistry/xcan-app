@@ -6,6 +6,7 @@ import { AuditLog } from '@/models/AuditLog';
 import { Notification } from '@/models/Notification';
 import { getAuthContext, requireRole, UnauthorizedError, ForbiddenError } from '@/lib/rbac';
 import { awardBadgeOnEvent } from '@/lib/builder-pods/badges';
+import { recalculateMemberScore, recalculatePodScore } from '@/lib/builder-pods/leaderboard';
 
 // GET — list pending members (admin only)
 export async function GET(req: NextRequest) {
@@ -82,6 +83,10 @@ export async function PATCH(req: NextRequest) {
                 body: 'You are now an active Builder Pod member.',
                 link: '/builder-pods',
             });
+
+            // Inline leaderboard update
+            await recalculateMemberScore(member._id);
+            await recalculatePodScore(member.collegeId);
         } else if (action === 'reject') {
             member.status = 'inactive';
             await member.save();

@@ -60,15 +60,23 @@ export async function POST(req: NextRequest) {
             );
         }
 
+        const slug = name
+            .toLowerCase()
+            .replace(/[^a-z0-9\s-]/g, '')
+            .replace(/\s+/g, '-')
+            .replace(/-+/g, '-')
+            .trim();
+
         const college = new College({
             name,
+            slug,
             city,
             state,
             stateCode: stateCode || state.slice(0, 2).toUpperCase(),
             regionId,
             regionSnapshot: { name: region.name, showcaseCity: region.showcaseCity },
             podName,
-            facultyName: facultyName || null,
+            facultyCoordinator: facultyName || null,
             status: 'inactive',
         });
 
