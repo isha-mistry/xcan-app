@@ -15,7 +15,7 @@ import {
     Image as ImageIcon,
 } from "lucide-react";
 
-const fetcher = (url: string) => fetch(url).then((r) => r.json());
+const fetcher = (url: string) => fetch(url, { credentials: "include" }).then((r) => r.json());
 
 export default function AdminLabEventsPage() {
     const { data, isLoading } = useSWR(
@@ -43,6 +43,7 @@ export default function AdminLabEventsPage() {
             await fetch("/api/admin/builder-pods/lab-events", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
+                credentials: "include",
                 body: JSON.stringify(form),
             });
             mutate("/api/admin/builder-pods/lab-events");
@@ -64,7 +65,7 @@ export default function AdminLabEventsPage() {
     const viewQR = async (eventId: string) => {
         setQrModal({ eventId, dataUrl: null, registrationUrl: null, loading: true });
         try {
-            const res = await fetch(`/api/admin/builder-pods/lab-events/${eventId}/qr`);
+            const res = await fetch(`/api/admin/builder-pods/lab-events/${eventId}/qr`, { credentials: "include" });
             const data = await res.json();
             setQrModal({ eventId, dataUrl: data.qr?.dataUrl || null, registrationUrl: data.qr?.registrationUrl || null, loading: false });
         } catch {

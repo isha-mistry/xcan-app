@@ -13,7 +13,7 @@ import {
     X,
 } from "lucide-react";
 
-const fetcher = (url: string) => fetch(url).then((r) => r.json());
+const fetcher = (url: string) => fetch(url, { credentials: "include" }).then((r) => r.json());
 
 export default function AdminShowcasesPage() {
     const { data, isLoading } = useSWR(
@@ -29,11 +29,11 @@ export default function AdminShowcasesPage() {
             await fetch("/api/admin/builder-pods/showcases", {
                 method: "PATCH",
                 headers: { "Content-Type": "application/json" },
+                credentials: "include",
                 body: JSON.stringify({
                     submissionId,
                     status,
                     placement,
-                    adminWallet: "admin",
                 }),
             });
             mutate("/api/admin/builder-pods/showcases");

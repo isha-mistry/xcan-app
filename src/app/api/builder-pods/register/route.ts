@@ -20,9 +20,16 @@ export async function POST(req: NextRequest) {
             qrToken,
         } = body;
 
-        if (!walletAddress || !name || !collegeSlug) {
+        if (!walletAddress || !/^0x[0-9a-fA-F]{40}$/.test(walletAddress)) {
             return NextResponse.json(
-                { success: false, error: 'walletAddress, name, and collegeSlug are required' },
+                { success: false, error: 'Connect your wallet to register' },
+                { status: 400 }
+            );
+        }
+
+        if (!name || !collegeSlug) {
+            return NextResponse.json(
+                { success: false, error: 'name and collegeSlug are required' },
                 { status: 400 }
             );
         }

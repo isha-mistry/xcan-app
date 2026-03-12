@@ -10,7 +10,7 @@ import {
     Loader2,
 } from "lucide-react";
 
-const fetcher = (url: string) => fetch(url).then((r) => r.json());
+const fetcher = (url: string) => fetch(url, { credentials: "include" }).then((r) => r.json());
 
 const STATUS_COLUMNS = [
     { key: "ideation", label: "Ideation", color: "text-gray-400", bg: "bg-gray-500/10" },
@@ -42,10 +42,10 @@ export default function AdminProjectsPage() {
             await fetch("/api/builder-pods/projects/status", {
                 method: "PATCH",
                 headers: { "Content-Type": "application/json" },
+                credentials: "include",
                 body: JSON.stringify({
                     projectId,
                     status: newStatus,
-                    adminWallet: "admin",
                 }),
             });
             if (selectedCollege) {

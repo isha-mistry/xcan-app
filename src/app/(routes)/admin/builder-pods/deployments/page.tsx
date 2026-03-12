@@ -12,7 +12,7 @@ import {
     ExternalLink,
 } from "lucide-react";
 
-const fetcher = (url: string) => fetch(url).then((r) => r.json());
+const fetcher = (url: string) => fetch(url, { credentials: "include" }).then((r) => r.json());
 
 export default function AdminDeploymentsPage() {
     const { data, isLoading } = useSWR(
@@ -27,10 +27,10 @@ export default function AdminDeploymentsPage() {
             await fetch("/api/admin/builder-pods/deployments", {
                 method: "PATCH",
                 headers: { "Content-Type": "application/json" },
+                credentials: "include",
                 body: JSON.stringify({
                     deploymentId,
                     action,
-                    adminWallet: "admin",
                 }),
             });
             mutate("/api/admin/builder-pods/deployments");

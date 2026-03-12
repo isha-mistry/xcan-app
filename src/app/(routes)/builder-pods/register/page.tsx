@@ -1,14 +1,18 @@
 "use client";
-import React from "react";
+import React, { Suspense } from "react";
 import { usePrivy } from "@privy-io/react-auth";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import Heading from "@/components/ComponentUtils/Heading";
 import RegistrationForm from "@/components/BuilderPods/RegistrationForm";
 
-export default function RegisterPage() {
+function RegisterContent() {
     const { user } = usePrivy();
     const walletAddress = user?.wallet?.address ?? null;
+    console.log("walletAddress", walletAddress);
+    const searchParams = useSearchParams();
+    const initialQrToken = searchParams.get("token") ?? "";
 
     return (
         <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-10 py-6">
@@ -20,7 +24,15 @@ export default function RegisterPage() {
                 Builder Pods
             </Link>
             <Heading />
-            <RegistrationForm walletAddress={walletAddress} />
+            <RegistrationForm walletAddress={walletAddress} initialQrToken={initialQrToken} />
         </div>
+    );
+}
+
+export default function RegisterPage() {
+    return (
+        <Suspense fallback={null}>
+            <RegisterContent />
+        </Suspense>
     );
 }

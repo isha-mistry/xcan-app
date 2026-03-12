@@ -15,7 +15,7 @@ import {
     Code2,
 } from "lucide-react";
 
-const fetcher = (url: string) => fetch(url).then((r) => r.json());
+const fetcher = (url: string) => fetch(url, { credentials: "include" }).then((r) => r.json());
 
 export default function AdminCollegesPage() {
     const { data, isLoading } = useSWR(
@@ -31,10 +31,10 @@ export default function AdminCollegesPage() {
             await fetch("/api/admin/builder-pods/colleges", {
                 method: "PATCH",
                 headers: { "Content-Type": "application/json" },
+                credentials: "include",
                 body: JSON.stringify({
                     collegeId,
                     status: newStatus,
-                    adminWallet: "admin",
                 }),
             });
             mutate("/api/admin/builder-pods/colleges");

@@ -12,7 +12,7 @@ import {
     Clock,
 } from "lucide-react";
 
-const fetcher = (url: string) => fetch(url).then((r) => r.json());
+const fetcher = (url: string) => fetch(url, { credentials: "include" }).then((r) => r.json());
 
 export default function AdminMembersPage() {
     const { data, isLoading } = useSWR(
@@ -28,10 +28,10 @@ export default function AdminMembersPage() {
             await fetch("/api/admin/builder-pods/members", {
                 method: "PATCH",
                 headers: { "Content-Type": "application/json" },
+                credentials: "include",
                 body: JSON.stringify({
                     memberId,
                     action,
-                    adminWallet: "admin", // In production, get from auth context
                 }),
             });
             mutate("/api/admin/builder-pods/members");
