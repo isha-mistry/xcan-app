@@ -3,7 +3,6 @@ import { dbConnect } from '@/lib/dbConnect';
 import { College } from '@/models/College';
 import { PodProject } from '@/models/PodProject';
 import { PodMember } from '@/models/PodMember';
-import { PodMember } from '@/models/PodMember';
 import { AuditLog } from '@/models/AuditLog';
 import { ProjectSchema } from '@/schemas/builder-pods';
 import {
@@ -60,7 +59,7 @@ export async function POST(
 
         const membership = await PodMember.findOne({
             collegeId: college._id,
-            walletAddress: wallet,
+            walletAddress: walletAddress,
             status: { $in: ['active', 'pending'] },
             deletedAt: null,
         }).lean();
@@ -81,10 +80,10 @@ export async function POST(
             demoLink: demoLink || null,
             techStack: techStack || [],
             status: 'ideation',
-            createdBy: wallet,
-            teamLeader: wallet,
+            createdBy: walletAddress,
+            teamLeader: walletAddress,
             teamMembers: [{
-                walletAddress: wallet,
+                walletAddress: walletAddress,
                 name: membership.name,
                 role: 'team_leader',
                 joinedAt: new Date(),
@@ -106,7 +105,7 @@ export async function POST(
             action: 'project.create',
             entityType: 'PodProject',
             entityId: project._id.toString(),
-            newValue: { name, status: 'ideation', teamLeader: wallet, teamCode: project.teamCode },
+            newValue: { name, status: 'ideation', teamLeader: walletAddress, teamCode: project.teamCode },
         });
 
         return NextResponse.json(
