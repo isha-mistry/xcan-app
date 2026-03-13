@@ -61,10 +61,10 @@ function Heading() {
               {title}
             </div>
           </div>
-          <div className="flex gap-1 xs:gap-2 items-center font-robotoMono">
-            <RewardButton />
+          {/* <div className="flex gap-1 xs:gap-2 items-center font-robotoMono"> */}
+            {/* <RewardButton /> */}
             {/* <ConnectWalletWithENS /> */}
-          </div>
+          {/* </div> */}
         </div>
       </motion.div>
     </>

@@ -117,7 +117,7 @@ export default function AdminProjectsPage() {
                     <p className="text-sm text-white/30 font-robotoMono">Select a college to view projects</p>
                 </div>
             ) : projectsLoading ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
                     {STATUS_COLUMNS.map((col) => (
                         <div key={col.key} className="glass-container rounded-2xl p-4 animate-pulse">
                             <div className="h-4 w-24 bg-white/5 rounded-lg mb-4" />
@@ -129,7 +129,7 @@ export default function AdminProjectsPage() {
                     ))}
                 </div>
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
                     {STATUS_COLUMNS.map((col) => {
                         const colProjects = projects.filter((p: any) => p.status === col.key);
                         return (

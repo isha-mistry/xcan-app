@@ -28,7 +28,7 @@ export async function GET(
                 .lean(),
 
             PodProject.find({ collegeId: college._id, deletedAt: null })
-                .select('name problemStatement githubRepo contractAddress demoLink techStack status isApproved createdAt')
+                .select('name problemStatement githubRepo contractAddress demoLink techStack status isApproved teamCode teamLeader teamMembers createdBy createdAt')
                 .sort({ createdAt: -1 })
                 .lean(),
 

@@ -10,6 +10,11 @@ import { LeaderboardScore } from '@/models/LeaderboardScore';
 import { ShowcaseSubmission } from '@/models/ShowcaseSubmission';
 import { AuditLog } from '@/models/AuditLog';
 import { Notification } from '@/models/Notification';
+import { BadgeType } from '@/models/BadgeType';
+import { PlatformRole } from '@/models/PlatformRole';
+import { ProgramMilestone } from '@/models/ProgramMilestone';
+import { Region } from '@/models/Region';
+import { ShowcaseEvent } from '@/models/ShowcaseEvent';
 
 /**
  * Ensures all required indexes exist.
@@ -32,6 +37,11 @@ export async function ensureIndexes(): Promise<void> {
         ShowcaseSubmission.ensureIndexes(),
         AuditLog.ensureIndexes(),
         Notification.ensureIndexes(),
+        BadgeType.ensureIndexes(),
+        PlatformRole.ensureIndexes(),
+        ProgramMilestone.ensureIndexes(),
+        Region.ensureIndexes(),
+        ShowcaseEvent.ensureIndexes(),
     ]);
 
     console.log('[DB] All indexes ensured');

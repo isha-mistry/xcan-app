@@ -3,6 +3,7 @@ import { dbConnect } from '@/lib/dbConnect';
 import { College } from '@/models/College';
 import { PodProject } from '@/models/PodProject';
 import { PodMember } from '@/models/PodMember';
+import { PodMember } from '@/models/PodMember';
 import { AuditLog } from '@/models/AuditLog';
 import { ProjectSchema } from '@/schemas/builder-pods';
 import {
@@ -13,7 +14,7 @@ import {
     verifyCollegeAccess,
 } from '@/lib/rbac';
 
-// POST — submit a new project
+// POST — submit a new project (requires pod membership)
 export async function POST(
     req: NextRequest,
     { params }: { params: Promise<{ slug: string }> }
@@ -57,6 +58,20 @@ export async function POST(
             }
         }
 
+        const membership = await PodMember.findOne({
+            collegeId: college._id,
+            walletAddress: wallet,
+            status: { $in: ['active', 'pending'] },
+            deletedAt: null,
+        }).lean();
+
+        if (!membership) {
+            return NextResponse.json(
+                { success: false, error: 'You must be a member of this pod to submit a project' },
+                { status: 403 }
+            );
+        }
+
         const project = await PodProject.create({
             collegeId: college._id,
             name: name.trim(),
@@ -66,23 +81,43 @@ export async function POST(
             demoLink: demoLink || null,
             techStack: techStack || [],
             status: 'ideation',
-            createdBy: walletAddress,
+            createdBy: wallet,
+            teamLeader: wallet,
+            teamMembers: [{
+                walletAddress: wallet,
+                name: membership.name,
+                role: 'team_leader',
+                joinedAt: new Date(),
+            }],
         });
 
-        // Increment college project count
+        // Promote submitter to tech_lead if they're a regular member
+        if (membership.role === 'member') {
+            await PodMember.updateOne(
+                { _id: membership._id },
+                { $set: { role: 'tech_lead' } }
+            );
+        }
+
         await College.findByIdAndUpdate(college._id, { $inc: { projectCount: 1 } });
 
-        // Audit
         await AuditLog.create({
             actorWallet: walletAddress,
             action: 'project.create',
             entityType: 'PodProject',
             entityId: project._id.toString(),
-            newValue: { name, status: 'ideation' },
+            newValue: { name, status: 'ideation', teamLeader: wallet, teamCode: project.teamCode },
         });
 
         return NextResponse.json(
-            { success: true, project: { _id: project._id, status: project.status } },
+            {
+                success: true,
+                project: {
+                    _id: project._id,
+                    status: project.status,
+                    teamCode: project.teamCode,
+                },
+            },
             { status: 201 }
         );
     } catch (error: any) {

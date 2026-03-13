@@ -34,7 +34,7 @@ const medalColors = ["text-amber-400", "text-gray-300", "text-amber-600"];
 export default function PodLeaderboardTable({ pods, isLoading }: PodLeaderboardTableProps) {
     if (isLoading) {
         return (
-            <div className="space-y-3">
+            <div className="space-y-3 min-h-svh">
                 {Array.from({ length: 5 }).map((_, i) => (
                     <div key={i} className="glass-container rounded-2xl p-5 animate-pulse">
                         <div className="flex items-center gap-4">
@@ -51,13 +51,13 @@ export default function PodLeaderboardTable({ pods, isLoading }: PodLeaderboardT
     if (!pods.length) {
         return (
             <div className="glass-container rounded-2xl p-12 text-center">
-                <p className="text-white/20 text-sm font-robotoMono">No leaderboard data yet.</p>
+                <p className="text-white/20 text-sm font-robotoMono py-20">No leaderboard data yet.</p>
             </div>
         );
     }
 
     return (
-        <div className="space-y-3">
+        <div className="space-y-3 min-h-svh">
             {pods.map((pod, index) => {
                 const rank = pod.rank ?? index + 1;
                 const isTopThree = rank <= 3;

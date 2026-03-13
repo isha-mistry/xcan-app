@@ -20,7 +20,7 @@ export async function GET(
         }
 
         const projects = await PodProject.find({ collegeId: college._id, deletedAt: null })
-            .select('name problemStatement githubRepo contractAddress demoLink techStack status isApproved statusUpdatedAt createdAt')
+            .select('name problemStatement githubRepo contractAddress demoLink techStack status isApproved statusUpdatedAt teamCode teamLeader teamMembers createdBy createdAt')
             .sort({ createdAt: -1 })
             .lean();
 

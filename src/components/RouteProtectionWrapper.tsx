@@ -23,8 +23,8 @@ interface RouteProtectionWrapperProps {
 export default function RouteProtectionWrapper({ children }: RouteProtectionWrapperProps) {
   const pathname = usePathname();
 
-  // Public routes that don't require authentication
-  const publicRoutes = [
+  // Exact public routes that don't require authentication
+  const exactPublicRoutes = [
     "/", // Home page
     "/members", // Dashboard page - accessible to all users
     "/doc",
@@ -37,9 +37,19 @@ export default function RouteProtectionWrapper({ children }: RouteProtectionWrap
     "/orbit-chains",
     "/meeting",
     "/watch",
+    "/builder-pods", // keep exact root too
   ];
 
-  const isPublicRoute = publicRoutes.includes(pathname);
+  // Prefix public routes where nested pages should also stay public
+  const publicPrefixes = [
+    "/builder-pods",
+    "/watch",
+    "/meeting",
+  ];
+
+  const isPublicRoute =
+    exactPublicRoutes.includes(pathname) ||
+    publicPrefixes.some((prefix) => pathname.startsWith(`${prefix}/`));
 
   // If it's a public route, render children without protection
   if (isPublicRoute) {

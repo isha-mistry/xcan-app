@@ -14,6 +14,13 @@ import { useEffect, useState } from "react";
 import { Badge, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem } from "@nextui-org/react";
 import { fetchApi } from "@/utils/api";
 import { useSidebarStore } from "@/store/sidebarStore";
+import { useDisconnect } from "wagmi";
+
+function isRouteActive(pathname: string, href: string) {
+  const base = href.split("?")[0];
+  if (base === "/") return pathname === "/";
+  return pathname === base || pathname.startsWith(`${base}/`);
+}
 
 function TopNavbar() {
   const pathname = usePathname();
@@ -29,6 +36,7 @@ function TopNavbar() {
   } = useNotificationStudioState();
 
   const [isScrolled, setIsScrolled] = useState(false);
+  const { disconnect } = useDisconnect();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -112,7 +120,9 @@ function TopNavbar() {
     { label: "Lectures", href: "/lectures?hours=ongoing" }
   ];
 
-  const isSessionActive = sessionLinks.some(link => pathname.includes(link.href.split('?')[0]));
+  const isSessionActive = sessionLinks.some((link) =>
+    isRouteActive(pathname, link.href)
+  );
 
   const handleCopy = () => {
     if (address) {
@@ -151,14 +161,14 @@ function TopNavbar() {
               key={item.href}
               href={item.href}
               target={item.external ? "_blank" : undefined}
-              className={`text-[11px] font-bold transition-all px-4 py-2.5 rounded-full uppercase tracking-widest flex items-baseline gap-1.5 ${pathname.includes(item.href.split('?')[0])
+              className={`text-[11px] font-bold transition-all px-4 py-2.5 rounded-full uppercase tracking-widest flex items-baseline gap-1.5 ${!item.external && isRouteActive(pathname, item.href)
                 ? "bg-white text-black"
                 : "text-white/60 hover:text-white hover:bg-white/5"
                 }`}
             >
               <span>{item.label}</span>
               {item.subLabel && (
-                <span className={`text-[8px] font-bold ${pathname.includes(item.href) ? "text-black/40" : "text-blue-400"}`}>
+                <span className={`text-[8px] font-bold ${!item.external && isRouteActive(pathname, item.href) ? "text-black/40" : "text-blue-400"}`}>
                   {item.subLabel}
                 </span>
               )}
@@ -184,7 +194,7 @@ function TopNavbar() {
                 >
                   <Link
                     href={item.href}
-                    className={`block w-full text-[11px] font-bold uppercase tracking-wider ${pathname.includes(item.href.split('?')[0]) ? "text-white" : "text-white/60"}`}
+                    className={`block w-full text-[11px] font-bold uppercase tracking-wider ${isRouteActive(pathname, item.href) ? "text-white" : "text-white/60"}`}
                   >
                     {item.label}
                   </Link>
@@ -259,7 +269,7 @@ function TopNavbar() {
                 <DropdownItem
                   key="logout"
                   textValue="Logout"
-                  onPress={() => logout()}
+                  onPress={() => { logout(); disconnect() }}
                   className="rounded-lg data-[hover=true]:bg-red-500/10 text-red-400 data-[hover=true]:text-red-400 mt-1"
                 >
                   <div className="flex items-center gap-2 py-1">

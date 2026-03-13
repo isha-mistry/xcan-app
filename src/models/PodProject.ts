@@ -1,4 +1,5 @@
 import mongoose, { Document, Schema, Types } from 'mongoose';
+import crypto from 'crypto';
 
 export const PROJECT_STATUS = [
     'ideation',
@@ -7,6 +8,13 @@ export const PROJECT_STATUS = [
     'deployed',
     'demo_ready',
 ] as const;
+
+export interface IProjectTeamMember {
+    walletAddress: string;
+    name: string;
+    role: 'team_leader' | 'team_member';
+    joinedAt: Date;
+}
 
 export interface IPodProject extends Document {
     collegeId: Types.ObjectId;
@@ -24,10 +32,23 @@ export interface IPodProject extends Document {
     approvedAt: Date | null;
     submittedToShowcase: boolean;
     createdBy: string;
+    teamCode: string;
+    teamLeader: string;
+    teamMembers: IProjectTeamMember[];
     deletedAt: Date | null;
     createdAt: Date;
     updatedAt: Date;
 }
+
+const ProjectTeamMemberSchema = new Schema<IProjectTeamMember>(
+    {
+        walletAddress: { type: String, required: true, lowercase: true },
+        name: { type: String, required: true, trim: true },
+        role: { type: String, enum: ['team_leader', 'team_member'], default: 'team_member' },
+        joinedAt: { type: Date, default: Date.now },
+    },
+    { _id: false }
+);
 
 const PodProjectSchema = new Schema<IPodProject>(
     {
@@ -46,6 +67,14 @@ const PodProjectSchema = new Schema<IPodProject>(
         approvedAt: { type: Date, default: null },
         submittedToShowcase: { type: Boolean, default: false },
         createdBy: { type: String, required: true, lowercase: true },
+        teamCode: {
+            type: String,
+            required: true,
+            unique: true,
+            default: () => crypto.randomBytes(4).toString('hex').toUpperCase(),
+        },
+        teamLeader: { type: String, required: true, lowercase: true },
+        teamMembers: { type: [ProjectTeamMemberSchema], default: [] },
         deletedAt: { type: Date, default: null },
     },
     { timestamps: true }
@@ -53,6 +82,7 @@ const PodProjectSchema = new Schema<IPodProject>(
 
 PodProjectSchema.index({ collegeId: 1 });
 PodProjectSchema.index({ status: 1 });
+PodProjectSchema.index({ teamCode: 1 }, { unique: true });
 
 export const PodProject =
     mongoose.models.PodProject || mongoose.model<IPodProject>('PodProject', PodProjectSchema);

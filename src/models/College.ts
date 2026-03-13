@@ -27,6 +27,7 @@ export interface ICollege extends Document {
     activeMemberCount: number;
     projectCount: number;
     deploymentCount: number;
+    projectProgress: number;
     deletedAt: Date | null;
     createdAt: Date;
     updatedAt: Date;
@@ -57,6 +58,7 @@ const CollegeSchema = new Schema<ICollege>(
         activeMemberCount: { type: Number, default: 0, min: 0 },
         projectCount: { type: Number, default: 0, min: 0 },
         deploymentCount: { type: Number, default: 0, min: 0 },
+        projectProgress: { type: Number, default: 0, min: 0, max: 100 },
         deletedAt: { type: Date, default: null },
     },
     { timestamps: true }
