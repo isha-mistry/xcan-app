@@ -14,7 +14,10 @@ const memberApprovalActionValues = ['approve', 'reject'] as const;
 const deploymentActionValues = ['verify', 'reject'] as const;
 
 export const RegisterSchema = z.object({
-    qrToken: z.string().min(6).max(64).optional(),
+    qrToken: z.preprocess(
+        (value) => (typeof value === 'string' && value.trim() === '' ? undefined : value),
+        z.string().min(6).max(64)
+    ).optional(),
     name: z.string().min(2).max(100).trim(),
     collegeSlug: z.string().min(2).max(100),
     programmingLevel: z.enum(['beginner', 'intermediate', 'advanced']).optional(),

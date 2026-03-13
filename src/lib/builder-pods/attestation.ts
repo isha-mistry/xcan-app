@@ -122,14 +122,50 @@ export async function queueOnChainAttestation(
 ): Promise<string> {
     // Resolve college name for the attestation data
     let collegeName = 'Unknown';
-    if (context.collegeId) {
-        try {
-            const { College } = await import('@/models/College');
-            const college = await College.findById(context.collegeId, 'name').lean();
-            if (college) collegeName = (college as any).name;
-        } catch {
-            // If model import fails, continue with default
+
+    try {
+        const { dbConnect } = await import('@/lib/dbConnect');
+        await dbConnect();
+
+        let collegeId: string | undefined = context.collegeId;
+
+        // Fallback: infer collegeId from the member's active pod membership,
+        // or the latest membership if none are active.
+        if (!collegeId) {
+            const { PodMember } = await import('@/models/PodMember');
+
+            const activeMember = await PodMember.findOne({
+                walletAddress,
+                status: 'active',
+                deletedAt: null,
+            })
+                .sort({ createdAt: -1 })
+                .lean();
+
+            if (activeMember?.collegeId) {
+                collegeId = activeMember.collegeId.toString();
+            } else {
+                const anyMember = await PodMember.findOne({
+                    walletAddress,
+                    deletedAt: null,
+                })
+                    .sort({ createdAt: -1 })
+                    .lean();
+                if (anyMember?.collegeId) {
+                    collegeId = anyMember.collegeId.toString();
+                }
+            }
         }
+
+        if (collegeId) {
+            const { College } = await import('@/models/College');
+            const college = await College.findById(collegeId, 'name').lean();
+            if (college) {
+                collegeName = (college as any).name;
+            }
+        }
+    } catch (err) {
+        console.error('[attestation] Failed to resolve college name for badge attestation', err);
     }
 
     const result = await issueOnChainAttestation({

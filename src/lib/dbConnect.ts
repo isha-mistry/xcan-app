@@ -28,8 +28,6 @@ if (!global.mongooseCache) {
 export async function dbConnect(): Promise<typeof mongoose> {
   if (cached.conn) return cached.conn;
 
-  console.log("mongo db: ", MONGODB_URI);
-
   if (!cached.promise) {
     cached.promise = mongoose.connect(MONGODB_URI, {
       bufferCommands: false,

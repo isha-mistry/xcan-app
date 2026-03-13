@@ -1,20 +1,17 @@
 import { NextResponse } from "next/server";
-import mongoose from "mongoose";
 import { dbConnect } from "@/lib/dbConnect";
 import { College } from "@/models/College";
+import { PodMember } from "@/models/PodMember";
 export const revalidate = 0;
 
 export async function GET() {
   try {
     await dbConnect();
 
-    const [colleges, statsResult] = await Promise.all([
-      College.find({ 
-        status: 'active',
-        $or: [
-          { deletedAt: null },
-          { deletedAt: { $exists: false } }
-        ]
+    const [rawColleges, memberAgg] = await Promise.all([
+      College.find({
+        status: "active",
+        $or: [{ deletedAt: null }, { deletedAt: { $exists: false } }],
       })
         .select(
           "name slug city state regionSnapshot podName memberCount activeMemberCount projectCount deploymentCount status activatedAt logoUrl",
@@ -22,41 +19,70 @@ export async function GET() {
         .sort({ name: 1 })
         .lean(),
 
-      College.aggregate([
-        { 
-          $match: { 
-            $or: [
-              { deletedAt: null },
-              { deletedAt: { $exists: false } }
-            ]
-          } 
+      PodMember.aggregate([
+        {
+          $match: {
+            deletedAt: null,
+          },
         },
         {
           $group: {
-            _id: null,
-            totalColleges: { $sum: 1 },
-            activeColleges: {
-              $sum: { $cond: [{ $eq: ["$status", "active"] }, 1, 0] },
+            _id: "$collegeId",
+            memberCount: { $sum: 1 },
+            activeMemberCount: {
+              $sum: {
+                $cond: [{ $eq: ["$status", "active"] }, 1, 0],
+              },
             },
-            totalMembers: { $sum: "$memberCount" },
-            totalActiveMembers: { $sum: "$activeMemberCount" },
-            totalDeployments: { $sum: "$deploymentCount" },
-            totalProjects: { $sum: "$projectCount" },
           },
         },
       ]),
     ]);
 
-    const stats = statsResult[0] ?? {
-      totalColleges: 0,
-      activeColleges: 0,
-      totalMembers: 0,
-      totalActiveMembers: 0,
-      totalDeployments: 0,
-      totalProjects: 0,
-    };
+    const countsByCollegeId = new Map<
+      string,
+      { memberCount: number; activeMemberCount: number }
+    >();
+    for (const row of memberAgg as any[]) {
+      countsByCollegeId.set(String(row._id), {
+        memberCount: row.memberCount ?? 0,
+        activeMemberCount: row.activeMemberCount ?? 0,
+      });
+    }
 
-    // console.log("console: ", colleges);
+    const colleges = rawColleges.map((c: any) => {
+      const counts =
+        countsByCollegeId.get(String(c._id)) ?? {
+          memberCount: 0,
+          activeMemberCount: 0,
+        };
+      return {
+        ...c,
+        memberCount: counts.memberCount,
+        activeMemberCount: counts.activeMemberCount,
+      };
+    });
+
+    const stats = {
+      totalColleges: colleges.length,
+      activeColleges: colleges.filter((c: any) => c.status === "active").length,
+      totalMembers: colleges.reduce(
+        (sum: number, c: any) => sum + (c.memberCount ?? 0),
+        0,
+      ),
+      totalActiveMembers: colleges.reduce(
+        (sum: number, c: any) => sum + (c.activeMemberCount ?? 0),
+        0,
+      ),
+      totalDeployments: colleges.reduce(
+        (sum: number, c: any) => sum + (c.deploymentCount ?? 0),
+        0,
+      ),
+      totalProjects: colleges.reduce(
+        (sum: number, c: any) => sum + (c.projectCount ?? 0),
+        0,
+      ),
+    };
 
     return NextResponse.json(
       { success: true, colleges, stats },

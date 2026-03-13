@@ -105,11 +105,21 @@ export default function RegistrationForm({
         setResult(null);
 
         try {
+            const payload: Record<string, string> = (() => {
+                const next: Record<string, string> = { ...form };
+                if (!next.qrToken.trim()) {
+                    // Treat empty QR token as \"no QR used\" so backend validation
+                    // sees an undefined value instead of an empty string.
+                    delete next.qrToken;
+                }
+                return next;
+            })();
+
             const res = await fetch("/api/builder-pods/register", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 credentials: "include",
-                body: JSON.stringify(form),
+                body: JSON.stringify(payload),
             });
 
             const data = await res.json();
@@ -156,7 +166,7 @@ export default function RegistrationForm({
             transition={{ duration: 0.5 }}
             className="glass-container rounded-2xl p-6 md:p-8 max-w-2xl mx-auto"
         >
-            <h2 className="text-xl font-black text-white font-unbounded tracking-tight mb-1">
+            <h2 className=" tracking-tight mb-1">
                 Join a Builder Pod
             </h2>
             <p className="text-xs text-white/30 font-robotoMono mb-8">
