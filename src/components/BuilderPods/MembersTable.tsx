@@ -31,7 +31,7 @@ const roleStyles: Record<string, { bg: string; text: string }> = {
 const statusStyles: Record<string, { bg: string; text: string }> = {
     active: { bg: "bg-green-500/10", text: "text-green-400" },
     pending: { bg: "bg-yellow-500/10", text: "text-yellow-400" },
-    inactive: { bg: "bg-white/5", text: "text-white/30" },
+    inactive: { bg: "bg-white/5", text: "text-white/60" },
     removed: { bg: "bg-red-500/10", text: "text-red-400" },
 };
 
@@ -63,17 +63,17 @@ export default function MembersTable({
             className="glass-container rounded-2xl p-6 mb-8"
         >
             <div className="flex items-center gap-3 mb-6">
-                <Users className="w-4 h-4 text-white/30" />
-                <h2 className="text-[11px] font-bold uppercase tracking-[0.2em] text-white/40 font-robotoMono">
+                <Users className="w-4 h-4 text-white/60" />
+                <h2 className="text-[11px] font-bold uppercase tracking-[0.2em] text-white/70 font-robotoMono">
                     Pod Members
                 </h2>
-                <span className="px-2 py-0.5 rounded-full bg-white/5 text-[10px] font-bold text-white/30 font-robotoMono">
+                <span className="px-2 py-0.5 rounded-full bg-white/5 text-[10px] font-bold text-white/60 font-robotoMono">
                     {members.length}
                 </span>
             </div>
 
             {members.length === 0 ? (
-                <p className="text-white/20 text-sm font-robotoMono text-center py-8">
+                <p className="text-white/50 text-sm font-robotoMono text-center py-8">
                     No members yet.
                 </p>
             ) : (
@@ -85,7 +85,7 @@ export default function MembersTable({
                                     (h) => (
                                         <th
                                             key={h}
-                                            className="text-left text-[9px] font-bold uppercase tracking-widest text-white/20 font-robotoMono pb-3 pr-4"
+                                            className="text-left text-[9px] font-bold uppercase tracking-widest text-white/50 font-robotoMono pb-3 pr-4"
                                         >
                                             {h}
                                         </th>
@@ -112,7 +112,7 @@ export default function MembersTable({
                                                         href={`https://github.com/${m.githubUsername}`}
                                                         target="_blank"
                                                         rel="noopener noreferrer"
-                                                        className="text-white/20 hover:text-white/40 transition-colors"
+                                                        className="text-white/50 hover:text-white/70 transition-colors"
                                                     >
                                                         <Github className="w-3.5 h-3.5" />
                                                     </a>
@@ -135,18 +135,18 @@ export default function MembersTable({
                                                 {m.status}
                                             </span>
                                         </td>
-                                        <td className="py-3 pr-4 text-xs text-white/30 font-robotoMono capitalize">
+                                        <td className="py-3 pr-4 text-xs text-white/60 font-robotoMono capitalize">
                                             {m.programmingLevel || "—"}
                                         </td>
-                                        <td className="py-3 pr-4 text-sm text-white/50 font-robotoMono font-bold">
+                                        <td className="py-3 pr-4 text-sm text-white/75 font-robotoMono font-bold">
                                             {m.stylusModulesCompleted}
                                         </td>
-                                        <td className="py-3 pr-4 text-sm text-white/50 font-robotoMono font-bold">
+                                        <td className="py-3 pr-4 text-sm text-white/75 font-robotoMono font-bold">
                                             {m.contractsDeployed}
                                         </td>
                                         <td className="py-3 pr-4">
                                             <div className="flex items-center gap-1">
-                                                <Award className="w-3 h-3 text-amber-400/50" />
+                                                <Award className="w-3 h-3 text-amber-400/80" />
                                                 <span className="text-sm text-white font-bold font-robotoMono">
                                                     {m.totalScore}
                                                 </span>
@@ -177,7 +177,7 @@ function WalletCell({ address }: { address: string }) {
     return (
         <td className="py-3 pr-4">
             <div className="flex items-center gap-1.5">
-                <span className="text-[11px] text-white/40 font-robotoMono">
+                <span className="text-[11px] text-white/70 font-robotoMono">
                     {truncated}
                 </span>
                 <button
@@ -188,7 +188,7 @@ function WalletCell({ address }: { address: string }) {
                     {copied ? (
                         <CheckCircle2 className="w-3 h-3 text-green-400" />
                     ) : (
-                        <Copy className="w-3 h-3 text-white/15 hover:text-white/30" />
+                        <Copy className="w-3 h-3 text-white/45 hover:text-white/60" />
                     )}
                 </button>
             </div>

@@ -18,7 +18,7 @@ function RegisterContent() {
         <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-10 py-6">
             <Link
                 href="/builder-pods"
-                className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-white/30 hover:text-white/60 font-robotoMono mb-6 transition-colors"
+                className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-white/80 hover:text-white/80 font-robotoMono mb-6 transition-colors"
             >
                 <ArrowLeft className="w-3.5 h-3.5" />
                 Builder Pods

@@ -70,13 +70,13 @@ export default function AddCollegePage() {
 
     return (
         <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-10 py-6">
-            <Link href="/admin/builder-pods/colleges" className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-white/30 hover:text-white/60 font-robotoMono mb-6 transition-colors">
+            <Link href="/admin/builder-pods/colleges" className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-white/80 hover:text-white/80 font-robotoMono mb-6 transition-colors">
                 <ArrowLeft className="w-3.5 h-3.5" />
                 Colleges
             </Link>
 
             <div className="flex items-center gap-3 mb-8">
-                <Building2 className="w-5 h-5 text-green-400/40" />
+                <Building2 className="w-5 h-5 text-green-400/70" />
                 <h1 className="text-2xl font-black text-white font-unbounded tracking-tight">
                     Add College
                 </h1>
@@ -92,8 +92,8 @@ export default function AddCollegePage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {fields.map((field) => (
                         <div key={field.name} className={field.name === "name" ? "md:col-span-2" : ""}>
-                            <label className="block text-[9px] font-bold uppercase tracking-widest text-white/20 font-robotoMono mb-1.5">
-                                {field.label} {field.required && <span className="text-red-400/40">*</span>}
+                            <label className="block text-[9px] font-bold uppercase tracking-widest text-white/75 font-robotoMono mb-1.5">
+                                {field.label} {field.required && <span className="text-red-400/70">*</span>}
                             </label>
                             <input
                                 type={field.name === "maxMembers" ? "number" : field.name === "facultyEmail" ? "email" : "text"}
@@ -102,7 +102,7 @@ export default function AddCollegePage() {
                                 onChange={handleChange}
                                 placeholder={field.placeholder}
                                 required={field.required}
-                                className="w-full px-3 py-2.5 rounded-xl bg-white/[0.03] border border-white/[0.06] text-xs text-white/60 font-robotoMono placeholder:text-white/10 focus:outline-none focus:border-white/15 transition-colors"
+                                className="w-full px-3 py-2.5 rounded-xl bg-white/[0.03] border border-white/[0.06] text-xs text-white/80 font-robotoMono placeholder:text-white/70 focus:outline-none focus:border-white/15 transition-colors"
                             />
                         </div>
                     ))}

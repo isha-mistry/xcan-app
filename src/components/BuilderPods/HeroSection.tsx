@@ -52,7 +52,7 @@ export default function HeroSection() {
                     </h1>
 
                     {/* Description */}
-                    <p className="text-white/50 text-sm md:text-base font-robotoMono leading-relaxed max-w-xl mb-8">
+                    <p className="text-white/75 text-sm md:text-base font-robotoMono leading-relaxed max-w-xl mb-8">
                         A structured university network building on Arbitrum across India.
                         Join Builder Labs, form Pods, deploy contracts, and compete in
                         regional showcases.

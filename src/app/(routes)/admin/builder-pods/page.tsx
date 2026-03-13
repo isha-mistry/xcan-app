@@ -67,7 +67,7 @@ export default function AdminDashboardPage() {
                 <h1 className="text-2xl font-black text-white font-unbounded tracking-tight mb-1">
                     Admin Dashboard
                 </h1>
-                <p className="text-xs text-white/30 font-robotoMono">
+                <p className="text-xs text-white/80 font-robotoMono">
                     Builder Pods administration panel.
                 </p>
             </div>
@@ -98,7 +98,7 @@ export default function AdminDashboardPage() {
                                     <span className="text-3xl font-black text-white font-unbounded block">
                                         {card.value}
                                     </span>
-                                    <p className="text-[9px] font-bold uppercase tracking-widest text-white/20 font-robotoMono mt-1">
+                                    <p className="text-[9px] font-bold uppercase tracking-widest text-white/75 font-robotoMono mt-1">
                                         {card.label}
                                     </p>
                                 </Link>
@@ -116,8 +116,8 @@ export default function AdminDashboardPage() {
                     className="glass-container rounded-2xl p-6 mb-8"
                 >
                     <div className="flex items-center gap-3 mb-4">
-                        <AlertTriangle className="w-4 h-4 text-amber-400/60" />
-                        <h2 className="text-[11px] font-bold uppercase tracking-[0.2em] text-amber-400/40 font-robotoMono">
+                        <AlertTriangle className="w-4 h-4 text-amber-400" />
+                        <h2 className="text-[11px] font-bold uppercase tracking-[0.2em] text-amber-400/70 font-robotoMono">
                             Pods Missing Weekly Update ({dashboard.weeklyUpdatesMissing.count})
                         </h2>
                     </div>
@@ -126,7 +126,7 @@ export default function AdminDashboardPage() {
                             <Link
                                 key={pod._id}
                                 href={`/builder-pods/${pod.slug}`}
-                                className="px-3 py-1.5 rounded-lg bg-amber-500/5 border border-amber-500/10 text-xs text-amber-400/60 font-robotoMono hover:bg-amber-500/10 transition-all"
+                                className="px-3 py-1.5 rounded-lg bg-amber-500/5 border border-amber-500/10 text-xs text-amber-400 font-robotoMono hover:bg-amber-500/10 transition-all"
                             >
                                 {pod.name}
                             </Link>
@@ -143,8 +143,8 @@ export default function AdminDashboardPage() {
                 className="glass-container rounded-2xl p-6"
             >
                 <div className="flex items-center gap-3 mb-4">
-                    <Activity className="w-4 h-4 text-white/25" />
-                    <h2 className="text-[11px] font-bold uppercase tracking-[0.2em] text-white/30 font-robotoMono">
+                    <Activity className="w-4 h-4 text-white/75" />
+                    <h2 className="text-[11px] font-bold uppercase tracking-[0.2em] text-white/80 font-robotoMono">
                         Recent Activity
                     </h2>
                 </div>
@@ -156,7 +156,7 @@ export default function AdminDashboardPage() {
                         ))}
                     </div>
                 ) : !dashboard?.recentAudit?.length ? (
-                    <p className="text-white/15 text-sm font-robotoMono text-center py-6">
+                    <p className="text-white/75 text-sm font-robotoMono text-center py-6">
                         No activity yet.
                     </p>
                 ) : (
@@ -166,14 +166,14 @@ export default function AdminDashboardPage() {
                                 key={log._id}
                                 className="flex items-center gap-3 p-3 rounded-lg bg-white/[0.01] hover:bg-white/[0.02] transition-colors"
                             >
-                                <Clock className="w-3 h-3 text-white/10 shrink-0" />
+                                <Clock className="w-3 h-3 text-white/70 shrink-0" />
                                 <div className="flex-1 min-w-0">
-                                    <span className="text-xs text-white/40 font-robotoMono">
-                                        <span className="text-white/60 font-bold">{log.action}</span>{" "}
+                                    <span className="text-xs text-white/80 font-robotoMono">
+                                        <span className="text-white/80 font-bold">{log.action}</span>{" "}
                                         by {log.actorWallet.slice(0, 8)}...
                                     </span>
                                 </div>
-                                <span className="text-[10px] text-white/10 font-robotoMono shrink-0">
+                                <span className="text-[10px] text-white/70 font-robotoMono shrink-0">
                                     {new Date(log.createdAt).toLocaleString("en-IN", {
                                         day: "2-digit",
                                         month: "short",

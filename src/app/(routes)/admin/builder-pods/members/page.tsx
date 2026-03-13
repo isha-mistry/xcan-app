@@ -17,10 +17,12 @@ import {
     Copy,
     CheckCircle2,
     ChevronDown,
+    ChevronLeft,
+    ChevronRight,
     Award,
     Clock,
     QrCode,
-    Save,
+    Building2,
 } from "lucide-react";
 
 const fetcher = (url: string) =>
@@ -39,7 +41,7 @@ const ASSIGNABLE_ROLES = [
 const statusStyles: Record<string, { bg: string; text: string }> = {
     active: { bg: "bg-green-500/10", text: "text-green-400" },
     pending: { bg: "bg-amber-500/10", text: "text-amber-400" },
-    inactive: { bg: "bg-white/5", text: "text-white/30" },
+    inactive: { bg: "bg-white/5", text: "text-white/80" },
     removed: { bg: "bg-red-500/10", text: "text-red-400" },
 };
 
@@ -68,7 +70,7 @@ function WalletCell({ address }: { address: string }) {
 
     return (
         <div className="flex items-center gap-1.5">
-            <span className="text-[11px] text-white/40 font-robotoMono">
+            <span className="text-[11px] text-white/80 font-robotoMono">
                 {truncated}
             </span>
             <button
@@ -79,7 +81,7 @@ function WalletCell({ address }: { address: string }) {
                 {copied ? (
                     <CheckCircle2 className="w-3 h-3 text-green-400" />
                 ) : (
-                    <Copy className="w-3 h-3 text-white/15 hover:text-white/30" />
+                    <Copy className="w-3 h-3 text-white/75 hover:text-white/80" />
                 )}
             </button>
         </div>
@@ -170,7 +172,7 @@ function RoleDropdown({
                 className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider font-robotoMono transition-all border ${
                     roleStyles[currentRole] 
                         ? `${roleStyles[currentRole].bg} ${roleStyles[currentRole].text} border-current/20` 
-                        : "bg-white/5 text-white/30 border-white/10"
+                        : "bg-white/5 text-white/80 border-white/10"
                 } hover:ring-2 hover:ring-current/10 disabled:opacity-40 disabled:cursor-not-allowed`}
             >
                 <Shield className="w-3 h-3 opacity-60" />
@@ -201,7 +203,7 @@ function RoleDropdown({
                             >
                                 <div className="p-1.5 flex flex-col gap-1">
                                     <div className="px-3 py-2 border-b border-white/5 mb-1">
-                                        <p className="text-[8px] font-bold text-white/30 uppercase tracking-widest">Assign Role</p>
+                                        <p className="text-[8px] font-bold text-white/80 uppercase tracking-widest">Assign Role</p>
                                     </div>
                                     {ASSIGNABLE_ROLES.map((r) => (
                                         <button
@@ -217,7 +219,7 @@ function RoleDropdown({
                                             className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[10px] font-bold font-robotoMono uppercase tracking-wider transition-all ${
                                                 r.value === currentRole
                                                     ? "bg-white/10 text-white"
-                                                    : "text-white/40 hover:bg-white/5 hover:text-white/70"
+                                                    : "text-white/80 hover:bg-white/5 hover:text-white/70"
                                             }`}
                                         >
                                             <div className={`w-2 h-2 rounded-full ${
@@ -243,6 +245,8 @@ function RoleDropdown({
     );
 }
 
+const PAGE_SIZE = 20;
+
 export default function AdminMembersPage() {
     const [activeTab, setActiveTab] = useState<StatusTab>("all");
     const [searchQuery, setSearchQuery] = useState("");
@@ -250,6 +254,8 @@ export default function AdminMembersPage() {
     const [processing, setProcessing] = useState<string | null>(null);
     const [sortField, setSortField] = useState<string>("createdAt");
     const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
+    const [currentPage, setCurrentPage] = useState(1);
+    const [selectedCollege, setSelectedCollege] = useState<string>("all");
 
     const searchTimerRef = React.useRef<NodeJS.Timeout | null>(null);
 
@@ -261,20 +267,54 @@ export default function AdminMembersPage() {
         }, 300);
     };
 
-    const apiUrl = useMemo(() => {
-        const params = new URLSearchParams();
-        if (activeTab !== "all") params.set("status", activeTab);
-        if (debouncedSearch) params.set("search", debouncedSearch);
-        return `/api/admin/builder-pods/members?${params.toString()}`;
-    }, [activeTab, debouncedSearch]);
+    const apiUrl = `/api/admin/builder-pods/members?status=pending,active,inactive,removed`;
 
     const { data, isLoading } = useSWR(apiUrl, fetcher);
 
-    const members = data?.members ?? [];
-    const counts = data?.counts ?? {};
+    const allMembers: any[] = data?.members ?? [];
+
+    const colleges = useMemo(() => {
+        const map = new Map<string, string>();
+        for (const m of allMembers) {
+            if (m.collegeId?._id && m.collegeId?.name) {
+                map.set(m.collegeId._id, m.collegeId.name);
+            }
+        }
+        return Array.from(map, ([id, name]) => ({ id, name })).sort((a, b) =>
+            a.name.localeCompare(b.name)
+        );
+    }, [allMembers]);
+
+    const counts = useMemo(() => {
+        const c: Record<string, number> = { all: allMembers.length };
+        for (const m of allMembers) {
+            c[m.status] = (c[m.status] || 0) + 1;
+        }
+        return c;
+    }, [allMembers]);
+
+    const filtered = useMemo(() => {
+        let list = allMembers;
+        if (activeTab !== "all") {
+            list = list.filter((m: any) => m.status === activeTab);
+        }
+        if (selectedCollege !== "all") {
+            list = list.filter((m: any) => m.collegeId?._id === selectedCollege);
+        }
+        if (debouncedSearch) {
+            const q = debouncedSearch.toLowerCase();
+            list = list.filter(
+                (m: any) =>
+                    m.name?.toLowerCase().includes(q) ||
+                    m.walletAddress?.toLowerCase().includes(q) ||
+                    m.githubUsername?.toLowerCase().includes(q)
+            );
+        }
+        return list;
+    }, [allMembers, activeTab, selectedCollege, debouncedSearch]);
 
     const sorted = useMemo(() => {
-        return [...members].sort((a: any, b: any) => {
+        return [...filtered].sort((a: any, b: any) => {
             let aVal = a[sortField];
             let bVal = b[sortField];
             if (sortField === "college") {
@@ -287,7 +327,17 @@ export default function AdminMembersPage() {
             if (aVal > bVal) return sortDir === "asc" ? 1 : -1;
             return 0;
         });
-    }, [members, sortField, sortDir]);
+    }, [filtered, sortField, sortDir]);
+
+    const totalPages = Math.max(1, Math.ceil(sorted.length / PAGE_SIZE));
+    const paginated = sorted.slice(
+        (currentPage - 1) * PAGE_SIZE,
+        currentPage * PAGE_SIZE
+    );
+
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [activeTab, debouncedSearch, selectedCollege]);
 
     const handleSort = (field: string) => {
         if (sortField === field) {
@@ -355,7 +405,7 @@ export default function AdminMembersPage() {
         <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-10 py-6">
             <Link
                 href="/admin/builder-pods"
-                className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-white/30 hover:text-white/60 font-robotoMono mb-6 transition-colors"
+                className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-white/80 hover:text-white/80 font-robotoMono mb-6 transition-colors"
             >
                 <ArrowLeft className="w-3.5 h-3.5" />
                 Admin Dashboard
@@ -364,24 +414,43 @@ export default function AdminMembersPage() {
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
                 <div className="flex items-center gap-3">
-                    <Users className="w-5 h-5 text-amber-400/40" />
+                    <Users className="w-5 h-5 text-amber-400/70" />
                     <h1 className="text-2xl font-black text-white font-unbounded tracking-tight">
                         Members
                     </h1>
-                    <span className="px-2.5 py-1 rounded-full bg-white/5 text-[10px] font-bold text-white/30 font-robotoMono">
+                    <span className="px-2.5 py-1 rounded-full bg-white/5 text-[10px] font-bold text-white/80 font-robotoMono">
                         {counts.all ?? 0} total
                     </span>
                 </div>
-                {/* Search */}
-                <div className="relative w-full sm:w-72">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/20" />
-                    <input
-                        type="text"
-                        value={searchQuery}
-                        onChange={(e) => handleSearchChange(e.target.value)}
-                        placeholder="Search name, wallet, or GitHub..."
-                        className="w-full bg-white/[0.03] border border-white/10 rounded-xl pl-9 pr-4 py-2.5 text-xs text-white font-robotoMono placeholder:text-white/15 focus:outline-none focus:border-white/20 transition-all"
-                    />
+                <div className="flex items-center gap-3 w-full sm:w-auto">
+                    {/* College Filter */}
+                    <div className="relative w-full sm:w-52">
+                        <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/75 pointer-events-none" />
+                        <select
+                            value={selectedCollege}
+                            onChange={(e) => setSelectedCollege(e.target.value)}
+                            className="w-full appearance-none bg-white/[0.03] border border-white/10 rounded-xl pl-9 pr-8 py-2.5 text-xs text-white font-robotoMono focus:outline-none focus:border-white/20 transition-all cursor-pointer"
+                        >
+                            <option value="all" className="bg-[#0a0f17] text-white">All Colleges</option>
+                            {colleges.map((c) => (
+                                <option key={c.id} value={c.id} className="bg-[#0a0f17] text-white">
+                                    {c.name}
+                                </option>
+                            ))}
+                        </select>
+                        <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/75 pointer-events-none" />
+                    </div>
+                    {/* Search */}
+                    <div className="relative w-full sm:w-72">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/75" />
+                        <input
+                            type="text"
+                            value={searchQuery}
+                            onChange={(e) => handleSearchChange(e.target.value)}
+                            placeholder="Search name, wallet, or GitHub..."
+                            className="w-full bg-white/[0.03] border border-white/10 rounded-xl pl-9 pr-4 py-2.5 text-xs text-white font-robotoMono placeholder:text-white/75 focus:outline-none focus:border-white/20 transition-all"
+                        />
+                    </div>
                 </div>
             </div>
 
@@ -393,7 +462,7 @@ export default function AdminMembersPage() {
                         onClick={() => setActiveTab(tab)}
                         className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-[10px] font-bold uppercase tracking-widest font-robotoMono transition-all whitespace-nowrap ${activeTab === tab
                                 ? "bg-white/10 text-white"
-                                : "text-white/25 hover:text-white/40 hover:bg-white/[0.03]"
+                                : "text-white/75 hover:text-white/80 hover:bg-white/[0.03]"
                             }`}
                     >
                         {tab === "all" ? "All" : tab}
@@ -401,7 +470,7 @@ export default function AdminMembersPage() {
                             <span
                                 className={`px-1.5 py-0.5 rounded-full text-[8px] font-bold ${activeTab === tab
                                         ? "bg-white/10 text-white/70"
-                                        : "bg-white/5 text-white/20"
+                                        : "bg-white/5 text-white/75"
                                     }`}
                             >
                                 {counts[tab] ?? 0}
@@ -429,8 +498,8 @@ export default function AdminMembersPage() {
                 </div>
             ) : sorted.length === 0 ? (
                 <div className="glass-container rounded-2xl p-12 text-center">
-                    <Users className="w-8 h-8 text-white/10 mx-auto mb-3" />
-                    <p className="text-sm text-white/30 font-robotoMono">
+                    <Users className="w-8 h-8 text-white/70 mx-auto mb-3" />
+                    <p className="text-sm text-white/80 font-robotoMono">
                         {debouncedSearch
                             ? "No members match your search."
                             : "No members found."}
@@ -449,11 +518,11 @@ export default function AdminMembersPage() {
                                                 col.sortable &&
                                                 handleSort(col.key)
                                             }
-                                            className={`text-left text-[9px] font-bold uppercase tracking-widest text-white/20 font-robotoMono px-4 py-3 whitespace-nowrap ${col.sortable
-                                                    ? "cursor-pointer hover:text-white/40 select-none"
+                                            className={`text-left text-[9px] font-bold uppercase tracking-widest text-white/75 font-robotoMono px-4 py-3 whitespace-nowrap ${col.sortable
+                                                    ? "cursor-pointer hover:text-white/80 select-none"
                                                     : ""
                                                 } ${sortField === col.key
-                                                    ? "text-white/40"
+                                                    ? "text-white/80"
                                                     : ""
                                                 }`}
                                         >
@@ -472,14 +541,14 @@ export default function AdminMembersPage() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {sorted.map((member: any, index: number) => {
+                                {paginated.map((member: any, index: number) => {
                                     const st =
                                         statusStyles[member.status] ??
                                         statusStyles.inactive;
                                     const lvl = member.programmingLevel
                                         ? levelStyles[
                                         member.programmingLevel
-                                        ] ?? { bg: "bg-white/5", text: "text-white/30" }
+                                        ] ?? { bg: "bg-white/5", text: "text-white/80" }
                                         : null;
                                     const isProcessing =
                                         processing === member._id;
@@ -506,7 +575,7 @@ export default function AdminMembersPage() {
                                                     </span>
                                                     {member.joinedViaQr && (
                                                         <span title="Joined via QR">
-                                                            <QrCode className="w-3 h-3 text-white/15" />
+                                                            <QrCode className="w-3 h-3 text-white/75" />
                                                         </span>
                                                     )}
                                                 </div>
@@ -523,7 +592,7 @@ export default function AdminMembersPage() {
 
                                             {/* College */}
                                             <td className="px-4 py-3">
-                                                <span className="text-[11px] text-white/40 font-robotoMono whitespace-nowrap">
+                                                <span className="text-[11px] text-white/80 font-robotoMono whitespace-nowrap">
                                                     {member.collegeId?.name ??
                                                         "—"}
                                                 </span>
@@ -557,7 +626,7 @@ export default function AdminMembersPage() {
                                                         {member.programmingLevel}
                                                     </span>
                                                 ) : (
-                                                    <span className="text-[11px] text-white/15 font-robotoMono">
+                                                    <span className="text-[11px] text-white/75 font-robotoMono">
                                                         —
                                                     </span>
                                                 )}
@@ -570,13 +639,13 @@ export default function AdminMembersPage() {
                                                         href={`https://github.com/${member.githubUsername}`}
                                                         target="_blank"
                                                         rel="noopener noreferrer"
-                                                        className="flex items-center gap-1 text-[10px] text-white/30 hover:text-white/50 font-robotoMono transition-colors"
+                                                        className="flex items-center gap-1 text-[10px] text-white/80 hover:text-white/75 font-robotoMono transition-colors"
                                                     >
                                                         <Github className="w-3 h-3" />
                                                         {member.githubUsername}
                                                     </a>
                                                 ) : (
-                                                    <span className="text-[11px] text-white/15 font-robotoMono">
+                                                    <span className="text-[11px] text-white/75 font-robotoMono">
                                                         —
                                                     </span>
                                                 )}
@@ -584,14 +653,14 @@ export default function AdminMembersPage() {
 
                                             {/* Modules */}
                                             <td className="px-4 py-3 text-center">
-                                                <span className="text-sm text-white/50 font-robotoMono font-bold">
+                                                <span className="text-sm text-white/75 font-robotoMono font-bold">
                                                     {member.stylusModulesCompleted}
                                                 </span>
                                             </td>
 
                                             {/* Deploys */}
                                             <td className="px-4 py-3 text-center">
-                                                <span className="text-sm text-white/50 font-robotoMono font-bold">
+                                                <span className="text-sm text-white/75 font-robotoMono font-bold">
                                                     {member.contractsDeployed}
                                                 </span>
                                             </td>
@@ -599,7 +668,7 @@ export default function AdminMembersPage() {
                                             {/* Score */}
                                             <td className="px-4 py-3">
                                                 <div className="flex items-center gap-1 justify-center">
-                                                    <Award className="w-3 h-3 text-amber-400/40" />
+                                                    <Award className="w-3 h-3 text-amber-400/70" />
                                                     <span className="text-sm text-white font-bold font-robotoMono">
                                                         {member.totalScore}
                                                     </span>
@@ -608,7 +677,7 @@ export default function AdminMembersPage() {
 
                                             {/* Joined */}
                                             <td className="px-4 py-3">
-                                                <div className="flex items-center gap-1 text-[10px] text-white/20 font-robotoMono whitespace-nowrap">
+                                                <div className="flex items-center gap-1 text-[10px] text-white/75 font-robotoMono whitespace-nowrap">
                                                     <Clock className="w-2.5 h-2.5" />
                                                     {new Date(
                                                         member.createdAt
@@ -643,8 +712,8 @@ export default function AdminMembersPage() {
                                                             <button
                                                                 onClick={() => handleApproveReject(member._id, "reject")}
                                                                 disabled={isProcessing}
-                                                                title="Reject & remove"
-                                                                className="p-1.5 rounded-lg bg-red-500/5 hover:bg-red-500/10 text-red-400/60 transition-all disabled:opacity-30"
+                                                                title="Reject member"
+                                                                className="p-1.5 rounded-lg bg-red-500/5 hover:bg-red-500/10 text-red-400 transition-all disabled:opacity-30"
                                                             >
                                                                 <X className="w-3.5 h-3.5" />
                                                             </button>
@@ -675,21 +744,8 @@ export default function AdminMembersPage() {
                                                                 "Activate"
                                                             )}
                                                         </button>
-                                                    ) : member.status === "removed" ? (
-                                                        <button
-                                                            onClick={() => handleApproveReject(member._id, "activate")}
-                                                            disabled={isProcessing}
-                                                            title="Re-activate & restore"
-                                                            className="px-2.5 py-1 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 text-[9px] font-bold font-robotoMono uppercase tracking-wider transition-all disabled:opacity-30"
-                                                        >
-                                                            {isProcessing ? (
-                                                                <Loader2 className="w-3 h-3 animate-spin" />
-                                                            ) : (
-                                                                "Restore"
-                                                            )}
-                                                        </button>
                                                     ) : (
-                                                        <span className="text-[9px] text-white/10 font-robotoMono">—</span>
+                                                        <span className="text-[9px] text-white/70 font-robotoMono">—</span>
                                                     )}
                                                 </div>
                                             </td>
@@ -702,13 +758,51 @@ export default function AdminMembersPage() {
 
                     {/* Footer */}
                     <div className="px-4 py-3 border-t border-white/5 flex items-center justify-between">
-                        <span className="text-[10px] text-white/20 font-robotoMono">
-                            Showing {sorted.length} member
-                            {sorted.length !== 1 ? "s" : ""}
+                        <span className="text-[10px] text-white/75 font-robotoMono">
+                            Showing {(currentPage - 1) * PAGE_SIZE + 1}–{Math.min(currentPage * PAGE_SIZE, sorted.length)} of {sorted.length} member{sorted.length !== 1 ? "s" : ""}
                         </span>
-                        <span className="text-[10px] text-white/10 font-robotoMono">
-                            Click column headers to sort
-                        </span>
+                        {totalPages > 1 && (
+                            <div className="flex items-center gap-1">
+                                <button
+                                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                                    disabled={currentPage === 1}
+                                    className="p-1.5 rounded-lg hover:bg-white/5 text-white/80 hover:text-white/80 transition-all disabled:opacity-20 disabled:cursor-not-allowed"
+                                >
+                                    <ChevronLeft className="w-3.5 h-3.5" />
+                                </button>
+                                {Array.from({ length: totalPages }, (_, i) => i + 1)
+                                    .filter((p) => p === 1 || p === totalPages || Math.abs(p - currentPage) <= 1)
+                                    .reduce<(number | "...")[]>((acc, p, idx, arr) => {
+                                        if (idx > 0 && p - arr[idx - 1] > 1) acc.push("...");
+                                        acc.push(p);
+                                        return acc;
+                                    }, [])
+                                    .map((p, i) =>
+                                        p === "..." ? (
+                                            <span key={`e${i}`} className="px-1 text-[10px] text-white/75 font-robotoMono">...</span>
+                                        ) : (
+                                            <button
+                                                key={p}
+                                                onClick={() => setCurrentPage(p)}
+                                                className={`min-w-[28px] h-7 rounded-lg text-[10px] font-bold font-robotoMono transition-all ${
+                                                    currentPage === p
+                                                        ? "bg-white/10 text-white"
+                                                        : "text-white/75 hover:text-white/75 hover:bg-white/5"
+                                                }`}
+                                            >
+                                                {p}
+                                            </button>
+                                        )
+                                    )}
+                                <button
+                                    onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                                    disabled={currentPage === totalPages}
+                                    className="p-1.5 rounded-lg hover:bg-white/5 text-white/80 hover:text-white/80 transition-all disabled:opacity-20 disabled:cursor-not-allowed"
+                                >
+                                    <ChevronRight className="w-3.5 h-3.5" />
+                                </button>
+                            </div>
+                        )}
                     </div>
                 </div>
             )}

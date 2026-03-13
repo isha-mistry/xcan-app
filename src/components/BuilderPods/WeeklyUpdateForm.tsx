@@ -174,12 +174,12 @@ export default function WeeklyUpdateForm({
                             {/* Header */}
                             <div className="flex items-center justify-between px-6 py-4 md:px-8 md:py-5 border-b border-white/10 bg-black/70 backdrop-blur-sm">
                                 <div className="flex items-center gap-3">
-                                    <CalendarDays className="w-5 h-5 text-purple-400/60" />
+                                    <CalendarDays className="w-5 h-5 text-purple-400" />
                                     <div>
                                         <h2 className="text-lg font-black text-white font-unbounded tracking-tight">
                                             {isEdit ? "Edit Weekly Update" : "Weekly Update"}
                                         </h2>
-                                        <p className="mt-0.5 text-[11px] text-white/40 font-robotoMono">
+                                        <p className="mt-0.5 text-[11px] text-white/70 font-robotoMono">
                                             {isEdit ? "Update your progress, blockers, and next steps." : "Capture progress, blockers, and next steps."}
                                         </p>
                                     </div>
@@ -188,7 +188,7 @@ export default function WeeklyUpdateForm({
                                     onClick={() => setIsOpen(false)}
                                     className="p-1.5 rounded-lg hover:bg-white/5 transition-colors"
                                 >
-                                    <X className="w-4 h-4 text-white/40" />
+                                    <X className="w-4 h-4 text-white/70" />
                                 </button>
                             </div>
 
@@ -210,17 +210,17 @@ export default function WeeklyUpdateForm({
                                         {address && (
                                             <div className="flex flex-col gap-2">
                                                 <div className="flex items-center gap-2 p-3 rounded-xl bg-white/[0.02] border border-white/5">
-                                                    <Wallet className="w-3.5 h-3.5 text-white/25" />
-                                                    <span className="text-[10px] text-white/50 font-robotoMono">
+                                                    <Wallet className="w-3.5 h-3.5 text-white/55" />
+                                                    <span className="text-[10px] text-white/75 font-robotoMono">
                                                         Updating as:{" "}
                                                         {address.slice(0, 8)}...
                                                         {address.slice(-4)}
                                                     </span>
                                                     {loadingRole ? (
-                                                        <RotateCw className="w-3 h-3 ml-auto text-white/20 animate-spin" />
+                                                        <RotateCw className="w-3 h-3 ml-auto text-white/50 animate-spin" />
                                                     ) : (
                                                         <span className={`ml-auto px-2 py-0.5 rounded-full text-[8px] font-bold font-robotoMono uppercase tracking-wider ${
-                                                            isAuthorized ? "bg-purple-500/10 text-purple-300" : "bg-white/5 text-white/20"
+                                                            isAuthorized ? "bg-purple-500/10 text-purple-300" : "bg-white/5 text-white/50"
                                                         }`}>
                                                             {roleLabel}
                                                         </span>
@@ -229,8 +229,8 @@ export default function WeeklyUpdateForm({
 
                                                 {!loadingRole && !isAuthorized && (
                                                     <div className="flex items-center gap-2 p-3 rounded-xl bg-amber-500/5 border border-amber-500/10">
-                                                        <ShieldAlert className="w-3.5 h-3.5 text-amber-500/60" />
-                                                        <p className="text-[10px] text-amber-400/60 font-robotoMono">
+                                                        <ShieldAlert className="w-3.5 h-3.5 text-amber-500" />
+                                                        <p className="text-[10px] text-amber-400 font-robotoMono">
                                                             Only active Pod Leads can submit weekly updates.
                                                         </p>
                                                     </div>
@@ -239,7 +239,7 @@ export default function WeeklyUpdateForm({
                                         )}
                                         {/* Completed This Week */}
                                         <div>
-                                            <label className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-white/40 font-robotoMono mb-2">
+                                            <label className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-white/70 font-robotoMono mb-2">
                                                 <FileText className="w-3.5 h-3.5" />
                                                 What was completed this week? *
                                             </label>
@@ -255,13 +255,13 @@ export default function WeeklyUpdateForm({
                                                 }
                                                 placeholder="Describe what was accomplished this week..."
                                                 rows={4}
-                                                className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-sm text-white font-robotoMono placeholder:text-white/20 focus:outline-none focus:border-purple-500/40 focus:bg-white/[0.05] transition-all resize-none technical-scrollbar"
+                                                className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-sm text-white font-robotoMono placeholder:text-white/50 focus:outline-none focus:border-purple-500/40 focus:bg-white/[0.05] transition-all resize-none technical-scrollbar"
                                             />
                                         </div>
 
                                         {/* Blockers */}
                                         <div>
-                                            <label className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-amber-400/50 font-robotoMono mb-2">
+                                            <label className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-amber-400/80 font-robotoMono mb-2">
                                                 <AlertTriangle className="w-3.5 h-3.5" />
                                                 Blockers
                                             </label>
@@ -275,13 +275,13 @@ export default function WeeklyUpdateForm({
                                                 }
                                                 placeholder="Any blockers or challenges faced..."
                                                 rows={3}
-                                                className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-sm text-white font-robotoMono placeholder:text-white/20 focus:outline-none focus:border-amber-500/40 focus:bg-white/[0.05] transition-all resize-none technical-scrollbar"
+                                                className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-sm text-white font-robotoMono placeholder:text-white/50 focus:outline-none focus:border-amber-500/40 focus:bg-white/[0.05] transition-all resize-none technical-scrollbar"
                                             />
                                         </div>
 
                                         {/* Next Milestone */}
                                         <div>
-                                            <label className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-white/40 font-robotoMono mb-2">
+                                            <label className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-white/70 font-robotoMono mb-2">
                                                 <Target className="w-3.5 h-3.5" />
                                                 Next Milestone *
                                             </label>
@@ -297,13 +297,13 @@ export default function WeeklyUpdateForm({
                                                 }
                                                 placeholder="What's the next milestone or goal?"
                                                 rows={2}
-                                                className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-sm text-white font-robotoMono placeholder:text-white/20 focus:outline-none focus:border-purple-500/40 focus:bg-white/[0.05] transition-all resize-none technical-scrollbar"
+                                                className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-sm text-white font-robotoMono placeholder:text-white/50 focus:outline-none focus:border-purple-500/40 focus:bg-white/[0.05] transition-all resize-none technical-scrollbar"
                                             />
                                         </div>
 
                                         {/* GitHub Link */}
                                         <div>
-                                            <label className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-white/40 font-robotoMono mb-2">
+                                            <label className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-white/70 font-robotoMono mb-2">
                                                 <Github className="w-3.5 h-3.5" />
                                                 GitHub Link
                                             </label>
@@ -317,7 +317,7 @@ export default function WeeklyUpdateForm({
                                                     }))
                                                 }
                                                 placeholder="https://github.com/..."
-                                                className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-sm text-white font-robotoMono placeholder:text-white/20 focus:outline-none focus:border-purple-500/40 focus:bg-white/[0.05] transition-all"
+                                                className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-sm text-white font-robotoMono placeholder:text-white/50 focus:outline-none focus:border-purple-500/40 focus:bg-white/[0.05] transition-all"
                                             />
                                         </div>
 

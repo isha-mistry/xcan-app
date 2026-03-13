@@ -73,7 +73,7 @@ export default function LiveStatsPanel({
         <section className="mb-10">
             <div className="flex items-center gap-3 mb-6">
                 <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-                <h2 className="text-[11px] font-bold uppercase tracking-[0.2em] text-white/40 font-robotoMono">
+                <h2 className="text-[11px] font-bold uppercase tracking-[0.2em] text-white/70 font-robotoMono">
                     Live Stats
                 </h2>
             </div>
@@ -102,7 +102,7 @@ export default function LiveStatsPanel({
                                         {value.toLocaleString()}
                                     </span>
                                 )}
-                                <p className="text-[10px] font-bold uppercase tracking-widest text-white/30 font-robotoMono">
+                                <p className="text-[10px] font-bold uppercase tracking-widest text-white/60 font-robotoMono">
                                     {item.label}
                                 </p>
                             </div>

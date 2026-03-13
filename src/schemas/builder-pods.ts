@@ -8,9 +8,9 @@ const projectStatusValues = [
     'demo_ready',
 ] as const;
 
-const podMemberRoleValues = ['tech_lead', 'member', 'faculty', 'mentor'] as const;
+const podMemberRoleValues = ['pod_lead', 'pod_member', 'faculty_coordinator', 'mentor'] as const;
 const managedPodMemberStatusValues = ['active', 'inactive', 'pending', 'removed'] as const;
-const memberApprovalActionValues = ['approve', 'reject'] as const;
+const memberApprovalActionValues = ['approve', 'reject', 'activate', 'deactivate'] as const;
 const deploymentActionValues = ['verify', 'reject'] as const;
 
 export const RegisterSchema = z.object({

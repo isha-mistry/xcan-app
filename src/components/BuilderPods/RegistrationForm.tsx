@@ -145,9 +145,9 @@ export default function RegistrationForm({
     };
 
     const inputClass =
-        "w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-sm text-white font-robotoMono placeholder:text-white/15 focus:outline-none focus:border-blue-500/40 focus:bg-white/[0.05] transition-all";
+        "w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-sm text-white font-robotoMono placeholder:text-white/45 focus:outline-none focus:border-blue-500/40 focus:bg-white/[0.05] transition-all";
     const labelClass =
-        "flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-white/30 font-robotoMono mb-2";
+        "flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-white/60 font-robotoMono mb-2";
 
     return (
         <motion.div
@@ -159,15 +159,15 @@ export default function RegistrationForm({
             <h2 className="text-xl font-black text-white font-unbounded tracking-tight mb-1">
                 Join a Builder Pod
             </h2>
-            <p className="text-xs text-white/30 font-robotoMono mb-8">
+            <p className="text-xs text-white/60 font-robotoMono mb-8">
                 Connect your wallet and register to join your college&apos;s Arbitrum
                 Builder Pod.
             </p>
 
             {!walletAddress ? (
                 <div className="text-center py-8">
-                    <Wallet className="w-8 h-8 text-white/15 mx-auto mb-3" />
-                    <p className="text-sm text-white/30 font-robotoMono">
+                    <Wallet className="w-8 h-8 text-white/45 mx-auto mb-3" />
+                    <p className="text-sm text-white/60 font-robotoMono">
                         Please connect your wallet to register.
                     </p>
                 </div>
@@ -179,7 +179,7 @@ export default function RegistrationForm({
                             <Wallet className="w-3 h-3" />
                             Wallet Address
                         </label>
-                        <div className="bg-white/[0.02] border border-white/5 rounded-xl px-4 py-3 text-sm text-white/30 font-robotoMono">
+                        <div className="bg-white/[0.02] border border-white/5 rounded-xl px-4 py-3 text-sm text-white/60 font-robotoMono">
                             {walletAddress}
                         </div>
                     </div>
@@ -209,7 +209,7 @@ export default function RegistrationForm({
                             College *
                         </label>
                         {loadingColleges ? (
-                            <div className="flex items-center gap-2 text-xs text-white/20 font-robotoMono py-3">
+                            <div className="flex items-center gap-2 text-xs text-white/50 font-robotoMono py-3">
                                 <Loader2 className="w-4 h-4 animate-spin" />
                                 Loading colleges...
                             </div>
@@ -234,7 +234,7 @@ export default function RegistrationForm({
                                     ))}
                                 </select>
                                 {collegeLocked && qrEventName && (
-                                    <p className="text-[10px] text-cyan-400/60 font-robotoMono mt-1">
+                                    <p className="text-[10px] text-cyan-400 font-robotoMono mt-1">
                                         Auto-selected from lab event: {qrEventName}
                                     </p>
                                 )}
@@ -314,7 +314,7 @@ export default function RegistrationForm({
                             placeholder="Paste QR token (if attending a lab)"
                             className={inputClass}
                         />
-                        <p className="text-[10px] text-white/15 font-robotoMono mt-1">
+                        <p className="text-[10px] text-white/45 font-robotoMono mt-1">
                             {initialQrToken
                                 ? "Auto-filled from QR code scan."
                                 : "Optional. Scan the QR code at your Builder Lab event."}
@@ -376,7 +376,7 @@ export default function RegistrationForm({
                         >
                             <button
                                 onClick={() => setShowCelebration(false)}
-                                className="absolute top-4 right-4 text-white/20 hover:text-white/50 transition-colors"
+                                className="absolute top-4 right-4 text-white/50 hover:text-white/75 transition-colors"
                             >
                                 <X className="w-5 h-5" />
                             </button>
@@ -388,7 +388,7 @@ export default function RegistrationForm({
                             <h3 className="text-2xl font-black text-white font-unbounded tracking-tight mb-2">
                                 Congratulations!
                             </h3>
-                            <p className="text-sm text-white/40 font-robotoMono mb-4">
+                            <p className="text-sm text-white/70 font-robotoMono mb-4">
                                 You&apos;ve earned your first badge
                             </p>
 
@@ -399,7 +399,7 @@ export default function RegistrationForm({
                                 </span>
                             </div>
 
-                            <p className="text-xs text-white/25 font-robotoMono mb-6">
+                            <p className="text-xs text-white/55 font-robotoMono mb-6">
                                 You&apos;re officially part of the Arbitrum Builder Pod program.
                                 Keep building to earn more badges!
                             </p>

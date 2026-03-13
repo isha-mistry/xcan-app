@@ -55,7 +55,7 @@ export default function AnalyticsPage() {
 
     return (
         <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-10 py-6">
-            <Link href="/builder-pods" className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-white/30 hover:text-white/60 font-robotoMono mb-6 transition-colors">
+            <Link href="/builder-pods" className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-white/80 hover:text-white/80 font-robotoMono mb-6 transition-colors">
                 <ArrowLeft className="w-3.5 h-3.5" />
                 Builder Pods
             </Link>
@@ -64,7 +64,7 @@ export default function AnalyticsPage() {
                 <h1 className="text-2xl font-black text-white font-unbounded tracking-tight mb-1">
                     Analytics
                 </h1>
-                <p className="text-xs text-white/30 font-robotoMono">
+                <p className="text-xs text-white/80 font-robotoMono">
                     Public overview of the Arbitrum Builder Pods program.
                 </p>
             </div>
@@ -95,7 +95,7 @@ export default function AnalyticsPage() {
                                 <span className="text-2xl font-black text-white font-unbounded block">
                                     {stat.value}
                                 </span>
-                                <p className="text-[9px] font-bold uppercase tracking-widest text-white/20 font-robotoMono mt-0.5">
+                                <p className="text-[9px] font-bold uppercase tracking-widest text-white/50 font-robotoMono mt-0.5">
                                     {stat.label}
                                 </p>
                             </motion.div>
@@ -111,8 +111,8 @@ export default function AnalyticsPage() {
                 className="glass-container rounded-2xl p-6 mb-8"
             >
                 <div className="flex items-center gap-3 mb-6">
-                    <Activity className="w-4 h-4 text-white/30" />
-                    <h2 className="text-[11px] font-bold uppercase tracking-[0.2em] text-white/40 font-robotoMono">
+                    <Activity className="w-4 h-4 text-white/80" />
+                    <h2 className="text-[11px] font-bold uppercase tracking-[0.2em] text-white/80 font-robotoMono">
                         Weekly Activity (Last 8 Weeks)
                     </h2>
                 </div>
@@ -124,7 +124,7 @@ export default function AnalyticsPage() {
                         ))}
                     </div>
                 ) : weeklyActivity.length === 0 ? (
-                    <p className="text-white/20 text-sm font-robotoMono text-center py-8">
+                    <p className="text-white/50 text-sm font-robotoMono text-center py-8">
                         No activity data yet.
                     </p>
                 ) : (
@@ -133,7 +133,7 @@ export default function AnalyticsPage() {
                             const height = (w.updatesSubmitted / maxWeekly) * 100;
                             return (
                                 <div key={i} className="flex-1 flex flex-col items-center gap-1">
-                                    <span className="text-[10px] text-white/40 font-robotoMono font-bold">
+                                    <span className="text-[10px] text-white/80 font-robotoMono font-bold">
                                         {w.updatesSubmitted}
                                     </span>
                                     <motion.div
@@ -142,7 +142,7 @@ export default function AnalyticsPage() {
                                         transition={{ duration: 0.5, delay: i * 0.05 }}
                                         className="w-full bg-gradient-to-t from-blue-500/20 to-blue-400/40 rounded-t-lg min-h-[4px]"
                                     />
-                                    <span className="text-[8px] text-white/15 font-robotoMono">
+                                    <span className="text-[8px] text-white/45 font-robotoMono">
                                         {w.weekLabel}
                                     </span>
                                 </div>
@@ -160,8 +160,8 @@ export default function AnalyticsPage() {
                 className="glass-container rounded-2xl p-6"
             >
                 <div className="flex items-center gap-3 mb-6">
-                    <MapPin className="w-4 h-4 text-white/30" />
-                    <h2 className="text-[11px] font-bold uppercase tracking-[0.2em] text-white/40 font-robotoMono">
+                    <MapPin className="w-4 h-4 text-white/80" />
+                    <h2 className="text-[11px] font-bold uppercase tracking-[0.2em] text-white/80 font-robotoMono">
                         Region Breakdown
                     </h2>
                 </div>
@@ -175,7 +175,7 @@ export default function AnalyticsPage() {
                         ))}
                     </div>
                 ) : regions.length === 0 ? (
-                    <p className="text-white/20 text-sm font-robotoMono text-center py-8">
+                    <p className="text-white/50 text-sm font-robotoMono text-center py-8">
                         No region data yet.
                     </p>
                 ) : (
@@ -185,21 +185,21 @@ export default function AnalyticsPage() {
                                 <h3 className="text-sm font-bold text-white font-unbounded mb-1">
                                     {r.regionName}
                                 </h3>
-                                <p className="text-[10px] text-white/20 font-robotoMono mb-3">
+                                <p className="text-[10px] text-white/50 font-robotoMono mb-3">
                                     Showcase: {r.showcaseCity}
                                 </p>
                                 <div className="flex gap-4">
                                     <div>
                                         <span className="text-lg font-black text-white font-unbounded">{r.colleges}</span>
-                                        <p className="text-[9px] text-white/15 font-robotoMono">Colleges</p>
+                                        <p className="text-[9px] text-white/45 font-robotoMono">Colleges</p>
                                     </div>
                                     <div>
                                         <span className="text-lg font-black text-white font-unbounded">{r.members}</span>
-                                        <p className="text-[9px] text-white/15 font-robotoMono">Members</p>
+                                        <p className="text-[9px] text-white/45 font-robotoMono">Members</p>
                                     </div>
                                     <div>
                                         <span className="text-lg font-black text-white font-unbounded">{r.deployments}</span>
-                                        <p className="text-[9px] text-white/15 font-robotoMono">Deploys</p>
+                                        <p className="text-[9px] text-white/45 font-robotoMono">Deploys</p>
                                     </div>
                                 </div>
                             </div>

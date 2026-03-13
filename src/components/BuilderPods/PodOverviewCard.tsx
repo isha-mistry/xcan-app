@@ -85,7 +85,7 @@ export default function PodOverviewCard({ college }: PodOverviewCardProps) {
                         <span
                             className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-[0.15em] font-robotoMono ${isActive
                                     ? "bg-green-500/10 text-green-400 border border-green-500/20"
-                                    : "bg-white/5 text-white/30 border border-white/10"
+                                    : "bg-white/5 text-white/60 border border-white/10"
                                 }`}
                         >
                             <div
@@ -94,14 +94,14 @@ export default function PodOverviewCard({ college }: PodOverviewCardProps) {
                             />
                             {college.status}
                         </span>
-                        <span className="text-[9px] font-bold text-white/20 uppercase tracking-wider font-robotoMono">
+                        <span className="text-[9px] font-bold text-white/50 uppercase tracking-wider font-robotoMono">
                             {college.tier}
                         </span>
                     </div>
                     <h1 className="text-2xl md:text-3xl font-black text-white font-unbounded tracking-tight">
                         {college.name}
                     </h1>
-                    <p className="text-sm text-white/30 font-robotoMono mt-1">
+                    <p className="text-sm text-white/60 font-robotoMono mt-1">
                         {college.podName}
                     </p>
                 </div>
@@ -109,18 +109,18 @@ export default function PodOverviewCard({ college }: PodOverviewCardProps) {
 
             {/* Meta Info */}
             <div className="flex flex-wrap gap-4 mb-6">
-                <div className="flex items-center gap-1.5 text-xs text-white/40 font-robotoMono">
+                <div className="flex items-center gap-1.5 text-xs text-white/70 font-robotoMono">
                     <MapPin className="w-3.5 h-3.5" />
                     {college.city}, {college.state}
                 </div>
                 {college.regionSnapshot && (
-                    <div className="flex items-center gap-1.5 text-xs text-white/40 font-robotoMono">
+                    <div className="flex items-center gap-1.5 text-xs text-white/70 font-robotoMono">
                         <Building2 className="w-3.5 h-3.5" />
                         {college.regionSnapshot.name}
                     </div>
                 )}
                 {college.activatedAt && (
-                    <div className="flex items-center gap-1.5 text-xs text-white/40 font-robotoMono">
+                    <div className="flex items-center gap-1.5 text-xs text-white/70 font-robotoMono">
                         <Calendar className="w-3.5 h-3.5" />
                         Activated{" "}
                         {new Date(college.activatedAt).toLocaleDateString("en-IN", {
@@ -130,7 +130,7 @@ export default function PodOverviewCard({ college }: PodOverviewCardProps) {
                     </div>
                 )}
                 {college.facultyCoordinator && (
-                    <div className="flex items-center gap-1.5 text-xs text-white/40 font-robotoMono">
+                    <div className="flex items-center gap-1.5 text-xs text-white/70 font-robotoMono">
                         <Users className="w-3.5 h-3.5" />
                         Faculty: {college.facultyCoordinator}
                     </div>
@@ -153,11 +153,11 @@ export default function PodOverviewCard({ college }: PodOverviewCardProps) {
                                 {stat.value}
                             </span>
                             {(stat as any).subtitle && (
-                                <span className="text-[9px] text-white/15 font-robotoMono ml-1">
+                                <span className="text-[9px] text-white/45 font-robotoMono ml-1">
                                     ({(stat as any).subtitle})
                                 </span>
                             )}
-                            <p className="text-[10px] font-bold uppercase tracking-widest text-white/25 font-robotoMono mt-0.5">
+                            <p className="text-[10px] font-bold uppercase tracking-widest text-white/55 font-robotoMono mt-0.5">
                                 {stat.label}
                             </p>
                             {(stat as any).pct !== undefined && (

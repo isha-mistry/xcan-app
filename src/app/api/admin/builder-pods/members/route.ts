@@ -16,7 +16,7 @@ import { awardBadgeOnEvent } from '@/lib/builder-pods/badges';
 import { recalculateMemberScore, recalculatePodScore } from '@/lib/builder-pods/leaderboard';
 import { MemberApprovalSchema } from '@/schemas/builder-pods';
 
-// GET — list all members with optional filters (admin only)
+// GET — list pending members (admin only)
 export async function GET(req: NextRequest) {
     try {
         const ctx = await getAuthContext(req);
@@ -49,7 +49,7 @@ export async function GET(req: NextRequest) {
     } catch (error: any) {
         if (error instanceof UnauthorizedError) return NextResponse.json({ success: false, error: 'Not authenticated' }, { status: 401 });
         if (error instanceof ForbiddenError) return NextResponse.json({ success: false, error: 'Admin access required' }, { status: 403 });
-        console.error('Error fetching members:', error);
+        console.error('Error fetching pending members:', error);
         return NextResponse.json({ success: false, error: 'Internal Server Error' }, { status: 500 });
     }
 }
@@ -69,7 +69,7 @@ export async function PATCH(req: NextRequest) {
             );
         }
         const { memberId, action } = parsed.data;
-        const adminWallet = ctx!.walletAddress; // taken from verified JWT, not body
+        const adminWallet = ctx!.walletAddress;
 
         const member = await PodMember.findById(memberId);
         if (!member) {
@@ -81,10 +81,9 @@ export async function PATCH(req: NextRequest) {
 
         const oldStatus = member.status;
 
-        // Enforce college-scoped access for non-super-admins
         verifyCollegeAccess(ctx!, member.collegeId.toString());
 
-        if (action === 'approve') {
+        if (action === 'approve' || action === 'activate') {
             member.status = 'active';
             if (action === 'approve') {
                 member.approvedBy = adminWallet;
@@ -92,7 +91,6 @@ export async function PATCH(req: NextRequest) {
             }
             await member.save();
 
-            // Increment college active member count
             if (oldStatus !== 'active') {
                 await College.updateOne(
                     { _id: member.collegeId },
@@ -101,31 +99,28 @@ export async function PATCH(req: NextRequest) {
             }
 
             if (action === 'approve') {
-                // Auto-award "builder_pod_member" badge on approval
                 await awardBadgeOnEvent('pod_member_approved', member.walletAddress, {
                     collegeId: member.collegeId?.toString(),
                 });
 
-            // Notify member
-            await Notification.create({
-                walletAddress: member.walletAddress,
-                type: 'member_approved',
-                title: 'Pod Membership Approved! 🎉',
-                body: 'You are now an active Builder Pod member.',
-                link: '/builder-pods',
-            });
+                await Notification.create({
+                    walletAddress: member.walletAddress,
+                    type: 'member_approved',
+                    title: 'Pod Membership Approved! 🎉',
+                    body: 'You are now an active Builder Pod member.',
+                    link: '/builder-pods',
+                });
+            }
 
-            // Inline leaderboard update
             await recalculateMemberScore(member._id);
             await recalculatePodScore(member.collegeId);
         } else if (action === 'reject') {
-            member.status = 'removed';
+            member.status = 'inactive';
             await member.save();
         } else if (action === 'deactivate') {
             member.status = 'inactive';
             await member.save();
 
-            // Decrement active count if moving away from active
             if (oldStatus === 'active') {
                 await College.updateOne(
                     { _id: member.collegeId },
@@ -139,7 +134,6 @@ export async function PATCH(req: NextRequest) {
             );
         }
 
-        // Audit log — actor wallet comes from JWT, not request body
         await AuditLog.create({
             actorWallet: adminWallet,
             action: `member.${action}`,

@@ -52,24 +52,24 @@ export default function AdminShowcasesPage() {
             case "winner": return <Medal className="w-3.5 h-3.5 text-yellow-400" />;
             case "finalist": return <Star className="w-3.5 h-3.5 text-purple-400" />;
             case "approved": return <Check className="w-3.5 h-3.5 text-green-400" />;
-            default: return <Trophy className="w-3.5 h-3.5 text-white/20" />;
+            default: return <Trophy className="w-3.5 h-3.5 text-white/50" />;
         }
     };
 
     return (
         <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-10 py-6">
-            <Link href="/admin/builder-pods" className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-white/30 hover:text-white/60 font-robotoMono mb-6 transition-colors">
+            <Link href="/admin/builder-pods" className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-white/60 hover:text-white/80 font-robotoMono mb-6 transition-colors">
                 <ArrowLeft className="w-3.5 h-3.5" />
                 Admin Dashboard
             </Link>
 
             <div className="flex items-center gap-3 mb-8">
-                <Trophy className="w-5 h-5 text-purple-400/40" />
+                <Trophy className="w-5 h-5 text-purple-400/70" />
                 <h1 className="text-2xl font-black text-white font-unbounded tracking-tight">
                     Showcase Management
                 </h1>
                 {submissions.length > 0 && (
-                    <span className="px-2.5 py-1 rounded-full bg-purple-500/10 text-[10px] font-bold text-purple-400/60 font-robotoMono">
+                    <span className="px-2.5 py-1 rounded-full bg-purple-500/10 text-[10px] font-bold text-purple-400 font-robotoMono">
                         {submissions.length} submissions
                     </span>
                 )}
@@ -86,8 +86,8 @@ export default function AdminShowcasesPage() {
                 </div>
             ) : submissions.length === 0 ? (
                 <div className="glass-container rounded-2xl p-12 text-center">
-                    <Check className="w-8 h-8 text-green-400/30 mx-auto mb-3" />
-                    <p className="text-sm text-white/30 font-robotoMono">No pending submissions</p>
+                    <Check className="w-8 h-8 text-green-400/60 mx-auto mb-3" />
+                    <p className="text-sm text-white/60 font-robotoMono">No pending submissions</p>
                 </div>
             ) : (
                 <div className="space-y-2">
@@ -106,18 +106,18 @@ export default function AdminShowcasesPage() {
                                         <span className="text-sm font-bold text-white font-robotoMono">
                                             {sub.projectSnapshot?.name || sub.projectId?.name || "Unknown Project"}
                                         </span>
-                                        <span className={`px-1.5 py-0.5 rounded-full text-[8px] font-bold font-robotoMono ${sub.status === "finalist" ? "bg-purple-500/10 text-purple-400/60" :
-                                                sub.status === "pending" ? "bg-white/5 text-white/20" :
-                                                    "bg-green-500/10 text-green-400/60"
+                                        <span className={`px-1.5 py-0.5 rounded-full text-[8px] font-bold font-robotoMono ${sub.status === "finalist" ? "bg-purple-500/10 text-purple-400" :
+                                                sub.status === "pending" ? "bg-white/5 text-white/50" :
+                                                    "bg-green-500/10 text-green-400"
                                             }`}>
                                             {sub.status}
                                         </span>
                                     </div>
-                                    <p className="text-[10px] text-white/15 font-robotoMono">
+                                    <p className="text-[10px] text-white/45 font-robotoMono">
                                         {sub.collegeSnapshot?.name || sub.collegeId?.name} · {sub.showcaseEventId?.name || "Showcase"}
                                     </p>
                                     {sub.githubRepo && (
-                                        <a href={sub.githubRepo} target="_blank" rel="noopener noreferrer" className="text-[9px] text-blue-400/40 font-robotoMono hover:text-blue-400/60 transition-colors">
+                                        <a href={sub.githubRepo} target="_blank" rel="noopener noreferrer" className="text-[9px] text-blue-400/70 font-robotoMono hover:text-blue-400 transition-colors">
                                             {sub.githubRepo}
                                         </a>
                                     )}
@@ -137,7 +137,7 @@ export default function AdminShowcasesPage() {
                                             <button
                                                 onClick={() => handleAction(sub._id, "rejected")}
                                                 disabled={processing === sub._id}
-                                                className="flex items-center gap-1 px-3 py-2 rounded-lg bg-red-500/5 hover:bg-red-500/10 text-red-400/60 text-[10px] font-bold font-robotoMono transition-all disabled:opacity-30"
+                                                className="flex items-center gap-1 px-3 py-2 rounded-lg bg-red-500/5 hover:bg-red-500/10 text-red-400 text-[10px] font-bold font-robotoMono transition-all disabled:opacity-30"
                                             >
                                                 <X className="w-3 h-3" />
                                                 Reject

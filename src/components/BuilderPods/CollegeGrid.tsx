@@ -24,7 +24,7 @@ export default function CollegeGrid({ colleges, isLoading }: CollegeGridProps) {
         return (
             <section id="colleges" className="mb-10">
                 <div className="flex items-center gap-3 mb-6">
-                    <h2 className="text-[11px] font-bold uppercase tracking-[0.2em] text-white/40 font-robotoMono">
+                    <h2 className="text-[11px] font-bold uppercase tracking-[0.2em] text-white/70 font-robotoMono">
                         College Pods
                     </h2>
                 </div>
@@ -51,12 +51,12 @@ export default function CollegeGrid({ colleges, isLoading }: CollegeGridProps) {
         return (
             <section id="colleges" className="mb-10">
                 <div className="flex items-center gap-3 mb-6">
-                    <h2 className="text-[11px] font-bold uppercase tracking-[0.2em] text-white/40 font-robotoMono">
+                    <h2 className="text-[11px] font-bold uppercase tracking-[0.2em] text-white/70 font-robotoMono">
                         College Pods
                     </h2>
                 </div>
                 <div className="glass-container rounded-2xl p-12 text-center">
-                    <p className="text-white/30 text-sm font-robotoMono">
+                    <p className="text-white/60 text-sm font-robotoMono">
                         No college pods have been activated yet. Check back soon!
                     </p>
                 </div>
@@ -68,10 +68,10 @@ export default function CollegeGrid({ colleges, isLoading }: CollegeGridProps) {
         <section id="colleges" className="mb-10">
             <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-3">
-                    <h2 className="text-[11px] font-bold uppercase tracking-[0.2em] text-white/40 font-robotoMono">
+                    <h2 className="text-[11px] font-bold uppercase tracking-[0.2em] text-white/70 font-robotoMono">
                         College Pods
                     </h2>
-                    <span className="px-2 py-0.5 rounded-full bg-white/5 text-[10px] font-bold text-white/30 font-robotoMono">
+                    <span className="px-2 py-0.5 rounded-full bg-white/5 text-[10px] font-bold text-white/60 font-robotoMono">
                         {colleges.length}
                     </span>
                 </div>

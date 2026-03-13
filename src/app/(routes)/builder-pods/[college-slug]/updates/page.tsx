@@ -53,26 +53,26 @@ export default function CollegeUpdatesPage() {
 
     return (
         <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-10 py-6">
-            <Link href={`/builder-pods/${slug}`} className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-white/30 hover:text-white/60 font-robotoMono mb-6 transition-colors">
+            <Link href={`/builder-pods/${slug}`} className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-white/80 hover:text-white/80 font-robotoMono mb-6 transition-colors">
                 <ArrowLeft className="w-3.5 h-3.5" />
                 Back to Pod
             </Link>
 
             <div className="flex items-center justify-between mb-8">
                 <div className="flex items-center gap-3">
-                    <FileText className="w-5 h-5 text-blue-400/40" />
+                    <FileText className="w-5 h-5 text-blue-400/70" />
                     <h1 className="text-2xl font-black text-white font-unbounded tracking-tight">
                         Weekly Updates
                     </h1>
                     {pagination.total > 0 && (
-                        <span className="px-2.5 py-1 rounded-full bg-blue-500/10 text-[10px] font-bold text-blue-400/60 font-robotoMono">
+                        <span className="px-2.5 py-1 rounded-full bg-blue-500/10 text-[10px] font-bold text-blue-400 font-robotoMono">
                             {pagination.total} updates
                         </span>
                     )}
                 </div>
                 <button 
                     onClick={handleRefresh}
-                    className="p-2 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all text-white/40 hover:text-white/60"
+                    className="p-2 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all text-white/80 hover:text-white/80"
                     title="Refresh updates"
                 >
                     <RotateCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
@@ -91,8 +91,8 @@ export default function CollegeUpdatesPage() {
                 </div>
             ) : updates.length === 0 ? (
                 <div className="glass-container rounded-2xl p-12 text-center">
-                    <FileText className="w-8 h-8 text-white/10 mx-auto mb-3" />
-                    <p className="text-sm text-white/30 font-robotoMono">No weekly updates yet</p>
+                    <FileText className="w-8 h-8 text-white/40 mx-auto mb-3" />
+                    <p className="text-sm text-white/80 font-robotoMono">No weekly updates yet</p>
                 </div>
             ) : (
                 <>
@@ -108,18 +108,18 @@ export default function CollegeUpdatesPage() {
                                 {/* Header */}
                                 <div className="flex items-center justify-between mb-4">
                                     <div className="flex items-center gap-3">
-                                        <span className="px-2.5 py-1 rounded-lg bg-blue-500/10 text-[10px] font-bold text-blue-400/60 font-robotoMono">
+                                        <span className="px-2.5 py-1 rounded-lg bg-blue-500/10 text-[10px] font-bold text-blue-400 font-robotoMono">
                                             W{update.weekNumber} · {update.year}
                                         </span>
                                         {update.reviewedBy && (
-                                            <span className="flex items-center gap-1 text-[9px] font-bold text-green-400/60 font-robotoMono uppercase tracking-wider">
+                                            <span className="flex items-center gap-1 text-[9px] font-bold text-green-400 font-robotoMono uppercase tracking-wider">
                                                 <CheckCircle className="w-3 h-3" />
                                                 Reviewed
                                             </span>
                                         )}
                                     </div>
                                     <div className="flex items-center gap-3">
-                                        <div className="flex items-center gap-2 text-[10px] text-white/15 font-robotoMono">
+                                        <div className="flex items-center gap-2 text-[10px] text-white/45 font-robotoMono">
                                             <Calendar className="w-3 h-3" />
                                             {new Date(update.createdAt).toLocaleDateString("en-IN", {
                                                 day: "numeric",
@@ -139,7 +139,7 @@ export default function CollegeUpdatesPage() {
                                                     githubLink: update.githubLink,
                                                 }}
                                                 trigger={
-                                                    <button className="p-1 rounded-md hover:bg-white/5 text-white/20 hover:text-white/40 transition-all cursor-pointer">
+                                                    <button className="p-1 rounded-md hover:bg-white/5 text-white/50 hover:text-white/80 transition-all cursor-pointer">
                                                         <Edit3 className="w-3.5 h-3.5" />
                                                     </button>
                                                 }
@@ -152,10 +152,10 @@ export default function CollegeUpdatesPage() {
                                 <div className="space-y-3">
                                     {/* Completed */}
                                     <div>
-                                        <p className="text-[10px] font-bold uppercase tracking-widest text-white/20 font-robotoMono mb-1">
+                                        <p className="text-[10px] font-bold uppercase tracking-widest text-white/50 font-robotoMono mb-1">
                                             Completed
                                         </p>
-                                        <p className="text-xs text-white/50 font-robotoMono leading-relaxed">
+                                        <p className="text-xs text-white/75 font-robotoMono leading-relaxed">
                                             {update.completedThisWeek}
                                         </p>
                                     </div>
@@ -163,11 +163,11 @@ export default function CollegeUpdatesPage() {
                                     {/* Blockers */}
                                     {update.blockers && (
                                         <div>
-                                            <p className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-amber-400/30 font-robotoMono mb-1">
+                                            <p className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-amber-400/60 font-robotoMono mb-1">
                                                 <AlertTriangle className="w-3 h-3" />
                                                 Blockers
                                             </p>
-                                            <p className="text-xs text-white/35 font-robotoMono leading-relaxed">
+                                            <p className="text-xs text-white/80 font-robotoMono leading-relaxed">
                                                 {update.blockers}
                                             </p>
                                         </div>
@@ -175,11 +175,11 @@ export default function CollegeUpdatesPage() {
 
                                     {/* Next Milestone */}
                                     <div>
-                                        <p className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-white/20 font-robotoMono mb-1">
+                                        <p className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-white/50 font-robotoMono mb-1">
                                             <Target className="w-3 h-3" />
                                             Next Milestone
                                         </p>
-                                        <p className="text-xs text-white/50 font-robotoMono leading-relaxed">
+                                        <p className="text-xs text-white/75 font-robotoMono leading-relaxed">
                                             {update.nextMilestone}
                                         </p>
                                     </div>
@@ -188,7 +188,7 @@ export default function CollegeUpdatesPage() {
                                 {/* Footer */}
                                 <div className="flex items-center gap-3 mt-3 pt-3 border-t border-white/[0.03]">
                                     {update.submittedBy && (
-                                        <div className="flex items-center gap-1 text-[9px] text-white/10 font-robotoMono">
+                                        <div className="flex items-center gap-1 text-[9px] text-white/40 font-robotoMono">
                                             <User className="w-2.5 h-2.5" />
                                             {update.submittedBy.slice(0, 8)}...
                                         </div>
@@ -198,7 +198,7 @@ export default function CollegeUpdatesPage() {
                                             href={update.githubLink}
                                             target="_blank"
                                             rel="noopener noreferrer"
-                                            className="flex items-center gap-1 text-[9px] font-bold text-white/15 hover:text-white/40 font-robotoMono uppercase tracking-wider transition-colors"
+                                            className="flex items-center gap-1 text-[9px] font-bold text-white/45 hover:text-white/80 font-robotoMono uppercase tracking-wider transition-colors"
                                         >
                                             <Github className="w-3 h-3" />
                                             View commits
@@ -215,18 +215,18 @@ export default function CollegeUpdatesPage() {
                             <button
                                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                                 disabled={page <= 1}
-                                className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-[10px] font-bold text-white/30 font-robotoMono disabled:opacity-20 disabled:cursor-not-allowed hover:bg-white/10 transition-all"
+                                className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-[10px] font-bold text-white/80 font-robotoMono disabled:opacity-20 disabled:cursor-not-allowed hover:bg-white/10 transition-all"
                             >
                                 <ChevronLeft className="w-3 h-3" />
                                 Prev
                             </button>
-                            <span className="text-[10px] text-white/20 font-robotoMono">
+                            <span className="text-[10px] text-white/50 font-robotoMono">
                                 {page} / {pagination.totalPages}
                             </span>
                             <button
                                 onClick={() => setPage((p) => Math.min(pagination.totalPages, p + 1))}
                                 disabled={page >= pagination.totalPages}
-                                className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-[10px] font-bold text-white/30 font-robotoMono disabled:opacity-20 disabled:cursor-not-allowed hover:bg-white/10 transition-all"
+                                className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-[10px] font-bold text-white/80 font-robotoMono disabled:opacity-20 disabled:cursor-not-allowed hover:bg-white/10 transition-all"
                             >
                                 Next
                                 <ChevronRight className="w-3 h-3" />

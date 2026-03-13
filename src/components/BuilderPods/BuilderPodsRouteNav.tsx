@@ -91,7 +91,7 @@ export default function BuilderPodsRouteNav() {
               className={`inline-flex items-center gap-2 px-3 py-2 rounded-xl text-[10px] font-bold uppercase tracking-widest font-robotoMono border transition-all whitespace-nowrap ${
                 active
                   ? "bg-white text-black border-white shadow-[0_8px_20px_rgba(255,255,255,0.10)]"
-                  : "bg-white/[0.02] text-white/50 border-white/10 hover:text-white/80 hover:border-white/25 hover:bg-white/[0.04]"
+                  : "bg-white/[0.02] text-white/75 border-white/10 hover:text-white/80 hover:border-white/25 hover:bg-white/[0.04]"
               }`}
             >
               <IconComp className="w-3.5 h-3.5" />
