@@ -3,29 +3,36 @@ import { dbConnect } from '@/lib/dbConnect';
 import { College } from '@/models/College';
 import { Deployment } from '@/models/Deployment';
 import { PodMember } from '@/models/PodMember';
-import { getAuthContext, requireAnyRole, UnauthorizedError, ForbiddenError } from '@/lib/rbac';
+import {
+    getAuthContext,
+    hasAnyRole,
+    verifyCollegeAccess,
+    UnauthorizedError,
+    ForbiddenError,
+} from '@/lib/rbac';
+import { DeploymentSchema } from '@/schemas/builder-pods';
 
 // POST — submit a deployment tx hash
-// Requires: pod_member, pod_lead, college_admin, or super_admin
+// Requires an authenticated wallet. Admins may submit within their scoped college;
+// otherwise the caller must be an active or pending pod member of the selected college.
 // Wallet is taken from verified JWT/session, not request body
 export async function POST(req: NextRequest) {
     try {
         const ctx = await getAuthContext(req);
-        requireAnyRole(ctx, ['super_admin', 'college_admin', 'pod_lead', 'pod_member']);
+        if (!ctx) throw new UnauthorizedError('Not authenticated');
 
         await dbConnect();
-        const body = await req.json();
-        const { collegeSlug, projectId, txHash, contractAddress, description } = body;
-
-        // Wallet address comes from verified auth context, not body
-        const walletAddress = ctx!.walletAddress;
-
-        if (!collegeSlug || !txHash) {
+        const parsed = DeploymentSchema.safeParse(await req.json());
+        if (!parsed.success) {
             return NextResponse.json(
-                { success: false, error: 'collegeSlug and txHash are required' },
+                { success: false, error: parsed.error.issues[0]?.message || 'Invalid deployment payload' },
                 { status: 400 }
             );
         }
+        const { collegeSlug, projectId, txHash, contractAddress, description } = parsed.data;
+
+        // Wallet address comes from verified auth context, not body
+        const walletAddress = ctx.walletAddress;
 
         const college = await College.findOne({ slug: collegeSlug, deletedAt: null });
         if (!college) {
@@ -35,17 +42,21 @@ export async function POST(req: NextRequest) {
             );
         }
 
-        // Verify membership
-        const member = await PodMember.findOne({
-            collegeId: college._id,
-            walletAddress,
-            status: { $in: ['active', 'pending'] },
-        });
-        if (!member) {
-            return NextResponse.json(
-                { success: false, error: 'Not a member of this college pod' },
-                { status: 403 }
-            );
+        const isAdmin = hasAnyRole(ctx, ['super_admin', 'college_admin'], college._id.toString());
+        if (isAdmin) {
+            verifyCollegeAccess(ctx, college._id.toString());
+        } else {
+            const member = await PodMember.findOne({
+                collegeId: college._id,
+                walletAddress,
+                status: { $in: ['active', 'pending'] },
+            });
+            if (!member) {
+                return NextResponse.json(
+                    { success: false, error: 'Not a member of this college pod' },
+                    { status: 403 }
+                );
+            }
         }
 
         const deployment = await Deployment.create({

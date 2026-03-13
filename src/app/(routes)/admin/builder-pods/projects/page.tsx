@@ -8,20 +8,22 @@ import {
     FolderKanban,
     ChevronRight,
     Loader2,
+    CheckCircle2,
 } from "lucide-react";
 
 const fetcher = (url: string) => fetch(url, { credentials: "include" }).then((r) => r.json());
 
 const STATUS_COLUMNS = [
     { key: "ideation", label: "Ideation", color: "text-gray-400", bg: "bg-gray-500/10" },
-    { key: "in_progress", label: "In Progress", color: "text-blue-400", bg: "bg-blue-500/10" },
+    { key: "architecture_finalized", label: "Architecture", color: "text-blue-400", bg: "bg-blue-500/10" },
+    { key: "prototype", label: "Prototype", color: "text-purple-400", bg: "bg-purple-500/10" },
     { key: "deployed", label: "Deployed", color: "text-green-400", bg: "bg-green-500/10" },
-    { key: "showcase_ready", label: "Showcase Ready", color: "text-purple-400", bg: "bg-purple-500/10" },
+    { key: "demo_ready", label: "Demo Ready", color: "text-amber-400", bg: "bg-amber-500/10" },
 ];
 
 export default function AdminProjectsPage() {
     const { data, isLoading } = useSWR(
-        "/api/builder-pods/colleges",
+        "/api/admin/builder-pods/colleges",
         fetcher
     );
 
@@ -52,6 +54,28 @@ export default function AdminProjectsPage() {
             }
         } catch (e) {
             console.error(e);
+        } finally {
+            setUpdating(null);
+        }
+    };
+
+    const updateApproval = async (projectId: string, isApproved: boolean) => {
+        setUpdating(projectId);
+        try {
+            await fetch("/api/builder-pods/projects/status", {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                credentials: "include",
+                body: JSON.stringify({
+                    projectId,
+                    isApproved,
+                }),
+            });
+            if (selectedCollege) {
+                mutate(`/api/builder-pods/colleges/${selectedCollege}/projects`);
+            }
+        } catch (error) {
+            console.error(error);
         } finally {
             setUpdating(null);
         }
@@ -139,6 +163,25 @@ export default function AdminProjectsPage() {
                                                     {project.problemStatement}
                                                 </p>
                                             )}
+                                            <div className="flex items-center justify-between gap-2 mb-2">
+                                                <span className={`text-[8px] font-bold uppercase tracking-widest font-robotoMono ${project.isApproved ? "text-green-400/70" : "text-amber-400/70"}`}>
+                                                    {project.isApproved ? "Approved" : "Pending Approval"}
+                                                </span>
+                                                {!project.isApproved && (
+                                                    <button
+                                                        onClick={() => updateApproval(project._id, true)}
+                                                        disabled={updating === project._id}
+                                                        className="flex items-center gap-1 px-2 py-1 rounded-lg bg-green-500/10 hover:bg-green-500/20 text-green-400 text-[8px] font-bold font-robotoMono transition-all disabled:opacity-30"
+                                                    >
+                                                        {updating === project._id ? (
+                                                            <Loader2 className="w-2.5 h-2.5 animate-spin" />
+                                                        ) : (
+                                                            <CheckCircle2 className="w-2.5 h-2.5" />
+                                                        )}
+                                                        Approve
+                                                    </button>
+                                                )}
+                                            </div>
                                             <div className="flex items-center gap-1">
                                                 {STATUS_COLUMNS.filter((s) => s.key !== col.key).map((target) => (
                                                     <button

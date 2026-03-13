@@ -14,6 +14,28 @@ const triggerToSlug: Record<BadgeTrigger, string> = {
     showcase_winner: 'regional_showcase_winner',
 };
 
+/**
+ * Fire-and-forget on-chain attestation.
+ * Runs asynchronously — if it fails the badge still exists in the DB
+ * and can be attested later via the admin UI.
+ */
+async function attestBadgeOnChain(userBadgeId: string, walletAddress: string, badgeSlug: string, context: { collegeId?: string; showcaseEventId?: string }): Promise<void> {
+    try {
+        const hasEasConfig = process.env.SEPOLIA_RPC && process.env.ISSUER_PRIVATE_KEY && process.env.EAS_SCHEMA_UID;
+        if (!hasEasConfig) return;
+
+        const { queueOnChainAttestation } = await import('@/lib/builder-pods/attestation');
+        const easUid = await queueOnChainAttestation(walletAddress, badgeSlug, context);
+
+        await UserBadge.updateOne(
+            { _id: userBadgeId },
+            { $set: { easUid, onChainAttested: true, attestedAt: new Date() } }
+        );
+    } catch (err) {
+        console.error(`[badges] On-chain attestation failed for ${userBadgeId}:`, err);
+    }
+}
+
 export async function awardBadgeOnEvent(
     trigger: BadgeTrigger,
     walletAddress: string,
@@ -23,8 +45,7 @@ export async function awardBadgeOnEvent(
     const badgeType = await BadgeType.findOne({ slug }).lean() as any;
     if (!badgeType) return;
 
-    // Idempotent upsert — won't duplicate
-    await UserBadge.findOneAndUpdate(
+    const result = await UserBadge.findOneAndUpdate(
         {
             walletAddress,
             badgeTypeId: badgeType._id,
@@ -44,8 +65,12 @@ export async function awardBadgeOnEvent(
                 assignedAt: new Date(),
             },
         },
-        { upsert: true }
+        { upsert: true, new: true }
     );
+
+    if (result && !result.easUid) {
+        attestBadgeOnChain(result._id.toString(), walletAddress, slug, context).catch(() => {});
+    }
 }
 
 export async function assignBadgeManually(
@@ -57,7 +82,7 @@ export async function assignBadgeManually(
     const badgeType = await BadgeType.findOne({ slug: badgeSlug }).lean() as any;
     if (!badgeType) throw new Error(`Badge type not found: ${badgeSlug}`);
 
-    await UserBadge.findOneAndUpdate(
+    const result = await UserBadge.findOneAndUpdate(
         {
             walletAddress,
             badgeTypeId: badgeType._id,
@@ -78,6 +103,10 @@ export async function assignBadgeManually(
                 assignedAt: new Date(),
             },
         },
-        { upsert: true }
+        { upsert: true, new: true }
     );
+
+    if (result && !result.easUid) {
+        attestBadgeOnChain(result._id.toString(), walletAddress, badgeSlug, context).catch(() => {});
+    }
 }

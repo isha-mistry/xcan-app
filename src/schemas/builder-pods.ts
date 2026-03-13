@@ -1,5 +1,18 @@
 import { z } from 'zod';
 
+const projectStatusValues = [
+    'ideation',
+    'architecture_finalized',
+    'prototype',
+    'deployed',
+    'demo_ready',
+] as const;
+
+const podMemberRoleValues = ['tech_lead', 'member', 'faculty', 'mentor'] as const;
+const managedPodMemberStatusValues = ['active', 'inactive', 'pending', 'removed'] as const;
+const memberApprovalActionValues = ['approve', 'reject'] as const;
+const deploymentActionValues = ['verify', 'reject'] as const;
+
 export const RegisterSchema = z.object({
     qrToken: z.string().min(6).max(64).optional(),
     name: z.string().min(2).max(100).trim(),
@@ -7,7 +20,6 @@ export const RegisterSchema = z.object({
     programmingLevel: z.enum(['beginner', 'intermediate', 'advanced']).optional(),
     githubUsername: z.string().max(39).optional(),
     semester: z.string().max(10).optional(),
-    walletAddress: z.string().regex(/^0x[a-fA-F0-9]{40}$/, 'Invalid wallet address'),
 });
 
 export const WeeklyUpdateSchema = z.object({
@@ -24,7 +36,6 @@ export const DeploymentSchema = z.object({
     projectId: z.string().regex(/^[a-f\d]{24}$/i).optional(),
     description: z.string().max(500).optional(),
     collegeSlug: z.string().min(2),
-    walletAddress: z.string().regex(/^0x[a-fA-F0-9]{40}$/, 'Invalid wallet address'),
 });
 
 export const ProjectSchema = z.object({
@@ -34,8 +45,6 @@ export const ProjectSchema = z.object({
     contractAddress: z.string().regex(/^0x[a-fA-F0-9]{40}$/).optional(),
     demoLink: z.string().url().optional(),
     techStack: z.array(z.string()).max(10).default([]),
-    collegeSlug: z.string().min(2),
-    walletAddress: z.string().regex(/^0x[a-fA-F0-9]{40}$/, 'Invalid wallet address'),
 });
 
 export const ShowcaseSubmissionSchema = z.object({
@@ -46,5 +55,32 @@ export const ShowcaseSubmissionSchema = z.object({
     demoLink: z.string().url().optional(),
     contractAddress: z.string().regex(/^0x[a-fA-F0-9]{40}$/).optional(),
     pitchDeckUrl: z.string().url().optional(),
-    walletAddress: z.string().regex(/^0x[a-fA-F0-9]{40}$/, 'Invalid wallet address'),
+});
+
+export const ProjectStatusUpdateSchema = z.object({
+    projectId: z.string().regex(/^[a-f\d]{24}$/i),
+    status: z.enum(projectStatusValues).optional(),
+    isApproved: z.boolean().optional(),
+}).refine((data) => data.status !== undefined || data.isApproved !== undefined, {
+    message: 'Provide at least one change to update',
+    path: ['status'],
+});
+
+export const MemberManagementSchema = z.object({
+    memberId: z.string().regex(/^[a-f\d]{24}$/i),
+    role: z.enum(podMemberRoleValues).optional(),
+    status: z.enum(managedPodMemberStatusValues).optional(),
+}).refine((data) => data.role !== undefined || data.status !== undefined, {
+    message: 'Provide at least one member change',
+    path: ['role'],
+});
+
+export const MemberApprovalSchema = z.object({
+    memberId: z.string().regex(/^[a-f\d]{24}$/i),
+    action: z.enum(memberApprovalActionValues),
+});
+
+export const AdminDeploymentUpdateSchema = z.object({
+    deploymentId: z.string().regex(/^[a-f\d]{24}$/i),
+    action: z.enum(deploymentActionValues),
 });

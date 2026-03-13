@@ -53,9 +53,12 @@ export default function RegistrationForm({
     });
 
     useEffect(() => {
-        if (initialQrToken && !form.qrToken) {
-            setForm((f) => ({ ...f, qrToken: initialQrToken }));
-        }
+        if (!initialQrToken) return;
+        setForm((current) =>
+            current.qrToken
+                ? current
+                : { ...current, qrToken: initialQrToken }
+        );
     }, [initialQrToken]);
 
     useEffect(() => {
@@ -106,7 +109,7 @@ export default function RegistrationForm({
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 credentials: "include",
-                body: JSON.stringify({ ...form, walletAddress }),
+                body: JSON.stringify(form),
             });
 
             const data = await res.json();

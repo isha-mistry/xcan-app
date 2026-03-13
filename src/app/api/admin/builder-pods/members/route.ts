@@ -4,24 +4,48 @@ import { PodMember } from '@/models/PodMember';
 import { College } from '@/models/College';
 import { AuditLog } from '@/models/AuditLog';
 import { Notification } from '@/models/Notification';
-import { getAuthContext, requireRole, UnauthorizedError, ForbiddenError } from '@/lib/rbac';
+import {
+    buildCollegeFilter,
+    getAuthContext,
+    requireAnyRole,
+    UnauthorizedError,
+    ForbiddenError,
+    verifyCollegeAccess,
+} from '@/lib/rbac';
 import { awardBadgeOnEvent } from '@/lib/builder-pods/badges';
 import { recalculateMemberScore, recalculatePodScore } from '@/lib/builder-pods/leaderboard';
+import { MemberApprovalSchema } from '@/schemas/builder-pods';
 
 // GET — list pending members (admin only)
 export async function GET(req: NextRequest) {
     try {
         const ctx = await getAuthContext(req);
-        requireRole(ctx, 'super_admin');
+        requireAnyRole(ctx, ['super_admin', 'college_admin']);
 
         await dbConnect();
+        const { searchParams } = new URL(req.url);
+        const statusParam = searchParams.get('status') || 'pending';
+        const validStatuses = ['pending', 'active', 'inactive', 'removed'];
+        const requestedStatuses = statusParam
+            .split(',')
+            .map((status) => status.trim())
+            .filter((status) => validStatuses.includes(status));
 
-        const pending = await PodMember.find({ status: 'pending' })
+        const filter: Record<string, any> = {};
+        if (requestedStatuses.length === 1) {
+            filter.status = requestedStatuses[0];
+        } else if (requestedStatuses.length > 1) {
+            filter.status = { $in: requestedStatuses };
+        }
+
+        const collegeScopeFilter = buildCollegeFilter(ctx!, 'collegeId');
+
+        const members = await PodMember.find({ ...filter, ...collegeScopeFilter })
             .populate('collegeId', 'name slug')
             .sort({ createdAt: -1 })
             .lean();
 
-        return NextResponse.json({ success: true, members: pending }, { status: 200 });
+        return NextResponse.json({ success: true, members }, { status: 200 });
     } catch (error: any) {
         if (error instanceof UnauthorizedError) return NextResponse.json({ success: false, error: 'Not authenticated' }, { status: 401 });
         if (error instanceof ForbiddenError) return NextResponse.json({ success: false, error: 'Admin access required' }, { status: 403 });
@@ -34,19 +58,18 @@ export async function GET(req: NextRequest) {
 export async function PATCH(req: NextRequest) {
     try {
         const ctx = await getAuthContext(req);
-        requireRole(ctx, 'super_admin');
+        requireAnyRole(ctx, ['super_admin', 'college_admin']);
 
         await dbConnect();
-        const body = await req.json();
-        const { memberId, action } = body;
-        const adminWallet = ctx!.walletAddress; // taken from verified JWT, not body
-
-        if (!memberId || !action) {
+        const parsed = MemberApprovalSchema.safeParse(await req.json());
+        if (!parsed.success) {
             return NextResponse.json(
-                { success: false, error: 'memberId and action are required' },
+                { success: false, error: parsed.error.issues[0]?.message || 'Invalid member approval payload' },
                 { status: 400 }
             );
         }
+        const { memberId, action } = parsed.data;
+        const adminWallet = ctx!.walletAddress; // taken from verified JWT, not body
 
         const member = await PodMember.findById(memberId);
         if (!member) {
@@ -58,6 +81,9 @@ export async function PATCH(req: NextRequest) {
 
         const oldStatus = member.status;
 
+        // Enforce college-scoped access for non-super-admins
+        verifyCollegeAccess(ctx!, member.collegeId.toString());
+
         if (action === 'approve') {
             member.status = 'active';
             member.approvedBy = adminWallet;
@@ -65,10 +91,12 @@ export async function PATCH(req: NextRequest) {
             await member.save();
 
             // Increment college active member count
-            await College.updateOne(
-                { _id: member.collegeId },
-                { $inc: { activeMemberCount: 1 } }
-            );
+            if (oldStatus !== 'active') {
+                await College.updateOne(
+                    { _id: member.collegeId },
+                    { $inc: { activeMemberCount: 1 } }
+                );
+            }
 
             // Auto-award "builder_pod_member" badge on approval
             await awardBadgeOnEvent('pod_member_approved', member.walletAddress, {

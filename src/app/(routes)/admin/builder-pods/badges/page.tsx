@@ -33,6 +33,7 @@ export default function AdminBadgesPage() {
     );
 
     const [assigning, setAssigning] = useState(false);
+    const [attesting, setAttesting] = useState<string | null>(null);
     const [assignResult, setAssignResult] = useState<{ success: boolean; message: string } | null>(null);
     const [form, setForm] = useState({
         walletAddress: "",
@@ -63,6 +64,24 @@ export default function AdminBadgesPage() {
             setAssignResult({ success: false, message: "Network error. Please try again." });
         } finally {
             setAssigning(false);
+        }
+    };
+
+    const handleAttest = async (badgeId: string) => {
+        setAttesting(badgeId);
+        try {
+            const res = await fetch(`/api/builder-pods/badges/attest/${badgeId}`, {
+                method: "POST",
+                credentials: "include",
+            });
+            const data = await res.json();
+            if (data.success || data.easUid) {
+                if (walletSearch) mutate(`/api/builder-pods/badges/user/${walletSearch}`);
+            }
+        } catch (e) {
+            console.error(e);
+        } finally {
+            setAttesting(null);
         }
     };
 
@@ -192,7 +211,7 @@ export default function AdminBadgesPage() {
                                 return (
                                     <div key={badge._id} className="flex items-center gap-3 p-3 rounded-lg bg-white/[0.01]">
                                         <Award className={`w-4 h-4 ${meta?.color || "text-white/20"}`} />
-                                        <div className="flex-1">
+                                        <div className="flex-1 min-w-0">
                                             <span className="text-xs text-white/50 font-robotoMono font-bold">
                                                 {badge.badgeSnapshot?.label || badge.badgeSnapshot?.slug}
                                             </span>
@@ -213,6 +232,16 @@ export default function AdminBadgesPage() {
                                                 )}
                                             </p>
                                         </div>
+                                        {!badge.easUid && (
+                                            <button
+                                                onClick={() => handleAttest(badge._id)}
+                                                disabled={attesting === badge._id}
+                                                className="shrink-0 flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 text-[9px] font-bold font-robotoMono transition-all border border-cyan-500/10 disabled:opacity-30"
+                                            >
+                                                {attesting === badge._id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Shield className="w-3 h-3" />}
+                                                Attest
+                                            </button>
+                                        )}
                                     </div>
                                 );
                             })}

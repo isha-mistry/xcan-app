@@ -4,6 +4,15 @@ import { ShowcaseEvent } from '@/models/ShowcaseEvent';
 import { ShowcaseSubmission } from '@/models/ShowcaseSubmission';
 import { College } from '@/models/College';
 import { PodProject } from '@/models/PodProject';
+import { PodMember } from '@/models/PodMember';
+import { ShowcaseSubmissionSchema } from '@/schemas/builder-pods';
+import {
+    getAuthContext,
+    hasAnyRole,
+    UnauthorizedError,
+    verifyCollegeAccess,
+    ForbiddenError,
+} from '@/lib/rbac';
 
 // GET — list all showcase events
 export async function GET() {
@@ -26,18 +35,30 @@ export async function GET() {
 // POST — submit a showcase entry
 export async function POST(req: NextRequest) {
     try {
-        await dbConnect();
-        const body = await req.json();
-        const { showcaseEventId, collegeSlug, projectId, demoLink, githubRepo, contractAddress, pitchDeckUrl, walletAddress } = body;
+        const ctx = await getAuthContext(req);
+        if (!ctx) throw new UnauthorizedError('Not authenticated');
 
-        if (!showcaseEventId || !collegeSlug || !projectId || !githubRepo || !walletAddress) {
+        await dbConnect();
+        const parsed = ShowcaseSubmissionSchema.safeParse(await req.json());
+        if (!parsed.success) {
             return NextResponse.json(
-                { success: false, error: 'Missing required fields' },
+                { success: false, error: parsed.error.issues[0]?.message || 'Invalid showcase submission payload' },
                 { status: 400 }
             );
         }
+        const {
+            showcaseEventId,
+            collegeSlug,
+            projectId,
+            demoLink,
+            githubRepo,
+            contractAddress,
+            pitchDeckUrl,
+        } = parsed.data;
+        const walletAddress = ctx.walletAddress;
 
         const showcase = await ShowcaseEvent.findById(showcaseEventId);
+
         if (!showcase || showcase.status === 'completed') {
             return NextResponse.json(
                 { success: false, error: 'Showcase not found or already completed' },
@@ -61,6 +82,23 @@ export async function POST(req: NextRequest) {
             );
         }
 
+        const isAdmin = hasAnyRole(ctx, ['super_admin', 'college_admin', 'mentor'], college._id.toString());
+        if (isAdmin) {
+            verifyCollegeAccess(ctx, college._id.toString());
+        } else {
+            const member = await PodMember.findOne({
+                collegeId: college._id,
+                walletAddress,
+                status: 'active',
+            }).lean();
+
+            const isTechLead = member?.role === 'tech_lead';
+            const isProjectCreator = project.createdBy === walletAddress;
+            if (!member || (!isTechLead && !isProjectCreator)) {
+                throw new ForbiddenError('Only an active tech lead or the project creator can submit to showcase');
+            }
+        }
+
         const submission = await ShowcaseSubmission.create({
             showcaseEventId,
             collegeId: college._id,
@@ -78,7 +116,7 @@ export async function POST(req: NextRequest) {
             githubRepo,
             contractAddress: contractAddress || null,
             pitchDeckUrl: pitchDeckUrl || null,
-            submittedBy: walletAddress.toLowerCase(),
+            submittedBy: walletAddress,
         });
 
         // Mark project as submitted to showcase
@@ -89,6 +127,18 @@ export async function POST(req: NextRequest) {
             { status: 201 }
         );
     } catch (error: any) {
+        if (error instanceof UnauthorizedError) {
+            return NextResponse.json(
+                { success: false, error: 'Not authenticated' },
+                { status: 401 }
+            );
+        }
+        if (error instanceof ForbiddenError) {
+            return NextResponse.json(
+                { success: false, error: error.message },
+                { status: 403 }
+            );
+        }
         console.error('Showcase submission error:', error);
         if (error.code === 11000) {
             return NextResponse.json(

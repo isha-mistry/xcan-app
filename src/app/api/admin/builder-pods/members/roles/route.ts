@@ -1,27 +1,35 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { dbConnect } from '@/lib/dbConnect';
 import { PodMember } from '@/models/PodMember';
+import { College } from '@/models/College';
 import { AuditLog } from '@/models/AuditLog';
 import { Notification } from '@/models/Notification';
-import { getAuthContext, requireRole, UnauthorizedError, ForbiddenError } from '@/lib/rbac';
+import {
+    getAuthContext,
+    requireAnyRole,
+    UnauthorizedError,
+    ForbiddenError,
+    verifyCollegeAccess,
+} from '@/lib/rbac';
+import { MemberManagementSchema } from '@/schemas/builder-pods';
+import { recalculateMemberScore, recalculatePodScore } from '@/lib/builder-pods/leaderboard';
 
 // PATCH — assign role to a member or change status (admin only)
 export async function PATCH(req: NextRequest) {
     try {
         const ctx = await getAuthContext(req);
-        requireRole(ctx, 'super_admin');
+        requireAnyRole(ctx, ['super_admin', 'college_admin']);
 
         await dbConnect();
-        const body = await req.json();
-        const { memberId, role, status } = body;
-        const adminWallet = ctx!.walletAddress;
-
-        if (!memberId) {
+        const parsed = MemberManagementSchema.safeParse(await req.json());
+        if (!parsed.success) {
             return NextResponse.json(
-                { success: false, error: 'memberId is required' },
+                { success: false, error: parsed.error.issues[0]?.message || 'Invalid member update payload' },
                 { status: 400 }
             );
         }
+        const { memberId, role, status } = parsed.data;
+        const adminWallet = ctx!.walletAddress;
 
         const member = await PodMember.findById(memberId);
         if (!member) {
@@ -31,53 +39,73 @@ export async function PATCH(req: NextRequest) {
             );
         }
 
+        // Enforce college-scoped access for non-super-admins
+        verifyCollegeAccess(ctx!, member.collegeId.toString());
+
         const oldValues: Record<string, any> = {};
         const newValues: Record<string, any> = {};
 
         // Role assignment
-        if (role) {
-            const validRoles = ['tech_lead', 'team_member', 'mentor'];
-            if (!validRoles.includes(role)) {
-                return NextResponse.json(
-                    { success: false, error: `Invalid role. Must be one of: ${validRoles.join(', ')}` },
-                    { status: 400 }
-                );
-            }
+        if (role && role !== member.role) {
             oldValues.role = member.role;
             member.role = role;
             newValues.role = role;
         }
 
         // Status change (remove inactive)
-        if (status) {
-            const validStatuses = ['active', 'inactive', 'pending'];
-            if (!validStatuses.includes(status)) {
-                return NextResponse.json(
-                    { success: false, error: `Invalid status. Must be one of: ${validStatuses.join(', ')}` },
-                    { status: 400 }
-                );
-            }
+        if (status && status !== member.status) {
             oldValues.status = member.status;
             member.status = status;
+            member.deletedAt = status === 'removed' ? new Date() : null;
             newValues.status = status;
+        }
+
+        if (Object.keys(newValues).length === 0) {
+            return NextResponse.json(
+                { success: true, member: { _id: member._id, role: member.role, status: member.status }, noChanges: true },
+                { status: 200 }
+            );
         }
 
         await member.save();
 
+        if (newValues.status) {
+            const wasActive = oldValues.status === 'active';
+            const isActive = member.status === 'active';
+
+            if (wasActive !== isActive) {
+                await College.updateOne(
+                    { _id: member.collegeId },
+                    { $inc: { activeMemberCount: isActive ? 1 : -1 } }
+                );
+            }
+
+            await recalculateMemberScore(member._id);
+            await recalculatePodScore(member.collegeId);
+        }
+
         // Notify member
-        if (role) {
+        if (Object.keys(newValues).length > 0) {
             await Notification.create({
                 walletAddress: member.walletAddress,
                 type: 'role_assigned',
-                title: `Role Updated: ${role.replace(/_/g, ' ')}`,
-                body: `Your role has been updated to ${role.replace(/_/g, ' ')}.`,
+                title: newValues.role
+                    ? `Role Updated: ${member.role.replace(/_/g, ' ')}`
+                    : `Membership Status: ${member.status}`,
+                body: newValues.role
+                    ? `Your role has been updated to ${member.role.replace(/_/g, ' ')}.`
+                    : `Your Builder Pod membership status is now ${member.status}.`,
                 link: '/builder-pods',
             });
         }
 
         await AuditLog.create({
             actorWallet: adminWallet,
-            action: role ? 'member.role_assign' : 'member.status_update',
+            action: role && status
+                ? 'member.manage'
+                : role
+                    ? 'member.role_assign'
+                    : 'member.status_update',
             entityType: 'PodMember',
             entityId: memberId,
             oldValue: oldValues,
