@@ -3,7 +3,12 @@ import { dbConnect } from '@/lib/dbConnect';
 import { College } from '@/models/College';
 import { WeeklyUpdate } from '@/models/WeeklyUpdate';
 import { AuditLog } from '@/models/AuditLog';
-import { getAuthContext, requireAnyRole, verifyCollegeAccess, UnauthorizedError, ForbiddenError } from '@/lib/rbac';
+import {
+    getAuthContext,
+    requireAnyRole,
+    UnauthorizedError,
+    ForbiddenError,
+} from '@/lib/rbac';
 
 function getCurrentWeekInfo(): { weekNumber: number; year: number } {
     const now = new Date();
@@ -15,23 +20,23 @@ function getCurrentWeekInfo(): { weekNumber: number; year: number } {
 }
 
 // POST — submit a weekly update for a pod
-// Requires: pod_lead, college_admin, or super_admin
-// Wallet is taken from verified JWT/session, not request body
+// Requires pod_lead, college_admin, or super_admin role.
+// Members must first submit a project (which grants pod_lead) before
+// they can submit weekly updates.
 export async function POST(
     req: NextRequest,
     { params }: { params: Promise<{ slug: string }> }
 ) {
     try {
         const ctx = await getAuthContext(req);
-        requireAnyRole(ctx, ['super_admin', 'college_admin', 'pod_lead']);
+        if (!ctx) throw new UnauthorizedError('Not authenticated');
 
         await dbConnect();
         const { slug } = await params;
         const body = await req.json();
         const { completedThisWeek, blockers, nextMilestone, githubLink } = body;
 
-        // Wallet address comes from verified auth context, not body
-        const walletAddress = ctx!.walletAddress;
+        const walletAddress = ctx.walletAddress;
 
         if (!completedThisWeek || !nextMilestone) {
             return NextResponse.json(
@@ -48,8 +53,9 @@ export async function POST(
             );
         }
 
-        // Verify college-scoped access
-        verifyCollegeAccess(ctx!, college._id.toString());
+        // Only pod_lead, college_admin, or super_admin can submit weekly updates.
+        // pod_lead is granted when a member submits a project.
+        requireAnyRole(ctx, ['pod_lead', 'college_admin'], college._id.toString());
 
         const { weekNumber, year } = getCurrentWeekInfo();
 

@@ -4,6 +4,7 @@ import { College } from '@/models/College';
 import { PodProject } from '@/models/PodProject';
 import { PodMember } from '@/models/PodMember';
 import { AuditLog } from '@/models/AuditLog';
+import { PlatformRole, UserRole } from '@/models/PlatformRole';
 
 // POST — submit a new project (requires pod membership)
 export async function POST(
@@ -36,13 +37,13 @@ export async function POST(
         const membership = await PodMember.findOne({
             collegeId: college._id,
             walletAddress: wallet,
-            status: { $in: ['active', 'pending'] },
+            status: 'active',
             deletedAt: null,
         }).lean();
 
         if (!membership) {
             return NextResponse.json(
-                { success: false, error: 'You must be a member of this pod to submit a project' },
+                { success: false, error: 'You must be an active member of this pod to submit a project' },
                 { status: 403 }
             );
         }
@@ -66,13 +67,34 @@ export async function POST(
             }],
         });
 
-        // Promote submitter to tech_lead if they're a regular member
-        if (membership.role === 'member') {
-            await PodMember.updateOne(
-                { _id: membership._id },
-                { $set: { role: 'tech_lead' } }
+        // Grant the submitting member the platform-level pod_lead role for this college.
+        const podLeadPlatformRole = await PlatformRole.findOne({ slug: 'pod_lead' }).lean();
+        if (podLeadPlatformRole) {
+            await UserRole.updateOne(
+                {
+                    walletAddress: wallet,
+                    roleSlug: 'pod_lead',
+                    collegeId: college._id,
+                },
+                {
+                    $setOnInsert: {
+                        roleId: podLeadPlatformRole._id,
+                        grantedBy: wallet,
+                        grantedAt: new Date(),
+                    },
+                    $set: {
+                        revokedAt: null,
+                    },
+                },
+                { upsert: true }
             );
         }
+
+        // Promote the member's pod-level role from pod_member to pod_lead.
+        await PodMember.updateOne(
+            { collegeId: college._id, walletAddress: wallet, deletedAt: null },
+            { $set: { role: 'pod_lead' } }
+        );
 
         await College.findByIdAndUpdate(college._id, { $inc: { projectCount: 1 } });
 

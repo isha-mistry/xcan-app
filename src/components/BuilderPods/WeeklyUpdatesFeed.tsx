@@ -2,7 +2,7 @@
 import React from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { CalendarDays, Github, AlertTriangle, Target, CheckCircle, FileText } from "lucide-react";
+import { CalendarDays, Github, AlertTriangle, Target, CheckCircle, FileText, Edit3 } from "lucide-react";
 import WeeklyUpdateForm from "./WeeklyUpdateForm";
 
 interface UpdateData {
@@ -111,12 +111,32 @@ export default function WeeklyUpdatesFeed({
                                         </span>
                                     )}
                                 </div>
-                                <span className="text-[10px] text-white/15 font-robotoMono">
-                                    {new Date(update.createdAt).toLocaleDateString("en-IN", {
-                                        day: "numeric",
-                                        month: "short",
-                                    })}
-                                </span>
+                                <div className="flex items-center gap-3">
+                                    {isTeamLead && slug && (
+                                        <WeeklyUpdateForm
+                                            collegeSlug={slug}
+                                            onSuccess={() => onRefresh?.()}
+                                            editData={{
+                                                id: update._id,
+                                                completedThisWeek: update.completedThisWeek,
+                                                blockers: update.blockers,
+                                                nextMilestone: update.nextMilestone,
+                                                githubLink: update.githubLink,
+                                            }}
+                                            trigger={
+                                                <button className="p-1 rounded-md hover:bg-white/5 text-white/20 hover:text-white/40 transition-all cursor-pointer">
+                                                    <Edit3 className="w-3.5 h-3.5" />
+                                                </button>
+                                            }
+                                        />
+                                    )}
+                                    <span className="text-[10px] text-white/15 font-robotoMono">
+                                        {new Date(update.createdAt).toLocaleDateString("en-IN", {
+                                            day: "numeric",
+                                            month: "short",
+                                        })}
+                                    </span>
+                                </div>
                             </div>
 
                             {/* Content */}

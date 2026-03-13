@@ -42,13 +42,13 @@ export async function POST(req: NextRequest) {
         const membership = await PodMember.findOne({
             collegeId: project.collegeId,
             walletAddress: wallet,
-            status: { $in: ['active', 'pending'] },
+            status: 'active',
             deletedAt: null,
         }).lean();
 
         if (!membership) {
             return NextResponse.json(
-                { success: false, error: 'You must be a member of this pod to join the project team' },
+                { success: false, error: 'You must be an active member of this pod to join the project team' },
                 { status: 403 }
             );
         }

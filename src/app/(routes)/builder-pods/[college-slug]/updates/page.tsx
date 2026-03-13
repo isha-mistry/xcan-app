@@ -15,22 +15,41 @@ import {
     Github,
     ChevronLeft,
     ChevronRight,
+    Edit3,
+    RotateCw,
 } from "lucide-react";
+import { usePrivy } from "@privy-io/react-auth";
+import WeeklyUpdateForm from "@/components/BuilderPods/WeeklyUpdateForm";
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
 export default function CollegeUpdatesPage() {
     const params = useParams();
     const slug = params["college-slug"] as string;
+    const { user } = usePrivy();
+    const walletAddress = user?.wallet?.address?.toLowerCase() ?? null;
     const [page, setPage] = useState(1);
 
-    const { data, isLoading } = useSWR(
+    const { data, isLoading, mutate } = useSWR(
         slug ? `/api/builder-pods/colleges/${slug}/updates?page=${page}&limit=10` : null,
+        fetcher
+    );
+
+    // Also fetch college pod data to check team lead status
+    const { data: podData } = useSWR(
+        slug ? `/api/builder-pods/colleges/${slug}` : null,
         fetcher
     );
 
     const updates = data?.updates ?? [];
     const pagination = data?.pagination ?? { page: 1, totalPages: 1, total: 0 };
+    const members = podData?.members ?? [];
+
+    const isTeamLead = walletAddress != null && members.some((m: any) => m.walletAddress.toLowerCase() === walletAddress && m.role === 'pod_lead' && m.status === 'active');
+
+    const handleRefresh = () => {
+        mutate();
+    };
 
     return (
         <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-10 py-6">
@@ -39,16 +58,25 @@ export default function CollegeUpdatesPage() {
                 Back to Pod
             </Link>
 
-            <div className="flex items-center gap-3 mb-8">
-                <FileText className="w-5 h-5 text-blue-400/40" />
-                <h1 className="text-2xl font-black text-white font-unbounded tracking-tight">
-                    Weekly Updates
-                </h1>
-                {pagination.total > 0 && (
-                    <span className="px-2.5 py-1 rounded-full bg-blue-500/10 text-[10px] font-bold text-blue-400/60 font-robotoMono">
-                        {pagination.total} updates
-                    </span>
-                )}
+            <div className="flex items-center justify-between mb-8">
+                <div className="flex items-center gap-3">
+                    <FileText className="w-5 h-5 text-blue-400/40" />
+                    <h1 className="text-2xl font-black text-white font-unbounded tracking-tight">
+                        Weekly Updates
+                    </h1>
+                    {pagination.total > 0 && (
+                        <span className="px-2.5 py-1 rounded-full bg-blue-500/10 text-[10px] font-bold text-blue-400/60 font-robotoMono">
+                            {pagination.total} updates
+                        </span>
+                    )}
+                </div>
+                <button 
+                    onClick={handleRefresh}
+                    className="p-2 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all text-white/40 hover:text-white/60"
+                    title="Refresh updates"
+                >
+                    <RotateCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+                </button>
             </div>
 
             {isLoading ? (
@@ -90,13 +118,33 @@ export default function CollegeUpdatesPage() {
                                             </span>
                                         )}
                                     </div>
-                                    <div className="flex items-center gap-2 text-[10px] text-white/15 font-robotoMono">
-                                        <Calendar className="w-3 h-3" />
-                                        {new Date(update.createdAt).toLocaleDateString("en-IN", {
-                                            day: "numeric",
-                                            month: "short",
-                                            year: "numeric",
-                                        })}
+                                    <div className="flex items-center gap-3">
+                                        <div className="flex items-center gap-2 text-[10px] text-white/15 font-robotoMono">
+                                            <Calendar className="w-3 h-3" />
+                                            {new Date(update.createdAt).toLocaleDateString("en-IN", {
+                                                day: "numeric",
+                                                month: "short",
+                                                year: "numeric",
+                                            })}
+                                        </div>
+                                        {isTeamLead && (
+                                            <WeeklyUpdateForm
+                                                collegeSlug={slug}
+                                                onSuccess={handleRefresh}
+                                                editData={{
+                                                    id: update._id,
+                                                    completedThisWeek: update.completedThisWeek,
+                                                    blockers: update.blockers,
+                                                    nextMilestone: update.nextMilestone,
+                                                    githubLink: update.githubLink,
+                                                }}
+                                                trigger={
+                                                    <button className="p-1 rounded-md hover:bg-white/5 text-white/20 hover:text-white/40 transition-all cursor-pointer">
+                                                        <Edit3 className="w-3.5 h-3.5" />
+                                                    </button>
+                                                }
+                                            />
+                                        )}
                                     </div>
                                 </div>
 

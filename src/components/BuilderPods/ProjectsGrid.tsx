@@ -46,6 +46,7 @@ interface ProjectsGridProps {
     isLoading?: boolean;
     walletAddress?: string | null;
     isMember?: boolean;
+    memberStatus?: string | null;
     collegeSlug?: string;
     onRefresh?: () => void;
 }
@@ -227,6 +228,7 @@ export default function ProjectsGrid({
     isLoading,
     walletAddress,
     isMember,
+    memberStatus,
     collegeSlug,
     onRefresh,
 }: ProjectsGridProps) {
@@ -234,6 +236,11 @@ export default function ProjectsGrid({
     const [copiedId, setCopiedId] = useState<string | null>(null);
     const wallet = walletAddress?.toLowerCase() ?? null;
     const showActions = wallet && isMember;
+    const isActive = memberStatus === "active";
+    const isAlreadyInATeam = projects.some(p => 
+        p.teamLeader?.toLowerCase() === wallet || 
+        p.teamMembers?.some(m => m.walletAddress?.toLowerCase() === wallet)
+    );
 
     const copyCode = (code: string, projectId: string) => {
         navigator.clipboard.writeText(code);
@@ -277,18 +284,42 @@ export default function ProjectsGrid({
                     </span>
                 </div>
                 {showActions && (
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-3">
+                        {!isActive && (
+                            <span className="text-[9px] text-amber-400/60 font-robotoMono mr-1">
+                                Pending approval
+                            </span>
+                        )}
+                        {isAlreadyInATeam && (
+                            <span className="text-[9px] text-blue-400/60 font-robotoMono">
+                                Already in a team
+                            </span>
+                        )}
                         {collegeSlug && (
                             <ProjectSubmitForm
                                 collegeSlug={collegeSlug}
                                 walletAddress={walletAddress!}
                                 isMember={true}
-                                onSuccess={() => onRefresh?.()}
+                                memberStatus={memberStatus}
+                                isDisabled={isAlreadyInATeam}
+                                onRefresh={onRefresh}
                             />
                         )}
                         <button
                             onClick={() => setJoinModalOpen(true)}
-                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-cyan-500/10 border border-cyan-500/20 text-[10px] font-bold text-cyan-400 font-robotoMono uppercase tracking-wider hover:bg-cyan-500/15 transition-all"
+                            disabled={!isActive || isAlreadyInATeam}
+                            title={
+                                !isActive 
+                                    ? "Your membership must be approved before you can join a team" 
+                                    : isAlreadyInATeam 
+                                        ? "You are already part of a team" 
+                                        : undefined
+                            }
+                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-bold font-robotoMono uppercase tracking-wider transition-all ${
+                                isActive && !isAlreadyInATeam
+                                    ? "bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 hover:bg-cyan-500/15"
+                                    : "bg-white/5 border border-white/10 text-white/20 cursor-not-allowed"
+                            }`}
                         >
                             <KeyRound className="w-3 h-3" />
                             Join Team

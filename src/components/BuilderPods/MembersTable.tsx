@@ -22,9 +22,9 @@ interface MembersTableProps {
 }
 
 const roleStyles: Record<string, { bg: string; text: string }> = {
-    tech_lead: { bg: "bg-amber-500/10", text: "text-amber-400" },
-    member: { bg: "bg-blue-500/10", text: "text-blue-400" },
-    faculty: { bg: "bg-purple-500/10", text: "text-purple-400" },
+    pod_lead: { bg: "bg-amber-500/10", text: "text-amber-400" },
+    pod_member: { bg: "bg-blue-500/10", text: "text-blue-400" },
+    faculty_coordinator: { bg: "bg-purple-500/10", text: "text-purple-400" },
     mentor: { bg: "bg-cyan-500/10", text: "text-cyan-400" },
 };
 
@@ -95,7 +95,7 @@ export default function MembersTable({
                         </thead>
                         <tbody>
                             {members.map((m) => {
-                                const role = roleStyles[m.role] || roleStyles.member;
+                                const role = roleStyles[m.role] || roleStyles.pod_member;
                                 const status = statusStyles[m.status] || statusStyles.inactive;
                                 return (
                                     <tr

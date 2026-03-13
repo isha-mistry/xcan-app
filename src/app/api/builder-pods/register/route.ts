@@ -83,6 +83,7 @@ export async function POST(req: NextRequest) {
             collegeId: college._id,
             walletAddress: walletAddress.toLowerCase(),
             name: name.trim(),
+            role: 'pod_member',
             programmingLevel: programmingLevel || null,
             githubUsername: githubUsername || null,
             semester: semester || null,

@@ -30,17 +30,19 @@ export default function CollegePodPage() {
     const recentUpdates = data?.recentUpdates ?? [];
 
     const wallet = walletAddress?.toLowerCase() ?? null;
-    const isMember =
-        wallet != null &&
-        members.some(
-            (m: any) =>
-                m.walletAddress === wallet &&
-                (m.status === "active" || m.status === "pending")
-        );
+    const currentMember = wallet
+        ? members.find(
+              (m: any) =>
+                  m.walletAddress === wallet &&
+                  (m.status === "active" || m.status === "pending")
+          )
+        : null;
+    const isMember = currentMember != null;
+    const memberStatus: string | null = currentMember?.status ?? null;
 
     const isTeamLead =
         wallet != null &&
-        projects.some((p: any) => p.teamLeader === wallet);
+        members.some((m: any) => m.walletAddress.toLowerCase() === wallet && m.role === 'pod_lead' && m.status === 'active');
 
     const handleDataRefresh = () => {
         mutate();
@@ -96,6 +98,7 @@ export default function CollegePodPage() {
                         isLoading={isLoading}
                         walletAddress={walletAddress}
                         isMember={isMember}
+                        memberStatus={memberStatus}
                         collegeSlug={slug}
                         onRefresh={handleDataRefresh}
                     />

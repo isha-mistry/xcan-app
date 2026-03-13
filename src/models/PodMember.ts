@@ -1,6 +1,6 @@
 import mongoose, { Document, Schema, Types } from 'mongoose';
 
-export const POD_MEMBER_ROLES = ['tech_lead', 'member', 'faculty', 'mentor'] as const;
+export const POD_MEMBER_ROLES = ['pod_lead', 'pod_member', 'faculty_coordinator', 'mentor'] as const;
 export const POD_MEMBER_STATUS = ['pending', 'active', 'inactive', 'removed'] as const;
 
 export interface IPodMember extends Document {
@@ -33,7 +33,7 @@ const PodMemberSchema = new Schema<IPodMember>(
         collegeId: { type: Schema.Types.ObjectId, ref: 'College', required: true },
         walletAddress: { type: String, required: true, lowercase: true },
         name: { type: String, required: true, trim: true },
-        role: { type: String, enum: POD_MEMBER_ROLES, default: 'member' },
+        role: { type: String, enum: POD_MEMBER_ROLES, default: 'pod_member' },
         programmingLevel: { type: String, enum: ['beginner', 'intermediate', 'advanced'], default: null },
         githubUsername: { type: String, default: null },
         status: { type: String, enum: POD_MEMBER_STATUS, default: 'pending' },

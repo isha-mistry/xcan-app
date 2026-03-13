@@ -50,7 +50,7 @@ export async function GET() {
 
         for (const pod of podsMissingUpdate) {
             const leads = await PodMember.find(
-                { collegeId: pod._id, role: 'tech_lead', status: 'active' },
+                { collegeId: pod._id, role: 'pod_lead', status: 'active' },
                 'walletAddress'
             ).lean();
 

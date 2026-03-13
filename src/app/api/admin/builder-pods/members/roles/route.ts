@@ -36,7 +36,7 @@ export async function PATCH(req: NextRequest) {
 
         // Role assignment
         if (role) {
-            const validRoles = ['tech_lead', 'team_member', 'mentor'];
+            const validRoles = ['pod_lead', 'pod_member', 'faculty_coordinator', 'mentor'];
             if (!validRoles.includes(role)) {
                 return NextResponse.json(
                     { success: false, error: `Invalid role. Must be one of: ${validRoles.join(', ')}` },
@@ -46,6 +46,31 @@ export async function PATCH(req: NextRequest) {
             oldValues.role = member.role;
             member.role = role;
             newValues.role = role;
+
+            // ─── SYNC WITH USERROLE (RBAC) ───
+            const { UserRole, PlatformRole } = await import('@/models/PlatformRole');
+            
+            // 1. Revoke existing roles for this wallet + college combination
+            await UserRole.updateMany(
+                { 
+                    walletAddress: member.walletAddress.toLowerCase(),
+                    collegeId: member.collegeId,
+                    revokedAt: null 
+                },
+                { revokedAt: new Date() }
+            );
+
+            // 2. Grant new role
+            const platformRole = await PlatformRole.findOne({ slug: role });
+            if (platformRole) {
+                await UserRole.create({
+                    walletAddress: member.walletAddress.toLowerCase(),
+                    roleSlug: role,
+                    roleId: platformRole._id,
+                    collegeId: member.collegeId,
+                    grantedBy: adminWallet,
+                });
+            }
         }
 
         // Status change (remove inactive)

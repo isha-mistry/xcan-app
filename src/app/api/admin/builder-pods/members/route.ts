@@ -7,7 +7,7 @@ import { Notification } from '@/models/Notification';
 import { getAuthContext, requireRole, UnauthorizedError, ForbiddenError } from '@/lib/rbac';
 import { awardBadgeOnEvent } from '@/lib/builder-pods/badges';
 
-// GET — list pending members (admin only)
+// GET — list all members with optional filters (admin only)
 export async function GET(req: NextRequest) {
     try {
         const ctx = await getAuthContext(req);
@@ -15,16 +15,44 @@ export async function GET(req: NextRequest) {
 
         await dbConnect();
 
-        const pending = await PodMember.find({ status: 'pending' })
+        const { searchParams } = new URL(req.url);
+        const status = searchParams.get('status');
+        const search = searchParams.get('search');
+
+        const filter: Record<string, any> = { deletedAt: null };
+        if (status && status !== 'all') {
+            filter.status = status;
+        }
+        if (search) {
+            const regex = new RegExp(search, 'i');
+            filter.$or = [
+                { name: regex },
+                { walletAddress: regex },
+                { githubUsername: regex },
+            ];
+        }
+
+        const members = await PodMember.find(filter)
             .populate('collegeId', 'name slug')
             .sort({ createdAt: -1 })
             .lean();
 
-        return NextResponse.json({ success: true, members: pending }, { status: 200 });
+        const statusCounts = await PodMember.aggregate([
+            { $match: { deletedAt: null } },
+            { $group: { _id: '$status', count: { $sum: 1 } } },
+        ]);
+
+        const counts: Record<string, number> = { all: 0 };
+        for (const s of statusCounts) {
+            counts[s._id] = s.count;
+            counts.all += s.count;
+        }
+
+        return NextResponse.json({ success: true, members, counts }, { status: 200 });
     } catch (error: any) {
         if (error instanceof UnauthorizedError) return NextResponse.json({ success: false, error: 'Not authenticated' }, { status: 401 });
         if (error instanceof ForbiddenError) return NextResponse.json({ success: false, error: 'Admin access required' }, { status: 403 });
-        console.error('Error fetching pending members:', error);
+        console.error('Error fetching members:', error);
         return NextResponse.json({ success: false, error: 'Internal Server Error' }, { status: 500 });
     }
 }
@@ -57,37 +85,54 @@ export async function PATCH(req: NextRequest) {
 
         const oldStatus = member.status;
 
-        if (action === 'approve') {
+        if (action === 'approve' || action === 'activate') {
             member.status = 'active';
-            member.approvedBy = adminWallet;
-            member.approvedAt = new Date();
+            if (action === 'approve') {
+                member.approvedBy = adminWallet;
+                member.approvedAt = new Date();
+            }
             await member.save();
 
-            // Increment college active member count
-            await College.updateOne(
-                { _id: member.collegeId },
-                { $inc: { activeMemberCount: 1 } }
-            );
+            // Increment college active member count only if transitioning from non-active
+            if (oldStatus !== 'active') {
+                await College.updateOne(
+                    { _id: member.collegeId },
+                    { $inc: { activeMemberCount: 1 } }
+                );
+            }
 
-            // Auto-award "builder_pod_member" badge on approval
-            await awardBadgeOnEvent('pod_member_approved', member.walletAddress, {
-                collegeId: member.collegeId?.toString(),
-            });
+            if (action === 'approve') {
+                // Auto-award "builder_pod_member" badge on approval
+                await awardBadgeOnEvent('pod_member_approved', member.walletAddress, {
+                    collegeId: member.collegeId?.toString(),
+                });
 
-            // Notify member
-            await Notification.create({
-                walletAddress: member.walletAddress,
-                type: 'member_approved',
-                title: 'Pod Membership Approved! 🎉',
-                body: 'You are now an active Builder Pod member.',
-                link: '/builder-pods',
-            });
+                // Notify member
+                await Notification.create({
+                    walletAddress: member.walletAddress,
+                    type: 'member_approved',
+                    title: 'Pod Membership Approved! 🎉',
+                    body: 'You are now an active Builder Pod member.',
+                    link: '/builder-pods',
+                });
+            }
         } else if (action === 'reject') {
+            member.status = 'removed';
+            await member.save();
+        } else if (action === 'deactivate') {
             member.status = 'inactive';
             await member.save();
+
+            // Decrement active count if moving away from active
+            if (oldStatus === 'active') {
+                await College.updateOne(
+                    { _id: member.collegeId },
+                    { $inc: { activeMemberCount: -1 } }
+                );
+            }
         } else {
             return NextResponse.json(
-                { success: false, error: 'action must be "approve" or "reject"' },
+                { success: false, error: 'Invalid action' },
                 { status: 400 }
             );
         }

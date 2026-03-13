@@ -10,7 +10,7 @@ export default function BuilderPodsProfilePage() {
   return (
     <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-10 py-6">
       <Heading />
-      <div className="mt-6 min-h-[550px]">
+      <div className="mt-6">
         <ProfilePodSection />
       </div>
     </div>

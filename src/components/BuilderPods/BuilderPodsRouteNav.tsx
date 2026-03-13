@@ -37,13 +37,11 @@ const adminItems: NavItem[] = [
   { label: "Add College", href: "/admin/builder-pods/colleges/new", icon: Sparkles },
 ];
 
-function isActive(pathname: string, href: string) {
-  if (href === "/builder-pods") {
-    return pathname === href;
-  }
+function matchesPath(pathname: string, href: string) {
+  if (href === "/builder-pods") return pathname === href;
 
-  // Mark as active only for the exact route or a nested route,
-  // but avoid partial matches like "/showcase" matching "/showcase-submit"
+  // Exact route or a nested route, but avoid partial matches like
+  // "/showcase" matching "/showcase-submit"
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
@@ -52,24 +50,6 @@ const fetcher = async (url: string) => {
   const data = await res.json().catch(() => ({}));
   return { ok: res.ok, data };
 };
-
-function NavChip({ item, pathname }: { item: NavItem; pathname: string }) {
-  const IconComp = item.icon;
-  const active = isActive(pathname, item.href);
-
-  return (
-    <Link
-      href={item.href}
-      className={`inline-flex items-center gap-2 px-3 py-2 rounded-xl text-[10px] font-bold uppercase tracking-widest font-robotoMono border transition-all whitespace-nowrap ${active
-        ? "bg-white text-black border-white shadow-[0_8px_20px_rgba(255,255,255,0.10)]"
-        : "bg-white/[0.02] text-white/50 border-white/10 hover:text-white/80 hover:border-white/25 hover:bg-white/[0.04]"
-        }`}
-    >
-      <IconComp className="w-3.5 h-3.5" />
-      {item.label}
-    </Link>
-  );
-}
 
 export default function BuilderPodsRouteNav() {
   const pathname = usePathname();
@@ -87,18 +67,38 @@ export default function BuilderPodsRouteNav() {
   const profileHref = address ? `/builder-pods/profile` : "/members";
   const profileItem: NavItem = { label: "Profile", href: profileHref, icon: User };
   const userNavItems = [...coreItems, ...myPodItem, profileItem];
-  const navItems = isAdminRoute
-    ? hasAdminAccess
-      ? adminItems
-      : []
-    : userNavItems;
+  const navItems = isAdminRoute ? adminItems : userNavItems;
+
+  // Only mark ONE item as active: the most specific match (longest href).
+  // This prevents parent routes like "/colleges" from also looking active on
+  // "/colleges/new".
+  const activeHref =
+    navItems
+      .filter((item) => matchesPath(pathname, item.href))
+      .sort((a, b) => b.href.length - a.href.length)[0]?.href ?? null;
 
   return (
     <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-10 pt-3 pb-1">
       <div className="flex flex-wrap gap-2">
-        {navItems.map((item) => (
-          <NavChip key={item.href} item={item} pathname={pathname} />
-        ))}
+        {navItems.map((item) => {
+          const IconComp = item.icon;
+          const active = activeHref === item.href;
+
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={`inline-flex items-center gap-2 px-3 py-2 rounded-xl text-[10px] font-bold uppercase tracking-widest font-robotoMono border transition-all whitespace-nowrap ${
+                active
+                  ? "bg-white text-black border-white shadow-[0_8px_20px_rgba(255,255,255,0.10)]"
+                  : "bg-white/[0.02] text-white/50 border-white/10 hover:text-white/80 hover:border-white/25 hover:bg-white/[0.04]"
+              }`}
+            >
+              <IconComp className="w-3.5 h-3.5" />
+              {item.label}
+            </Link>
+          );
+        })}
       </div>
     </div>
   );

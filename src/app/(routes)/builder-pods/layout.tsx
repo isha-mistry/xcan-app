@@ -9,7 +9,9 @@ export default function BuilderPodsLayout({
   return (
     <>
       <BuilderPodsRouteNav />
-      {children}
+      <div className="min-h-[550px]">
+        {children}
+      </div>
     </>
   );
 }

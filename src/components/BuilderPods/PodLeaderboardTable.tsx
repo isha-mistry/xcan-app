@@ -34,7 +34,7 @@ const medalColors = ["text-amber-400", "text-gray-300", "text-amber-600"];
 export default function PodLeaderboardTable({ pods, isLoading }: PodLeaderboardTableProps) {
     if (isLoading) {
         return (
-            <div className="space-y-3 min-h-svh">
+            <div className="space-y-3">
                 {Array.from({ length: 5 }).map((_, i) => (
                     <div key={i} className="glass-container rounded-2xl p-5 animate-pulse">
                         <div className="flex items-center gap-4">

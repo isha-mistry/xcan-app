@@ -35,7 +35,7 @@ export default function ProfilePodSection() {
     }
     if (isLoading) {
         return (
-            <div className="glass-container rounded-2xl p-6 animate-pulse min-h-[550px]">
+            <div className="glass-container rounded-2xl p-6 animate-pulse">
                 <div className="h-5 w-40 bg-white/5 rounded-lg mb-4" />
                 <div className="h-20 bg-white/[0.02] rounded-xl" />
             </div>
