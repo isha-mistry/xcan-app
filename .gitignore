@@ -51,3 +51,4 @@ public/workbox-*.js
 !.env.project
 !.env.vault
 certificates
+ref/

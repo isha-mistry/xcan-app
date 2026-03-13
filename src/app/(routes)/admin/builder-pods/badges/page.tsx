@@ -6,9 +6,12 @@ import { motion } from "framer-motion";
 import {
     ArrowLeft,
     Award,
+    ExternalLink,
     Loader2,
     Search,
     Shield,
+    CheckCircle,
+    AlertCircle,
 } from "lucide-react";
 
 const fetcher = (url: string) => fetch(url, { credentials: "include" }).then((r) => r.json());
@@ -30,6 +33,8 @@ export default function AdminBadgesPage() {
     );
 
     const [assigning, setAssigning] = useState(false);
+    const [attesting, setAttesting] = useState<string | null>(null);
+    const [assignResult, setAssignResult] = useState<{ success: boolean; message: string } | null>(null);
     const [form, setForm] = useState({
         walletAddress: "",
         badgeSlug: "",
@@ -39,23 +44,48 @@ export default function AdminBadgesPage() {
     const handleAssign = async (e: React.FormEvent) => {
         e.preventDefault();
         setAssigning(true);
+        setAssignResult(null);
         try {
-            await fetch("/api/builder-pods/badges/assign", {
+            const res = await fetch("/api/builder-pods/badges/assign", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 credentials: "include",
                 body: JSON.stringify(form),
             });
-            setForm({ walletAddress: "", badgeSlug: "", collegeId: "" });
-            if (walletSearch) mutate(`/api/builder-pods/badges/user/${walletSearch}`);
-        } catch (e) {
-            console.error(e);
+            const data = await res.json();
+            if (data.success) {
+                setAssignResult({ success: true, message: `Badge "${form.badgeSlug}" assigned successfully.` });
+                setForm({ walletAddress: "", badgeSlug: "", collegeId: "" });
+                if (walletSearch) mutate(`/api/builder-pods/badges/user/${walletSearch}`);
+            } else {
+                setAssignResult({ success: false, message: data.error || "Failed to assign badge." });
+            }
+        } catch {
+            setAssignResult({ success: false, message: "Network error. Please try again." });
         } finally {
             setAssigning(false);
         }
     };
 
-    const badgeTypes = badgeTypesData?.badgeTypes ?? [];
+    const handleAttest = async (badgeId: string) => {
+        setAttesting(badgeId);
+        try {
+            const res = await fetch(`/api/builder-pods/badges/attest/${badgeId}`, {
+                method: "POST",
+                credentials: "include",
+            });
+            const data = await res.json();
+            if (data.success || data.easUid) {
+                if (walletSearch) mutate(`/api/builder-pods/badges/user/${walletSearch}`);
+            }
+        } catch (e) {
+            console.error(e);
+        } finally {
+            setAttesting(null);
+        }
+    };
+
+    const badgeTypes = badgeTypesData?.badges ?? [];
     const userBadges = userBadgesData?.badges ?? [];
 
     return (
@@ -138,6 +168,12 @@ export default function AdminBadgesPage() {
                             {assigning ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Shield className="w-3.5 h-3.5" />}
                             Assign Badge
                         </button>
+                        {assignResult && (
+                            <div className={`flex items-center gap-2 p-3 rounded-lg text-[10px] font-robotoMono ${assignResult.success ? "bg-green-500/5 text-green-400" : "bg-red-500/5 text-red-400"}`}>
+                                {assignResult.success ? <CheckCircle className="w-3.5 h-3.5 shrink-0" /> : <AlertCircle className="w-3.5 h-3.5 shrink-0" />}
+                                {assignResult.message}
+                            </div>
+                        )}
                     </div>
                 </motion.form>
 
@@ -175,15 +211,37 @@ export default function AdminBadgesPage() {
                                 return (
                                     <div key={badge._id} className="flex items-center gap-3 p-3 rounded-lg bg-white/[0.01]">
                                         <Award className={`w-4 h-4 ${meta?.color || "text-white/20"}`} />
-                                        <div className="flex-1">
+                                        <div className="flex-1 min-w-0">
                                             <span className="text-xs text-white/50 font-robotoMono font-bold">
                                                 {badge.badgeSnapshot?.label || badge.badgeSnapshot?.slug}
                                             </span>
                                             <p className="text-[9px] text-white/15 font-robotoMono">
                                                 {new Date(badge.assignedAt).toLocaleDateString("en-IN")}
-                                                {badge.attestationUid && " · Attested ✓"}
+                                                {badge.easUid && (
+                                                    <>
+                                                        {" · "}
+                                                        <a
+                                                            href={`https://sepolia.easscan.org/attestation/view/${badge.easUid}`}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="text-cyan-400/60 hover:text-cyan-400 inline-flex items-center gap-0.5"
+                                                        >
+                                                            Attested <ExternalLink className="w-2.5 h-2.5 inline" />
+                                                        </a>
+                                                    </>
+                                                )}
                                             </p>
                                         </div>
+                                        {!badge.easUid && (
+                                            <button
+                                                onClick={() => handleAttest(badge._id)}
+                                                disabled={attesting === badge._id}
+                                                className="shrink-0 flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 text-[9px] font-bold font-robotoMono transition-all border border-cyan-500/10 disabled:opacity-30"
+                                            >
+                                                {attesting === badge._id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Shield className="w-3 h-3" />}
+                                                Attest
+                                            </button>
+                                        )}
                                     </div>
                                 );
                             })}

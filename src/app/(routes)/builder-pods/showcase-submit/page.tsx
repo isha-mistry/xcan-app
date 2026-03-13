@@ -82,7 +82,8 @@ export default function ShowcaseSubmitPage() {
             const res = await fetch("/api/builder-pods/showcases", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ ...form, walletAddress }),
+                credentials: "include",
+                body: JSON.stringify(form),
             });
             const data = await res.json();
             if (data.success) {

@@ -10,6 +10,8 @@ import {
     buildCollegeFilter, verifyCollegeAccess,
     UnauthorizedError, ForbiddenError
 } from '@/lib/rbac';
+import { recalculateMemberScore, recalculatePodScore } from '@/lib/builder-pods/leaderboard';
+import { AdminDeploymentUpdateSchema } from '@/schemas/builder-pods';
 
 // GET — list pending (unverified) deployments
 // super_admin sees all, college_admin/mentor sees only their college's
@@ -45,16 +47,15 @@ export async function PATCH(req: NextRequest) {
         requireAnyRole(ctx, ['super_admin', 'college_admin']);
 
         await dbConnect();
-        const body = await req.json();
-        const { deploymentId, action } = body;
-        const adminWallet = ctx!.walletAddress;
-
-        if (!deploymentId || !action) {
+        const parsed = AdminDeploymentUpdateSchema.safeParse(await req.json());
+        if (!parsed.success) {
             return NextResponse.json(
-                { success: false, error: 'deploymentId and action are required' },
+                { success: false, error: parsed.error.issues[0]?.message || 'Invalid deployment update payload' },
                 { status: 400 }
             );
         }
+        const { deploymentId, action } = parsed.data;
+        const adminWallet = ctx!.walletAddress;
 
         const dep = await Deployment.findById(deploymentId);
         if (!dep) {
@@ -89,6 +90,14 @@ export async function PATCH(req: NextRequest) {
                 body: `Your deployment (${dep.txHash.slice(0, 10)}...) has been verified.`,
                 link: '/builder-pods',
             });
+
+            // Inline leaderboard update
+            const member = await PodMember.findOne({
+                walletAddress: dep.walletAddress,
+                collegeId: dep.collegeId,
+            });
+            if (member) await recalculateMemberScore(member._id);
+            await recalculatePodScore(dep.collegeId);
         } else if (action === 'reject') {
             await Deployment.findByIdAndDelete(deploymentId);
         } else {

@@ -3,7 +3,7 @@ import { dbConnect } from '@/lib/dbConnect';
 import { getMilestoneKPIs } from '@/lib/builder-pods/milestones';
 import { ForbiddenError, getAuthContext, requireRole, UnauthorizedError } from '@/lib/rbac';
 
-// GET /api/builder-pods/analytics/milestones — deprecated admin-only alias
+// GET /api/admin/builder-pods/milestones — internal KPI tracker
 export async function GET(req: NextRequest) {
     try {
         const ctx = await getAuthContext(req);
@@ -11,6 +11,7 @@ export async function GET(req: NextRequest) {
 
         await dbConnect();
         const data = await getMilestoneKPIs();
+
         return NextResponse.json({ success: true, ...data }, { status: 200 });
     } catch (error: any) {
         if (error instanceof UnauthorizedError) {
@@ -19,7 +20,7 @@ export async function GET(req: NextRequest) {
         if (error instanceof ForbiddenError) {
             return NextResponse.json({ success: false, error: 'Admin access required' }, { status: 403 });
         }
-        console.error('Analytics milestones error:', error);
+        console.error('Admin milestones error:', error);
         return NextResponse.json({ success: false, error: 'Internal Server Error' }, { status: 500 });
     }
 }

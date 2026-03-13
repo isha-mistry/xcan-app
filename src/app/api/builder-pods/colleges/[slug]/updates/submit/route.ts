@@ -1,11 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { dbConnect } from '@/lib/dbConnect';
 import { College } from '@/models/College';
+import { PodMember } from '@/models/PodMember';
 import { WeeklyUpdate } from '@/models/WeeklyUpdate';
 import { AuditLog } from '@/models/AuditLog';
+import { WeeklyUpdateSchema } from '@/schemas/builder-pods';
 import {
     getAuthContext,
-    requireAnyRole,
+    hasAnyRole,
+    verifyCollegeAccess,
     UnauthorizedError,
     ForbiddenError,
 } from '@/lib/rbac';
@@ -33,17 +36,17 @@ export async function POST(
 
         await dbConnect();
         const { slug } = await params;
-        const body = await req.json();
-        const { completedThisWeek, blockers, nextMilestone, githubLink } = body;
-
-        const walletAddress = ctx.walletAddress;
-
-        if (!completedThisWeek || !nextMilestone) {
+        const parsed = WeeklyUpdateSchema.safeParse(await req.json());
+        if (!parsed.success) {
             return NextResponse.json(
-                { success: false, error: 'completedThisWeek and nextMilestone are required' },
+                { success: false, error: parsed.error.issues[0]?.message || 'Invalid weekly update payload' },
                 { status: 400 }
             );
         }
+        const { completedThisWeek, blockers, nextMilestone, githubLink } = parsed.data;
+
+        // Wallet address comes from verified auth context, not body
+        const walletAddress = ctx.walletAddress;
 
         const college = await College.findOne({ slug, deletedAt: null });
         if (!college) {
@@ -53,9 +56,21 @@ export async function POST(
             );
         }
 
-        // Only pod_lead, college_admin, or super_admin can submit weekly updates.
-        // pod_lead is granted when a member submits a project.
-        requireAnyRole(ctx, ['pod_lead', 'college_admin'], college._id.toString());
+        const isAdmin = hasAnyRole(ctx, ['super_admin', 'college_admin'], college._id.toString());
+        if (isAdmin) {
+            verifyCollegeAccess(ctx, college._id.toString());
+        } else {
+            const member = await PodMember.findOne({
+                collegeId: college._id,
+                walletAddress,
+                status: 'active',
+                role: 'tech_lead',
+            }).lean();
+
+            if (!member) {
+                throw new ForbiddenError('Only an active tech lead can submit weekly updates for this pod');
+            }
+        }
 
         const { weekNumber, year } = getCurrentWeekInfo();
 

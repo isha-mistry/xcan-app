@@ -4,6 +4,14 @@ import { College } from '@/models/College';
 import { PodProject } from '@/models/PodProject';
 import { PodMember } from '@/models/PodMember';
 import { AuditLog } from '@/models/AuditLog';
+import { ProjectSchema } from '@/schemas/builder-pods';
+import {
+    ForbiddenError,
+    getAuthContext,
+    hasAnyRole,
+    UnauthorizedError,
+    verifyCollegeAccess,
+} from '@/lib/rbac';
 import { PlatformRole, UserRole } from '@/models/PlatformRole';
 
 // POST — submit a new project (requires pod membership)
@@ -12,19 +20,20 @@ export async function POST(
     { params }: { params: Promise<{ slug: string }> }
 ) {
     try {
+        const ctx = await getAuthContext(req);
+        if (!ctx) throw new UnauthorizedError('Not authenticated');
+
         await dbConnect();
         const { slug } = await params;
-        const body = await req.json();
-        const { name, problemStatement, githubRepo, contractAddress, demoLink, techStack, walletAddress } = body;
-
-        if (!name || !problemStatement || !walletAddress) {
+        const parsed = ProjectSchema.safeParse(await req.json());
+        if (!parsed.success) {
             return NextResponse.json(
-                { success: false, error: 'name, problemStatement, and walletAddress are required' },
+                { success: false, error: parsed.error.issues[0]?.message || 'Invalid project payload' },
                 { status: 400 }
             );
         }
-
-        const wallet = walletAddress.toLowerCase();
+        const { name, problemStatement, githubRepo, contractAddress, demoLink, techStack } = parsed.data;
+        const walletAddress = ctx.walletAddress;
 
         const college = await College.findOne({ slug, deletedAt: null });
         if (!college) {
@@ -34,10 +43,25 @@ export async function POST(
             );
         }
 
+        const isAdmin = hasAnyRole(ctx, ['super_admin', 'college_admin'], college._id.toString());
+        if (isAdmin) {
+            verifyCollegeAccess(ctx, college._id.toString());
+        } else {
+            const member = await PodMember.findOne({
+                collegeId: college._id,
+                walletAddress,
+                status: { $in: ['active', 'pending'] },
+            }).lean();
+
+            if (!member) {
+                throw new ForbiddenError('Only a registered pod member can submit projects for this college');
+            }
+        }
+
         const membership = await PodMember.findOne({
             collegeId: college._id,
-            walletAddress: wallet,
-            status: 'active',
+            walletAddress: walletAddress,
+            status: { $in: ['active', 'pending'] },
             deletedAt: null,
         }).lean();
 
@@ -57,10 +81,10 @@ export async function POST(
             demoLink: demoLink || null,
             techStack: techStack || [],
             status: 'ideation',
-            createdBy: wallet,
-            teamLeader: wallet,
+            createdBy: walletAddress,
+            teamLeader: walletAddress,
             teamMembers: [{
-                walletAddress: wallet,
+                walletAddress: walletAddress,
                 name: membership.name,
                 role: 'team_leader',
                 joinedAt: new Date(),
@@ -72,14 +96,14 @@ export async function POST(
         if (podLeadPlatformRole) {
             await UserRole.updateOne(
                 {
-                    walletAddress: wallet,
+                    walletAddress: walletAddress,
                     roleSlug: 'pod_lead',
                     collegeId: college._id,
                 },
                 {
                     $setOnInsert: {
                         roleId: podLeadPlatformRole._id,
-                        grantedBy: wallet,
+                        grantedBy: walletAddress,
                         grantedAt: new Date(),
                     },
                     $set: {
@@ -92,18 +116,18 @@ export async function POST(
 
         // Promote the member's pod-level role from pod_member to pod_lead.
         await PodMember.updateOne(
-            { collegeId: college._id, walletAddress: wallet, deletedAt: null },
+            { collegeId: college._id, walletAddress: walletAddress, deletedAt: null },
             { $set: { role: 'pod_lead' } }
         );
 
         await College.findByIdAndUpdate(college._id, { $inc: { projectCount: 1 } });
 
         await AuditLog.create({
-            actorWallet: wallet,
+            actorWallet: walletAddress,
             action: 'project.create',
             entityType: 'PodProject',
             entityId: project._id.toString(),
-            newValue: { name, status: 'ideation', teamLeader: wallet, teamCode: project.teamCode },
+            newValue: { name, status: 'ideation', teamLeader: walletAddress, teamCode: project.teamCode },
         });
 
         return NextResponse.json(
@@ -117,7 +141,19 @@ export async function POST(
             },
             { status: 201 }
         );
-    } catch (error) {
+    } catch (error: any) {
+        if (error instanceof UnauthorizedError) {
+            return NextResponse.json(
+                { success: false, error: 'Not authenticated' },
+                { status: 401 }
+            );
+        }
+        if (error instanceof ForbiddenError) {
+            return NextResponse.json(
+                { success: false, error: error.message },
+                { status: 403 }
+            );
+        }
         console.error('Project creation error:', error);
         return NextResponse.json(
             { success: false, error: 'Internal Server Error' },

@@ -20,6 +20,7 @@ import {
     Award,
     Clock,
     QrCode,
+    Save,
 } from "lucide-react";
 
 const fetcher = (url: string) =>

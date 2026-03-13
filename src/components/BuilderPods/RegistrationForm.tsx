@@ -1,6 +1,7 @@
 "use client";
-import React, { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import React, { useState, useEffect, useCallback } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import confetti from "canvas-confetti";
 import {
     User,
     Wallet,
@@ -10,6 +11,8 @@ import {
     Loader2,
     CheckCircle,
     AlertCircle,
+    Award,
+    X,
 } from "lucide-react";
 
 interface CollegeOption {
@@ -32,9 +35,12 @@ export default function RegistrationForm({
     const [colleges, setColleges] = useState<CollegeOption[]>([]);
     const [loadingColleges, setLoadingColleges] = useState(true);
     const [submitting, setSubmitting] = useState(false);
+    const [collegeLocked, setCollegeLocked] = useState(false);
+    const [qrEventName, setQrEventName] = useState("");
     const [result, setResult] = useState<{
         success: boolean;
         message: string;
+        joinedViaQr?: boolean;
     } | null>(null);
 
     const [form, setForm] = useState({
@@ -47,9 +53,12 @@ export default function RegistrationForm({
     });
 
     useEffect(() => {
-        if (initialQrToken && !form.qrToken) {
-            setForm((f) => ({ ...f, qrToken: initialQrToken }));
-        }
+        if (!initialQrToken) return;
+        setForm((current) =>
+            current.qrToken
+                ? current
+                : { ...current, qrToken: initialQrToken }
+        );
     }, [initialQrToken]);
 
     useEffect(() => {
@@ -60,6 +69,33 @@ export default function RegistrationForm({
             })
             .catch(console.error)
             .finally(() => setLoadingColleges(false));
+    }, []);
+
+    useEffect(() => {
+        if (!initialQrToken) return;
+        fetch(`/api/builder-pods/register?token=${encodeURIComponent(initialQrToken)}`)
+            .then((res) => res.json())
+            .then((data) => {
+                if (data.success && data.collegeSlug) {
+                    setForm((f) => ({ ...f, collegeSlug: data.collegeSlug }));
+                    setCollegeLocked(true);
+                    setQrEventName(data.eventName || "");
+                }
+            })
+            .catch(console.error);
+    }, [initialQrToken]);
+
+    const [showCelebration, setShowCelebration] = useState(false);
+
+    const fireConfetti = useCallback(() => {
+        const duration = 3000;
+        const end = Date.now() + duration;
+        const frame = () => {
+            confetti({ particleCount: 3, angle: 60, spread: 55, origin: { x: 0 } });
+            confetti({ particleCount: 3, angle: 120, spread: 55, origin: { x: 1 } });
+            if (Date.now() < end) requestAnimationFrame(frame);
+        };
+        frame();
     }, []);
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -73,15 +109,17 @@ export default function RegistrationForm({
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 credentials: "include",
-                body: JSON.stringify({ ...form, walletAddress }),
+                body: JSON.stringify(form),
             });
 
             const data = await res.json();
             if (data.success) {
+                const viaQr = !!data.member.joinedViaQr;
                 setResult({
                     success: true,
-                    message: data.member.joinedViaQr
-                        ? "🎉 Registered successfully via Builder Lab! You've earned the Builder Lab Participant badge."
+                    joinedViaQr: viaQr,
+                    message: viaQr
+                        ? "Registered successfully via Builder Lab! You've earned the Builder Lab Participant badge."
                         : "Registration submitted! Your application is pending approval.",
                 });
                 setForm({
@@ -92,6 +130,10 @@ export default function RegistrationForm({
                     semester: "",
                     qrToken: "",
                 });
+                if (viaQr) {
+                    setShowCelebration(true);
+                    fireConfetti();
+                }
             } else {
                 setResult({ success: false, message: data.error || "Registration failed" });
             }
@@ -172,23 +214,31 @@ export default function RegistrationForm({
                                 Loading colleges...
                             </div>
                         ) : (
-                            <select
-                                required
-                                value={form.collegeSlug}
-                                onChange={(e) =>
-                                    setForm((f) => ({ ...f, collegeSlug: e.target.value }))
-                                }
-                                className={inputClass}
-                            >
-                                <option value="" className="bg-[#0a0d12]">
-                                    Select your college
-                                </option>
-                                {colleges.map((c) => (
-                                    <option key={c.slug} value={c.slug} className="bg-[#0a0d12]">
-                                        {c.name} — {c.city}, {c.state}
+                            <>
+                                <select
+                                    required
+                                    value={form.collegeSlug}
+                                    onChange={(e) =>
+                                        setForm((f) => ({ ...f, collegeSlug: e.target.value }))
+                                    }
+                                    disabled={collegeLocked}
+                                    className={inputClass}
+                                >
+                                    <option value="" className="bg-[#0a0d12]">
+                                        Select your college
                                     </option>
-                                ))}
-                            </select>
+                                    {colleges.map((c) => (
+                                        <option key={c.slug} value={c.slug} className="bg-[#0a0d12]">
+                                            {c.name} — {c.city}, {c.state}
+                                        </option>
+                                    ))}
+                                </select>
+                                {collegeLocked && qrEventName && (
+                                    <p className="text-[10px] text-cyan-400/60 font-robotoMono mt-1">
+                                        Auto-selected from lab event: {qrEventName}
+                                    </p>
+                                )}
+                            </>
                         )}
                     </div>
 
@@ -305,6 +355,65 @@ export default function RegistrationForm({
                     </button>
                 </form>
             )}
+
+            {/* Celebration Modal */}
+            <AnimatePresence>
+                {showCelebration && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+                        onClick={() => setShowCelebration(false)}
+                    >
+                        <motion.div
+                            initial={{ scale: 0.8, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.8, opacity: 0 }}
+                            transition={{ type: "spring", duration: 0.5 }}
+                            className="relative glass-container rounded-3xl p-8 md:p-10 max-w-md w-full text-center"
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <button
+                                onClick={() => setShowCelebration(false)}
+                                className="absolute top-4 right-4 text-white/20 hover:text-white/50 transition-colors"
+                            >
+                                <X className="w-5 h-5" />
+                            </button>
+
+                            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-yellow-400/20 to-amber-500/20 border border-yellow-500/20 flex items-center justify-center mx-auto mb-5">
+                                <Award className="w-8 h-8 text-yellow-400" />
+                            </div>
+
+                            <h3 className="text-2xl font-black text-white font-unbounded tracking-tight mb-2">
+                                Congratulations!
+                            </h3>
+                            <p className="text-sm text-white/40 font-robotoMono mb-4">
+                                You&apos;ve earned your first badge
+                            </p>
+
+                            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-cyan-500/10 border border-cyan-500/15 mb-6">
+                                <Award className="w-4 h-4 text-cyan-400" />
+                                <span className="text-xs font-bold text-cyan-400 font-robotoMono">
+                                    Builder Lab Participant
+                                </span>
+                            </div>
+
+                            <p className="text-xs text-white/25 font-robotoMono mb-6">
+                                You&apos;re officially part of the Arbitrum Builder Pod program.
+                                Keep building to earn more badges!
+                            </p>
+
+                            <a
+                                href={`/profile/${walletAddress}`}
+                                className="inline-flex items-center gap-2 px-6 py-3 bg-white text-black rounded-xl text-[11px] font-bold uppercase tracking-widest font-robotoMono transition-all hover:shadow-lg hover:shadow-white/10"
+                            >
+                                View Profile
+                            </a>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </motion.div>
     );
 }

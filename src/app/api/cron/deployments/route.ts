@@ -4,6 +4,7 @@ import { Deployment } from '@/models/Deployment';
 import { PodMember } from '@/models/PodMember';
 import { College } from '@/models/College';
 import { Notification } from '@/models/Notification';
+import { recalculateIndividualScores, recalculatePodScore } from '@/lib/builder-pods/leaderboard';
 
 /**
  * Cron: Auto-detect deployment verification via RPC every 15 minutes.
@@ -35,6 +36,7 @@ export async function GET() {
         }
 
         let verifiedCount = 0;
+        const affectedCollegeIds = new Set<string>();
 
         for (const dep of unverified) {
             try {
@@ -85,10 +87,18 @@ export async function GET() {
                     });
 
                     verifiedCount++;
+                    affectedCollegeIds.add(dep.collegeId.toString());
                 }
             } catch (rpcError) {
                 // Skip individual failures, continue with next
                 console.warn(`[Cron:Deployments] RPC error for ${dep.txHash}:`, rpcError);
+            }
+        }
+
+        if (verifiedCount > 0) {
+            await recalculateIndividualScores();
+            for (const collegeId of affectedCollegeIds) {
+                await recalculatePodScore(collegeId);
             }
         }
 

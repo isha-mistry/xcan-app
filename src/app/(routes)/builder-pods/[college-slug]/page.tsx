@@ -24,7 +24,21 @@ export default function CollegePodPage() {
         { revalidateOnFocus: true }
     );
 
-    const college = data?.college;
+    const collegeData = data?.college || {
+        name: "Loading...",
+        podName: "",
+        city: "",
+        state: "",
+        status: "inactive",
+        tier: "tier2",
+        memberCount: 0,
+        activeMemberCount: 0,
+        projectCount: 0,
+        deploymentCount: 0,
+        activatedAt: null,
+        facultyCoordinator: null,
+    };
+
     const members = data?.members ?? [];
     const projects = data?.projects ?? [];
     const recentUpdates = data?.recentUpdates ?? [];
@@ -65,7 +79,7 @@ export default function CollegePodPage() {
                         Failed to load pod data. Please try again.
                     </p>
                 </div>
-            ) : !isLoading && !college ? (
+            ) : !isLoading && !data?.college ? (
                 <div className="glass-container rounded-2xl p-12 text-center">
                     <p className="text-white/30 text-sm font-robotoMono">
                         College pod not found.
@@ -73,25 +87,11 @@ export default function CollegePodPage() {
                 </div>
             ) : (
                 <>
-                    <PodOverviewCard
-                        college={
-                            college ?? {
-                                name: "Loading...",
-                                podName: "",
-                                city: "",
-                                state: "",
-                                status: "inactive",
-                                tier: "tier2",
-                                memberCount: 0,
-                                activeMemberCount: 0,
-                                projectCount: 0,
-                                deploymentCount: 0,
-                                activatedAt: null,
-                                facultyCoordinator: null,
-                            }
-                        }
-                    />
-                    <MembersTable members={members} isLoading={isLoading} />
+                    <PodOverviewCard college={collegeData} />
+                    
+                    {collegeData.status === 'active' ? (
+                        <>
+                            <MembersTable members={members} isLoading={isLoading} />
 
                     <ProjectsGrid
                         projects={projects}
@@ -103,13 +103,21 @@ export default function CollegePodPage() {
                         onRefresh={handleDataRefresh}
                     />
 
-                    <WeeklyUpdatesFeed
-                        updates={recentUpdates}
-                        isLoading={isLoading}
-                        slug={slug}
-                        isTeamLead={isTeamLead}
-                        onRefresh={handleDataRefresh}
-                    />
+                            <WeeklyUpdatesFeed
+                                updates={recentUpdates}
+                                isLoading={isLoading}
+                                slug={slug}
+                                isTeamLead={isTeamLead}
+                                onRefresh={handleDataRefresh}
+                            />
+                        </>
+                    ) : (
+                        <div className="glass-container rounded-2xl p-12 text-center mt-8">
+                            <p className="text-white/40 text-sm font-robotoMono">
+                                Detailed insights are not available. This college pod is currently {collegeData.status}.
+                            </p>
+                        </div>
+                    )}
                 </>
             )}
         </div>
