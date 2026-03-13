@@ -10,6 +10,7 @@ export async function GET() {
 
     const [colleges, statsResult] = await Promise.all([
       College.find({ 
+        status: 'active',
         $or: [
           { deletedAt: null },
           { deletedAt: { $exists: false } }

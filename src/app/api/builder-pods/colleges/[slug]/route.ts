@@ -21,23 +21,25 @@ export async function GET(
             );
         }
 
-        const [members, projects, recentUpdates] = await Promise.all([
-            PodMember.find({ collegeId: college._id, deletedAt: null })
-                .select('walletAddress name role programmingLevel githubUsername status stylusModulesCompleted contractsDeployed totalScore')
-                .sort({ role: 1, name: 1 })
-                .lean(),
+        const [members, projects, recentUpdates] = college.status === 'active' 
+            ? await Promise.all([
+                PodMember.find({ collegeId: college._id, deletedAt: null })
+                    .select('walletAddress name role programmingLevel githubUsername status stylusModulesCompleted contractsDeployed totalScore')
+                    .sort({ role: 1, name: 1 })
+                    .lean(),
 
-            PodProject.find({ collegeId: college._id, deletedAt: null })
-                .select('name problemStatement githubRepo contractAddress demoLink techStack status isApproved teamCode teamLeader teamMembers createdBy createdAt')
-                .sort({ createdAt: -1 })
-                .lean(),
+                PodProject.find({ collegeId: college._id, deletedAt: null })
+                    .select('name problemStatement githubRepo contractAddress demoLink techStack status isApproved teamCode teamLeader teamMembers createdBy createdAt')
+                    .sort({ createdAt: -1 })
+                    .lean(),
 
-            WeeklyUpdate.find({ collegeId: college._id })
-                .select('submittedBy weekNumber year completedThisWeek blockers nextMilestone githubLink createdAt')
-                .sort({ year: -1, weekNumber: -1 })
-                .limit(10)
-                .lean(),
-        ]);
+                WeeklyUpdate.find({ collegeId: college._id })
+                    .select('submittedBy weekNumber year completedThisWeek blockers nextMilestone githubLink createdAt')
+                    .sort({ year: -1, weekNumber: -1 })
+                    .limit(10)
+                    .lean(),
+            ])
+            : [[], [], []];
 
         return NextResponse.json(
             { success: true, college, members, projects, recentUpdates },
