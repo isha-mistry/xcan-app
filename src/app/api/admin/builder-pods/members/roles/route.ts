@@ -61,26 +61,35 @@ export async function PATCH(req: NextRequest) {
             // ─── SYNC WITH USERROLE (RBAC) ───
             const { UserRole, PlatformRole } = await import('@/models/PlatformRole');
             
-            // 1. Revoke existing roles for this wallet + college combination
+            // 1. Revoke existing roles for this wallet + college (except the one being granted)
             await UserRole.updateMany(
                 { 
                     walletAddress: member.walletAddress.toLowerCase(),
                     collegeId: member.collegeId,
+                    roleSlug: { $ne: role },
                     revokedAt: null 
                 },
                 { revokedAt: new Date() }
             );
 
-            // 2. Grant new role
+            // 2. Grant new role (upsert to handle existing revoked records)
             const platformRole = await PlatformRole.findOne({ slug: role });
             if (platformRole) {
-                await UserRole.create({
-                    walletAddress: member.walletAddress.toLowerCase(),
-                    roleSlug: role,
-                    roleId: platformRole._id,
-                    collegeId: member.collegeId,
-                    grantedBy: adminWallet,
-                });
+                await UserRole.findOneAndUpdate(
+                    {
+                        walletAddress: member.walletAddress.toLowerCase(),
+                        roleSlug: role,
+                        collegeId: member.collegeId,
+                    },
+                    {
+                        $set: {
+                            revokedAt: null,
+                            roleId: platformRole._id,
+                            grantedBy: adminWallet,
+                        },
+                    },
+                    { upsert: true, new: true }
+                );
             }
         }
 

@@ -67,7 +67,7 @@ export default function CollegePodPage() {
             {/* Back button */}
             <Link
                 href="/builder-pods"
-                className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-white/30 hover:text-white/60 font-robotoMono mb-6 transition-colors"
+                className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-white/80 hover:text-white/80 font-robotoMono mb-6 transition-colors"
             >
                 <ArrowLeft className="w-3.5 h-3.5" />
                 All Pods
@@ -75,13 +75,13 @@ export default function CollegePodPage() {
 
             {error ? (
                 <div className="glass-container rounded-2xl p-12 text-center">
-                    <p className="text-red-400/60 text-sm font-robotoMono">
+                    <p className="text-red-400 text-sm font-robotoMono">
                         Failed to load pod data. Please try again.
                     </p>
                 </div>
             ) : !isLoading && !data?.college ? (
                 <div className="glass-container rounded-2xl p-12 text-center">
-                    <p className="text-white/30 text-sm font-robotoMono">
+                    <p className="text-white/80 text-sm font-robotoMono">
                         College pod not found.
                     </p>
                 </div>
@@ -113,7 +113,7 @@ export default function CollegePodPage() {
                         </>
                     ) : (
                         <div className="glass-container rounded-2xl p-12 text-center mt-8">
-                            <p className="text-white/40 text-sm font-robotoMono">
+                            <p className="text-white/80 text-sm font-robotoMono">
                                 Detailed insights are not available. This college pod is currently {collegeData.status}.
                             </p>
                         </div>

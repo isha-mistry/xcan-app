@@ -42,7 +42,7 @@ export default function CollegeCard({ college, index }: CollegeCardProps) {
                         <span
                             className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-[0.15em] font-robotoMono ${isActive
                                     ? "bg-green-500/10 text-green-400 border border-green-500/20"
-                                    : "bg-white/5 text-white/30 border border-white/10"
+                                    : "bg-white/5 text-white/60 border border-white/10"
                                 }`}
                         >
                             <div
@@ -59,14 +59,14 @@ export default function CollegeCard({ college, index }: CollegeCardProps) {
                     </h3>
 
                     {/* Pod Name */}
-                    <p className="text-[10px] font-bold text-white/20 uppercase tracking-wider font-robotoMono mb-4">
+                    <p className="text-[10px] font-bold text-white/50 uppercase tracking-wider font-robotoMono mb-4">
                         {college.podName}
                     </p>
 
                     {/* City */}
                     <div className="flex items-center gap-1.5 mb-4">
-                        <MapPin className="w-3.5 h-3.5 text-white/20" />
-                        <span className="text-xs text-white/40 font-robotoMono">
+                        <MapPin className="w-3.5 h-3.5 text-white/50" />
+                        <span className="text-xs text-white/70 font-robotoMono">
                             {college.city}, {college.state}
                         </span>
                     </div>
@@ -75,8 +75,8 @@ export default function CollegeCard({ college, index }: CollegeCardProps) {
                     <div className="grid grid-cols-2 gap-3 mb-4">
                         <div className="bg-white/[0.02] rounded-lg p-3 border border-white/[0.04]">
                             <div className="flex items-center gap-1 mb-1.5">
-                                <UserCheck className="w-3 h-3 text-green-400/50" />
-                                <span className="text-[9px] font-bold uppercase tracking-widest text-white/20 font-robotoMono">
+                                <UserCheck className="w-3 h-3 text-green-400/80" />
+                                <span className="text-[9px] font-bold uppercase tracking-widest text-white/50 font-robotoMono">
                                     Active
                                 </span>
                             </div>
@@ -84,7 +84,7 @@ export default function CollegeCard({ college, index }: CollegeCardProps) {
                                 <span className="text-sm font-black text-white font-unbounded">
                                     {activePct}%
                                 </span>
-                                <span className="text-[9px] text-white/15 font-robotoMono">
+                                <span className="text-[9px] text-white/45 font-robotoMono">
                                     ({college.activeMemberCount}/{college.memberCount})
                                 </span>
                             </div>
@@ -98,8 +98,8 @@ export default function CollegeCard({ college, index }: CollegeCardProps) {
                         </div>
                         <div className="bg-white/[0.02] rounded-lg p-3 border border-white/[0.04]">
                             <div className="flex items-center gap-1 mb-1.5">
-                                <FolderGit2 className="w-3 h-3 text-purple-400/50" />
-                                <span className="text-[9px] font-bold uppercase tracking-widest text-white/20 font-robotoMono">
+                                <FolderGit2 className="w-3 h-3 text-purple-400/80" />
+                                <span className="text-[9px] font-bold uppercase tracking-widest text-white/50 font-robotoMono">
                                     Projects
                                 </span>
                             </div>
@@ -115,9 +115,9 @@ export default function CollegeCard({ college, index }: CollegeCardProps) {
                     {/* Members Count + View Pod Button */}
                     <div className="flex items-center justify-between pt-4 border-t border-white/5">
                         <div className="flex items-center gap-1.5">
-                            <Users className="w-3.5 h-3.5 text-white/20" />
-                            <span className="text-xs text-white/40 font-robotoMono">
-                                <span className="text-white/60 font-bold">
+                            <Users className="w-3.5 h-3.5 text-white/50" />
+                            <span className="text-xs text-white/70 font-robotoMono">
+                                <span className="text-white/80 font-bold">
                                     {college.memberCount}
                                 </span>{" "}
                                 members

@@ -36,7 +36,7 @@ export default function ProfileSection({ walletAddress }: ProfileSectionProps) {
     if (isLoading) {
         return (
             <div className="flex items-center justify-center py-8">
-                <Loader2 className="w-5 h-5 animate-spin text-white/20" />
+                <Loader2 className="w-5 h-5 animate-spin text-white/50" />
             </div>
         );
     }
@@ -57,8 +57,8 @@ export default function ProfileSection({ walletAddress }: ProfileSectionProps) {
     return (
         <div className="space-y-4">
             <div className="flex items-center gap-2 mb-2">
-                <GraduationCap className="w-4 h-4 text-blue-400/60" />
-                <h3 className="text-[11px] font-bold uppercase tracking-[0.2em] text-white/30 font-robotoMono">
+                <GraduationCap className="w-4 h-4 text-blue-400" />
+                <h3 className="text-[11px] font-bold uppercase tracking-[0.2em] text-white/60 font-robotoMono">
                     Builder Pod
                 </h3>
             </div>
@@ -72,14 +72,14 @@ export default function ProfileSection({ walletAddress }: ProfileSectionProps) {
                         >
                             {college.podName || college.name}
                         </Link>
-                        <p className="text-[10px] text-white/20 font-robotoMono">
+                        <p className="text-[10px] text-white/50 font-robotoMono">
                             {college.city}, {college.state}
                         </p>
                     </div>
                 )}
 
                 <div className="flex items-center gap-3 mb-4">
-                    <span className="px-2.5 py-1 rounded-lg bg-white/[0.03] border border-white/[0.06] text-[9px] font-bold uppercase tracking-widest text-white/30 font-robotoMono">
+                    <span className="px-2.5 py-1 rounded-lg bg-white/[0.03] border border-white/[0.06] text-[9px] font-bold uppercase tracking-widest text-white/60 font-robotoMono">
                         {member.role}
                     </span>
                     <span className={`px-2.5 py-1 rounded-lg text-[9px] font-bold uppercase tracking-widest font-robotoMono ${
@@ -99,21 +99,21 @@ export default function ProfileSection({ walletAddress }: ProfileSectionProps) {
                 <div className="grid grid-cols-4 gap-3 mb-4">
                     {stats.map((s) => (
                         <div key={s.label} className="text-center p-2.5 rounded-xl bg-white/[0.02] border border-white/[0.04]">
-                            <s.icon className="w-3.5 h-3.5 mx-auto mb-1.5 text-white/15" />
-                            <p className="text-sm font-black text-white/60 font-robotoMono">{s.value}</p>
-                            <p className="text-[8px] text-white/15 font-robotoMono uppercase tracking-widest">{s.label}</p>
+                            <s.icon className="w-3.5 h-3.5 mx-auto mb-1.5 text-white/45" />
+                            <p className="text-sm font-black text-white/80 font-robotoMono">{s.value}</p>
+                            <p className="text-[8px] text-white/45 font-robotoMono uppercase tracking-widest">{s.label}</p>
                         </div>
                     ))}
                 </div>
 
                 {badges.length > 0 && (
                     <div>
-                        <p className="text-[9px] font-bold uppercase tracking-widest text-white/20 font-robotoMono mb-2">
+                        <p className="text-[9px] font-bold uppercase tracking-widest text-white/50 font-robotoMono mb-2">
                             Badges ({badges.length})
                         </p>
                         <div className="flex flex-wrap gap-2">
                             {badges.map((b: any) => {
-                                const bc = BADGE_COLORS[b.slug] || { color: "text-white/40", bg: "bg-white/[0.03]" };
+                                const bc = BADGE_COLORS[b.slug] || { color: "text-white/70", bg: "bg-white/[0.03]" };
                                 return (
                                     <div key={b._id} className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg ${bc.bg} border border-white/[0.05]`}>
                                         <Award className={`w-3 h-3 ${bc.color}`} />
@@ -125,7 +125,7 @@ export default function ProfileSection({ walletAddress }: ProfileSectionProps) {
                                                 href={`https://sepolia.easscan.org/attestation/view/${b.easUid}`}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
-                                                className="text-white/20 hover:text-white/50 transition-colors"
+                                                className="text-white/50 hover:text-white/75 transition-colors"
                                             >
                                                 <ExternalLink className="w-2.5 h-2.5" />
                                             </a>

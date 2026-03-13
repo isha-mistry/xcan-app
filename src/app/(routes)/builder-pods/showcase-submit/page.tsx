@@ -100,37 +100,37 @@ export default function ShowcaseSubmitPage() {
     };
 
     const inputClass =
-        "w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-sm text-white font-robotoMono placeholder:text-white/15 focus:outline-none focus:border-blue-500/40 focus:bg-white/[0.05] transition-all";
+        "w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-sm text-white font-robotoMono placeholder:text-white/45 focus:outline-none focus:border-blue-500/40 focus:bg-white/[0.05] transition-all";
     const labelClass =
-        "flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-white/30 font-robotoMono mb-2";
+        "flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-white/80 font-robotoMono mb-2";
 
     return (
         <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-10 py-6">
-            <Link href="/builder-pods" className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-white/30 hover:text-white/60 font-robotoMono mb-6 transition-colors">
+            <Link href="/builder-pods" className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-white/80 hover:text-white/80 font-robotoMono mb-6 transition-colors">
                 <ArrowLeft className="w-3.5 h-3.5" />
                 Builder Pods
             </Link>
 
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="glass-container rounded-2xl p-6 md:p-8 max-w-2xl mx-auto">
                 <div className="flex items-center gap-3 mb-1">
-                    <Trophy className="w-5 h-5 text-amber-400/50" />
+                    <Trophy className="w-5 h-5 text-amber-400/80" />
                     <h2 className="text-xl font-black text-white font-unbounded tracking-tight">
                         Showcase Submission
                     </h2>
                 </div>
-                <p className="text-xs text-white/30 font-robotoMono mb-8">
+                <p className="text-xs text-white/80 font-robotoMono mb-8">
                     Submit your project for a Regional Showcase event.
                 </p>
 
                 {!walletAddress ? (
                     <div className="text-center py-8">
-                        <p className="text-sm text-white/30 font-robotoMono">
+                        <p className="text-sm text-white/80 font-robotoMono">
                             Please connect your wallet to submit.
                         </p>
                     </div>
                 ) : loading ? (
                     <div className="flex items-center justify-center py-8">
-                        <Loader2 className="w-5 h-5 animate-spin text-white/20" />
+                        <Loader2 className="w-5 h-5 animate-spin text-white/50" />
                     </div>
                 ) : (
                     <form onSubmit={handleSubmit} className="space-y-5">

@@ -32,7 +32,7 @@ export default function LeaderboardPage() {
         <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-10 py-6">
             <Link
                 href="/builder-pods"
-                className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-white/30 hover:text-white/60 font-robotoMono mb-6 transition-colors"
+                className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-white/80 hover:text-white/80 font-robotoMono mb-6 transition-colors"
             >
                 <ArrowLeft className="w-3.5 h-3.5" />
                 Builder Pods
@@ -42,7 +42,7 @@ export default function LeaderboardPage() {
                 <h1 className="text-2xl font-black text-white font-unbounded tracking-tight mb-1">
                     Leaderboard
                 </h1>
-                <p className="text-xs text-white/30 font-robotoMono">
+                <p className="text-xs text-white/80 font-robotoMono">
                     Rankings updated hourly based on deployments, modules, projects, and weekly activity.
                 </p>
             </div>
@@ -58,7 +58,7 @@ export default function LeaderboardPage() {
                             onClick={() => setActiveTab(tab.key)}
                             className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-widest font-robotoMono transition-all ${isActive
                                     ? "bg-white text-black"
-                                    : "bg-white/[0.03] text-white/30 hover:text-white/50 border border-white/5"
+                                    : "bg-white/[0.03] text-white/80 hover:text-white/75 border border-white/5"
                                 }`}
                         >
                             <Icon className="w-3.5 h-3.5" />

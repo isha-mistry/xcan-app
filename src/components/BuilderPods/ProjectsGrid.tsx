@@ -147,7 +147,7 @@ function JoinTeamModal({
             >
                 <div className="flex items-center justify-between mb-5">
                     <div className="flex items-center gap-2">
-                        <KeyRound className="w-4 h-4 text-cyan-400/40" />
+                        <KeyRound className="w-4 h-4 text-cyan-400/70" />
                         <h3 className="text-base font-black text-white font-unbounded tracking-tight">
                             Join a Team
                         </h3>
@@ -156,7 +156,7 @@ function JoinTeamModal({
                         onClick={onClose}
                         className="p-1.5 rounded-lg hover:bg-white/5 transition-colors"
                     >
-                        <X className="w-4 h-4 text-white/30" />
+                        <X className="w-4 h-4 text-white/60" />
                     </button>
                 </div>
 
@@ -174,7 +174,7 @@ function JoinTeamModal({
                 ) : (
                     <form onSubmit={handleJoin} className="space-y-4">
                         <div>
-                            <label className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-white/30 font-robotoMono mb-2">
+                            <label className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-white/60 font-robotoMono mb-2">
                                 <KeyRound className="w-3.5 h-3.5" />
                                 Team Code
                             </label>
@@ -187,7 +187,7 @@ function JoinTeamModal({
                                 }
                                 placeholder="e.g. A1B2C3D4"
                                 maxLength={8}
-                                className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-center text-lg font-black text-white font-robotoMono tracking-[0.3em] placeholder:text-white/15 placeholder:text-sm placeholder:tracking-normal placeholder:font-normal focus:outline-none focus:border-cyan-500/40 focus:bg-white/[0.05] transition-all uppercase"
+                                className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-center text-lg font-black text-white font-robotoMono tracking-[0.3em] placeholder:text-white/45 placeholder:text-sm placeholder:tracking-normal placeholder:font-normal focus:outline-none focus:border-cyan-500/40 focus:bg-white/[0.05] transition-all uppercase"
                             />
                         </div>
 
@@ -252,7 +252,7 @@ export default function ProjectsGrid({
         return (
             <div className="mb-8">
                 <div className="flex items-center gap-3 mb-6">
-                    <FolderGit2 className="w-4 h-4 text-white/30" />
+                    <FolderGit2 className="w-4 h-4 text-white/60" />
                     <div className="h-4 w-24 bg-white/5 rounded-lg animate-pulse" />
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -275,23 +275,23 @@ export default function ProjectsGrid({
         <div className="mb-8">
             <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-3">
-                    <FolderGit2 className="w-4 h-4 text-white/30" />
-                    <h2 className="text-[11px] font-bold uppercase tracking-[0.2em] text-white/40 font-robotoMono">
+                    <FolderGit2 className="w-4 h-4 text-white/60" />
+                    <h2 className="text-[11px] font-bold uppercase tracking-[0.2em] text-white/70 font-robotoMono">
                         Projects
                     </h2>
-                    <span className="px-2 py-0.5 rounded-full bg-white/5 text-[10px] font-bold text-white/30 font-robotoMono">
+                    <span className="px-2 py-0.5 rounded-full bg-white/5 text-[10px] font-bold text-white/60 font-robotoMono">
                         {projects.length}
                     </span>
                 </div>
                 {showActions && (
                     <div className="flex items-center gap-3">
                         {!isActive && (
-                            <span className="text-[9px] text-amber-400/60 font-robotoMono mr-1">
+                            <span className="text-[9px] text-amber-400 font-robotoMono mr-1">
                                 Pending approval
                             </span>
                         )}
                         {isAlreadyInATeam && (
-                            <span className="text-[9px] text-blue-400/60 font-robotoMono">
+                            <span className="text-[9px] text-blue-400 font-robotoMono">
                                 Already in a team
                             </span>
                         )}
@@ -318,7 +318,7 @@ export default function ProjectsGrid({
                             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-bold font-robotoMono uppercase tracking-wider transition-all ${
                                 isActive && !isAlreadyInATeam
                                     ? "bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 hover:bg-cyan-500/15"
-                                    : "bg-white/5 border border-white/10 text-white/20 cursor-not-allowed"
+                                    : "bg-white/5 border border-white/10 text-white/50 cursor-not-allowed"
                             }`}
                         >
                             <KeyRound className="w-3 h-3" />
@@ -330,7 +330,7 @@ export default function ProjectsGrid({
 
             {projects.length === 0 ? (
                 <div className="glass-container rounded-2xl p-12 text-center">
-                    <p className="text-white/20 text-sm font-robotoMono">
+                    <p className="text-white/50 text-sm font-robotoMono">
                         No projects submitted yet.
                     </p>
                 </div>
@@ -378,7 +378,7 @@ export default function ProjectsGrid({
                                 </div>
 
                                 {/* Problem Statement */}
-                                <p className="text-xs text-white/30 font-robotoMono leading-relaxed mb-4 line-clamp-2">
+                                <p className="text-xs text-white/60 font-robotoMono leading-relaxed mb-4 line-clamp-2">
                                     {project.problemStatement}
                                 </p>
 
@@ -388,7 +388,7 @@ export default function ProjectsGrid({
                                         {project.techStack.map((tech) => (
                                             <span
                                                 key={tech}
-                                                className="px-2 py-0.5 rounded-full bg-white/5 text-[9px] font-bold text-white/25 font-robotoMono uppercase tracking-wider"
+                                                className="px-2 py-0.5 rounded-full bg-white/5 text-[9px] font-bold text-white/55 font-robotoMono uppercase tracking-wider"
                                             >
                                                 {tech}
                                             </span>
@@ -400,8 +400,8 @@ export default function ProjectsGrid({
                                 {teamSize > 0 && (
                                     <div className="mb-4 p-3 rounded-xl bg-white/[0.02] border border-white/[0.04]">
                                         <div className="flex items-center gap-2 mb-2">
-                                            <Users className="w-3 h-3 text-white/20" />
-                                            <span className="text-[9px] font-bold uppercase tracking-widest text-white/20 font-robotoMono">
+                                            <Users className="w-3 h-3 text-white/50" />
+                                            <span className="text-[9px] font-bold uppercase tracking-widest text-white/50 font-robotoMono">
                                                 Team ({teamSize})
                                             </span>
                                         </div>
@@ -413,7 +413,7 @@ export default function ProjectsGrid({
                                                         m.role ===
                                                         "team_leader"
                                                             ? "bg-cyan-500/10 text-cyan-400"
-                                                            : "bg-white/5 text-white/30"
+                                                            : "bg-white/5 text-white/60"
                                                     }`}
                                                 >
                                                     {m.role ===
@@ -432,8 +432,8 @@ export default function ProjectsGrid({
                                     <div className="mb-4 p-2.5 rounded-xl bg-blue-500/5 border border-blue-500/15">
                                         <div className="flex items-center justify-between">
                                             <div className="flex items-center gap-2">
-                                                <KeyRound className="w-3 h-3 text-blue-400/40" />
-                                                <span className="text-[9px] font-bold uppercase tracking-widest text-blue-400/40 font-robotoMono">
+                                                <KeyRound className="w-3 h-3 text-blue-400/70" />
+                                                <span className="text-[9px] font-bold uppercase tracking-widest text-blue-400/70 font-robotoMono">
                                                     Team Code
                                                 </span>
                                             </div>
@@ -455,7 +455,7 @@ export default function ProjectsGrid({
                                                     project._id ? (
                                                         <CheckCircle className="w-3 h-3 text-green-400" />
                                                     ) : (
-                                                        <Copy className="w-3 h-3 text-blue-400/30" />
+                                                        <Copy className="w-3 h-3 text-blue-400/60" />
                                                     )}
                                                 </button>
                                             </div>
@@ -495,14 +495,14 @@ export default function ProjectsGrid({
                                             href={project.githubRepo}
                                             target="_blank"
                                             rel="noopener noreferrer"
-                                            className="flex items-center gap-1 text-[10px] font-bold text-white/25 hover:text-white/50 font-robotoMono uppercase tracking-wider transition-colors"
+                                            className="flex items-center gap-1 text-[10px] font-bold text-white/55 hover:text-white/75 font-robotoMono uppercase tracking-wider transition-colors"
                                         >
                                             <Github className="w-3.5 h-3.5" />
                                             Repo
                                         </a>
                                     )}
                                     {project.contractAddress && (
-                                        <span className="flex items-center gap-1 text-[10px] font-bold text-white/25 font-robotoMono">
+                                        <span className="flex items-center gap-1 text-[10px] font-bold text-white/55 font-robotoMono">
                                             <Code2 className="w-3.5 h-3.5" />
                                             {project.contractAddress.slice(
                                                 0,
@@ -517,7 +517,7 @@ export default function ProjectsGrid({
                                             href={project.demoLink}
                                             target="_blank"
                                             rel="noopener noreferrer"
-                                            className="flex items-center gap-1 text-[10px] font-bold text-blue-400/60 hover:text-blue-400 font-robotoMono uppercase tracking-wider transition-colors"
+                                            className="flex items-center gap-1 text-[10px] font-bold text-blue-400 hover:text-blue-400 font-robotoMono uppercase tracking-wider transition-colors"
                                         >
                                             <ExternalLink className="w-3.5 h-3.5" />
                                             Demo

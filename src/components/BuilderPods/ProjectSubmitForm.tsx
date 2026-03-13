@@ -145,7 +145,7 @@ export default function ProjectSubmitForm({
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-bold font-robotoMono uppercase tracking-wider transition-all ${
                     isActive && !isDisabled
                         ? "bg-blue-500/10 border border-blue-500/20 text-blue-400 hover:bg-blue-500/15"
-                        : "bg-white/5 border border-white/10 text-white/20 cursor-not-allowed"
+                        : "bg-white/5 border border-white/10 text-white/50 cursor-not-allowed"
                 }`}
             >
                 <Plus className="w-3 h-3" />
@@ -173,12 +173,12 @@ export default function ProjectSubmitForm({
                             {/* Header */}
                             <div className="flex items-center justify-between px-6 py-4 md:px-8 md:py-5 border-b border-white/10 bg-black/70 backdrop-blur-sm">
                                 <div className="flex items-center gap-3">
-                                    <FolderGit2 className="w-5 h-5 text-blue-400/50" />
+                                    <FolderGit2 className="w-5 h-5 text-blue-400/80" />
                                     <div>
                                         <h2 className="text-lg font-black text-white font-unbounded tracking-tight">
                                             Submit Project
                                         </h2>
-                                        <p className="mt-0.5 text-[11px] text-white/40 font-robotoMono">
+                                        <p className="mt-0.5 text-[11px] text-white/70 font-robotoMono">
                                             Share details about your team&apos;s build.
                                         </p>
                                     </div>
@@ -187,7 +187,7 @@ export default function ProjectSubmitForm({
                                     onClick={handleClose}
                                     className="p-1.5 rounded-lg hover:bg-white/5 transition-colors"
                                 >
-                                    <X className="w-4 h-4 text-white/40" />
+                                    <X className="w-4 h-4 text-white/70" />
                                 </button>
                             </div>
 
@@ -204,7 +204,7 @@ export default function ProjectSubmitForm({
                                         </p>
 
                                         <div className="w-full mt-2 p-4 rounded-xl bg-blue-500/5 border border-blue-500/20">
-                                            <p className="text-[10px] font-bold uppercase tracking-widest text-blue-400/50 font-robotoMono mb-2 text-center">
+                                            <p className="text-[10px] font-bold uppercase tracking-widest text-blue-400/80 font-robotoMono mb-2 text-center">
                                                 Team Code — Share with teammates
                                             </p>
                                             <div className="flex flex-wrap items-center justify-center gap-3">
@@ -221,11 +221,11 @@ export default function ProjectSubmitForm({
                                                     {copied ? (
                                                         <CheckCircle className="w-4 h-4 text-green-400" />
                                                     ) : (
-                                                        <Copy className="w-4 h-4 text-blue-400/60" />
+                                                        <Copy className="w-4 h-4 text-blue-400" />
                                                     )}
                                                 </button>
                                             </div>
-                                            <p className="text-[9px] text-white/30 font-robotoMono mt-2 text-center">
+                                            <p className="text-[9px] text-white/60 font-robotoMono mt-2 text-center">
                                                 Other pod members can use this code to join your project team.
                                             </p>
                                         </div>
@@ -244,8 +244,8 @@ export default function ProjectSubmitForm({
                                     >
                                         {/* Submitter info */}
                                         <div className="flex items-center gap-2 p-3 rounded-xl bg-white/[0.02] border border-white/5">
-                                            <Wallet className="w-3.5 h-3.5 text-white/25" />
-                                            <span className="text-[10px] text-white/50 font-robotoMono">
+                                            <Wallet className="w-3.5 h-3.5 text-white/55" />
+                                            <span className="text-[10px] text-white/75 font-robotoMono">
                                                 Submitting as:{" "}
                                                 {walletAddress.slice(0, 8)}...
                                                 {walletAddress.slice(-4)}
@@ -258,7 +258,7 @@ export default function ProjectSubmitForm({
                                         {/* Project Name */}
                                         <div className="grid gap-4 md:grid-cols-2">
                                             <div className="md:col-span-2">
-                                                <label className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-white/40 font-robotoMono mb-2">
+                                                <label className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-white/70 font-robotoMono mb-2">
                                                     <FileText className="w-3.5 h-3.5" />
                                                     Project Name *
                                                 </label>
@@ -273,13 +273,13 @@ export default function ProjectSubmitForm({
                                                         }))
                                                     }
                                                     placeholder="e.g. DeFi Lending Protocol"
-                                                    className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-sm text-white font-robotoMono placeholder:text-white/20 focus:outline-none focus:border-blue-500/40 focus:bg-white/[0.05] transition-all"
+                                                    className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-sm text-white font-robotoMono placeholder:text-white/50 focus:outline-none focus:border-blue-500/40 focus:bg-white/[0.05] transition-all"
                                                 />
                                             </div>
 
                                             {/* Problem Statement */}
                                             <div className="md:col-span-2">
-                                                <label className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-white/40 font-robotoMono mb-2">
+                                                <label className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-white/70 font-robotoMono mb-2">
                                                     <FileText className="w-3.5 h-3.5" />
                                                     Problem Statement *
                                                 </label>
@@ -295,13 +295,13 @@ export default function ProjectSubmitForm({
                                                     }
                                                     placeholder="Describe the problem your project solves..."
                                                     rows={3}
-                                                    className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-sm text-white font-robotoMono placeholder:text-white/20 focus:outline-none focus:border-blue-500/40 focus:bg-white/[0.05] transition-all resize-none technical-scrollbar"
+                                                    className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-sm text-white font-robotoMono placeholder:text-white/50 focus:outline-none focus:border-blue-500/40 focus:bg-white/[0.05] transition-all resize-none technical-scrollbar"
                                                 />
                                             </div>
 
                                             {/* GitHub Repo */}
                                             <div>
-                                                <label className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-white/40 font-robotoMono mb-2">
+                                                <label className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-white/70 font-robotoMono mb-2">
                                                     <Github className="w-3.5 h-3.5" />
                                                     GitHub Repo
                                                 </label>
@@ -315,13 +315,13 @@ export default function ProjectSubmitForm({
                                                         }))
                                                     }
                                                     placeholder="https://github.com/..."
-                                                    className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-sm text-white font-robotoMono placeholder:text-white/20 focus:outline-none focus:border-blue-500/40 focus:bg-white/[0.05] transition-all"
+                                                    className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-sm text-white font-robotoMono placeholder:text-white/50 focus:outline-none focus:border-blue-500/40 focus:bg-white/[0.05] transition-all"
                                                 />
                                             </div>
 
                                             {/* Contract Address */}
                                             <div>
-                                                <label className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-white/40 font-robotoMono mb-2">
+                                                <label className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-white/70 font-robotoMono mb-2">
                                                     <Code2 className="w-3.5 h-3.5" />
                                                     Contract Address
                                                 </label>
@@ -336,13 +336,13 @@ export default function ProjectSubmitForm({
                                                         }))
                                                     }
                                                     placeholder="0x..."
-                                                    className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-sm text-white font-robotoMono placeholder:text-white/20 focus:outline-none focus:border-blue-500/40 focus:bg-white/[0.05] transition-all"
+                                                    className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-sm text-white font-robotoMono placeholder:text-white/50 focus:outline-none focus:border-blue-500/40 focus:bg-white/[0.05] transition-all"
                                                 />
                                             </div>
 
                                             {/* Demo Link */}
                                             <div className="md:col-span-2">
-                                                <label className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-white/40 font-robotoMono mb-2">
+                                                <label className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-white/70 font-robotoMono mb-2">
                                                     <ExternalLink className="w-3.5 h-3.5" />
                                                     Demo Link
                                                 </label>
@@ -356,13 +356,13 @@ export default function ProjectSubmitForm({
                                                         }))
                                                     }
                                                     placeholder="https://..."
-                                                    className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-sm text-white font-robotoMono placeholder:text-white/20 focus:outline-none focus:border-blue-500/40 focus:bg-white/[0.05] transition-all"
+                                                    className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-sm text-white font-robotoMono placeholder:text-white/50 focus:outline-none focus:border-blue-500/40 focus:bg-white/[0.05] transition-all"
                                                 />
                                             </div>
 
                                             {/* Tech Stack */}
                                             <div className="md:col-span-2">
-                                                <label className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-white/40 font-robotoMono mb-2">
+                                                <label className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-white/70 font-robotoMono mb-2">
                                                     <Layers className="w-3.5 h-3.5" />
                                                     Tech Stack
                                                 </label>
@@ -380,12 +380,12 @@ export default function ProjectSubmitForm({
                                                             }
                                                         }}
                                                         placeholder="e.g. Stylus, Rust, React"
-                                                        className="flex-1 bg-white/[0.03] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white font-robotoMono placeholder:text-white/20 focus:outline-none focus:border-blue-500/40 focus:bg-white/[0.05] transition-all"
+                                                        className="flex-1 bg-white/[0.03] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white font-robotoMono placeholder:text-white/50 focus:outline-none focus:border-blue-500/40 focus:bg-white/[0.05] transition-all"
                                                     />
                                                     <button
                                                         type="button"
                                                         onClick={addTech}
-                                                        className="px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-[10px] font-bold text-white/60 font-robotoMono hover:bg-white/10 transition-all"
+                                                        className="px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-[10px] font-bold text-white/80 font-robotoMono hover:bg-white/10 transition-all"
                                                     >
                                                         Add
                                                     </button>

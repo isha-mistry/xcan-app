@@ -55,8 +55,8 @@ export default function ProfilePodSection() {
             className="glass-container rounded-2xl p-6"
         >
             <div className="flex items-center gap-2 mb-5">
-                <Shield className="w-4 h-4 text-blue-400/50" />
-                <h3 className="text-[11px] font-bold uppercase tracking-[0.2em] text-white/40 font-robotoMono">
+                <Shield className="w-4 h-4 text-blue-400/80" />
+                <h3 className="text-[11px] font-bold uppercase tracking-[0.2em] text-white/70 font-robotoMono">
                     Builder Pod Membership
                 </h3>
             </div>
@@ -73,7 +73,7 @@ export default function ProfilePodSection() {
                     <span className="text-sm font-bold text-white font-unbounded block truncate">
                         {college?.name}
                     </span>
-                    <span className="text-[10px] text-white/20 font-robotoMono">
+                    <span className="text-[10px] text-white/50 font-robotoMono">
                         {college?.podName} · {college?.city}
                     </span>
                 </div>
@@ -83,7 +83,7 @@ export default function ProfilePodSection() {
                     }`}>
                     {membership.status}
                 </span>
-                <ExternalLink className="w-3.5 h-3.5 text-white/15" />
+                <ExternalLink className="w-3.5 h-3.5 text-white/45" />
             </Link>
 
             {/* Stats */}
@@ -101,7 +101,7 @@ export default function ProfilePodSection() {
                             <span className="text-base font-black text-white font-unbounded block">
                                 {s.value}
                             </span>
-                            <p className="text-[8px] text-white/15 font-robotoMono uppercase font-bold">
+                            <p className="text-[8px] text-white/45 font-robotoMono uppercase font-bold">
                                 {s.label}
                             </p>
                         </div>
@@ -112,14 +112,14 @@ export default function ProfilePodSection() {
             {/* Badges */}
             {badges?.length > 0 && (
                 <div>
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-white/20 font-robotoMono mb-2">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-white/50 font-robotoMono mb-2">
                         Badges ({badges.length})
                     </p>
                     <div className="flex flex-wrap gap-1.5">
                         {badges.map((badge: any) => (
                             <span
                                 key={badge._id}
-                                className="px-2.5 py-1 rounded-full bg-purple-500/5 border border-purple-500/10 text-[9px] font-bold text-purple-400/50 font-robotoMono"
+                                className="px-2.5 py-1 rounded-full bg-purple-500/5 border border-purple-500/10 text-[9px] font-bold text-purple-400/80 font-robotoMono"
                                 title={badge.badgeSnapshot.label}
                             >
                                 {badge.badgeSnapshot.label}

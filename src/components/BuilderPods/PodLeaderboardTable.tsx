@@ -51,7 +51,7 @@ export default function PodLeaderboardTable({ pods, isLoading }: PodLeaderboardT
     if (!pods.length) {
         return (
             <div className="glass-container rounded-2xl p-12 text-center">
-                <p className="text-white/20 text-sm font-robotoMono py-20">No leaderboard data yet.</p>
+                <p className="text-white/50 text-sm font-robotoMono py-20">No leaderboard data yet.</p>
             </div>
         );
     }
@@ -78,7 +78,7 @@ export default function PodLeaderboardTable({ pods, isLoading }: PodLeaderboardT
                             {/* Rank */}
                             <div className={`w-10 h-10 flex items-center justify-center rounded-xl font-unbounded font-black text-sm ${isTopThree
                                     ? `bg-white/5 ${medalColors[rank - 1]}`
-                                    : "bg-white/[0.02] text-white/20"
+                                    : "bg-white/[0.02] text-white/50"
                                 }`}>
                                 {isTopThree ? <Trophy className="w-5 h-5" /> : `#${rank}`}
                             </div>
@@ -88,22 +88,22 @@ export default function PodLeaderboardTable({ pods, isLoading }: PodLeaderboardT
                                 <h3 className="text-sm font-bold text-white font-unbounded truncate">
                                     {pod.collegeId?.name || "Unknown"}
                                 </h3>
-                                <p className="text-[10px] text-white/20 font-robotoMono">
+                                <p className="text-[10px] text-white/50 font-robotoMono">
                                     {pod.collegeId?.city}, {pod.collegeId?.state} · {activePercent}% active
                                 </p>
                             </div>
 
                             {/* Score Breakdown */}
                             <div className="hidden sm:flex items-center gap-3">
-                                <div className="flex items-center gap-1 text-[10px] text-white/25 font-robotoMono" title="Deployments">
+                                <div className="flex items-center gap-1 text-[10px] text-white/55 font-robotoMono" title="Deployments">
                                     <Code2 className="w-3 h-3" />
                                     {pod.totalDeployments}
                                 </div>
-                                <div className="flex items-center gap-1 text-[10px] text-white/25 font-robotoMono" title="Modules">
+                                <div className="flex items-center gap-1 text-[10px] text-white/55 font-robotoMono" title="Modules">
                                     <BookOpen className="w-3 h-3" />
                                     {pod.totalModuleCompletions}
                                 </div>
-                                <div className="flex items-center gap-1 text-[10px] text-white/25 font-robotoMono" title="Weekly Activity">
+                                <div className="flex items-center gap-1 text-[10px] text-white/55 font-robotoMono" title="Weekly Activity">
                                     <Activity className="w-3 h-3" />
                                     {pod.weeklyActivityScore}
                                 </div>
@@ -111,7 +111,7 @@ export default function PodLeaderboardTable({ pods, isLoading }: PodLeaderboardT
 
                             {/* Total Score */}
                             <div className="flex items-center gap-1.5">
-                                <TrendingUp className="w-3.5 h-3.5 text-green-400/50" />
+                                <TrendingUp className="w-3.5 h-3.5 text-green-400/80" />
                                 <span className="text-lg font-black text-white font-unbounded">
                                     {pod.totalScore}
                                 </span>

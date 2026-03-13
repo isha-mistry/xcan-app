@@ -83,13 +83,13 @@ export default function AdminProjectsPage() {
 
     return (
         <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-10 py-6">
-            <Link href="/admin/builder-pods" className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-white/30 hover:text-white/60 font-robotoMono mb-6 transition-colors">
+            <Link href="/admin/builder-pods" className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-white/80 hover:text-white/80 font-robotoMono mb-6 transition-colors">
                 <ArrowLeft className="w-3.5 h-3.5" />
                 Admin Dashboard
             </Link>
 
             <div className="flex items-center gap-3 mb-6">
-                <FolderKanban className="w-5 h-5 text-blue-400/40" />
+                <FolderKanban className="w-5 h-5 text-blue-400/70" />
                 <h1 className="text-2xl font-black text-white font-unbounded tracking-tight">
                     Project Board
                 </h1>
@@ -103,7 +103,7 @@ export default function AdminProjectsPage() {
                         onClick={() => setSelectedCollege(c.slug)}
                         className={`px-3 py-1.5 rounded-lg text-[10px] font-bold font-robotoMono transition-all border ${selectedCollege === c.slug
                                 ? "bg-blue-500/10 border-blue-500/20 text-blue-400"
-                                : "bg-white/[0.02] border-white/[0.05] text-white/20 hover:bg-white/[0.04]"
+                                : "bg-white/[0.02] border-white/[0.05] text-white/75 hover:bg-white/[0.04]"
                             }`}
                     >
                         {c.name}
@@ -113,8 +113,8 @@ export default function AdminProjectsPage() {
 
             {!selectedCollege ? (
                 <div className="glass-container rounded-2xl p-12 text-center">
-                    <FolderKanban className="w-8 h-8 text-white/10 mx-auto mb-3" />
-                    <p className="text-sm text-white/30 font-robotoMono">Select a college to view projects</p>
+                    <FolderKanban className="w-8 h-8 text-white/70 mx-auto mb-3" />
+                    <p className="text-sm text-white/80 font-robotoMono">Select a college to view projects</p>
                 </div>
             ) : projectsLoading ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
@@ -144,7 +144,7 @@ export default function AdminProjectsPage() {
                                     <span className={`px-2 py-0.5 rounded-full ${col.bg} ${col.color} text-[9px] font-bold font-robotoMono`}>
                                         {col.label}
                                     </span>
-                                    <span className="text-[9px] text-white/10 font-robotoMono">
+                                    <span className="text-[9px] text-white/70 font-robotoMono">
                                         {colProjects.length}
                                     </span>
                                 </div>
@@ -155,11 +155,11 @@ export default function AdminProjectsPage() {
                                             key={project._id}
                                             className="p-3 rounded-xl bg-white/[0.02] border border-white/[0.04] hover:border-white/10 transition-all"
                                         >
-                                            <h4 className="text-[11px] font-bold text-white/60 font-robotoMono mb-1">
+                                            <h4 className="text-[11px] font-bold text-white/80 font-robotoMono mb-1">
                                                 {project.name}
                                             </h4>
                                             {project.problemStatement && (
-                                                <p className="text-[9px] text-white/15 font-robotoMono line-clamp-2 mb-2">
+                                                <p className="text-[9px] text-white/75 font-robotoMono line-clamp-2 mb-2">
                                                     {project.problemStatement}
                                                 </p>
                                             )}
@@ -203,7 +203,7 @@ export default function AdminProjectsPage() {
                                         </div>
                                     ))}
                                     {colProjects.length === 0 && (
-                                        <p className="text-[9px] text-white/10 font-robotoMono text-center py-4">
+                                        <p className="text-[9px] text-white/70 font-robotoMono text-center py-4">
                                             No projects
                                         </p>
                                     )}

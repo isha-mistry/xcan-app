@@ -57,13 +57,13 @@ export default function AdminMilestonesPage() {
 
     return (
         <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-10 py-6">
-            <Link href="/admin/builder-pods" className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-white/30 hover:text-white/60 font-robotoMono mb-6 transition-colors">
+            <Link href="/admin/builder-pods" className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-white/60 hover:text-white/80 font-robotoMono mb-6 transition-colors">
                 <ArrowLeft className="w-3.5 h-3.5" />
                 Admin Dashboard
             </Link>
 
             <div className="flex items-center gap-3 mb-8">
-                <Target className="w-5 h-5 text-emerald-400/40" />
+                <Target className="w-5 h-5 text-emerald-400/70" />
                 <h1 className="text-2xl font-black text-white font-unbounded tracking-tight">
                     Milestone KPI Tracker
                 </h1>
@@ -79,7 +79,7 @@ export default function AdminMilestonesPage() {
                             transition={{ duration: 0.3, delay: index * 0.04 }}
                             className="glass-container rounded-2xl p-4"
                         >
-                            <p className="text-[9px] font-bold uppercase tracking-widest text-white/20 font-robotoMono mb-1">
+                            <p className="text-[9px] font-bold uppercase tracking-widest text-white/50 font-robotoMono mb-1">
                                 {card.label}
                             </p>
                             <span className="text-2xl font-black text-white font-unbounded">
@@ -102,8 +102,8 @@ export default function AdminMilestonesPage() {
                 </div>
             ) : milestones.length === 0 ? (
                 <div className="glass-container rounded-2xl p-12 text-center">
-                    <Target className="w-8 h-8 text-white/10 mx-auto mb-3" />
-                    <p className="text-sm text-white/30 font-robotoMono">No milestones configured</p>
+                    <Target className="w-8 h-8 text-white/40 mx-auto mb-3" />
+                    <p className="text-sm text-white/60 font-robotoMono">No milestones configured</p>
                 </div>
             ) : (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -123,12 +123,12 @@ export default function AdminMilestonesPage() {
                                         <h3 className="text-sm font-bold text-white font-robotoMono mb-1">
                                             Milestone {ms.milestoneNumber}: {ms.title}
                                         </h3>
-                                        <p className="text-[10px] text-white/15 font-robotoMono">
+                                        <p className="text-[10px] text-white/45 font-robotoMono">
                                             Grant ${ms.grantAmountUsd?.toLocaleString()} · Status {ms.status?.replace(/_/g, " ")}
                                         </p>
                                     </div>
                                     {progress >= 100 ? (
-                                        <CheckCircle2 className="w-4 h-4 text-green-400/60 shrink-0" />
+                                        <CheckCircle2 className="w-4 h-4 text-green-400 shrink-0" />
                                     ) : (
                                         <TrendingUp className={`w-4 h-4 ${colors.text} opacity-40 shrink-0`} />
                                     )}
@@ -145,7 +145,7 @@ export default function AdminMilestonesPage() {
                                 </div>
 
                                 <div className="flex items-center justify-between">
-                                    <span className="text-[10px] text-white/20 font-robotoMono">
+                                    <span className="text-[10px] text-white/50 font-robotoMono">
                                         Overall completion
                                     </span>
                                     <span className={`px-2 py-0.5 rounded-full ${colors.bg} ${colors.text} text-[9px] font-bold font-robotoMono`}>
@@ -157,11 +157,11 @@ export default function AdminMilestonesPage() {
                                     {milestoneMetrics(ms).map((metric) => (
                                         <div key={metric.key} className="rounded-xl bg-white/[0.02] border border-white/5 p-3">
                                             <div className="flex items-center justify-between gap-2 mb-2">
-                                                <p className="text-[9px] font-bold uppercase tracking-widest text-white/20 font-robotoMono">
+                                                <p className="text-[9px] font-bold uppercase tracking-widest text-white/50 font-robotoMono">
                                                     {metric.label}
                                                 </p>
                                                 {metric.progress !== null && (
-                                                    <span className="text-[9px] text-white/40 font-bold font-robotoMono">
+                                                    <span className="text-[9px] text-white/70 font-bold font-robotoMono">
                                                         {metric.progress}%
                                                     </span>
                                                 )}
@@ -173,12 +173,12 @@ export default function AdminMilestonesPage() {
                                     ))}
                                     <div className="rounded-xl bg-white/[0.02] border border-white/5 p-3 col-span-2">
                                         <div className="flex items-center gap-2 mb-1">
-                                            <BarChart3 className="w-3.5 h-3.5 text-white/20" />
-                                            <p className="text-[9px] font-bold uppercase tracking-widest text-white/20 font-robotoMono">
+                                            <BarChart3 className="w-3.5 h-3.5 text-white/50" />
+                                            <p className="text-[9px] font-bold uppercase tracking-widest text-white/50 font-robotoMono">
                                                 Notes
                                             </p>
                                         </div>
-                                        <p className="text-[10px] text-white/35 font-robotoMono">
+                                        <p className="text-[10px] text-white/60 font-robotoMono">
                                             {ms.notes || "No internal notes added yet."}
                                         </p>
                                     </div>

@@ -47,7 +47,7 @@ export default function IndividualLeaderboardTable({
     if (!individuals.length) {
         return (
             <div className="glass-container rounded-2xl p-12 text-center">
-                <p className="text-white/20 text-sm font-robotoMono">No individual rankings yet.</p>
+                <p className="text-white/50 text-sm font-robotoMono">No individual rankings yet.</p>
             </div>
         );
     }
@@ -70,7 +70,7 @@ export default function IndividualLeaderboardTable({
                             {/* Rank */}
                             <div className={`w-8 h-8 flex items-center justify-center rounded-lg font-unbounded font-black text-xs ${isTopThree
                                     ? `bg-white/5 ${medalColors[rank - 1]}`
-                                    : "bg-white/[0.02] text-white/15"
+                                    : "bg-white/[0.02] text-white/45"
                                 }`}>
                                 {isTopThree ? <Trophy className="w-4 h-4" /> : rank}
                             </div>
@@ -81,22 +81,22 @@ export default function IndividualLeaderboardTable({
                                     <span className="text-sm font-bold text-white font-robotoMono truncate">
                                         {person.name}
                                     </span>
-                                    <span className="px-1.5 py-0.5 rounded-full bg-white/5 text-[8px] font-bold text-white/20 font-robotoMono uppercase tracking-wider">
+                                    <span className="px-1.5 py-0.5 rounded-full bg-white/5 text-[8px] font-bold text-white/50 font-robotoMono uppercase tracking-wider">
                                         {person.role.replace("_", " ")}
                                     </span>
                                 </div>
-                                <p className="text-[10px] text-white/15 font-robotoMono truncate">
+                                <p className="text-[10px] text-white/45 font-robotoMono truncate">
                                     {person.collegeId?.name || "Unknown"} · {person.walletAddress.slice(0, 6)}...{person.walletAddress.slice(-4)}
                                 </p>
                             </div>
 
                             {/* Metrics */}
                             <div className="hidden sm:flex items-center gap-3">
-                                <div className="flex items-center gap-1 text-[10px] text-white/20 font-robotoMono" title="Modules">
+                                <div className="flex items-center gap-1 text-[10px] text-white/50 font-robotoMono" title="Modules">
                                     <BookOpen className="w-3 h-3" />
                                     {person.stylusModulesCompleted}
                                 </div>
-                                <div className="flex items-center gap-1 text-[10px] text-white/20 font-robotoMono" title="Deploys">
+                                <div className="flex items-center gap-1 text-[10px] text-white/50 font-robotoMono" title="Deploys">
                                     <Code2 className="w-3 h-3" />
                                     {person.contractsDeployed}
                                 </div>
@@ -104,7 +104,7 @@ export default function IndividualLeaderboardTable({
 
                             {/* Score */}
                             <div className="flex items-center gap-1">
-                                <Award className="w-3.5 h-3.5 text-amber-400/40" />
+                                <Award className="w-3.5 h-3.5 text-amber-400/70" />
                                 <span className="text-base font-black text-white font-unbounded">
                                     {person.totalScore}
                                 </span>
