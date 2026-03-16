@@ -74,14 +74,6 @@ export async function POST(req: NextRequest) {
             );
         }
 
-        const project = await PodProject.findById(projectId);
-        if (!project || project.collegeId.toString() !== college._id.toString()) {
-            return NextResponse.json(
-                { success: false, error: 'Project not found or does not belong to this college' },
-                { status: 404 }
-            );
-        }
-
         const isAdmin = hasAnyRole(ctx, ['super_admin', 'college_admin', 'mentor'], college._id.toString());
         if (isAdmin) {
             verifyCollegeAccess(ctx, college._id.toString());
@@ -92,11 +84,18 @@ export async function POST(req: NextRequest) {
                 status: 'active',
             }).lean();
 
-            const isTechLead = member?.role === 'tech_lead';
-            const isProjectCreator = project.createdBy === walletAddress;
-            if (!member || (!isTechLead && !isProjectCreator)) {
-                throw new ForbiddenError('Only an active tech lead or the project creator can submit to showcase');
+            const isPodLead = member?.role === 'pod_lead';
+            if (!member || !isPodLead) {
+                throw new ForbiddenError('Only an active pod lead can submit to a showcase for this college');
             }
+        }
+
+        const project = await PodProject.findById(projectId);
+        if (!project || project.collegeId.toString() !== college._id.toString()) {
+            return NextResponse.json(
+                { success: false, error: 'Project not found or does not belong to this college' },
+                { status: 404 }
+            );
         }
 
         const submission = await ShowcaseSubmission.create({
@@ -119,8 +118,8 @@ export async function POST(req: NextRequest) {
             submittedBy: walletAddress,
         });
 
-        // Mark project as submitted to showcase
-        await PodProject.findByIdAndUpdate(projectId, { submittedToShowcase: true });
+        // Mark project as submitted to showcase (idempotent marker)
+        await PodProject.findByIdAndUpdate(project._id, { submittedToShowcase: true });
 
         return NextResponse.json(
             { success: true, submission: { _id: submission._id, status: submission.status } },

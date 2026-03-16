@@ -88,7 +88,15 @@ export default function ShowcaseSubmitPage() {
             const data = await res.json();
             if (data.success) {
                 setResult({ success: true, message: "🎉 Showcase submission received! Status: Pending Review" });
-                setForm({ showcaseEventId: "", collegeSlug: "", projectId: "", demoLink: "", githubRepo: "", contractAddress: "", pitchDeckUrl: "" });
+                setForm({
+                    showcaseEventId: "",
+                    collegeSlug: "",
+                    projectId: "",
+                    demoLink: "",
+                    githubRepo: "",
+                    contractAddress: "",
+                    pitchDeckUrl: "",
+                });
             } else {
                 setResult({ success: false, message: data.error || "Submission failed" });
             }
@@ -150,7 +158,12 @@ export default function ShowcaseSubmitPage() {
                         {/* College */}
                         <div>
                             <label className={labelClass}>College *</label>
-                            <select required value={form.collegeSlug} onChange={(e) => setForm((f) => ({ ...f, collegeSlug: e.target.value, projectId: "" }))} className={inputClass}>
+                            <select
+                                required
+                                value={form.collegeSlug}
+                                onChange={(e) => setForm((f) => ({ ...f, collegeSlug: e.target.value, projectId: "" }))}
+                                className={inputClass}
+                            >
                                 <option value="" className="bg-[#0a0d12]">Select college</option>
                                 {colleges.map((c) => (
                                     <option key={c.slug} value={c.slug} className="bg-[#0a0d12]">{c.name}</option>
@@ -160,11 +173,23 @@ export default function ShowcaseSubmitPage() {
 
                         {/* Project */}
                         <div>
-                            <label className={labelClass}><FileText className="w-3 h-3" />Project *</label>
-                            <select required value={form.projectId} onChange={(e) => setForm((f) => ({ ...f, projectId: e.target.value }))} className={inputClass}>
-                                <option value="" className="bg-[#0a0d12]">{form.collegeSlug ? "Select project" : "Select college first"}</option>
+                            <label className={labelClass}>
+                                <FileText className="w-3 h-3" />
+                                Project *
+                            </label>
+                            <select
+                                required
+                                value={form.projectId}
+                                onChange={(e) => setForm((f) => ({ ...f, projectId: e.target.value }))}
+                                className={inputClass}
+                            >
+                                <option value="" className="bg-[#0a0d12]">
+                                    {form.collegeSlug ? "Select project from your pod" : "Select college first"}
+                                </option>
                                 {projects.map((p) => (
-                                    <option key={p._id} value={p._id} className="bg-[#0a0d12]">{p.name}</option>
+                                    <option key={p._id} value={p._id} className="bg-[#0a0d12]">
+                                        {p.name}
+                                    </option>
                                 ))}
                             </select>
                         </div>
@@ -200,7 +225,17 @@ export default function ShowcaseSubmitPage() {
                             </div>
                         )}
 
-                        <button type="submit" disabled={submitting || !form.showcaseEventId || !form.projectId || !form.githubRepo} className="w-full flex items-center justify-center gap-2 px-6 py-3.5 bg-white text-black rounded-xl text-[11px] font-bold uppercase tracking-widest font-robotoMono transition-all hover:shadow-lg hover:shadow-white/10 disabled:opacity-30 disabled:cursor-not-allowed">
+                        <button
+                            type="submit"
+                            disabled={
+                                submitting ||
+                                !form.showcaseEventId ||
+                                !form.collegeSlug ||
+                                !form.projectId ||
+                                !form.githubRepo
+                            }
+                            className="w-full flex items-center justify-center gap-2 px-6 py-3.5 bg-white text-black rounded-xl text-[11px] font-bold uppercase tracking-widest font-robotoMono transition-all hover:shadow-lg hover:shadow-white/10 disabled:opacity-30 disabled:cursor-not-allowed"
+                        >
                             {submitting ? <><Loader2 className="w-4 h-4 animate-spin" />Submitting...</> : "Submit to Showcase"}
                         </button>
                     </form>
