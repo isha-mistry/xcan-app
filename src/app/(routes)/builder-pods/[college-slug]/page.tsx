@@ -54,7 +54,7 @@ export default function CollegePodPage() {
     const isMember = currentMember != null;
     const memberStatus: string | null = currentMember?.status ?? null;
 
-    const isTeamLead =
+    const isPodLead =
         wallet != null &&
         members.some((m: any) => m.walletAddress.toLowerCase() === wallet && m.role === 'pod_lead' && m.status === 'active');
 
@@ -101,13 +101,15 @@ export default function CollegePodPage() {
                         memberStatus={memberStatus}
                         collegeSlug={slug}
                         onRefresh={handleDataRefresh}
+                        isPodLead={isPodLead}
                     />
 
                             <WeeklyUpdatesFeed
                                 updates={recentUpdates}
+                                projects={projects}
                                 isLoading={isLoading}
                                 slug={slug}
-                                isTeamLead={isTeamLead}
+                                isTeamLead={isPodLead}
                                 onRefresh={handleDataRefresh}
                             />
                         </>

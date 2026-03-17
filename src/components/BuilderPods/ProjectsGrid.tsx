@@ -14,6 +14,8 @@ import {
     UserPlus,
     X,
     KeyRound,
+    LogOut,
+    Trash2,
 } from "lucide-react";
 import ProjectSubmitForm from "./ProjectSubmitForm";
 
@@ -49,6 +51,7 @@ interface ProjectsGridProps {
     memberStatus?: string | null;
     collegeSlug?: string;
     onRefresh?: () => void;
+    isPodLead?: boolean;
 }
 
 const statusConfig: Record<
@@ -223,6 +226,82 @@ function JoinTeamModal({
     );
 }
 
+function ConfirmActionModal({
+    title,
+    message,
+    actionLabel,
+    actionColor,
+    icon: Icon,
+    submitting,
+    onConfirm,
+    onClose,
+}: any) {
+    return (
+        <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+            onClick={(e) => {
+                if (e.target === e.currentTarget) onClose();
+            }}
+        >
+            <motion.div
+                initial={{ opacity: 0, y: 20, scale: 0.97 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 20, scale: 0.97 }}
+                transition={{ duration: 0.25 }}
+                className="w-full max-w-sm glass-container rounded-2xl p-6"
+            >
+                <div className="flex items-center justify-between mb-5">
+                    <div className="flex items-center gap-2">
+                        <Icon className={`w-4 h-4 ${actionColor}`} />
+                        <h3 className="text-base font-black text-white font-unbounded tracking-tight">
+                            {title}
+                        </h3>
+                    </div>
+                    <button
+                        onClick={onClose}
+                        className="p-1.5 rounded-lg hover:bg-white/5 transition-colors"
+                        disabled={submitting}
+                    >
+                        <X className="w-4 h-4 text-white/60" />
+                    </button>
+                </div>
+                
+                <p className="text-sm text-white/70 font-robotoMono leading-relaxed mb-6">
+                    {message}
+                </p>
+
+                <div className="flex gap-3">
+                    <button
+                        onClick={onClose}
+                        disabled={submitting}
+                        className="flex-1 px-4 py-2.5 rounded-xl bg-white/5 text-white text-xs font-bold uppercase tracking-wider font-robotoMono hover:bg-white/10 transition-colors"
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        onClick={onConfirm}
+                        disabled={submitting}
+                        className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider font-robotoMono transition-colors ${
+                            actionLabel === 'Delete' 
+                                ? 'bg-red-500/20 text-red-400 hover:bg-red-500/30 border border-red-500/30' 
+                                : 'bg-amber-500/20 text-amber-400 hover:bg-amber-500/30 border border-amber-500/30'
+                        }`}
+                    >
+                        {submitting ? (
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                            actionLabel
+                        )}
+                    </button>
+                </div>
+            </motion.div>
+        </motion.div>
+    );
+}
+
 export default function ProjectsGrid({
     projects,
     isLoading,
@@ -231,8 +310,11 @@ export default function ProjectsGrid({
     memberStatus,
     collegeSlug,
     onRefresh,
+    isPodLead,
 }: ProjectsGridProps) {
     const [joinModalOpen, setJoinModalOpen] = useState(false);
+    const [actionModal, setActionModal] = useState<{ type: 'leave' | 'delete', projectId: string } | null>(null);
+    const [submittingAction, setSubmittingAction] = useState(false);
     const [copiedId, setCopiedId] = useState<string | null>(null);
     const wallet = walletAddress?.toLowerCase() ?? null;
     const showActions = wallet && isMember;
@@ -246,6 +328,37 @@ export default function ProjectsGrid({
         navigator.clipboard.writeText(code);
         setCopiedId(projectId);
         setTimeout(() => setCopiedId(null), 2000);
+    };
+
+    const handleAction = async () => {
+        if (!actionModal || !wallet) return;
+        setSubmittingAction(true);
+        try {
+            const url = actionModal.type === 'leave' 
+                ? `/api/builder-pods/projects/${actionModal.projectId}/leave`
+                : `/api/builder-pods/projects/${actionModal.projectId}?walletAddress=${wallet}`;
+            
+            const options: RequestInit = actionModal.type === 'leave'
+                ? {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ walletAddress: wallet }),
+                  }
+                : { method: "DELETE" };
+
+            const res = await fetch(url, options);
+            const data = await res.json();
+            
+            if (!res.ok) throw new Error(data.error || "Action failed");
+            
+            setActionModal(null);
+            onRefresh?.();
+        } catch (error) {
+            console.error("Action error:", error);
+            alert((error as Error).message);
+        } finally {
+            setSubmittingAction(false);
+        }
     };
 
     if (isLoading) {
@@ -463,28 +576,50 @@ export default function ProjectsGrid({
                                     </div>
                                 )}
 
-                                {/* Your role badge */}
-                                {isInTeam && (
-                                    <div className="mb-3">
-                                        <span
-                                            className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider font-robotoMono ${
-                                                isTeamLeader
-                                                    ? "bg-cyan-500/10 text-cyan-400 border border-cyan-500/20"
-                                                    : "bg-green-500/10 text-green-400 border border-green-500/20"
-                                            }`}
-                                        >
-                                            {isTeamLeader ? (
-                                                <>
-                                                    <Crown className="w-2.5 h-2.5" />
-                                                    Team Leader
-                                                </>
-                                            ) : (
-                                                <>
-                                                    <Users className="w-2.5 h-2.5" />
-                                                    Team Member
-                                                </>
+                                {/* Your role badge & actions */}
+                                {(isInTeam || isPodLead) && (
+                                    <div className="mb-3 flex items-start justify-between">
+                                        {isInTeam && (
+                                            <span
+                                                className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider font-robotoMono ${
+                                                    isTeamLeader
+                                                        ? "bg-cyan-500/10 text-cyan-400 border border-cyan-500/20"
+                                                        : "bg-green-500/10 text-green-400 border border-green-500/20"
+                                                }`}
+                                            >
+                                                {isTeamLeader ? (
+                                                    <>
+                                                        <Crown className="w-2.5 h-2.5" />
+                                                        Team Leader
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <Users className="w-2.5 h-2.5" />
+                                                        Team Member
+                                                    </>
+                                                )}
+                                            </span>
+                                        )}
+                                        <div className="flex items-center gap-2 ml-auto">
+                                            {!isTeamLeader && isInTeam && (
+                                                <button
+                                                    onClick={() => setActionModal({ type: 'leave', projectId: project._id })}
+                                                    className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/20 text-[9px] font-bold uppercase tracking-wider font-robotoMono hover:bg-amber-500/20 transition-colors"
+                                                >
+                                                    <LogOut className="w-3 h-3" />
+                                                    Leave
+                                                </button>
                                             )}
-                                        </span>
+                                            {(isTeamLeader) && (
+                                                <button
+                                                    onClick={() => setActionModal({ type: 'delete', projectId: project._id })}
+                                                    className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-red-500/10 text-red-400 border border-red-500/20 text-[9px] font-bold uppercase tracking-wider font-robotoMono hover:bg-red-500/20 transition-colors"
+                                                >
+                                                    <Trash2 className="w-3 h-3" />
+                                                    Delete
+                                                </button>
+                                            )}
+                                        </div>
                                     </div>
                                 )}
 
@@ -530,13 +665,27 @@ export default function ProjectsGrid({
                 </div>
             )}
 
-            {/* Join Team Modal */}
+            {/* Join Team and Action Modals */}
             <AnimatePresence>
                 {joinModalOpen && wallet && (
                     <JoinTeamModal
                         walletAddress={wallet}
                         onClose={() => setJoinModalOpen(false)}
                         onSuccess={() => onRefresh?.()}
+                    />
+                )}
+                {actionModal && (
+                    <ConfirmActionModal
+                        title={actionModal.type === 'leave' ? 'Leave Team' : 'Delete Project'}
+                        message={actionModal.type === 'leave' 
+                            ? 'Are you sure you want to leave this project team? You will need the team code to rejoin.' 
+                            : 'Are you sure you want to delete this project? This action cannot be undone and will free all team members.'}
+                        actionLabel={actionModal.type === 'leave' ? 'Leave' : 'Delete'}
+                        actionColor={actionModal.type === 'leave' ? 'text-amber-400' : 'text-red-400'}
+                        icon={actionModal.type === 'leave' ? LogOut : Trash2}
+                        submitting={submittingAction}
+                        onConfirm={handleAction}
+                        onClose={() => setActionModal(null)}
                     />
                 )}
             </AnimatePresence>

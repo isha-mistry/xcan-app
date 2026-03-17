@@ -25,13 +25,13 @@ export async function GET(
         const skip = (page - 1) * limit;
 
         const [updates, total] = await Promise.all([
-            WeeklyUpdate.find({ collegeId: college._id })
+            WeeklyUpdate.find({ collegeId: college._id, deletedAt: null })
                 .select('submittedBy weekNumber year completedThisWeek blockers nextMilestone githubLink reviewedBy reviewedAt createdAt')
                 .sort({ year: -1, weekNumber: -1 })
                 .skip(skip)
                 .limit(limit)
                 .lean(),
-            WeeklyUpdate.countDocuments({ collegeId: college._id }),
+            WeeklyUpdate.countDocuments({ collegeId: college._id, deletedAt: null }),
         ]);
 
         return NextResponse.json(

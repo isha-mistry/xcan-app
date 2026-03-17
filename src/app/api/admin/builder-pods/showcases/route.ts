@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+export const dynamic = 'force-dynamic';
 import { dbConnect } from '@/lib/dbConnect';
 import { ShowcaseSubmission } from '@/models/ShowcaseSubmission';
 import { AuditLog } from '@/models/AuditLog';
@@ -22,7 +23,6 @@ export async function GET(req: NextRequest) {
         const collegeFilter = buildCollegeFilter(ctx!);
 
         const pending = await ShowcaseSubmission.find({
-            status: { $in: ['pending', 'finalist'] },
             ...collegeFilter,
         })
             .populate('showcaseEventId', 'name eventDate')
@@ -31,7 +31,12 @@ export async function GET(req: NextRequest) {
             .sort({ createdAt: -1 })
             .lean();
 
-        return NextResponse.json({ success: true, submissions: pending }, { status: 200 });
+        return NextResponse.json({ success: true, submissions: pending }, { 
+            status: 200,
+            headers: {
+                'Cache-Control': 'no-store, max-age=0',
+            }
+        });
     } catch (error: any) {
         if (error instanceof UnauthorizedError) return NextResponse.json({ success: false, error: 'Not authenticated' }, { status: 401 });
         if (error instanceof ForbiddenError) return NextResponse.json({ success: false, error: 'Admin access required' }, { status: 403 });
@@ -49,20 +54,14 @@ export async function PATCH(req: NextRequest) {
 
         await dbConnect();
         const body = await req.json();
-        const { submissionId, status, placement } = body;
+        const { submissionId, status, placement, isActive } = body;
         const adminWallet = ctx!.walletAddress;
 
-        if (!submissionId || !status) {
-            return NextResponse.json(
-                { success: false, error: 'submissionId and status are required' },
-                { status: 400 }
-            );
-        }
+        console.log('[DEBUG] Admin Showcase PATCH:', { submissionId, status, placement, isActive });
 
-        const validStatuses = ['approved', 'finalist', 'winner', 'rejected'];
-        if (!validStatuses.includes(status)) {
+        if (!submissionId) {
             return NextResponse.json(
-                { success: false, error: `Status must be: ${validStatuses.join(', ')}` },
+                { success: false, error: 'submissionId is required' },
                 { status: 400 }
             );
         }
@@ -78,18 +77,49 @@ export async function PATCH(req: NextRequest) {
         // Verify college-scoped access
         verifyCollegeAccess(ctx!, submission.collegeId.toString());
 
-        const oldStatus = submission.status;
-        submission.status = status;
-        submission.reviewedBy = adminWallet;
-        submission.reviewedAt = new Date();
+        const oldValue: any = {};
+        const newValue: any = {};
 
-        if (placement) {
+        if (status !== undefined) {
+            const validStatuses = ['pending', 'approved', 'finalist', 'winner', 'rejected'];
+            if (!validStatuses.includes(status)) {
+                return NextResponse.json(
+                    { success: false, error: `Status must be: ${validStatuses.join(', ')}` },
+                    { status: 400 }
+                );
+            }
+            oldValue.status = submission.status;
+            submission.status = status;
+            newValue.status = status;
+            
+            submission.reviewedBy = adminWallet;
+            submission.reviewedAt = new Date();
+        }
+
+        if (placement !== undefined) {
+            oldValue.placement = submission.placement;
             submission.placement = placement;
+            newValue.placement = placement;
+        }
+
+        if (isActive !== undefined) {
+            oldValue.isActive = submission.isActive;
+            submission.isActive = isActive;
+            newValue.isActive = isActive;
         }
 
         await submission.save();
 
-        // Auto-award badges for finalist / winner
+        await AuditLog.create({
+            actorWallet: adminWallet,
+            action: `showcase.update`,
+            entityType: 'ShowcaseSubmission',
+            entityId: submissionId,
+            oldValue,
+            newValue,
+        });
+
+        // Auto-award badges only if status changed to finalist/winner
         if (status === 'finalist') {
             await awardBadgeOnEvent('showcase_finalist', submission.submittedBy, {
                 collegeId: submission.collegeId?.toString(),
@@ -103,29 +133,29 @@ export async function PATCH(req: NextRequest) {
             });
         }
 
-        // Notify
-        await Notification.create({
-            walletAddress: submission.submittedBy,
-            type: status === 'winner' ? 'showcase_winner' : 'showcase_finalist',
-            title: status === 'winner'
-                ? 'Showcase Winner! 🏆'
-                : status === 'finalist'
-                    ? 'Showcase Finalist! 🎉'
-                    : `Submission ${status}`,
-            body: `Your showcase submission has been marked as ${status}.`,
-            link: '/builder-pods',
-        });
+        // Notify if status changed
+        if (status) {
+            await Notification.create({
+                walletAddress: submission.submittedBy,
+                type: status === 'winner' ? 'showcase_winner' : 'showcase_finalist',
+                title: status === 'winner'
+                    ? 'Showcase Winner! 🏆'
+                    : status === 'finalist'
+                        ? 'Showcase Finalist! 🎉'
+                        : `Submission ${status}`,
+                body: `Your showcase submission has been marked as ${status}.`,
+                link: '/builder-pods',
+            });
+        }
 
-        await AuditLog.create({
-            actorWallet: adminWallet,
-            action: `showcase.${status}`,
-            entityType: 'ShowcaseSubmission',
-            entityId: submissionId,
-            oldValue: { status: oldStatus },
-            newValue: { status, placement },
-        });
+        // Populate before returning to ensure frontend has all data
+        const populatedSubmission = await ShowcaseSubmission.findById(submissionId)
+            .populate('showcaseEventId', 'name eventDate')
+            .populate('collegeId', 'name slug')
+            .populate('projectId', 'name')
+            .lean();
 
-        return NextResponse.json({ success: true, status }, { status: 200 });
+        return NextResponse.json({ success: true, submission: populatedSubmission }, { status: 200 });
     } catch (error: any) {
         if (error instanceof UnauthorizedError) return NextResponse.json({ success: false, error: 'Not authenticated' }, { status: 401 });
         if (error instanceof ForbiddenError) return NextResponse.json({ success: false, error: error.message }, { status: 403 });
