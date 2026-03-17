@@ -2,12 +2,14 @@
 import React from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { CalendarDays, Github, AlertTriangle, Target, CheckCircle, FileText, Edit3 } from "lucide-react";
+import { FolderGit2, CalendarDays, Github, AlertTriangle, Target, CheckCircle, FileText, Edit3 } from "lucide-react";
 import WeeklyUpdateForm from "./WeeklyUpdateForm";
+import { useAccount } from "wagmi";
 
 interface UpdateData {
     _id: string;
     submittedBy: string;
+    targetProjectId?: string;
     weekNumber: number;
     year: number;
     completedThisWeek: string;
@@ -20,6 +22,7 @@ interface UpdateData {
 
 interface WeeklyUpdatesFeedProps {
     updates: UpdateData[];
+    projects?: any[];
     isLoading?: boolean;
     slug?: string;
     isTeamLead?: boolean;
@@ -28,11 +31,14 @@ interface WeeklyUpdatesFeedProps {
 
 export default function WeeklyUpdatesFeed({
     updates,
+    projects = [],
     isLoading,
     slug,
     isTeamLead,
     onRefresh,
 }: WeeklyUpdatesFeedProps) {
+    const { address } = useAccount();
+
     if (isLoading) {
         return (
             <div className="mb-8">
@@ -67,6 +73,7 @@ export default function WeeklyUpdatesFeed({
                     {isTeamLead && slug && (
                         <WeeklyUpdateForm
                             collegeSlug={slug}
+                            projects={projects}
                             onSuccess={() => onRefresh?.()}
                         />
                     )}
@@ -99,43 +106,58 @@ export default function WeeklyUpdatesFeed({
                             className="glass-container rounded-2xl p-5 hover:border-white/15 transition-all"
                         >
                             {/* Header */}
-                            <div className="flex items-center justify-between mb-3">
-                                <div className="flex items-center gap-3">
-                                    <span className="px-2.5 py-1 rounded-lg bg-blue-500/10 text-[10px] font-bold text-blue-400 font-robotoMono">
-                                        W{update.weekNumber} · {update.year}
-                                    </span>
-                                    {update.reviewedBy && (
-                                        <span className="flex items-center gap-1 text-[9px] font-bold text-green-400 font-robotoMono uppercase tracking-wider">
-                                            <CheckCircle className="w-3 h-3" />
-                                            Reviewed
+                            <div className="flex flex-col gap-2 mb-3">
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-3">
+                                        <span className="px-2.5 py-1 rounded-lg bg-blue-500/10 text-[10px] font-bold text-blue-400 font-robotoMono">
+                                            W{update.weekNumber} · {update.year}
                                         </span>
-                                    )}
-                                </div>
-                                <div className="flex items-center gap-3">
-                                    {isTeamLead && slug && (
-                                        <WeeklyUpdateForm
-                                            collegeSlug={slug}
-                                            onSuccess={() => onRefresh?.()}
-                                            editData={{
-                                                id: update._id,
-                                                completedThisWeek: update.completedThisWeek,
-                                                blockers: update.blockers,
-                                                nextMilestone: update.nextMilestone,
-                                                githubLink: update.githubLink,
-                                            }}
-                                            trigger={
-                                                <button className="p-1 rounded-md hover:bg-white/5 text-white/50 hover:text-white/70 transition-all cursor-pointer">
-                                                    <Edit3 className="w-3.5 h-3.5" />
-                                                </button>
-                                            }
-                                        />
-                                    )}
-                                    <span className="text-[10px] text-white/45 font-robotoMono">
-                                        {new Date(update.createdAt).toLocaleDateString("en-IN", {
-                                            day: "numeric",
-                                            month: "short",
-                                        })}
-                                    </span>
+                                        {update.targetProjectId && projects && projects.find((p: any) => p._id === update.targetProjectId) && (
+                                            <span className="flex items-center gap-1 text-[10px] font-bold text-white/70 font-robotoMono">
+                                                <FolderGit2 className="w-3 h-3 text-white/40" />
+                                                {projects.find((p: any) => p._id === update.targetProjectId)?.name}
+                                            </span>
+                                        )}
+                                        {update.reviewedBy && (
+                                            <span className="flex items-center gap-1 text-[9px] font-bold text-green-400 font-robotoMono uppercase tracking-wider">
+                                                <CheckCircle className="w-3 h-3" />
+                                                Reviewed
+                                            </span>
+                                        )}
+                                    </div>
+                                    <div className="flex items-center gap-3">
+                                        {slug && (
+                                            (update.targetProjectId && projects && projects.find((p: any) => p._id === update.targetProjectId)?.teamLeader.toLowerCase() === address?.toLowerCase()) ||
+                                            (update.submittedBy.toLowerCase() === address?.toLowerCase()) ||
+                                            // Fallback for older updates with no target project where the user is just a team lead
+                                            (isTeamLead && !update.targetProjectId && update.submittedBy.toLowerCase() === address?.toLowerCase())
+                                        ) && (
+                                            <WeeklyUpdateForm
+                                                collegeSlug={slug}
+                                                projects={projects}
+                                                onSuccess={() => onRefresh?.()}
+                                                editData={{
+                                                    id: update._id,
+                                                    targetProjectId: update.targetProjectId,
+                                                    completedThisWeek: update.completedThisWeek,
+                                                    blockers: update.blockers,
+                                                    nextMilestone: update.nextMilestone,
+                                                    githubLink: update.githubLink,
+                                                }}
+                                                trigger={
+                                                    <button className="p-1 rounded-md hover:bg-white/5 text-white/50 hover:text-white/70 transition-all cursor-pointer">
+                                                        <Edit3 className="w-3.5 h-3.5" />
+                                                    </button>
+                                                }
+                                            />
+                                        )}
+                                        <span className="text-[10px] text-white/45 font-robotoMono">
+                                            {new Date(update.createdAt).toLocaleDateString("en-IN", {
+                                                day: "numeric",
+                                                month: "short",
+                                            })}
+                                        </span>
+                                    </div>
                                 </div>
                             </div>
 

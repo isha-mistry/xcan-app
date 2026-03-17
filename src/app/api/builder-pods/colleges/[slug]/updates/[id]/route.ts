@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { dbConnect } from '@/lib/dbConnect';
 import { College } from '@/models/College';
+import { PodProject } from '@/models/PodProject';
 import { WeeklyUpdate } from '@/models/WeeklyUpdate';
 import { AuditLog } from '@/models/AuditLog';
 import { PodMember } from '@/models/PodMember';
@@ -69,8 +70,16 @@ export async function PATCH(
             isSubmittingWallet &&
             (hasScopedPodLeadRole || isActiveWeeklyUpdateLead(legacyLeadMembership));
 
-        if (!isCollegeAdmin && !isSubmittingPodLead) {
-            throw new ForbiddenError('Only the pod lead or tech lead who submitted this, or a college admin, can edit this update');
+        let isProjectLead = false;
+        if (existing.targetProjectId) {
+            const project = await PodProject.findById(existing.targetProjectId).lean();
+            if (project && project.teamLeader.toLowerCase() === walletAddress.toLowerCase()) {
+                isProjectLead = true;
+            }
+        }
+
+        if (!isCollegeAdmin && !isSubmittingPodLead && !isProjectLead) {
+            throw new ForbiddenError('Only the pod lead of this project or college admin can edit this update');
         }
 
         const oldValue = {

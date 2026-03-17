@@ -44,15 +44,22 @@ export default function ShowcaseSubmitPage() {
     });
 
     useEffect(() => {
+        setLoading(true);
         Promise.all([
             fetch("/api/builder-pods/showcases").then((r) => r.json()),
             fetch("/api/builder-pods/register").then((r) => r.json()),
+            fetch("/api/builder-pods/members/me").then((r) => r.json()),
         ])
-            .then(([showcaseData, collegeData]) => {
+            .then(([showcaseData, collegeData, profileData]) => {
                 if (showcaseData.success) {
                     setShowcases(showcaseData.showcases.filter((s: ShowcaseEvent) => s.status !== "completed"));
                 }
                 if (collegeData.success) setColleges(collegeData.colleges);
+                
+                // Auto-select college if user is registered
+                if (profileData.success && profileData.membership?.collegeId?.slug) {
+                    setForm(f => ({ ...f, collegeSlug: profileData.membership.collegeId.slug }));
+                }
             })
             .catch(console.error)
             .finally(() => setLoading(false));
@@ -60,17 +67,29 @@ export default function ShowcaseSubmitPage() {
 
     // Load projects when college selected
     useEffect(() => {
-        if (!form.collegeSlug) {
+        if (!form.collegeSlug || !walletAddress) {
             setProjects([]);
             return;
         }
         fetch(`/api/builder-pods/colleges/${form.collegeSlug}/projects`)
             .then((r) => r.json())
             .then((data) => {
-                if (data.success) setProjects(data.projects);
+                if (data.success) {
+                    // Only show projects where user is lead or member
+                    const userProjects = data.projects.filter((p: any) => 
+                        p.teamLeader.toLowerCase() === walletAddress.toLowerCase() ||
+                        p.teamMembers?.some((m: any) => m.walletAddress.toLowerCase() === walletAddress.toLowerCase())
+                    );
+                    setProjects(userProjects);
+                    
+                    // Auto-select if only one project
+                    if (userProjects.length === 1) {
+                        setForm(f => ({ ...f, projectId: userProjects[0]._id }));
+                    }
+                }
             })
             .catch(console.error);
-    }, [form.collegeSlug]);
+    }, [form.collegeSlug, walletAddress]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -126,9 +145,16 @@ export default function ShowcaseSubmitPage() {
                         Showcase Submission
                     </h2>
                 </div>
-                <p className="text-xs text-white/80 font-robotoMono mb-8">
+                <p className="text-xs text-white/80 font-robotoMono mb-4">
                     Submit your project for a Regional Showcase event.
                 </p>
+
+                <div className="flex items-start gap-3 p-4 rounded-xl bg-amber-500/5 border border-amber-500/20 mb-8">
+                    <AlertCircle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+                    <p className="text-[10px] sm:text-xs text-amber-200/70 font-robotoMono leading-relaxed">
+                        <strong className="text-amber-400">Disclaimer:</strong> Only the <span className="text-white">Pod Lead</span> (Project Creator) is authorized to submit the project for regional showcases.
+                    </p>
+                </div>
 
                 {!walletAddress ? (
                     <div className="text-center py-8">

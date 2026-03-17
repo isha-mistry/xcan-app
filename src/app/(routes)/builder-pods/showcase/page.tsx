@@ -9,6 +9,9 @@ import {
     MapPin,
     Calendar,
     ExternalLink,
+    Clock,
+    CheckCircle2,
+    FileText,
 } from "lucide-react";
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
@@ -18,8 +21,8 @@ export default function ShowcasePage() {
         "/api/builder-pods/showcases",
         fetcher
     );
-
     const showcases = data?.showcases ?? [];
+    const submissions = data?.userSubmissions ?? [];
 
     return (
         <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-10 py-6">
@@ -27,6 +30,56 @@ export default function ShowcasePage() {
                 <ArrowLeft className="w-3.5 h-3.5" />
                 Builder Pods
             </Link>
+
+            {!isLoading && submissions.length > 0 && (
+                <div className="mb-12">
+                    <div className="flex items-center gap-3 mb-4">
+                        <FileText className="w-4 h-4 text-blue-400/70" />
+                        <h2 className="text-lg font-bold text-white font-unbounded tracking-tight">
+                            Your Submissions
+                        </h2>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                        {submissions.map((sub: any) => {
+                            const showcase = showcases.find((s: any) => s._id === sub.showcaseEventId);
+                            return (
+                                <motion.div
+                                    key={sub._id}
+                                    initial={{ opacity: 0, x: -10 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    className="glass-container border-blue-500/10 rounded-2xl p-4 flex flex-col gap-3"
+                                >
+                                    <div className="flex justify-between items-start">
+                                        <div className="flex flex-col gap-1">
+                                            <span className="text-[10px] font-bold text-blue-400 font-robotoMono uppercase tracking-wider">
+                                                {showcase?.name || "Showcase Request"}
+                                            </span>
+                                            <h3 className="text-sm font-bold text-white font-robotoMono truncate max-w-[200px]">
+                                                {sub.projectSnapshot.name}
+                                            </h3>
+                                        </div>
+                                        <div className={`px-2 py-1 rounded-lg flex items-center gap-1.5 text-[9px] font-bold font-robotoMono uppercase bg-white/5 ${
+                                            sub.status === 'approved' ? 'text-green-400' :
+                                            sub.status === 'rejected' ? 'text-red-400' :
+                                            'text-yellow-400'
+                                        }`}>
+                                            {sub.status === 'pending' && <Clock className="w-3 h-3" />}
+                                            {sub.status === 'approved' && <CheckCircle2 className="w-3 h-3" />}
+                                            {sub.status === 'pending' ? 'Pending Approval' : sub.status}
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-3 text-[10px] text-white/40 font-robotoMono">
+                                        <div className="flex items-center gap-1">
+                                            <MapPin className="w-3 h-3" />
+                                            {showcase?.city || showcase?.regionSnapshot?.showcaseCity || "Location TBD"}
+                                        </div>
+                                    </div>
+                                </motion.div>
+                            );
+                        })}
+                    </div>
+                </div>
+            )}
 
             <div className="flex items-center gap-3 mb-8">
                 <Trophy className="w-5 h-5 text-yellow-400/70" />
@@ -70,12 +123,12 @@ export default function ShowcasePage() {
                                     </div>
                                 </div>
                                 <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold font-robotoMono ${showcase.status === 'completed'
-                                        ? 'bg-green-500/10 text-green-400'
-                                        : showcase.status === 'open'
-                                            ? 'bg-blue-500/10 text-blue-400'
-                                            : showcase.status === 'judging'
-                                                ? 'bg-yellow-500/10 text-yellow-400'
-                                                : 'bg-white/5 text-white/50'
+                                    ? 'bg-green-500/10 text-green-400'
+                                    : showcase.status === 'open'
+                                        ? 'bg-blue-500/10 text-blue-400'
+                                        : showcase.status === 'judging'
+                                            ? 'bg-yellow-500/10 text-yellow-400'
+                                            : 'bg-white/5 text-white/50'
                                     }`}>
                                     {showcase.status}
                                 </span>

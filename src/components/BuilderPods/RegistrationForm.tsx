@@ -373,7 +373,7 @@ export default function RegistrationForm({
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+                        className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-lg p-4"
                         onClick={() => setShowCelebration(false)}
                     >
                         <motion.div
@@ -381,7 +381,7 @@ export default function RegistrationForm({
                             animate={{ scale: 1, opacity: 1 }}
                             exit={{ scale: 0.8, opacity: 0 }}
                             transition={{ type: "spring", duration: 0.5 }}
-                            className="relative glass-container rounded-3xl p-8 md:p-10 max-w-md w-full text-center"
+                            className="relative glass-container rounded-3xl p-8 md:p-10 max-w-md w-full text-center backdrop-blur-md"
                             onClick={(e) => e.stopPropagation()}
                         >
                             <button

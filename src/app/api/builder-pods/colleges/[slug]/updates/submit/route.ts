@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { dbConnect } from '@/lib/dbConnect';
 import { College } from '@/models/College';
 import { PodMember } from '@/models/PodMember';
+import { PodProject } from '@/models/PodProject';
 import { WeeklyUpdate } from '@/models/WeeklyUpdate';
 import { AuditLog } from '@/models/AuditLog';
 import { WeeklyUpdateSchema } from '@/schemas/builder-pods';
@@ -36,6 +37,10 @@ export async function POST(
         if (!ctx) throw new UnauthorizedError('Not authenticated');
 
         await dbConnect();
+        
+        // Ensure old indexes without targetProjectId are removed
+        await WeeklyUpdate.syncIndexes();
+
         const { slug } = await params;
         const parsed = WeeklyUpdateSchema.safeParse(await req.json());
         if (!parsed.success) {
@@ -44,7 +49,7 @@ export async function POST(
                 { status: 400 }
             );
         }
-        const { completedThisWeek, blockers, nextMilestone, githubLink } = parsed.data;
+        const { completedThisWeek, blockers, nextMilestone, githubLink, targetProjectId } = parsed.data;
 
         // Wallet address comes from verified auth context, not body
         const walletAddress = ctx.walletAddress;
@@ -65,7 +70,7 @@ export async function POST(
                 collegeId: college._id,
                 walletAddress,
                 status: 'active',
-                role: { $in: [...WEEKLY_UPDATE_LEAD_ROLES] },
+                role: 'pod_lead',
             }).lean();
 
             if (!member) {
@@ -75,8 +80,21 @@ export async function POST(
 
         const { weekNumber, year } = getCurrentWeekInfo();
 
+        let actualTargetProjectId = targetProjectId || null;
+        if (!actualTargetProjectId) {
+            const userProject = await PodProject.findOne({
+                collegeId: college._id,
+                'teamMembers.walletAddress': walletAddress,
+                deletedAt: null,
+            }).lean();
+            if (userProject) {
+                actualTargetProjectId = userProject._id.toString();
+            }
+        }
+
         const update = await WeeklyUpdate.create({
             collegeId: college._id,
+            targetProjectId: actualTargetProjectId,
             weekNumber,
             year,
             submittedBy: walletAddress,
@@ -103,8 +121,9 @@ export async function POST(
         if (error instanceof ForbiddenError) return NextResponse.json({ success: false, error: error.message }, { status: 403 });
         console.error('Weekly update submission error:', error);
         if (error.code === 11000) {
+            console.error('Mongo 11000 error:', error);
             return NextResponse.json(
-                { success: false, error: 'Weekly update already submitted for this week' },
+                { success: false, error: 'Weekly update already submitted for this week. ' + (error.message || '') },
                 { status: 409 }
             );
         }

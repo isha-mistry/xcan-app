@@ -15,14 +15,28 @@ import {
 } from '@/lib/rbac';
 
 // GET — list all showcase events
-export async function GET() {
+export async function GET(req: NextRequest) {
     try {
         await dbConnect();
+        const ctx = await getAuthContext(req).catch(() => null);
+
         const showcases = await ShowcaseEvent.find()
             .sort({ eventDate: -1 })
             .lean();
 
-        return NextResponse.json({ success: true, showcases }, { status: 200 });
+        let userSubmissions: any[] = [];
+        if (ctx?.walletAddress) {
+            userSubmissions = await ShowcaseSubmission.find({
+                submittedBy: ctx.walletAddress.toLowerCase(),
+                isActive: { $ne: false }
+            }).select('showcaseEventId status projectSnapshot').lean();
+        }
+
+        return NextResponse.json({ 
+            success: true, 
+            showcases,
+            userSubmissions 
+        }, { status: 200 });
     } catch (error) {
         console.error('Error fetching showcases:', error);
         return NextResponse.json(
@@ -96,6 +110,11 @@ export async function POST(req: NextRequest) {
                 { success: false, error: 'Project not found or does not belong to this college' },
                 { status: 404 }
             );
+        }
+
+        // Project-wise permission: Only project lead (or admin) can submit
+        if (!isAdmin && project.teamLeader.toLowerCase() !== walletAddress.toLowerCase()) {
+            throw new ForbiddenError('Only the project lead can submit this project to a showcase');
         }
 
         const submission = await ShowcaseSubmission.create({

@@ -57,7 +57,7 @@ export default function CollegePodPage() {
     const isMember = currentMember != null;
     const memberStatus: string | null = currentMember?.status ?? null;
 
-    const isTeamLead =
+    const isPodLead =
         wallet != null &&
         members.some((m: any) => m.walletAddress.toLowerCase() === wallet && isActiveWeeklyUpdateLead(m));
 
@@ -121,21 +121,23 @@ export default function CollegePodPage() {
                         <>
                             <MembersTable members={members} isLoading={isLoading} />
 
-                            <ProjectsGrid
-                                projects={projects}
-                                isLoading={isLoading}
-                                walletAddress={walletAddress}
-                                isMember={isMember}
-                                memberStatus={memberStatus}
-                                collegeSlug={slug}
-                                onRefresh={handleDataRefresh}
-                            />
+                    <ProjectsGrid
+                        projects={projects}
+                        isLoading={isLoading}
+                        walletAddress={walletAddress}
+                        isMember={isMember}
+                        memberStatus={memberStatus}
+                        collegeSlug={slug}
+                        onRefresh={handleDataRefresh}
+                        isPodLead={isPodLead}
+                    />
 
                             <WeeklyUpdatesFeed
                                 updates={recentUpdates}
+                                projects={projects}
                                 isLoading={isLoading}
                                 slug={slug}
-                                isTeamLead={isTeamLead}
+                                isTeamLead={isPodLead}
                                 onRefresh={handleDataRefresh}
                             />
                         </>

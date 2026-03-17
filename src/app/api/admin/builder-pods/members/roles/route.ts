@@ -89,7 +89,7 @@ export async function PATCH(req: NextRequest) {
                             grantedBy: adminWallet,
                         },
                     },
-                    { upsert: true, new: true }
+                    { upsert: true, returnDocument: 'after' }
                 );
             }
         }

@@ -23,6 +23,7 @@ export interface IShowcaseSubmission extends Document {
     reviewedAt: Date | null;
     judgeNotes: string | null;
     prizeAmountUsd: number | null;
+    isActive: boolean;
     createdAt: Date;
     updatedAt: Date;
 }
@@ -52,6 +53,7 @@ const ShowcaseSubmissionSchema = new Schema<IShowcaseSubmission>(
         reviewedAt: { type: Date, default: null },
         judgeNotes: { type: String, default: null },
         prizeAmountUsd: { type: Number, default: null },
+        isActive: { type: Boolean, default: true },
     },
     { timestamps: true }
 );

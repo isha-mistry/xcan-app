@@ -30,6 +30,7 @@ export const WeeklyUpdateSchema = z.object({
     blockers: z.string().max(1000).nullable().optional(),
     nextMilestone: z.string().min(5).max(500),
     githubLink: z.string().url().nullable().optional(),
+    targetProjectId: z.string().regex(/^[a-f\d]{24}$/i).optional(),
 });
 
 export const DeploymentSchema = z.object({

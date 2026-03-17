@@ -16,6 +16,7 @@ import {
     Wallet,
     RotateCw,
     ShieldAlert,
+    FolderGit2,
 } from "lucide-react";
 import { useAccount } from "wagmi";
 import { isActiveWeeklyUpdateLead } from "@/lib/builder-pods/membership";
@@ -25,8 +26,10 @@ const fetcher = (url: string) => fetch(url).then((r) => r.json());
 interface WeeklyUpdateFormProps {
     collegeSlug: string;
     onSuccess?: () => void;
+    projects?: any[];
     editData?: {
         id: string;
+        targetProjectId?: string;
         completedThisWeek: string;
         blockers: string | null;
         nextMilestone: string;
@@ -37,6 +40,7 @@ interface WeeklyUpdateFormProps {
 
 export default function WeeklyUpdateForm({
     collegeSlug,
+    projects = [],
     onSuccess,
     editData,
     trigger,
@@ -53,6 +57,7 @@ export default function WeeklyUpdateForm({
     const isEdit = !!editData;
 
     const [form, setForm] = useState({
+        targetProjectId: editData?.targetProjectId || "",
         completedThisWeek: editData?.completedThisWeek || "",
         blockers: editData?.blockers || "",
         nextMilestone: editData?.nextMilestone || "",
@@ -85,6 +90,23 @@ export default function WeeklyUpdateForm({
         return userRole.replace(/_/g, " ");
     }, [userRole, currentUser]);
 
+    // Available projects for this user to update
+    const userProjects = useMemo(() => {
+        if (!address) return [];
+        return projects.filter(
+            (p) =>
+                p.teamLeader.toLowerCase() === address.toLowerCase() ||
+                (p.teamMembers && p.teamMembers.some((m: any) => m.walletAddress.toLowerCase() === address.toLowerCase()))
+        );
+    }, [projects, address]);
+
+    // Auto-select single project if none selected
+    useEffect(() => {
+        if (userProjects.length === 1 && !form.targetProjectId && isOpen && !isEdit) {
+            setForm((prev) => ({ ...prev, targetProjectId: userProjects[0]._id }));
+        }
+    }, [userProjects, form.targetProjectId, isOpen, isEdit]);
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError(null);
@@ -116,6 +138,7 @@ export default function WeeklyUpdateForm({
             setSuccess(true);
             if (!isEdit) {
                 setForm({
+                    targetProjectId: userProjects.length === 1 ? userProjects[0]._id : "",
                     completedThisWeek: "",
                     blockers: "",
                     nextMilestone: "",
@@ -234,6 +257,31 @@ export default function WeeklyUpdateForm({
                                                 )}
                                             </div>
                                         )}
+                                        
+                                        {/* Target Project Selection */}
+                                        {userProjects.length > 0 && (
+                                            <div>
+                                                <label className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-white/70 font-robotoMono mb-2">
+                                                    <FolderGit2 className="w-3.5 h-3.5" />
+                                                    Project *
+                                                </label>
+                                                <select
+                                                    required
+                                                    disabled={isEdit}
+                                                    value={form.targetProjectId}
+                                                    onChange={(e) => setForm(prev => ({ ...prev, targetProjectId: e.target.value }))}
+                                                    className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-sm text-white font-robotoMono focus:outline-none focus:border-purple-500/40 focus:bg-white/[0.05] transition-all disabled:opacity-50"
+                                                >
+                                                    <option value="" className="bg-gray-900 text-white/50">Select a project</option>
+                                                    {userProjects.map((p) => (
+                                                        <option key={p._id} value={p._id} className="bg-gray-900 text-white">
+                                                            {p.name}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                            </div>
+                                        )}
+                                        
                                         {/* Completed This Week */}
                                         <div>
                                             <label className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-white/70 font-robotoMono mb-2">
