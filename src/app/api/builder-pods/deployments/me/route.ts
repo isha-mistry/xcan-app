@@ -1,29 +1,31 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { dbConnect } from '@/lib/dbConnect';
 import { Deployment } from '@/models/Deployment';
+import { getAuthContext, UnauthorizedError } from '@/lib/rbac';
 
 export async function GET(req: NextRequest) {
     try {
+        const ctx = await getAuthContext(req);
+        if (!ctx) throw new UnauthorizedError('Not authenticated');
+
         await dbConnect();
 
-        const url = new URL(req.url);
-        const wallet = url.searchParams.get('wallet');
+        const wallet = ctx.walletAddress.toLowerCase();
 
-        if (!wallet) {
-            return NextResponse.json(
-                { success: false, error: 'wallet query param required' },
-                { status: 400 }
-            );
-        }
-
-        const deployments = await Deployment.find({ walletAddress: wallet.toLowerCase() })
+        const deployments = await Deployment.find({ walletAddress: wallet })
             .populate('collegeId', 'name slug')
             .populate('projectId', 'name')
             .sort({ createdAt: -1 })
             .lean();
 
         return NextResponse.json({ success: true, deployments }, { status: 200 });
-    } catch (error) {
+    } catch (error: any) {
+        if (error instanceof UnauthorizedError) {
+            return NextResponse.json(
+                { success: false, error: 'Not authenticated' },
+                { status: 401 }
+            );
+        }
         console.error('Error fetching user deployments:', error);
         return NextResponse.json(
             { success: false, error: 'Internal Server Error' },

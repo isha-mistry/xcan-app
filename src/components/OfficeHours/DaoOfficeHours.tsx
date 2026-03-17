@@ -117,7 +117,11 @@ function DaoOfficeHours() {
       return response.json();
     },
     {
-      revalidateOnFocus: true,  // Revalidate when user comes back to the tab
+      revalidateOnFocus: false,  // Revalidate when user comes back to the tab
+      revalidateIfStale: false,
+      revalidateOnReconnect: false,
+      shouldRetryOnError: false,
+      errorRetryCount: 0,
       revalidateOnMount: true,  // Revalidate when component mounts
       dedupingInterval: 10000,  // Don't make duplicate requests within 10 seconds
     }

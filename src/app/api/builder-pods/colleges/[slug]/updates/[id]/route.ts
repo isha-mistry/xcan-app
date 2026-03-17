@@ -3,15 +3,15 @@ import { dbConnect } from '@/lib/dbConnect';
 import { College } from '@/models/College';
 import { WeeklyUpdate } from '@/models/WeeklyUpdate';
 import { AuditLog } from '@/models/AuditLog';
+import { PodMember } from '@/models/PodMember';
 import {
     getAuthContext,
-    requireAnyRole,
-    verifyCollegeAccess,
     hasRole,
     hasAnyRole,
     UnauthorizedError,
     ForbiddenError,
 } from '@/lib/rbac';
+import { isActiveWeeklyUpdateLead } from '@/lib/builder-pods/membership';
 
 // PATCH — edit an existing weekly update for a pod
 // Allowed:
@@ -23,6 +23,7 @@ export async function PATCH(
 ) {
     try {
         const ctx = await getAuthContext(req);
+        if (!ctx) throw new UnauthorizedError('Not authenticated');
         await dbConnect();
         const { slug, id } = await params;
         const body = await req.json();
@@ -36,9 +37,6 @@ export async function PATCH(
             );
         }
 
-        // Verify college-scoped access with correct roles
-        requireAnyRole(ctx, ['super_admin', 'college_admin', 'pod_lead'], college._id.toString());
-
         const existing = await WeeklyUpdate.findOne({
             _id: id,
             collegeId: college._id,
@@ -51,16 +49,28 @@ export async function PATCH(
             );
         }
 
-        const walletAddress = ctx!.walletAddress;
+        const walletAddress = ctx.walletAddress;
 
         // Double check specific edit permissions
-        const isCollegeAdmin = hasAnyRole(ctx!, ['super_admin', 'college_admin'], college._id.toString());
+        const isCollegeAdmin = hasAnyRole(ctx, ['super_admin', 'college_admin'], college._id.toString());
+        const isSubmittingWallet = existing.submittedBy === walletAddress.toLowerCase();
+        const hasScopedPodLeadRole = hasRole(ctx, 'pod_lead', college._id.toString());
+        const legacyLeadMembership = !isCollegeAdmin && isSubmittingWallet && !hasScopedPodLeadRole
+            ? await PodMember.findOne({
+                collegeId: college._id,
+                walletAddress,
+                status: 'active',
+                role: 'tech_lead',
+            })
+                .select('role status')
+                .lean()
+            : null;
         const isSubmittingPodLead =
-            existing.submittedBy === walletAddress.toLowerCase() &&
-            hasRole(ctx!, 'pod_lead', college._id.toString());
+            isSubmittingWallet &&
+            (hasScopedPodLeadRole || isActiveWeeklyUpdateLead(legacyLeadMembership));
 
         if (!isCollegeAdmin && !isSubmittingPodLead) {
-            throw new ForbiddenError('Only the pod lead who submitted this or college admin can edit this update');
+            throw new ForbiddenError('Only the pod lead or tech lead who submitted this, or a college admin, can edit this update');
         }
 
         const oldValue = {

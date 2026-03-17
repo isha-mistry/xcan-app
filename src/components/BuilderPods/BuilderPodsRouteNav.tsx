@@ -45,21 +45,27 @@ function matchesPath(pathname: string, href: string) {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
-const fetcher = async (url: string) => {
-  const res = await fetch(url);
-  const data = await res.json().catch(() => ({}));
-  return { ok: res.ok, data };
-};
+const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 export default function BuilderPodsRouteNav() {
   const pathname = usePathname();
   const { address } = useAccount();
-  const { data: adminCheck } = useSWR("/api/admin/builder-pods/dashboard", fetcher);
-  const { data: memberCheck } = useSWR("/api/builder-pods/members/me", fetcher);
-
-  const hasAdminAccess = Boolean(adminCheck?.ok && adminCheck?.data?.success);
   const isAdminRoute = pathname.startsWith("/admin/builder-pods");
-  const myCollegeSlug = memberCheck?.data?.membership?.collegeId?.slug as string | undefined;
+  const { data: memberCheck } = useSWR(
+    !isAdminRoute && address ? "/api/builder-pods/members/me" : null,
+    fetcher,
+    {
+      revalidateOnFocus: false,
+      revalidateIfStale: false,
+      revalidateOnReconnect: false,
+      shouldRetryOnError: false,
+      errorRetryCount: 0,
+    }
+  );
+
+  const myCollegeSlug =
+    (memberCheck?.membership?.collegeId?.slug as string | undefined) ??
+    (memberCheck?.memberships?.[0]?.college?.slug as string | undefined);
   const myPodItem = myCollegeSlug
     ? [{ label: "My Pod", href: `/builder-pods/${myCollegeSlug}`, icon: Sparkles }]
     : [];

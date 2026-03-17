@@ -12,6 +12,7 @@ import {
     UnauthorizedError,
     ForbiddenError,
 } from '@/lib/rbac';
+import { WEEKLY_UPDATE_LEAD_ROLES } from '@/lib/builder-pods/membership';
 
 function getCurrentWeekInfo(): { weekNumber: number; year: number } {
     const now = new Date();
@@ -64,11 +65,11 @@ export async function POST(
                 collegeId: college._id,
                 walletAddress,
                 status: 'active',
-                role: 'tech_lead',
+                role: { $in: [...WEEKLY_UPDATE_LEAD_ROLES] },
             }).lean();
 
             if (!member) {
-                throw new ForbiddenError('Only an active tech lead can submit weekly updates for this pod');
+                throw new ForbiddenError('Only an active pod lead or tech lead can submit weekly updates for this pod');
             }
         }
 

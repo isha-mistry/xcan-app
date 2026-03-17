@@ -39,9 +39,11 @@ function UploadedVideosTab({ userAddress }: UploadedVideosTabProps) {
 
   // SWR hook for data fetching
   const { data, error, isLoading, mutate } = useSWR(apiUrl, fetcher, {
-    revalidateOnFocus: true,
-    revalidateOnReconnect: true,
-    refreshInterval: 30000, // Refresh every 30 seconds
+            revalidateOnFocus: false,
+            revalidateIfStale: false,
+            revalidateOnReconnect: false,
+            shouldRetryOnError: false,
+            errorRetryCount: 0,
   });
 
   // Update videos when data changes

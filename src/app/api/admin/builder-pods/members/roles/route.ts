@@ -13,6 +13,7 @@ import {
 } from '@/lib/rbac';
 import { MemberManagementSchema } from '@/schemas/builder-pods';
 import { recalculateMemberScore, recalculatePodScore } from '@/lib/builder-pods/leaderboard';
+import { awardBadgeOnEvent } from '@/lib/builder-pods/badges';
 
 // PATCH — assign role to a member or change status (admin only)
 export async function PATCH(req: NextRequest) {
@@ -109,6 +110,13 @@ export async function PATCH(req: NextRequest) {
         }
 
         await member.save();
+
+        // Award builder_pod_lead badge when member is promoted to pod_lead and is active
+        if (role === 'pod_lead' && member.status === 'active') {
+            await awardBadgeOnEvent('manual_assignment', member.walletAddress, {
+                collegeId: member.collegeId.toString(),
+            });
+        }
 
         if (newValues.status) {
             const wasActive = oldValues.status === 'active';

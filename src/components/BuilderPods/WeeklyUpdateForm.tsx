@@ -18,6 +18,7 @@ import {
     ShieldAlert,
 } from "lucide-react";
 import { useAccount } from "wagmi";
+import { isActiveWeeklyUpdateLead } from "@/lib/builder-pods/membership";
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
@@ -74,13 +75,9 @@ export default function WeeklyUpdateForm({
     const userRole = currentUser?.role || "pod_member";
     const userStatus = currentUser?.status || "pending";
     
-    // Authorization check (pod_lead, college_admin, super_admin)
-    // NOTE: In this platform, super_admin and college_admin roles are checked via RBAC (getAuthContext)
-    // But PodMember also has a 'role' field.
     const isAuthorized = useMemo(() => {
-        if (!currentUser) return false;
-        return ["pod_lead"].includes(userRole) && userStatus === "active";
-    }, [userRole, userStatus, currentUser]);
+        return isActiveWeeklyUpdateLead(currentUser);
+    }, [currentUser]);
 
     // Role display label
     const roleLabel = useMemo(() => {
@@ -231,7 +228,7 @@ export default function WeeklyUpdateForm({
                                                     <div className="flex items-center gap-2 p-3 rounded-xl bg-amber-500/5 border border-amber-500/10">
                                                         <ShieldAlert className="w-3.5 h-3.5 text-amber-500" />
                                                         <p className="text-[10px] text-amber-400 font-robotoMono">
-                                                            Only active Pod Leads can submit weekly updates.
+                                                            Only active Pod Leads or Tech Leads can submit weekly updates.
                                                         </p>
                                                     </div>
                                                 )}

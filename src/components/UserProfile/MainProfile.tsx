@@ -46,6 +46,7 @@ import { RiTelegram2Fill } from "react-icons/ri";
 import UploadVideoButton from "../ComponentUtils/UploadVideoButton";
 import UploadedVideosTab from "../ComponentUtils/UploadedVideosTab";
 import ProfileSection from "../BuilderPods/ProfileSection";
+import confetti from "canvas-confetti";
 interface Following {
   follower_address: string;
   isFollowing: boolean;
@@ -90,6 +91,8 @@ function MainProfile() {
     description: "",
   });
   // const [isDelegateLoading, setIsDelegateLoading] = useState(true);
+  const [showBadgeCelebration, setShowBadgeCelebration] = useState(false);
+  const [newBadges, setNewBadges] = useState<any[]>([]);
   const tabs = [
     { name: "Info", value: "info" },
     ...(selfDelegate ? [{ name: "Past Votes", value: "votes" }] : []),
@@ -467,6 +470,51 @@ function MainProfile() {
     }
   }, [address]);
 
+  // Detect newly earned Builder Pods badges and celebrate with confetti
+  useEffect(() => {
+    if (!address) return;
+    const wallet = address.toLowerCase();
+    const storageKey = `builderPods.badgeIds.${wallet}`;
+
+    const checkBadges = async () => {
+      try {
+        const res = await fetch(`/api/builder-pods/badges/user/${wallet}`);
+        const data = await res.json();
+        if (!data?.success || !Array.isArray(data.badges)) return;
+
+        const ids: string[] = data.badges.map((b: any) => String(b._id));
+        const sortedIds = [...ids].sort().join(",");
+        const prev = typeof window !== "undefined" ? localStorage.getItem(storageKey) : null;
+
+        if (prev && prev !== sortedIds) {
+          const prevSet = new Set(prev.split(",").filter(Boolean));
+          const newlyEarned = data.badges.filter((b: any) => !prevSet.has(String(b._id)));
+          if (newlyEarned.length > 0) {
+            setNewBadges(newlyEarned);
+            setShowBadgeCelebration(true);
+            try {
+              confetti({
+                particleCount: 120,
+                spread: 70,
+                origin: { y: 0.4 },
+              });
+            } catch {
+              // ignore confetti errors
+            }
+          }
+        }
+
+        if (typeof window !== "undefined") {
+          localStorage.setItem(storageKey, sortedIds);
+        }
+      } catch (e) {
+        console.error("Error checking Builder Pods badges:", e);
+      }
+    };
+
+    checkBadges();
+  }, [address]);
+
   return (
     <>
       <div className="lg:hidden pt-2 xs:pt-4 sm:pt-6 px-4 md:px-6 lg:px-14">
@@ -808,6 +856,38 @@ function MainProfile() {
         <>
           <MainProfileSkeletonLoader />
         </>
+      )}
+      {showBadgeCelebration && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/70 backdrop-blur-sm">
+          <div className="w-full max-w-sm glass-container rounded-2xl p-6 border border-white/10">
+            <h2 className="text-lg font-black text-white font-unbounded tracking-tight mb-2">
+              New Builder Pods Badge!
+            </h2>
+            <p className="text-xs text-white/75 font-robotoMono mb-3">
+              You just earned new Builder Pods badge(s):
+            </p>
+            <ul className="mb-4 space-y-1">
+              {newBadges.map((b) => (
+                <li
+                  key={b._id}
+                  className="text-[11px] text-white/85 font-robotoMono flex items-center gap-2"
+                >
+                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-blue-400" />
+                  <span className="font-bold">{b.badgeSnapshot?.label ?? b.label}</span>
+                </li>
+              ))}
+            </ul>
+            <button
+              onClick={() => {
+                setShowBadgeCelebration(false);
+                setNewBadges([]);
+              }}
+              className="mt-1 w-full px-4 py-2.5 bg-white text-black rounded-xl text-[11px] font-bold uppercase tracking-widest font-robotoMono hover:shadow-lg hover:shadow-white/10 transition-all"
+            >
+              Awesome
+            </button>
+          </div>
+        </div>
       )}
     </>
   );

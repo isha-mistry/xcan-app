@@ -84,17 +84,16 @@ export default function ProjectSubmitForm({
         setSubmitting(true);
 
         try {
-            const res = await fetch(
-                `/api/builder-pods/colleges/${collegeSlug}/projects/submit`,
-                {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        ...form,
-                        walletAddress,
-                    }),
-                }
-            );
+            const payload: any = { ...form, walletAddress };
+            if (!payload.contractAddress.trim()) {
+                delete payload.contractAddress;
+            }
+
+            const res = await fetch(`/api/builder-pods/colleges/${collegeSlug}/projects/submit`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload),
+            });
 
             const data = await res.json();
 

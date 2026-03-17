@@ -5,13 +5,15 @@ type BadgeTrigger =
     | 'lab_registration'
     | 'pod_member_approved'
     | 'showcase_finalist'
-    | 'showcase_winner';
+    | 'showcase_winner'
+    | 'manual_assignment';
 
 const triggerToSlug: Record<BadgeTrigger, string> = {
     lab_registration: 'builder_lab_participant',
     pod_member_approved: 'builder_pod_member',
     showcase_finalist: 'regional_showcase_finalist',
     showcase_winner: 'regional_showcase_winner',
+    manual_assignment: 'builder_pod_lead',
 };
 
 /**

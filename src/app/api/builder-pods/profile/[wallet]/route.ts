@@ -4,6 +4,8 @@ import { PodMember } from '@/models/PodMember';
 import { UserBadge } from '@/models/UserBadge';
 import { PodProject } from '@/models/PodProject';
 import { College } from '@/models/College';
+import { serializeProfileMemberships } from '@/lib/builder-pods/membership';
+import mongoose from 'mongoose';
 
 export async function GET(
     req: NextRequest,
@@ -20,44 +22,56 @@ export async function GET(
             );
         }
 
-        const member = await PodMember.findOne({
+        const members = await PodMember.find({
             walletAddress: wallet,
             deletedAt: null,
-        }).lean() as any;
+            status: { $in: ['active', 'pending', 'inactive'] },
+        })
+            .sort({ createdAt: -1 })
+            .lean() as any[];
 
-        if (!member) {
+        if (!members.length) {
             return NextResponse.json({
                 success: true,
                 enrolled: false,
             });
         }
+        const collegeIds = [...new Set(members.map(m => m.collegeId.toString()))];
 
-        const [college, badges, projectCount] = await Promise.all([
-            College.findById(member.collegeId).select('name slug city state podName').lean(),
+        const [colleges, badges, projectsByCollege] = await Promise.all([
+            College.find({ _id: { $in: collegeIds } })
+                .select('name slug city state podName')
+                .lean(),
             UserBadge.find({ walletAddress: wallet }).sort({ assignedAt: -1 }).lean(),
-            PodProject.countDocuments({
-                collegeId: member.collegeId,
-                createdBy: wallet,
-                deletedAt: null,
-            }),
+            PodProject.aggregate([
+                {
+                    $match: {
+                        createdBy: wallet,
+                        deletedAt: null,
+                        collegeId: { $in: collegeIds.map((id) => new mongoose.Types.ObjectId(id)) },
+                    },
+                },
+                {
+                    $group: {
+                        _id: '$collegeId',
+                        count: { $sum: 1 },
+                    },
+                },
+            ]),
         ]);
+
+        const collegeMap = new Map<string, any>();
+        colleges.forEach((c: any) => collegeMap.set(c._id.toString(), c));
+
+        const projectCountMap = new Map<string, number>();
+        projectsByCollege.forEach((p: any) => {
+            projectCountMap.set(p._id.toString(), p.count);
+        });
 
         return NextResponse.json({
             success: true,
             enrolled: true,
-            member: {
-                name: member.name,
-                role: member.role,
-                status: member.status,
-                programmingLevel: member.programmingLevel,
-                githubUsername: member.githubUsername,
-                stylusModulesCompleted: member.stylusModulesCompleted,
-                contractsDeployed: member.contractsDeployed,
-                totalScore: member.totalScore,
-                individualRank: member.individualRank,
-                joinedAt: member.createdAt,
-            },
-            college: college || null,
+            memberships: serializeProfileMemberships(members, collegeMap, projectCountMap),
             badges: badges.map((b: any) => ({
                 _id: b._id,
                 slug: b.badgeSnapshot?.slug,
@@ -66,7 +80,6 @@ export async function GET(
                 easUid: b.easUid,
                 onChainAttested: b.onChainAttested,
             })),
-            projectCount,
         });
     } catch (error) {
         console.error('Error fetching builder-pods profile:', error);

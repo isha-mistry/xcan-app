@@ -3,22 +3,26 @@ import { dbConnect } from '@/lib/dbConnect';
 import { PodProject } from '@/models/PodProject';
 import { PodMember } from '@/models/PodMember';
 import { AuditLog } from '@/models/AuditLog';
+import { getAuthContext, UnauthorizedError } from '@/lib/rbac';
 
 // POST — join a project team via team code
 export async function POST(req: NextRequest) {
     try {
+        const ctx = await getAuthContext(req);
+        if (!ctx) throw new UnauthorizedError('Not authenticated');
+
         await dbConnect();
         const body = await req.json();
-        const { teamCode, walletAddress } = body;
+        const { teamCode } = body;
 
-        if (!teamCode || !walletAddress) {
+        if (!teamCode) {
             return NextResponse.json(
-                { success: false, error: 'teamCode and walletAddress are required' },
+                { success: false, error: 'teamCode is required' },
                 { status: 400 }
             );
         }
 
-        const wallet = walletAddress.toLowerCase();
+        const wallet = ctx.walletAddress.toLowerCase();
         const code = teamCode.trim().toUpperCase();
 
         const project = await PodProject.findOne({ teamCode: code, deletedAt: null });
@@ -86,7 +90,13 @@ export async function POST(req: NextRequest) {
             },
             { status: 200 }
         );
-    } catch (error) {
+    } catch (error: any) {
+        if (error instanceof UnauthorizedError) {
+            return NextResponse.json(
+                { success: false, error: 'Not authenticated' },
+                { status: 401 }
+            );
+        }
         console.error('Join team error:', error);
         return NextResponse.json(
             { success: false, error: 'Internal Server Error' },

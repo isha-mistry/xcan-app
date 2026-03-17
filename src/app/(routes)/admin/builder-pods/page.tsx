@@ -13,18 +13,35 @@ import {
     Activity,
 } from "lucide-react";
 
-const fetcher = (url: string) => fetch(url, { credentials: "include" }).then((r) => r.json());
+const fetcher = async (url: string) => {
+    const response = await fetch(url, { credentials: "include" });
+    const payload = await response.json().catch(() => ({}));
+
+    if (!response.ok || !payload?.success || !payload?.dashboard) {
+        throw new Error(payload?.error || "Failed to load Builder Pods dashboard");
+    }
+
+    return payload;
+};
 
 export default function AdminDashboardPage() {
-    const { data, isLoading } = useSWR(
+    const { data, error, isLoading } = useSWR(
         "/api/admin/builder-pods/dashboard",
         fetcher,
-        { refreshInterval: 30_000 }
+        {
+            revalidateOnFocus: false,
+            revalidateIfStale: false,
+            revalidateOnReconnect: false,
+            shouldRetryOnError: false,
+            errorRetryCount: 0,
+        }
     );
 
     const dashboard = data?.dashboard;
+    const isDashboardReady = Boolean(dashboard);
+    const showDashboardLoader = isLoading || (!error && !isDashboardReady);
 
-    const pendingCards = dashboard
+    const pendingCards = isDashboardReady
         ? [
             {
                 label: "Pending Members",
@@ -74,7 +91,7 @@ export default function AdminDashboardPage() {
 
             {/* Pending Action Cards */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-10">
-                {isLoading
+                {showDashboardLoader
                     ? Array.from({ length: 4 }).map((_, i) => (
                         <div key={i} className="glass-container rounded-2xl p-5 animate-pulse">
                             <div className="w-8 h-8 bg-white/5 rounded-lg mb-3" />
@@ -82,6 +99,13 @@ export default function AdminDashboardPage() {
                             <div className="h-3 w-24 bg-white/5 rounded-lg" />
                         </div>
                     ))
+                    : error ? (
+                        <div className="glass-container rounded-2xl p-5 col-span-2 lg:col-span-4">
+                            <p className="text-sm text-amber-300 font-robotoMono">
+                                Unable to load Builder Pods dashboard right now.
+                            </p>
+                        </div>
+                    )
                     : pendingCards.map((card, i) => {
                         const Icon = card.icon;
                         return (
@@ -149,12 +173,16 @@ export default function AdminDashboardPage() {
                     </h2>
                 </div>
 
-                {isLoading ? (
+                {showDashboardLoader ? (
                     <div className="space-y-2">
                         {Array.from({ length: 5 }).map((_, i) => (
                             <div key={i} className="h-10 bg-white/[0.02] rounded-lg animate-pulse" />
                         ))}
                     </div>
+                ) : error ? (
+                    <p className="text-amber-300 text-sm font-robotoMono text-center py-6">
+                        Unable to load recent activity right now.
+                    </p>
                 ) : !dashboard?.recentAudit?.length ? (
                     <p className="text-white/75 text-sm font-robotoMono text-center py-6">
                         No activity yet.

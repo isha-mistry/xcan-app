@@ -47,9 +47,11 @@ function UserOfficeHours() {
       : null,
     fetcher,
     {
-      revalidateOnFocus: true,
-      revalidateOnReconnect: true,
-      refreshInterval: 10000, // Refresh every 10 seconds
+      revalidateOnFocus: false,
+      revalidateIfStale: false,
+      revalidateOnReconnect: false,
+      shouldRetryOnError: false,
+      errorRetryCount: 0,
     }
   );
 

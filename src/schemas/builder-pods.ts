@@ -45,7 +45,10 @@ export const ProjectSchema = z.object({
     name: z.string().min(3).max(100).trim(),
     problemStatement: z.string().min(10).max(1000),
     githubRepo: z.string().url().optional(),
-    contractAddress: z.string().regex(/^0x[a-fA-F0-9]{40}$/).optional(),
+    contractAddress: z.preprocess(
+        (value) => (typeof value === 'string' && value.trim() === '' ? undefined : value),
+        z.string().regex(/^0x[a-fA-F0-9]{40}$/)
+    ).optional(),
     demoLink: z.string().url().optional(),
     techStack: z.array(z.string()).max(10).default([]),
 });

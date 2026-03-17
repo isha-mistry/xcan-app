@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { usePrivy } from "@privy-io/react-auth";
 import WeeklyUpdateForm from "@/components/BuilderPods/WeeklyUpdateForm";
+import { isActiveWeeklyUpdateLead } from "@/lib/builder-pods/membership";
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
@@ -45,7 +46,7 @@ export default function CollegeUpdatesPage() {
     const pagination = data?.pagination ?? { page: 1, totalPages: 1, total: 0 };
     const members = podData?.members ?? [];
 
-    const isTeamLead = walletAddress != null && members.some((m: any) => m.walletAddress.toLowerCase() === walletAddress && m.role === 'pod_lead' && m.status === 'active');
+    const isTeamLead = walletAddress != null && members.some((m: any) => m.walletAddress.toLowerCase() === walletAddress && isActiveWeeklyUpdateLead(m));
 
     const handleRefresh = () => {
         mutate();

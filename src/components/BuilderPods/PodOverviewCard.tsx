@@ -29,9 +29,43 @@ interface CollegeData {
 
 interface PodOverviewCardProps {
     college: CollegeData;
+    isLoading?: boolean;
 }
 
-export default function PodOverviewCard({ college }: PodOverviewCardProps) {
+export default function PodOverviewCard({ college, isLoading }: PodOverviewCardProps) {
+    if (isLoading) {
+        return (
+            <div className="glass-container rounded-2xl p-6 md:p-8 mb-8 animate-pulse">
+                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
+                    <div className="space-y-3">
+                        <div className="h-6 w-24 bg-white/5 rounded-full" />
+                        <div className="h-8 w-64 bg-white/5 rounded-lg" />
+                        <div className="h-4 w-44 bg-white/5 rounded-lg" />
+                    </div>
+                </div>
+
+                <div className="flex flex-wrap gap-4 mb-6">
+                    {Array.from({ length: 3 }).map((_, index) => (
+                        <div key={index} className="h-4 w-32 bg-white/5 rounded-lg" />
+                    ))}
+                </div>
+
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    {Array.from({ length: 4 }).map((_, index) => (
+                        <div
+                            key={index}
+                            className="bg-white/[0.02] rounded-xl p-4 border border-white/5"
+                        >
+                            <div className="w-8 h-8 bg-white/5 rounded-lg mb-2" />
+                            <div className="h-6 w-16 bg-white/5 rounded-lg mb-2" />
+                            <div className="h-3 w-20 bg-white/5 rounded-lg" />
+                        </div>
+                    ))}
+                </div>
+            </div>
+        );
+    }
+
     const isActive = college.status === "active";
     const activePct =
         college.memberCount > 0

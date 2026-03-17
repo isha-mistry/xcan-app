@@ -97,24 +97,41 @@ export default function AdminProjectsPage() {
 
             {/* College Selector */}
             <div className="mb-6 flex flex-wrap gap-2">
-                {colleges.map((c: any) => (
-                    <button
-                        key={c.slug}
-                        onClick={() => setSelectedCollege(c.slug)}
-                        className={`px-3 py-1.5 rounded-lg text-[10px] font-bold font-robotoMono transition-all border ${selectedCollege === c.slug
-                                ? "bg-blue-500/10 border-blue-500/20 text-blue-400"
-                                : "bg-white/[0.02] border-white/[0.05] text-white/75 hover:bg-white/[0.04]"
+                {isLoading ? (
+                    <div className="flex items-center gap-2 text-xs text-white/70 font-robotoMono">
+                        <Loader2 className="w-4 h-4 animate-spin text-white/60" />
+                        Loading colleges...
+                    </div>
+                ) : (
+                    colleges.map((c: any) => (
+                        <button
+                            key={c.slug}
+                            onClick={() => setSelectedCollege(c.slug)}
+                            className={`px-3 py-1.5 rounded-lg text-[10px] font-bold font-robotoMono transition-all border ${
+                                selectedCollege === c.slug
+                                    ? "bg-blue-500/10 border-blue-500/20 text-blue-400"
+                                    : "bg-white/[0.02] border-white/[0.05] text-white/75 hover:bg-white/[0.04]"
                             }`}
-                    >
-                        {c.name}
-                    </button>
-                ))}
+                        >
+                            {c.name}
+                        </button>
+                    ))
+                )}
             </div>
 
-            {!selectedCollege ? (
+            {isLoading ? (
+                <div className="glass-container rounded-2xl p-12 text-center">
+                    <Loader2 className="w-6 h-6 animate-spin text-white/60 mx-auto mb-3" />
+                    <p className="text-sm text-white/80 font-robotoMono">
+                        Loading project data...
+                    </p>
+                </div>
+            ) : !selectedCollege ? (
                 <div className="glass-container rounded-2xl p-12 text-center">
                     <FolderKanban className="w-8 h-8 text-white/70 mx-auto mb-3" />
-                    <p className="text-sm text-white/80 font-robotoMono">Select a college to view projects</p>
+                    <p className="text-sm text-white/80 font-robotoMono">
+                        Select a college to view projects
+                    </p>
                 </div>
             ) : projectsLoading ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">

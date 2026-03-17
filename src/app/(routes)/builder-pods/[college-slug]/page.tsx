@@ -9,6 +9,7 @@ import PodOverviewCard from "@/components/BuilderPods/PodOverviewCard";
 import MembersTable from "@/components/BuilderPods/MembersTable";
 import ProjectsGrid from "@/components/BuilderPods/ProjectsGrid";
 import WeeklyUpdatesFeed from "@/components/BuilderPods/WeeklyUpdatesFeed";
+import { isActiveWeeklyUpdateLead } from "@/lib/builder-pods/membership";
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
@@ -24,7 +25,7 @@ export default function CollegePodPage() {
         { revalidateOnFocus: true }
     );
 
-    const collegeData = data?.college || {
+    const loadingCollegeData = {
         name: "Loading...",
         podName: "",
         city: "",
@@ -38,6 +39,8 @@ export default function CollegePodPage() {
         activatedAt: null,
         facultyCoordinator: null,
     };
+    const collegeData = data?.college;
+    const showPodLoaders = isLoading || (!error && !data);
 
     const members = data?.members ?? [];
     const projects = data?.projects ?? [];
@@ -56,7 +59,7 @@ export default function CollegePodPage() {
 
     const isTeamLead =
         wallet != null &&
-        members.some((m: any) => m.walletAddress.toLowerCase() === wallet && m.role === 'pod_lead' && m.status === 'active');
+        members.some((m: any) => m.walletAddress.toLowerCase() === wallet && isActiveWeeklyUpdateLead(m));
 
     const handleDataRefresh = () => {
         mutate();
@@ -79,7 +82,7 @@ export default function CollegePodPage() {
                         Failed to load pod data. Please try again.
                     </p>
                 </div>
-            ) : !isLoading && !data?.college ? (
+            ) : !showPodLoaders && !collegeData ? (
                 <div className="glass-container rounded-2xl p-12 text-center">
                     <p className="text-white/80 text-sm font-robotoMono">
                         College pod not found.
@@ -87,21 +90,46 @@ export default function CollegePodPage() {
                 </div>
             ) : (
                 <>
-                    <PodOverviewCard college={collegeData} />
+                    <PodOverviewCard
+                        college={collegeData ?? loadingCollegeData}
+                        isLoading={showPodLoaders}
+                    />
                     
-                    {collegeData.status === 'active' ? (
+                    {showPodLoaders ? (
+                        <>
+                            <MembersTable members={[]} isLoading />
+
+                            <ProjectsGrid
+                                projects={[]}
+                                isLoading
+                                walletAddress={walletAddress}
+                                isMember={isMember}
+                                memberStatus={memberStatus}
+                                collegeSlug={slug}
+                                onRefresh={handleDataRefresh}
+                            />
+
+                            <WeeklyUpdatesFeed
+                                updates={[]}
+                                isLoading
+                                slug={slug}
+                                isTeamLead={false}
+                                onRefresh={handleDataRefresh}
+                            />
+                        </>
+                    ) : collegeData?.status === 'active' ? (
                         <>
                             <MembersTable members={members} isLoading={isLoading} />
 
-                    <ProjectsGrid
-                        projects={projects}
-                        isLoading={isLoading}
-                        walletAddress={walletAddress}
-                        isMember={isMember}
-                        memberStatus={memberStatus}
-                        collegeSlug={slug}
-                        onRefresh={handleDataRefresh}
-                    />
+                            <ProjectsGrid
+                                projects={projects}
+                                isLoading={isLoading}
+                                walletAddress={walletAddress}
+                                isMember={isMember}
+                                memberStatus={memberStatus}
+                                collegeSlug={slug}
+                                onRefresh={handleDataRefresh}
+                            />
 
                             <WeeklyUpdatesFeed
                                 updates={recentUpdates}
@@ -114,7 +142,7 @@ export default function CollegePodPage() {
                     ) : (
                         <div className="glass-container rounded-2xl p-12 text-center mt-8">
                             <p className="text-white/80 text-sm font-robotoMono">
-                                Detailed insights are not available. This college pod is currently {collegeData.status}.
+                                Detailed insights are not available. This college pod is currently {collegeData?.status}.
                             </p>
                         </div>
                     )}

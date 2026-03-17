@@ -1,12 +1,12 @@
 import MainProfile from "@/components/UserProfile/MainProfile";
 import React from "react";
 
-function page() {
+function ProfilePage() {
   return (
-    <div>
+    <div className="min-h-screen flex flex-col">
       <MainProfile />
     </div>
   );
 }
 
-export default page;
+export default ProfilePage;
