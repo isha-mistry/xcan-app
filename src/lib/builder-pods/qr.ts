@@ -9,7 +9,6 @@ export async function generateLabEventQR(qrToken: string): Promise<string> {
 
     try {
         // Dynamic require to avoid type errors when qrcode is not installed
-        // eslint-disable-next-line @typescript-eslint/no-var-requires
         const QRCode = require('qrcode');
         return await QRCode.toDataURL(registrationUrl, {
             errorCorrectionLevel: 'H',

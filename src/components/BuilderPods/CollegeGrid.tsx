@@ -11,6 +11,7 @@ interface CollegeData {
     podName: string;
     memberCount: number;
     activeMemberCount: number;
+    projectCount: number;
     status: "active" | "inactive" | "alumni";
 }
 
