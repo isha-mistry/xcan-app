@@ -4,7 +4,23 @@ import { NextRequest, NextResponse } from "next/server";
 import { cacheWrapper } from "@/utils/cacheWrapper";
 
 export async function POST(req: NextRequest) {
-  const { address } = await req.json();
+  let address: string | undefined;
+  try {
+    const body = await req.json();
+    address = typeof body?.address === "string" ? body.address : undefined;
+  } catch {
+    return NextResponse.json(
+      { success: false, error: "Invalid or empty JSON body" },
+      { status: 400 }
+    );
+  }
+
+  if (!address) {
+    return NextResponse.json(
+      { success: false, error: "address is required" },
+      { status: 400 }
+    );
+  }
   let client;
   try {
     const cacheKey = `Notification:${address}`;

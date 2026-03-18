@@ -7,6 +7,7 @@ import { AuditLog } from '@/models/AuditLog';
 import { awardBadgeOnEvent } from '@/lib/builder-pods/badges';
 import { getAuthContext, UnauthorizedError } from '@/lib/rbac';
 import { RegisterSchema } from '@/schemas/builder-pods';
+import { getMembershipDisplayRoleData } from '@/lib/builder-pods/membership';
 
 export async function POST(req: NextRequest) {
     try {
@@ -22,7 +23,7 @@ export async function POST(req: NextRequest) {
                 { status: 400 }
             );
         }
-        const walletAddress = ctx.walletAddress;
+        const walletAddress = ctx.walletAddress.toLowerCase();
         const {
             name,
             collegeSlug,
@@ -43,7 +44,7 @@ export async function POST(req: NextRequest) {
         // Check for duplicate registration
         const existing = await PodMember.findOne({
             collegeId: college._id,
-            walletAddress: walletAddress.toLowerCase(),
+            walletAddress,
         });
         if (existing) {
             return NextResponse.json(
@@ -85,7 +86,7 @@ export async function POST(req: NextRequest) {
             collegeId: college._id,
             walletAddress,
             name: name.trim(),
-            role: 'pod_member',
+            role: 'pod_participant',
             programmingLevel: programmingLevel || null,
             githubUsername: githubUsername || null,
             semester: semester || null,
@@ -118,7 +119,16 @@ export async function POST(req: NextRequest) {
         });
 
         return NextResponse.json(
-            { success: true, member: { _id: member._id, status: member.status, joinedViaQr } },
+            {
+                success: true,
+                member: {
+                    _id: member._id,
+                    role: member.role,
+                    ...getMembershipDisplayRoleData(member as any),
+                    status: member.status,
+                    joinedViaQr,
+                },
+            },
             { status: 201 }
         );
     } catch (error: any) {

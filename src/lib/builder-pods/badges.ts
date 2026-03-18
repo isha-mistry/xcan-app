@@ -1,5 +1,6 @@
 import { BadgeType } from '@/models/BadgeType';
 import { UserBadge } from '@/models/UserBadge';
+import { Notification } from '@/models/Notification';
 
 type BadgeTrigger =
     | 'lab_registration'
@@ -17,14 +18,18 @@ const triggerToSlug: Record<BadgeTrigger, string> = {
 };
 
 /**
- * Fire-and-forget on-chain attestation.
- * Runs asynchronously — if it fails the badge still exists in the DB
- * and can be attested later via the admin UI.
+ * On-chain attestation helper.
+ * Returns easUid when successful; otherwise returns null.
  */
-async function attestBadgeOnChain(userBadgeId: string, walletAddress: string, badgeSlug: string, context: { collegeId?: string; showcaseEventId?: string }): Promise<void> {
+async function attestBadgeOnChain(
+    userBadgeId: string,
+    walletAddress: string,
+    badgeSlug: string,
+    context: { collegeId?: string; showcaseEventId?: string }
+): Promise<string | null> {
     try {
         const hasEasConfig = process.env.SEPOLIA_RPC && process.env.ISSUER_PRIVATE_KEY && process.env.EAS_SCHEMA_UID;
-        if (!hasEasConfig) return;
+        if (!hasEasConfig) return null;
 
         const { queueOnChainAttestation } = await import('@/lib/builder-pods/attestation');
         const easUid = await queueOnChainAttestation(walletAddress, badgeSlug, context);
@@ -33,8 +38,22 @@ async function attestBadgeOnChain(userBadgeId: string, walletAddress: string, ba
             { _id: userBadgeId },
             { $set: { easUid, onChainAttested: true, attestedAt: new Date() } }
         );
+        return easUid;
     } catch (err) {
         console.error(`[badges] On-chain attestation failed for ${userBadgeId}:`, err);
+        return null;
+    }
+}
+
+async function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T | null> {
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    try {
+        const timeout = new Promise<null>((resolve) => {
+            timer = setTimeout(() => resolve(null), timeoutMs);
+        });
+        return (await Promise.race([promise, timeout])) as T | null;
+    } finally {
+        if (timer) clearTimeout(timer);
     }
 }
 
@@ -71,7 +90,24 @@ export async function awardBadgeOnEvent(
     );
 
     if (result && !result.easUid) {
-        attestBadgeOnChain(result._id.toString(), walletAddress, slug, context).catch(() => {});
+        const mustAttestNow = trigger === 'pod_member_approved' || trigger === 'manual_assignment';
+        if (mustAttestNow) {
+            const easUid = await withTimeout(
+                attestBadgeOnChain(result._id.toString(), walletAddress, slug, context),
+                12000
+            );
+            if (easUid) {
+                await Notification.create({
+                    walletAddress: walletAddress.toLowerCase(),
+                    type: 'badge_awarded',
+                    title: 'Badge Attested! 🎉',
+                    body: `Your ${badgeType.label} badge is now attested on-chain.`,
+                    link: `/profile/${walletAddress.toLowerCase()}`,
+                });
+            }
+        } else {
+            attestBadgeOnChain(result._id.toString(), walletAddress, slug, context).catch(() => {});
+        }
     }
 }
 
