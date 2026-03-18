@@ -1,6 +1,6 @@
 import mongoose, { Document, Schema, Types } from 'mongoose';
 
-export const POD_MEMBER_ROLES = ['pod_lead', 'pod_member', 'faculty_coordinator', 'mentor'] as const;
+export const POD_MEMBER_ROLES = ['pod_participant', 'pod_lead', 'pod_member', 'faculty_coordinator', 'mentor'] as const;
 export const POD_MEMBER_STATUS = ['pending', 'active', 'inactive', 'removed'] as const;
 
 export interface IPodMember extends Document {
@@ -33,7 +33,7 @@ const PodMemberSchema = new Schema<IPodMember>(
         collegeId: { type: Schema.Types.ObjectId, ref: 'College', required: true },
         walletAddress: { type: String, required: true, lowercase: true },
         name: { type: String, required: true, trim: true },
-        role: { type: String, enum: POD_MEMBER_ROLES, default: 'pod_member' },
+        role: { type: String, enum: POD_MEMBER_ROLES, default: 'pod_participant' },
         programmingLevel: { type: String, enum: ['beginner', 'intermediate', 'advanced'], default: null },
         githubUsername: { type: String, default: null },
         status: { type: String, enum: POD_MEMBER_STATUS, default: 'pending' },
@@ -60,4 +60,12 @@ PodMemberSchema.index({ status: 1 });
 PodMemberSchema.index({ totalScore: -1 });
 
 export const PodMember =
-    mongoose.models.PodMember || mongoose.model<IPodMember>('PodMember', PodMemberSchema);
+    (() => {
+        // In Next.js dev, the mongoose model cache can survive hot reloads.
+        // If the schema enum changes (e.g. adding `pod_participant`), the old model can
+        // keep rejecting new enum values. Force a recompile in non-production.
+        if (process.env.NODE_ENV !== 'production' && mongoose.models.PodMember) {
+            delete mongoose.models.PodMember;
+        }
+        return mongoose.models.PodMember || mongoose.model<IPodMember>('PodMember', PodMemberSchema);
+    })();

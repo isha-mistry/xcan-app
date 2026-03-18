@@ -39,6 +39,8 @@ export interface SerializedProfileMembership {
     member: {
         name: string | null;
         role: string | null;
+        displayRole?: string | null;
+        displayRoleLabel?: string | null;
         status: string | null;
         programmingLevel: string | null;
         githubUsername: string | null;
@@ -53,6 +55,25 @@ export interface SerializedProfileMembership {
 }
 
 const weeklyUpdateLeadRoleSet = new Set<string>(WEEKLY_UPDATE_LEAD_ROLES);
+
+const membershipRoleLabels: Record<string, string> = {
+    pod_participant: 'Pod Participant',
+    builder_lab_participant: 'Builder Lab Participant',
+    pod_lead: 'Pod Lead',
+    pod_member: 'Pod Member',
+    faculty_coordinator: 'Faculty Coordinator',
+    mentor: 'Mentor',
+    tech_lead: 'Tech Lead',
+};
+
+function formatRoleLabel(role: string | null | undefined): string | null {
+    if (!role) return null;
+    return membershipRoleLabels[role] ?? role
+        .split('_')
+        .filter(Boolean)
+        .map((segment) => segment.charAt(0).toUpperCase() + segment.slice(1))
+        .join(' ');
+}
 
 function toTimestamp(value: DateLike): number {
     if (!value) return 0;
@@ -88,6 +109,28 @@ export function isActiveWeeklyUpdateLead(member: WeeklyUpdateLeadLike | null | u
     return Boolean(member && member.status === 'active' && isWeeklyUpdateLeadRole(member.role));
 }
 
+export function getMembershipDisplayRole(member: Pick<ProfileMemberLike, 'role' | 'status'> | null | undefined): string | null {
+    if (!member) return null;
+    if (member.role === 'pod_participant') return 'pod_participant';
+    // Backward compatibility: older pending records stored as pod_member
+    if (member.status === 'pending' && member.role === 'pod_member') return 'pod_participant';
+    return member.role ?? null;
+}
+
+export function getMembershipDisplayRoleLabel(member: Pick<ProfileMemberLike, 'role' | 'status'> | null | undefined): string | null {
+    return formatRoleLabel(getMembershipDisplayRole(member));
+}
+
+export function getMembershipDisplayRoleData(member: Pick<ProfileMemberLike, 'role' | 'status'> | null | undefined): {
+    displayRole: string | null;
+    displayRoleLabel: string | null;
+} {
+    return {
+        displayRole: getMembershipDisplayRole(member),
+        displayRoleLabel: getMembershipDisplayRoleLabel(member),
+    };
+}
+
 export function sortMembershipsByPriority<T extends MembershipPriorityLike>(memberships: T[]): T[] {
     return [...memberships].sort((a, b) => {
         const activeSort = compareNumbersDesc(
@@ -120,11 +163,13 @@ export function serializeProfileMemberships(
         const college = isPopulatedCollege(member.collegeId)
             ? member.collegeId
             : collegeMap?.get(collegeKey) ?? null;
+        const displayRoleData = getMembershipDisplayRoleData(member);
 
         return {
             member: {
                 name: member.name ?? null,
                 role: member.role ?? null,
+                ...displayRoleData,
                 status: member.status ?? null,
                 programmingLevel: member.programmingLevel ?? null,
                 githubUsername: member.githubUsername ?? null,

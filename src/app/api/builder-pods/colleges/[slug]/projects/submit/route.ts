@@ -114,11 +114,7 @@ export async function POST(
             );
         }
 
-        // Promote the member's pod-level role from pod_member to pod_lead.
-        await PodMember.updateOne(
-            { collegeId: college._id, walletAddress: walletAddress, deletedAt: null },
-            { $set: { role: 'pod_lead' } }
-        );
+        // Pod-level promotion to pod_lead is admin-managed (no auto-promotion here).
 
         await College.findByIdAndUpdate(college._id, { $inc: { projectCount: 1 } });
 

@@ -116,6 +116,14 @@ export async function PATCH(req: NextRequest) {
             await awardBadgeOnEvent('manual_assignment', member.walletAddress, {
                 collegeId: member.collegeId.toString(),
             });
+
+            await Notification.create({
+                walletAddress: member.walletAddress,
+                type: 'role_assigned',
+                title: 'You are now a Pod Lead!',
+                body: 'Your Pod Lead badge will appear once the on-chain attestation completes.',
+                link: `/profile/${member.walletAddress.toLowerCase()}`,
+            });
         }
 
         if (newValues.status) {

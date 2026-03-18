@@ -515,6 +515,107 @@ function MainProfile() {
     checkBadges();
   }, [address]);
 
+  // Poll Builder Pods notifications and celebrate only after on-chain attestation (easUid exists)
+  useEffect(() => {
+    if (!address) return;
+    const wallet = address.toLowerCase();
+    const celebratedKey = `builderPods.celebratedEasUids.${wallet}`;
+
+    const getCelebratedSet = () => {
+      try {
+        const raw = localStorage.getItem(celebratedKey) || "";
+        return new Set(raw.split(",").filter(Boolean));
+      } catch {
+        return new Set<string>();
+      }
+    };
+
+    const addCelebrated = (uids: string[]) => {
+      try {
+        const set = getCelebratedSet();
+        uids.forEach((u) => set.add(u));
+        localStorage.setItem(celebratedKey, Array.from(set).sort().join(","));
+      } catch {
+        // ignore storage errors
+      }
+    };
+
+    const waitForAttestedBadge = async (expectedSlug: string) => {
+      const start = Date.now();
+      while (Date.now() - start < 60000) {
+        try {
+          const res = await fetch(`/api/builder-pods/badges/user/${wallet}`);
+          const data = await res.json();
+          const badges = Array.isArray(data?.badges) ? data.badges : [];
+          const match = badges.find(
+            (b: any) =>
+              b?.badgeSnapshot?.slug === expectedSlug &&
+              typeof b?.easUid === "string" &&
+              b.easUid.length > 10
+          );
+          if (match) return match;
+        } catch {
+          // ignore and retry
+        }
+        await new Promise((r) => setTimeout(r, 5000));
+      }
+      return null;
+    };
+
+    const handleNotification = async (n: any) => {
+      const type = String(n?.type || "");
+      if (type !== "member_approved" && type !== "role_assigned" && type !== "badge_awarded") return;
+
+      // We only care about these two Builder Pods badges for celebration
+      const candidateSlugs = ["builder_pod_member", "builder_pod_lead"];
+      for (const slug of candidateSlugs) {
+        const attestedBadge = await waitForAttestedBadge(slug);
+        if (!attestedBadge?.easUid) continue;
+        const celebrated = getCelebratedSet();
+        if (celebrated.has(attestedBadge.easUid)) continue;
+
+        setNewBadges([attestedBadge]);
+        setShowBadgeCelebration(true);
+        try {
+          confetti({
+            particleCount: 120,
+            spread: 70,
+            origin: { y: 0.4 },
+          });
+        } catch {
+          // ignore confetti errors
+        }
+        addCelebrated([attestedBadge.easUid]);
+        break;
+      }
+    };
+
+    const poll = async () => {
+      try {
+        const res = await fetch(`/api/builder-pods/notifications?limit=10`, {
+          credentials: "include",
+        });
+        const data = await res.json();
+        const notifications = Array.isArray(data?.notifications) ? data.notifications : [];
+        // only process newest few to avoid loops
+        for (const n of notifications.slice(0, 3)) {
+          await handleNotification(n);
+        }
+      } catch {
+        // ignore polling errors
+      }
+    };
+
+    poll();
+    const interval = setInterval(poll, 15000);
+    const onFocus = () => poll();
+    window.addEventListener("focus", onFocus);
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener("focus", onFocus);
+    };
+  }, [address]);
+
   return (
     <>
       <div className="lg:hidden pt-2 xs:pt-4 sm:pt-6 px-4 md:px-6 lg:px-14">
