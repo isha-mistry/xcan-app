@@ -1,27 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
 import { dbConnect } from "@/lib/dbConnect";
 import { PodProject } from "@/models/PodProject";
-import { PodMember } from "@/models/PodMember";
 import { AuditLog } from "@/models/AuditLog";
+import { getAuthContext, UnauthorizedError } from "@/lib/rbac";
 
 export async function POST(
     req: NextRequest,
     { params }: { params: { projectId: string } }
 ) {
     try {
+        const ctx = await getAuthContext(req);
+        if (!ctx) throw new UnauthorizedError("Not authenticated");
+
         await dbConnect();
-        const body = await req.json();
-        const { walletAddress } = body;
         const projectId = params.projectId;
-
-        if (!walletAddress) {
-            return NextResponse.json(
-                { success: false, error: "walletAddress is required" },
-                { status: 400 }
-            );
-        }
-
-        const wallet = walletAddress.toLowerCase();
+        const wallet = ctx.walletAddress.toLowerCase();
 
         const project = await PodProject.findOne({
             _id: projectId,
@@ -75,6 +68,12 @@ export async function POST(
             { status: 200 }
         );
     } catch (error: any) {
+        if (error instanceof UnauthorizedError) {
+            return NextResponse.json(
+                { success: false, error: "Not authenticated" },
+                { status: 401 }
+            );
+        }
         console.error("Leave team error:", error);
         return NextResponse.json(
             { success: false, error: "Internal Server Error" },

@@ -4,25 +4,19 @@ import { PodProject } from "@/models/PodProject";
 import { PodMember } from "@/models/PodMember";
 import { AuditLog } from "@/models/AuditLog";
 import { WeeklyUpdate } from "@/models/WeeklyUpdate";
+import { getAuthContext, UnauthorizedError } from "@/lib/rbac";
 
 export async function DELETE(
     req: NextRequest,
     { params }: { params: { projectId: string } }
 ) {
     try {
+        const ctx = await getAuthContext(req);
+        if (!ctx) throw new UnauthorizedError("Not authenticated");
+
         await dbConnect();
         const projectId = params.projectId;
-        const searchParams = req.nextUrl.searchParams;
-        const walletAddress = searchParams.get("walletAddress");
-
-        if (!walletAddress) {
-            return NextResponse.json(
-                { success: false, error: "Wallet address is required" },
-                { status: 400 }
-            );
-        }
-
-        const wallet = walletAddress.toLowerCase();
+        const wallet = ctx.walletAddress.toLowerCase();
 
         const project = await PodProject.findOne({
             _id: projectId,
@@ -99,6 +93,12 @@ export async function DELETE(
             { status: 200 }
         );
     } catch (error: any) {
+        if (error instanceof UnauthorizedError) {
+            return NextResponse.json(
+                { success: false, error: "Not authenticated" },
+                { status: 401 }
+            );
+        }
         console.error("Delete project error:", error);
         return NextResponse.json(
             { success: false, error: "Internal Server Error" },

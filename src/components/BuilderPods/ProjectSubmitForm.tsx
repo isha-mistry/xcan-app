@@ -84,14 +84,21 @@ export default function ProjectSubmitForm({
         setSubmitting(true);
 
         try {
-            const payload: any = { ...form, walletAddress };
+            const payload: any = { ...form };
+            if (!payload.githubRepo.trim()) {
+                delete payload.githubRepo;
+            }
             if (!payload.contractAddress.trim()) {
                 delete payload.contractAddress;
+            }
+            if (!payload.demoLink.trim()) {
+                delete payload.demoLink;
             }
 
             const res = await fetch(`/api/builder-pods/colleges/${collegeSlug}/projects/submit`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
+                credentials: "include",
                 body: JSON.stringify(payload),
             });
 
