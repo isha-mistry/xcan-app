@@ -25,7 +25,7 @@ const Footer = () => {
           {/* Brand & Description */}
           <div className="flex flex-col items-center md:items-start text-center md:text-left space-y-4">
             <div className="relative group">
-              <h3 className="text-2xl font-black text-white font-unbounded tracking-tighter uppercase transition-all duration-300 group-hover:tracking-normal">
+              <h3 className="text-2xl font-black text-white font-unbounded tracking-tighter transition-all duration-300 group-hover:tracking-normal">
                 Xcan
               </h3>
               <div className="w-8 h-1 bg-primary mt-1 rounded-full group-hover:w-16 transition-all duration-300" />

@@ -1,3 +1,5 @@
+import { BASE_URL } from "@/config/constants";
+
 type HttpMethod = "GET" | "POST" | "PUT" | "DELETE";
 
 interface RequestOptions extends RequestInit {
@@ -48,7 +50,7 @@ export async function fetchApi(
     }
   }
 
-  const response = await fetch(`/api/proxy${endpoint}`, fetchOptions);
+  const response = await fetch(`${BASE_URL}/api/proxy${endpoint}`, fetchOptions);
 
   if (!response.ok) {
     throw new Error(`HTTP error! status: ${response.status}`);
