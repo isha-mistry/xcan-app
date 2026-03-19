@@ -15,6 +15,7 @@ import { Badge, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem } from "@n
 import { fetchApi } from "@/utils/api";
 import { useSidebarStore } from "@/store/sidebarStore";
 import { useDisconnect } from "wagmi";
+import { useIsSuperAdmin } from "@/app/hooks/useRoleCheck";
 
 function isRouteActive(pathname: string, href: string) {
   const base = href.split("?")[0];
@@ -37,6 +38,7 @@ function TopNavbar() {
 
   const [isScrolled, setIsScrolled] = useState(false);
   const { disconnect } = useDisconnect();
+  const { isSuperAdmin } = useIsSuperAdmin(isConnected && authenticated);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -112,7 +114,8 @@ function TopNavbar() {
     },
     { label: "Members", href: "/members" },
     { label: "Builder Pods", href: "/builder-pods" },
-    { label: "Docs", href: "/doc" }
+    { label: "Docs", href: "/doc" },
+    ...(isSuperAdmin ? [{ label: "Admin", href: "/admin/builder-pods" }] : []),
   ];
 
   const sessionLinks = [
