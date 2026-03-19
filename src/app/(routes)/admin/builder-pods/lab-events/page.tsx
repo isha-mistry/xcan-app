@@ -1,6 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import useSWR, { mutate } from "swr";
+import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import {
@@ -17,40 +18,70 @@ import {
 
 const fetcher = (url: string) => fetch(url, { credentials: "include" }).then((r) => r.json());
 
+interface AdminCollegeOption {
+    _id: string;
+    slug: string;
+    name: string;
+    city: string;
+    state: string;
+    status: string;
+}
+
 export default function AdminLabEventsPage() {
     const { data, isLoading } = useSWR(
         "/api/admin/builder-pods/lab-events",
         fetcher
     );
+    const { data: collegesData, isLoading: loadingColleges } = useSWR(
+        "/api/admin/builder-pods/colleges",
+        fetcher
+    );
 
     const [showForm, setShowForm] = useState(false);
     const [creating, setCreating] = useState(false);
+    const [formError, setFormError] = useState<string | null>(null);
     const [copiedToken, setCopiedToken] = useState<string | null>(null);
     const [qrModal, setQrModal] = useState<{ eventId: string; dataUrl: string | null; registrationUrl: string | null; loading: boolean } | null>(null);
     const [form, setForm] = useState({
         eventName: "",
         collegeSlug: "",
-        scheduledDate: "",
+        eventDate: "",
         expectedAttendees: 30,
     });
 
     const events = data?.events ?? [];
+    const colleges: AdminCollegeOption[] = collegesData?.colleges ?? [];
 
     const handleCreate = async (e: React.FormEvent) => {
         e.preventDefault();
         setCreating(true);
+        setFormError(null);
         try {
-            await fetch("/api/admin/builder-pods/lab-events", {
+            const payload = {
+                eventName: form.eventName.trim(),
+                collegeSlug: form.collegeSlug,
+                eventDate: form.eventDate || undefined,
+                expectedAttendees: form.expectedAttendees || undefined,
+            };
+
+            const response = await fetch("/api/admin/builder-pods/lab-events", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 credentials: "include",
-                body: JSON.stringify(form),
+                body: JSON.stringify(payload),
             });
+            const payloadData = await response.json().catch(() => null);
+
+            if (!response.ok || !payloadData?.success) {
+                throw new Error(payloadData?.error || "Failed to create event");
+            }
+
             mutate("/api/admin/builder-pods/lab-events");
             setShowForm(false);
-            setForm({ eventName: "", collegeSlug: "", scheduledDate: "", expectedAttendees: 30 });
+            setForm({ eventName: "", collegeSlug: "", eventDate: "", expectedAttendees: 30 });
         } catch (e) {
             console.error(e);
+            setFormError((e as Error).message || "Failed to create event");
         } finally {
             setCreating(false);
         }
@@ -117,22 +148,30 @@ export default function AdminLabEventsPage() {
                             />
                         </div>
                         <div>
-                            <label className="block text-[9px] font-bold uppercase tracking-widest text-white/50 font-robotoMono mb-1.5">College Slug *</label>
-                            <input
-                                type="text"
+                            <label className="block text-[9px] font-bold uppercase tracking-widest text-white/50 font-robotoMono mb-1.5">College *</label>
+                            <select
                                 value={form.collegeSlug}
                                 onChange={(e) => setForm({ ...form, collegeSlug: e.target.value })}
-                                placeholder="e.g. iit-bombay"
                                 required
-                                className="w-full px-3 py-2.5 rounded-xl bg-white/[0.03] border border-white/[0.06] text-xs text-white/80 font-robotoMono placeholder:text-white/40 focus:outline-none focus:border-white/15 transition-colors"
-                            />
+                                disabled={loadingColleges || colleges.length === 0}
+                                className="w-full px-3 py-2.5 rounded-xl bg-[#0a0f17] border border-white/[0.06] text-xs text-white/80 font-robotoMono focus:outline-none focus:border-white/15 transition-colors disabled:opacity-50"
+                            >
+                                <option value="">
+                                    {loadingColleges ? "Loading colleges..." : "Select a college pod"}
+                                </option>
+                                {colleges.map((college) => (
+                                    <option key={college._id} value={college.slug}>
+                                        {college.name} — {college.city}, {college.state} ({college.status})
+                                    </option>
+                                ))}
+                            </select>
                         </div>
                         <div>
-                            <label className="block text-[9px] font-bold uppercase tracking-widest text-white/50 font-robotoMono mb-1.5">Scheduled Date</label>
+                            <label className="block text-[9px] font-bold uppercase tracking-widest text-white/50 font-robotoMono mb-1.5">Event Date</label>
                             <input
                                 type="datetime-local"
-                                value={form.scheduledDate}
-                                onChange={(e) => setForm({ ...form, scheduledDate: e.target.value })}
+                                value={form.eventDate}
+                                onChange={(e) => setForm({ ...form, eventDate: e.target.value })}
                                 className="w-full px-3 py-2.5 rounded-xl bg-white/[0.03] border border-white/[0.06] text-xs text-white/80 font-robotoMono focus:outline-none focus:border-white/15 transition-colors"
                             />
                         </div>
@@ -146,10 +185,15 @@ export default function AdminLabEventsPage() {
                             />
                         </div>
                     </div>
+                    {formError && (
+                        <div className="mt-4 rounded-xl border border-red-500/20 bg-red-500/5 px-3 py-2.5 text-xs text-red-300 font-robotoMono">
+                            {formError}
+                        </div>
+                    )}
                     <div className="mt-4 flex justify-end">
                         <button
                             type="submit"
-                            disabled={creating}
+                            disabled={creating || loadingColleges || colleges.length === 0}
                             className="flex items-center gap-2 px-4 py-2 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 text-[10px] font-bold font-robotoMono transition-all disabled:opacity-30"
                         >
                             {creating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Plus className="w-3.5 h-3.5" />}
@@ -172,7 +216,14 @@ export default function AdminLabEventsPage() {
                             <Loader2 className="w-8 h-8 text-white/50 animate-spin mx-auto" />
                         ) : qrModal.dataUrl ? (
                             <>
-                                <img src={qrModal.dataUrl} alt="QR Code" className="w-64 h-64 mx-auto rounded-xl" />
+                                <Image
+                                    src={qrModal.dataUrl}
+                                    alt="QR Code"
+                                    width={256}
+                                    height={256}
+                                    unoptimized
+                                    className="mx-auto rounded-xl"
+                                />
                                 <a
                                     href={qrModal.dataUrl}
                                     download={`qr-${qrModal.eventId}.png`}
@@ -249,10 +300,21 @@ export default function AdminLabEventsPage() {
                                         </span>
                                     </div>
                                     <div className="flex items-center gap-3 text-[10px] text-white/45 font-robotoMono">
-                                        {event.scheduledDate && (
+                                        {event.collegeId?.name && (
+                                            <div className="truncate">
+                                                {event.collegeId.name}
+                                            </div>
+                                        )}
+                                        {event.eventDate && (
                                             <div className="flex items-center gap-1">
                                                 <Calendar className="w-3 h-3" />
-                                                {new Date(event.scheduledDate).toLocaleDateString("en-IN")}
+                                                {new Date(event.eventDate).toLocaleString("en-IN", {
+                                                    day: "2-digit",
+                                                    month: "short",
+                                                    year: "numeric",
+                                                    hour: "2-digit",
+                                                    minute: "2-digit",
+                                                })}
                                             </div>
                                         )}
                                         <div className="flex items-center gap-1">

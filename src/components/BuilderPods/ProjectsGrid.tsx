@@ -86,11 +86,9 @@ const statusConfig: Record<
 };
 
 function JoinTeamModal({
-    walletAddress,
     onClose,
     onSuccess,
 }: {
-    walletAddress: string;
     onClose: () => void;
     onSuccess: () => void;
 }) {
@@ -108,9 +106,9 @@ function JoinTeamModal({
             const res = await fetch("/api/builder-pods/projects/join-team", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
+                credentials: "include",
                 body: JSON.stringify({
                     teamCode: code.trim(),
-                    walletAddress,
                 }),
             });
 
@@ -334,17 +332,16 @@ export default function ProjectsGrid({
         if (!actionModal || !wallet) return;
         setSubmittingAction(true);
         try {
-            const url = actionModal.type === 'leave' 
+            const url = actionModal.type === 'leave'
                 ? `/api/builder-pods/projects/${actionModal.projectId}/leave`
-                : `/api/builder-pods/projects/${actionModal.projectId}?walletAddress=${wallet}`;
+                : `/api/builder-pods/projects/${actionModal.projectId}`;
             
             const options: RequestInit = actionModal.type === 'leave'
                 ? {
                       method: "POST",
-                      headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify({ walletAddress: wallet }),
+                      credentials: "include",
                   }
-                : { method: "DELETE" };
+                : { method: "DELETE", credentials: "include" };
 
             const res = await fetch(url, options);
             const data = await res.json();
@@ -669,7 +666,6 @@ export default function ProjectsGrid({
             <AnimatePresence>
                 {joinModalOpen && wallet && (
                     <JoinTeamModal
-                        walletAddress={wallet}
                         onClose={() => setJoinModalOpen(false)}
                         onSuccess={() => onRefresh?.()}
                     />
