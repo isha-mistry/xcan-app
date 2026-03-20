@@ -126,6 +126,13 @@ export async function PATCH(req: NextRequest) {
             });
         }
 
+        // Award builder_pod_member badge when an active member is promoted to pod_member
+        if (role === 'pod_member' && member.status === 'active') {
+            await awardBadgeOnEvent('pod_member_approved', member.walletAddress, {
+                collegeId: member.collegeId.toString(),
+            });
+        }
+
         if (newValues.status) {
             const wasActive = oldValues.status === 'active';
             const isActive = member.status === 'active';
@@ -150,7 +157,9 @@ export async function PATCH(req: NextRequest) {
                     ? `Role Updated: ${member.role.replace(/_/g, ' ')}`
                     : `Membership Status: ${member.status}`,
                 body: newValues.role
-                    ? `Your role has been updated to ${member.role.replace(/_/g, ' ')}.`
+                    ? role === 'pod_member' && member.status === 'active'
+                        ? 'Your Pod Member badge will appear once the on-chain attestation completes.'
+                        : `Your role has been updated to ${member.role.replace(/_/g, ' ')}.`
                     : `Your Builder Pod membership status is now ${member.status}.`,
                 link: '/builder-pods',
             });

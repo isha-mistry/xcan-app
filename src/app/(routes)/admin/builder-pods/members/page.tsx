@@ -604,7 +604,7 @@ export default function AdminMembersPage() {
                                                     currentRole={member.role}
                                                     memberId={member._id}
                                                     onAssign={handleRoleAssign}
-                                                    disabled={isProcessing}
+                                                    disabled={isProcessing || member.status !== "active"}
                                                 />
                                             </td>
 

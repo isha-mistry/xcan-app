@@ -5,6 +5,7 @@ import { Notification } from '@/models/Notification';
 type BadgeTrigger =
     | 'lab_registration'
     | 'pod_member_approved'
+    | 'pod_participant_approved'
     | 'showcase_finalist'
     | 'showcase_winner'
     | 'manual_assignment';
@@ -12,6 +13,7 @@ type BadgeTrigger =
 const triggerToSlug: Record<BadgeTrigger, string> = {
     lab_registration: 'builder_lab_participant',
     pod_member_approved: 'builder_pod_member',
+    pod_participant_approved: 'builder_lab_participant',
     showcase_finalist: 'regional_showcase_finalist',
     showcase_winner: 'regional_showcase_winner',
     manual_assignment: 'builder_pod_lead',
@@ -90,7 +92,7 @@ export async function awardBadgeOnEvent(
     );
 
     if (result && !result.easUid) {
-        const mustAttestNow = trigger === 'pod_member_approved' || trigger === 'manual_assignment';
+        const mustAttestNow = trigger === 'pod_member_approved' || trigger === 'pod_participant_approved' || trigger === 'manual_assignment';
         if (mustAttestNow) {
             const easUid = await withTimeout(
                 attestBadgeOnChain(result._id.toString(), walletAddress, slug, context),

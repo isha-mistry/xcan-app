@@ -99,15 +99,22 @@ export async function PATCH(req: NextRequest) {
             }
 
             if (action === 'approve') {
-                await awardBadgeOnEvent('pod_member_approved', member.walletAddress, {
+                const badgeTrigger = member.joinedViaQr ? 'pod_member_approved' : 'pod_participant_approved';
+                await awardBadgeOnEvent(badgeTrigger, member.walletAddress, {
                     collegeId: member.collegeId?.toString(),
                 });
 
                 await Notification.create({
                     walletAddress: member.walletAddress,
                     type: 'member_approved',
-                    title: 'Pod Membership Approved! 🎉',
-                    body: 'You are now an active Builder Pod member.',
+                    title:
+                        badgeTrigger === 'pod_member_approved'
+                            ? 'Pod Membership Approved! 🎉'
+                            : 'Pod Participant Approved! 🎉',
+                    body:
+                        badgeTrigger === 'pod_member_approved'
+                            ? 'You are now an active Builder Pod member.'
+                            : 'You are now an active Builder Pod participant. Your Builder Lab Participant badge will appear once the on-chain attestation completes.',
                     link: '/builder-pods',
                 });
             }
