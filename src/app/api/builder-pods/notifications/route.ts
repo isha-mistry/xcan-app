@@ -22,7 +22,12 @@ export async function GET(req: NextRequest) {
             .limit(limit)
             .lean();
 
-        return NextResponse.json({ success: true, notifications }, { status: 200 });
+        return NextResponse.json({ success: true, notifications }, {
+            status: 200,
+            headers: {
+                'Cache-Control': 'private, max-age=15, stale-while-revalidate=30',
+            },
+        });
     } catch (error: any) {
         if (error instanceof UnauthorizedError) {
             return NextResponse.json(
