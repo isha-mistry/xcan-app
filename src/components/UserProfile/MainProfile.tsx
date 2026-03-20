@@ -470,7 +470,8 @@ function MainProfile() {
     }
   }, [address]);
 
-  // Detect newly earned Builder Pods badges and celebrate with confetti
+  // Detect newly earned Builder Pods badges and celebrate with confetti.
+  // Uses profile API data (already fetched by ProfileSection) to avoid duplicate calls.
   useEffect(() => {
     if (!address) return;
     const wallet = address.toLowerCase();
@@ -478,7 +479,7 @@ function MainProfile() {
 
     const checkBadges = async () => {
       try {
-        const res = await fetch(`/api/builder-pods/badges/user/${wallet}`);
+        const res = await fetch(`/api/builder-pods/profile/${wallet}`);
         const data = await res.json();
         if (!data?.success || !Array.isArray(data.badges)) return;
 
@@ -515,11 +516,15 @@ function MainProfile() {
     checkBadges();
   }, [address]);
 
-  // Poll Builder Pods notifications and celebrate only after on-chain attestation (easUid exists)
+  // Poll Builder Pods notifications and celebrate only after on-chain attestation (easUid exists).
+  // Tracks processed notification IDs to avoid re-processing the same notifications on every poll.
+  // Uses exponential back-off for badge attestation polling (max 3 retries) instead of 60s busy-loop.
   useEffect(() => {
     if (!address) return;
+    let cancelled = false;
     const wallet = address.toLowerCase();
     const celebratedKey = `builderPods.celebratedEasUids.${wallet}`;
+    const processedNotifIds = new Set<string>();
 
     const getCelebratedSet = () => {
       try {
@@ -541,8 +546,9 @@ function MainProfile() {
     };
 
     const waitForAttestedBadge = async (expectedSlug: string) => {
-      const start = Date.now();
-      while (Date.now() - start < 60000) {
+      const delays = [5000, 10000, 20000];
+      for (const delay of delays) {
+        if (cancelled) return null;
         try {
           const res = await fetch(`/api/builder-pods/badges/user/${wallet}`);
           const data = await res.json();
@@ -557,18 +563,22 @@ function MainProfile() {
         } catch {
           // ignore and retry
         }
-        await new Promise((r) => setTimeout(r, 5000));
+        await new Promise((r) => setTimeout(r, delay));
       }
       return null;
     };
 
     const handleNotification = async (n: any) => {
+      const nId = String(n?._id || n?.id || "");
+      if (!nId || processedNotifIds.has(nId)) return;
+      processedNotifIds.add(nId);
+
       const type = String(n?.type || "");
       if (type !== "member_approved" && type !== "role_assigned" && type !== "badge_awarded") return;
 
-      // We only care about these two Builder Pods badges for celebration
       const candidateSlugs = ["builder_pod_member", "builder_pod_lead"];
       for (const slug of candidateSlugs) {
+        if (cancelled) return;
         const attestedBadge = await waitForAttestedBadge(slug);
         if (!attestedBadge?.easUid) continue;
         const celebrated = getCelebratedSet();
@@ -590,15 +600,18 @@ function MainProfile() {
       }
     };
 
+    let focusThrottleTimer: ReturnType<typeof setTimeout> | null = null;
+
     const poll = async () => {
+      if (cancelled) return;
       try {
         const res = await fetch(`/api/builder-pods/notifications?limit=10`, {
           credentials: "include",
         });
         const data = await res.json();
         const notifications = Array.isArray(data?.notifications) ? data.notifications : [];
-        // only process newest few to avoid loops
         for (const n of notifications.slice(0, 3)) {
+          if (cancelled) break;
           await handleNotification(n);
         }
       } catch {
@@ -607,11 +620,17 @@ function MainProfile() {
     };
 
     poll();
-    const interval = setInterval(poll, 15000);
-    const onFocus = () => poll();
+    const interval = setInterval(poll, 60000);
+    const onFocus = () => {
+      if (focusThrottleTimer) return;
+      focusThrottleTimer = setTimeout(() => { focusThrottleTimer = null; }, 30000);
+      poll();
+    };
     window.addEventListener("focus", onFocus);
     return () => {
+      cancelled = true;
       clearInterval(interval);
+      if (focusThrottleTimer) clearTimeout(focusThrottleTimer);
       window.removeEventListener("focus", onFocus);
     };
   }, [address]);
