@@ -91,6 +91,14 @@ export async function POST(
             }],
         });
 
+        // Auto-promote the PodMember role from pod_member to pod_lead
+        if (membership.role === 'pod_member') {
+            await PodMember.updateOne(
+                { _id: membership._id },
+                { $set: { role: 'pod_lead' } }
+            );
+        }
+
         // Grant the submitting member the platform-level pod_lead role for this college.
         const podLeadPlatformRole = await PlatformRole.findOne({ slug: 'pod_lead' }).lean();
         if (podLeadPlatformRole) {
@@ -113,8 +121,6 @@ export async function POST(
                 { upsert: true }
             );
         }
-
-        // Pod-level promotion to pod_lead is admin-managed (no auto-promotion here).
 
         await College.findByIdAndUpdate(college._id, { $inc: { projectCount: 1 } });
 

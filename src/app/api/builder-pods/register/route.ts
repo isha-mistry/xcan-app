@@ -82,6 +82,8 @@ export async function POST(req: NextRequest) {
             });
         }
 
+        const isAutoApproved = joinedViaQr;
+
         const member = await PodMember.create({
             collegeId: college._id,
             walletAddress,
@@ -90,17 +92,18 @@ export async function POST(req: NextRequest) {
             programmingLevel: programmingLevel || null,
             githubUsername: githubUsername || null,
             semester: semester || null,
-            status: 'pending',
+            status: isAutoApproved ? 'active' : 'pending',
+            approvedAt: isAutoApproved ? new Date() : null,
             joinedViaQr,
             qrEventId,
         });
 
-        // Update college member count
-        await College.findByIdAndUpdate(college._id, {
-            $inc: { memberCount: 1 },
-        });
+        const memberCountInc: Record<string, number> = { memberCount: 1 };
+        if (isAutoApproved) {
+            memberCountInc.activeMemberCount = 1;
+        }
+        await College.findByIdAndUpdate(college._id, { $inc: memberCountInc });
 
-        // Auto-award badges
         if (joinedViaQr) {
             await awardBadgeOnEvent('lab_registration', walletAddress, {
                 collegeId: college._id.toString(),

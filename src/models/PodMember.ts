@@ -8,6 +8,7 @@ export interface IPodMember extends Document {
     walletAddress: string;
     name: string;
     role: typeof POD_MEMBER_ROLES[number];
+    requestedRole: typeof POD_MEMBER_ROLES[number] | null;
     programmingLevel: 'beginner' | 'intermediate' | 'advanced' | null;
     githubUsername: string | null;
     status: typeof POD_MEMBER_STATUS[number];
@@ -34,6 +35,7 @@ const PodMemberSchema = new Schema<IPodMember>(
         walletAddress: { type: String, required: true, lowercase: true },
         name: { type: String, required: true, trim: true },
         role: { type: String, enum: POD_MEMBER_ROLES, default: 'pod_participant' },
+        requestedRole: { type: String, enum: [...POD_MEMBER_ROLES, null], default: null },
         programmingLevel: { type: String, enum: ['beginner', 'intermediate', 'advanced'], default: null },
         githubUsername: { type: String, default: null },
         status: { type: String, enum: POD_MEMBER_STATUS, default: 'pending' },

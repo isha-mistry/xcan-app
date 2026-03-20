@@ -49,6 +49,7 @@ interface ProjectsGridProps {
     walletAddress?: string | null;
     isMember?: boolean;
     memberStatus?: string | null;
+    memberRole?: string | null;
     collegeSlug?: string;
     onRefresh?: () => void;
     isPodLead?: boolean;
@@ -306,6 +307,7 @@ export default function ProjectsGrid({
     walletAddress,
     isMember,
     memberStatus,
+    memberRole,
     collegeSlug,
     onRefresh,
     isPodLead,
@@ -315,7 +317,8 @@ export default function ProjectsGrid({
     const [submittingAction, setSubmittingAction] = useState(false);
     const [copiedId, setCopiedId] = useState<string | null>(null);
     const wallet = walletAddress?.toLowerCase() ?? null;
-    const showActions = wallet && isMember;
+    const canSubmitOrJoin = memberRole === "pod_member" || memberRole === "pod_lead";
+    const showActions = wallet && isMember && canSubmitOrJoin;
     const isActive = memberStatus === "active";
     const isAlreadyInATeam = projects.some(p => 
         p.teamLeader?.toLowerCase() === wallet || 

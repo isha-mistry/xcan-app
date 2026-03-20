@@ -1,10 +1,10 @@
 "use client";
-import React from "react";
+import React, { useState } from "react";
 import { useParams } from "next/navigation";
 import { usePrivy } from "@privy-io/react-auth";
 import useSWR from "swr";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, UserPlus, Loader2, CheckCircle } from "lucide-react";
 import PodOverviewCard from "@/components/BuilderPods/PodOverviewCard";
 import MembersTable from "@/components/BuilderPods/MembersTable";
 import ProjectsGrid from "@/components/BuilderPods/ProjectsGrid";
@@ -49,17 +49,49 @@ export default function CollegePodPage() {
     const wallet = walletAddress?.toLowerCase() ?? null;
     const currentMember = wallet
         ? members.find(
-              (m: any) =>
-                  m.walletAddress === wallet &&
-                  (m.status === "active" || m.status === "pending")
-          )
+            (m: any) =>
+                m.walletAddress === wallet &&
+                (m.status === "active" || m.status === "pending")
+        )
         : null;
     const isMember = currentMember != null;
     const memberStatus: string | null = currentMember?.status ?? null;
+    const memberRole: string | null = currentMember?.role ?? null;
+    const memberRequestedRole: string | null = currentMember?.requestedRole ?? null;
 
     const isPodLead =
         wallet != null &&
         members.some((m: any) => m.walletAddress.toLowerCase() === wallet && isActiveWeeklyUpdateLead(m));
+
+    const canRequestPodMember =
+        isMember &&
+        memberStatus === "active" &&
+        memberRole === "pod_participant" &&
+        !memberRequestedRole;
+
+    const [requestingRole, setRequestingRole] = useState(false);
+    const [roleRequestResult, setRoleRequestResult] = useState<{ success: boolean; message: string } | null>(null);
+
+    const handleRequestPodMember = async () => {
+        setRequestingRole(true);
+        setRoleRequestResult(null);
+        try {
+            const res = await fetch("/api/builder-pods/request-role", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                credentials: "include",
+                body: JSON.stringify({ collegeSlug: slug, requestedRole: "pod_member" }),
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || "Failed to send request");
+            setRoleRequestResult({ success: true, message: data.message });
+            mutate();
+        } catch (err: any) {
+            setRoleRequestResult({ success: false, message: err.message });
+        } finally {
+            setRequestingRole(false);
+        }
+    };
 
     const handleDataRefresh = () => {
         mutate();
@@ -94,7 +126,57 @@ export default function CollegePodPage() {
                         college={collegeData ?? loadingCollegeData}
                         isLoading={showPodLoaders}
                     />
-                    
+
+                    {/* Request to join as Pod Member */}
+                    {!showPodLoaders && (canRequestPodMember || memberRequestedRole === "pod_member") && (
+                        <div className="my-6 glass-container rounded-2xl p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                            <div>
+                                <h3 className="text-sm font-bold text-white font-unbounded tracking-tight mb-1">
+                                    Become a Pod Member
+                                </h3>
+                                <p className="text-[11px] text-white/60 font-robotoMono leading-relaxed">
+                                    Pod members can submit projects, join teams, and contribute to weekly updates.
+                                </p>
+                            </div>
+                            {memberRequestedRole === "pod_member" ? (
+                                <span className="flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-500/10 border border-amber-500/20 text-[10px] font-bold text-amber-400 font-robotoMono uppercase tracking-wider whitespace-nowrap">
+                                    <Loader2 className="w-3.5 h-3.5" />
+                                    Request Pending
+                                </span>
+                            ) : roleRequestResult?.success ? (
+                                <span className="flex items-center gap-2 px-4 py-2 rounded-xl bg-green-500/10 border border-green-500/20 text-[10px] font-bold text-green-400 font-robotoMono uppercase tracking-wider whitespace-nowrap">
+                                    <CheckCircle className="w-3.5 h-3.5" />
+                                    Request Sent
+                                </span>
+                            ) : (
+                                <div className="flex flex-col items-end gap-1.5">
+                                    <button
+                                        onClick={handleRequestPodMember}
+                                        disabled={requestingRole}
+                                        className="flex items-center gap-2 px-5 py-2.5 bg-white text-black rounded-xl text-[10px] font-bold uppercase tracking-widest font-robotoMono transition-all hover:shadow-lg hover:shadow-white/10 disabled:opacity-30 disabled:cursor-not-allowed whitespace-nowrap"
+                                    >
+                                        {requestingRole ? (
+                                            <>
+                                                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                                Requesting...
+                                            </>
+                                        ) : (
+                                            <>
+                                                <UserPlus className="w-3.5 h-3.5" />
+                                                Request to Join as Pod Member
+                                            </>
+                                        )}
+                                    </button>
+                                    {roleRequestResult && !roleRequestResult.success && (
+                                        <p className="text-[9px] text-red-400 font-robotoMono">
+                                            {roleRequestResult.message}
+                                        </p>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                    )}
+
                     {showPodLoaders ? (
                         <>
                             <MembersTable members={[]} isLoading />
@@ -105,6 +187,7 @@ export default function CollegePodPage() {
                                 walletAddress={walletAddress}
                                 isMember={isMember}
                                 memberStatus={memberStatus}
+                                memberRole={memberRole}
                                 collegeSlug={slug}
                                 onRefresh={handleDataRefresh}
                             />
@@ -121,16 +204,17 @@ export default function CollegePodPage() {
                         <>
                             <MembersTable members={members} isLoading={isLoading} />
 
-                    <ProjectsGrid
-                        projects={projects}
-                        isLoading={isLoading}
-                        walletAddress={walletAddress}
-                        isMember={isMember}
-                        memberStatus={memberStatus}
-                        collegeSlug={slug}
-                        onRefresh={handleDataRefresh}
-                        isPodLead={isPodLead}
-                    />
+                            <ProjectsGrid
+                                projects={projects}
+                                isLoading={isLoading}
+                                walletAddress={walletAddress}
+                                isMember={isMember}
+                                memberStatus={memberStatus}
+                                memberRole={memberRole}
+                                collegeSlug={slug}
+                                onRefresh={handleDataRefresh}
+                                isPodLead={isPodLead}
+                            />
 
                             <WeeklyUpdatesFeed
                                 updates={recentUpdates}

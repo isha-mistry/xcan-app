@@ -23,6 +23,7 @@ import {
     Clock,
     QrCode,
     Building2,
+    ArrowUpCircle,
 } from "lucide-react";
 
 const fetcher = (url: string) =>
@@ -34,6 +35,7 @@ type StatusTab = (typeof STATUS_TABS)[number];
 const ASSIGNABLE_ROLES = [
     { value: "pod_lead", label: "Pod Lead" },
     { value: "pod_member", label: "Pod Member" },
+    { value: "pod_participant", label: "Pod Participant" },
     { value: "faculty_coordinator", label: "Faculty Coordinator" },
     { value: "mentor", label: "Mentor" },
 ] as const;
@@ -48,6 +50,7 @@ const statusStyles: Record<string, { bg: string; text: string }> = {
 const roleStyles: Record<string, { bg: string; text: string }> = {
     pod_lead: { bg: "bg-amber-500/10", text: "text-amber-400" },
     pod_member: { bg: "bg-blue-500/10", text: "text-blue-400" },
+    pod_participant: { bg: "bg-teal-500/10", text: "text-teal-400" },
     faculty_coordinator: { bg: "bg-purple-500/10", text: "text-purple-400" },
     mentor: { bg: "bg-cyan-500/10", text: "text-cyan-400" },
 };
@@ -293,6 +296,10 @@ export default function AdminMembersPage() {
         return c;
     }, [allMembers]);
 
+    const roleRequestCount = useMemo(() => {
+        return allMembers.filter((m: any) => m.requestedRole).length;
+    }, [allMembers]);
+
     const filtered = useMemo(() => {
         let list = allMembers;
         if (activeTab !== "all") {
@@ -369,6 +376,23 @@ export default function AdminMembersPage() {
         }
     };
 
+    const handleRoleRequest = async (memberId: string, action: "approve_role" | "reject_role") => {
+        setProcessing(memberId);
+        try {
+            await fetch("/api/admin/builder-pods/members", {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                credentials: "include",
+                body: JSON.stringify({ memberId, action }),
+            });
+            mutate(apiUrl);
+        } catch (e) {
+            console.error(e);
+        } finally {
+            setProcessing(null);
+        }
+    };
+
     const handleRoleAssign = async (memberId: string, role: string) => {
         setProcessing(memberId);
         try {
@@ -391,6 +415,7 @@ export default function AdminMembersPage() {
         { key: "walletAddress", label: "Wallet", sortable: false },
         { key: "college", label: "College", sortable: true },
         { key: "role", label: "Role", sortable: true },
+        { key: "requestedRole", label: "Request", sortable: false },
         { key: "status", label: "Status", sortable: true },
         { key: "programmingLevel", label: "Level", sortable: true },
         { key: "githubUsername", label: "GitHub", sortable: false },
@@ -421,6 +446,12 @@ export default function AdminMembersPage() {
                     <span className="px-2.5 py-1 rounded-full bg-white/5 text-[10px] font-bold text-white/80 font-robotoMono">
                         {counts.all ?? 0} total
                     </span>
+                    {roleRequestCount > 0 && (
+                        <span className="px-2.5 py-1 rounded-full bg-cyan-500/10 text-[10px] font-bold text-cyan-400 font-robotoMono flex items-center gap-1.5">
+                            <ArrowUpCircle className="w-3 h-3" />
+                            {roleRequestCount} role request{roleRequestCount !== 1 ? "s" : ""}
+                        </span>
+                    )}
                 </div>
                 <div className="flex items-center gap-3 w-full sm:w-auto">
                     {/* College Filter */}
@@ -606,6 +637,39 @@ export default function AdminMembersPage() {
                                                     onAssign={handleRoleAssign}
                                                     disabled={isProcessing || member.status !== "active"}
                                                 />
+                                            </td>
+
+                                            {/* Requested Role */}
+                                            <td className="px-4 py-3">
+                                                {member.requestedRole ? (
+                                                    <div className="flex items-center gap-1.5">
+                                                        <span className="px-2 py-0.5 rounded-full bg-cyan-500/10 text-[9px] font-bold text-cyan-400 uppercase tracking-wider font-robotoMono whitespace-nowrap">
+                                                            → {member.requestedRole === "pod_member" ? "Pod Member" : member.requestedRole.replace(/_/g, " ")}
+                                                        </span>
+                                                        <button
+                                                            onClick={() => handleRoleRequest(member._id, "approve_role")}
+                                                            disabled={isProcessing}
+                                                            title="Approve role request"
+                                                            className="p-1 rounded-lg bg-green-500/10 hover:bg-green-500/20 text-green-400 transition-all disabled:opacity-30"
+                                                        >
+                                                            {isProcessing ? (
+                                                                <Loader2 className="w-3 h-3 animate-spin" />
+                                                            ) : (
+                                                                <Check className="w-3 h-3" />
+                                                            )}
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handleRoleRequest(member._id, "reject_role")}
+                                                            disabled={isProcessing}
+                                                            title="Reject role request"
+                                                            className="p-1 rounded-lg bg-red-500/5 hover:bg-red-500/10 text-red-400 transition-all disabled:opacity-30"
+                                                        >
+                                                            <X className="w-3 h-3" />
+                                                        </button>
+                                                    </div>
+                                                ) : (
+                                                    <span className="text-[11px] text-white/75 font-robotoMono">—</span>
+                                                )}
                                             </td>
 
                                             {/* Status */}

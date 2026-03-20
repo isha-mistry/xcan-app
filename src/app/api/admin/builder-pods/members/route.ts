@@ -134,6 +134,77 @@ export async function PATCH(req: NextRequest) {
                     { $inc: { activeMemberCount: -1 } }
                 );
             }
+        } else if (action === 'approve_role') {
+            if (!member.requestedRole) {
+                return NextResponse.json(
+                    { success: false, error: 'No pending role request' },
+                    { status: 400 }
+                );
+            }
+            const oldRole = member.role;
+            member.role = member.requestedRole;
+            member.requestedRole = null;
+            await member.save();
+
+            if (member.role === 'pod_member') {
+                await awardBadgeOnEvent('pod_member_approved', member.walletAddress, {
+                    collegeId: member.collegeId?.toString(),
+                });
+            }
+
+            await Notification.create({
+                walletAddress: member.walletAddress,
+                type: 'role_assigned',
+                title: 'Role Upgrade Approved! 🎉',
+                body: `You are now a ${member.role === 'pod_member' ? 'Pod Member' : member.role}. You can now submit projects and join teams.`,
+                link: '/builder-pods',
+            });
+
+            await AuditLog.create({
+                actorWallet: adminWallet,
+                action: 'member.approve_role',
+                entityType: 'PodMember',
+                entityId: memberId,
+                oldValue: { role: oldRole },
+                newValue: { role: member.role },
+            });
+
+            return NextResponse.json(
+                { success: true, member: { _id: member._id, role: member.role, status: member.status } },
+                { status: 200 }
+            );
+        } else if (action === 'reject_role') {
+            if (!member.requestedRole) {
+                return NextResponse.json(
+                    { success: false, error: 'No pending role request' },
+                    { status: 400 }
+                );
+            }
+            const rejectedRole = member.requestedRole;
+            member.requestedRole = null;
+            await member.save();
+
+            await Notification.create({
+                walletAddress: member.walletAddress,
+                type: 'role_assigned',
+                title: 'Role Request Update',
+                body: `Your request for ${rejectedRole === 'pod_member' ? 'Pod Member' : rejectedRole} role was not approved at this time.`,
+                link: '/builder-pods',
+            });
+
+            await AuditLog.create({
+                actorWallet: adminWallet,
+                action: 'member.reject_role',
+                entityType: 'PodMember',
+                entityId: memberId,
+                oldValue: { requestedRole: rejectedRole },
+                newValue: { requestedRole: null },
+            });
+
+            return NextResponse.json(
+                { success: true, member: { _id: member._id, role: member.role, status: member.status } },
+                { status: 200 }
+            );
         } else {
             return NextResponse.json(
                 { success: false, error: 'Invalid action' },

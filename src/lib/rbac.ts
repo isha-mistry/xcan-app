@@ -12,6 +12,7 @@ export type RoleSlug =
     | 'mentor'
     | 'pod_lead'
     | 'pod_member'
+    | 'pod_participant'
     | 'faculty_coordinator';
 
 export interface AuthContext {

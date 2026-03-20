@@ -23,7 +23,7 @@ export async function GET(
 
         const [members, projects, recentUpdates] = await Promise.all([
             PodMember.find({ collegeId: college._id, deletedAt: null })
-                .select('walletAddress name role programmingLevel githubUsername status stylusModulesCompleted contractsDeployed totalScore')
+                .select('walletAddress name role requestedRole programmingLevel githubUsername status stylusModulesCompleted contractsDeployed totalScore')
                 .sort({ role: 1, name: 1 })
                 .lean(),
 
