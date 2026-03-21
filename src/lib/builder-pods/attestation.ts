@@ -22,6 +22,7 @@ export const EAS_CONTRACT_ADDRESS = '0xC2679fBD37d54388Ce493F1DB75320D236e1815e'
 export const SCHEMA_REGISTRY_ADDRESS = '0x0a7E2Ff54e76B8E6659aedc9103FB21c038050D0';
 export const EAS_CHAIN_ID = 11155111; // Ethereum Sepolia
 export const EAS_EXPLORER = 'https://sepolia.easscan.org';
+export const EAS_GRAPHQL_URL = 'https://sepolia.easscan.org/graphql';
 export const BADGE_SCHEMA = 'string badgeType, string issuer, string college, string programCohort, address walletAddress, uint256 issuedAt';
 
 // ── Types ────────────────────────────────────────────────────────────────────
@@ -107,13 +108,100 @@ export async function issueOnChainAttestation(
 }
 
 /**
+ * Check the EAS GraphQL API for an existing attestation matching the
+ * given (recipient, badgeType, college) combination under our schema.
+ *
+ * This prevents duplicate on-chain attestations when MongoDB data is
+ * wiped and badges are re-assigned.
+ *
+ * Returns the existing attestation UID if found, or null otherwise.
+ */
+export async function findExistingAttestation(
+    recipientWallet: string,
+    badgeType: string,
+    college: string
+): Promise<string | null> {
+    const schemaUid = process.env.EAS_SCHEMA_UID;
+    if (!schemaUid) return null;
+
+    try {
+        const query = `
+            query FindExistingAttestation($where: AttestationWhereInput) {
+                attestations(where: $where) {
+                    id
+                    decodedDataJson
+                }
+            }
+        `;
+
+        const variables = {
+            where: {
+                schemaId: { equals: schemaUid },
+                recipient: { equals: recipientWallet },
+                revoked: { equals: false },
+            },
+        };
+
+        const res = await fetch(EAS_GRAPHQL_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ query, variables }),
+        });
+
+        if (!res.ok) {
+            console.warn(`[attestation] EAS GraphQL query failed with status ${res.status}`);
+            return null;
+        }
+
+        const json = await res.json();
+        const attestations: Array<{ id: string; decodedDataJson: string }> =
+            json?.data?.attestations ?? [];
+
+        // Search through the matching attestations for one that has the same
+        // badgeType AND college in its decoded data.
+        for (const att of attestations) {
+            try {
+                // decodedDataJson is a JSON array of { name, type, value } objects
+                const decoded: Array<{ name: string; type: string; value: { value: string } }> =
+                    JSON.parse(att.decodedDataJson);
+
+                const attBadgeType = decoded.find((d) => d.name === 'badgeType')?.value?.value;
+                const attCollege = decoded.find((d) => d.name === 'college')?.value?.value;
+
+                if (
+                    attBadgeType?.toLowerCase() === badgeType.toLowerCase() &&
+                    attCollege?.toLowerCase() === college.toLowerCase()
+                ) {
+                    console.log(
+                        `[attestation] Found existing on-chain attestation ${att.id} for ` +
+                            `wallet=${recipientWallet}, badge=${badgeType}, college=${college}`
+                    );
+                    return att.id;
+                }
+            } catch {
+                // Skip attestations with unparseable data
+                continue;
+            }
+        }
+
+        return null;
+    } catch (err) {
+        console.error('[attestation] Error querying EAS GraphQL for existing attestation:', err);
+        // On error, return null so attestation proceeds (fail-open to avoid
+        // blocking legitimate first-time attestations)
+        return null;
+    }
+}
+
+/**
  * Queue/issue attestation — wrapper used by the attest API route.
  *
  * This function is the one imported by:
  *   src/app/api/builder-pods/badges/attest/[userBadgeId]/route.ts
  *
- * It resolves the college name from the memberʼs collegeId, then calls
- * issueOnChainAttestation.
+ * It resolves the college name from the member's collegeId, checks if an
+ * attestation already exists on-chain via the EAS GraphQL API, and only
+ * issues a new attestation if none is found.
  */
 export async function queueOnChainAttestation(
     walletAddress: string,
@@ -166,6 +254,19 @@ export async function queueOnChainAttestation(
         }
     } catch (err) {
         console.error('[attestation] Failed to resolve college name for badge attestation', err);
+    }
+
+    // ── On-chain duplicate check ─────────────────────────────────────────
+    // Query the EAS GraphQL API to see if this wallet already has an
+    // attestation for this badgeType + college. If so, reuse the existing
+    // UID instead of issuing a duplicate on-chain attestation.
+    const existingUid = await findExistingAttestation(walletAddress, badgeSlug, collegeName);
+    if (existingUid) {
+        console.log(
+            `[attestation] Skipping duplicate attestation for wallet=${walletAddress}, ` +
+                `badge=${badgeSlug}, college=${collegeName}. Reusing existing UID: ${existingUid}`
+        );
+        return existingUid;
     }
 
     const result = await issueOnChainAttestation({
