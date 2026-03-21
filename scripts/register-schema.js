@@ -24,15 +24,16 @@ const SCHEMA_REGISTRY_ADDRESS = '0x0a7E2Ff54e76B8E6659aedc9103FB21c038050D0';
 
 // ── Badge attestation schema ─────────────────────────────────────────────────
 // Fields:
-//   badgeType      (string)  — slug: builder_lab_participant, builder_pod_member,
-//                              builder_pod_lead, regional_showcase_finalist,
-//                              regional_showcase_winner
-//   issuer         (string)  — always "Lampros DAO" — hard on-chain proof of issuer
-//   college        (string)  — college / pod name the badge is associated with
-//   programCohort  (string)  — batch year e.g. "2026" (useful for multi-year queries)
-//   walletAddress  (address) — student wallet (makes badges queryable by address on easscan)
-//   issuedAt       (uint256) — unix timestamp of badge issuance
-const SCHEMA = 'string badgeType, string issuer, string college, string programCohort, address walletAddress, uint256 issuedAt';
+//   badgeType             (string)  — slug: builder_lab_participant, builder_pod_member,
+//                                     builder_pod_lead, regional_showcase_finalist,
+//                                     regional_showcase_winner
+//   issuer                (string)  — always "Lampros DAO" — hard on-chain proof of issuer
+//   college               (string)  — college / pod name the badge is associated with
+//   programCohort         (string)  — batch year e.g. "2026" (useful for multi-year queries)
+//   walletAddress         (address) — student wallet (makes badges queryable by address on easscan)
+//   issuedAt              (uint256) — unix timestamp of badge issuance
+//   achievementDescription (string) — short human-readable description of what they achieved
+const SCHEMA = 'string badgeType, string issuer, string college, string programCohort, address walletAddress, uint256 issuedAt, string achievementDescription';
 
 async function registerSchema() {
   const RPC_URL = process.env.SEPOLIA_RPC;
@@ -58,30 +59,56 @@ async function registerSchema() {
     process.exit(1);
   }
 
-  console.log('📝 Registering schema on SchemaRegistry...');
-  console.log(`   Schema: "${SCHEMA}"`);
-  console.log(`   Registry: ${SCHEMA_REGISTRY_ADDRESS}`);
+  const RESOLVER_ADDRESS = ethers.ZeroAddress;
+  const REVOCABLE = true;
 
   const schemaRegistry = new SchemaRegistry(SCHEMA_REGISTRY_ADDRESS);
   schemaRegistry.connect(signer);
 
+  const schemaUID = SchemaRegistry.getSchemaUID(SCHEMA, RESOLVER_ADDRESS, REVOCABLE);
+  console.log('📝 Checking schema on SchemaRegistry...');
+  console.log(`   Schema: "${SCHEMA}"`);
+  console.log(`   Registry: ${SCHEMA_REGISTRY_ADDRESS}`);
+  console.log(`   Expected UID: ${schemaUID}`);
+
+  try {
+    const existing = await schemaRegistry.getSchema({ uid: schemaUID });
+    if (existing.uid !== ethers.ZeroHash) {
+      console.log('');
+      console.log('═══════════════════════════════════════════════════════════════');
+      console.log('✅ Schema already registered (skipping registration)');
+      console.log('');
+      console.log(`   Schema UID: ${schemaUID}`);
+      console.log(`   View at:    https://sepolia.easscan.org/schema/view/${schemaUID}`);
+      console.log('');
+      console.log('📋 Add this to your .env:');
+      console.log(`   EAS_SCHEMA_UID=${schemaUID}`);
+      console.log('═══════════════════════════════════════════════════════════════');
+      return;
+    }
+  } catch (e) {
+    if (!e.message?.includes('Schema not found')) throw e;
+  }
+
+  console.log('⏳ Registering new schema...');
   const tx = await schemaRegistry.register({
     schema: SCHEMA,
-    revocable: true,
+    resolverAddress: RESOLVER_ADDRESS,
+    revocable: REVOCABLE,
   });
 
   console.log('⏳ Waiting for transaction confirmation...');
-  const schemaUID = await tx.wait();
+  const uid = await tx.wait();
 
   console.log('');
   console.log('═══════════════════════════════════════════════════════════════');
   console.log('✅ Schema registered successfully!');
   console.log('');
-  console.log(`   Schema UID: ${schemaUID}`);
-  console.log(`   View at:    https://sepolia.easscan.org/schema/view/${schemaUID}`);
+  console.log(`   Schema UID: ${uid}`);
+  console.log(`   View at:    https://sepolia.easscan.org/schema/view/${uid}`);
   console.log('');
   console.log('📋 Add this to your .env:');
-  console.log(`   EAS_SCHEMA_UID=${schemaUID}`);
+  console.log(`   EAS_SCHEMA_UID=${uid}`);
   console.log('═══════════════════════════════════════════════════════════════');
 }
 

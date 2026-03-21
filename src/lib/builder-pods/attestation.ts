@@ -8,7 +8,8 @@
  *   Explorer:              https://sepolia.easscan.org
  *
  * Schema (register once via scripts/register-schema.js):
- *   "string badgeType, string college, uint256 issuedAt"
+ *   string badgeType, string issuer, string college, string programCohort,
+ *   address walletAddress, uint256 issuedAt, string achievementDescription
  *
  * Env variables required:
  *   SEPOLIA_RPC            - Sepolia JSON-RPC endpoint
@@ -23,7 +24,22 @@ export const SCHEMA_REGISTRY_ADDRESS = '0x0a7E2Ff54e76B8E6659aedc9103FB21c038050
 export const EAS_CHAIN_ID = 11155111; // Ethereum Sepolia
 export const EAS_EXPLORER = 'https://sepolia.easscan.org';
 export const EAS_GRAPHQL_URL = 'https://sepolia.easscan.org/graphql';
-export const BADGE_SCHEMA = 'string badgeType, string issuer, string college, string programCohort, address walletAddress, uint256 issuedAt';
+export const BADGE_SCHEMA =
+    'string badgeType, string issuer, string college, string programCohort, address walletAddress, uint256 issuedAt, string achievementDescription';
+
+/** Human-readable achievement descriptions for each badge type (shown on-chain). */
+export const BADGE_ACHIEVEMENT_DESCRIPTIONS: Record<string, string> = {
+    builder_lab_participant:
+        'Participated in the Arbitrum Builder Pod and registered successfully to learn web3 and build real projects with AI assistant.',
+    builder_pod_member:
+        'Selected to join the Builder Pod for a span of months; will be part of a project that will be built and showcased at the regional showcase event.',
+    builder_pod_lead:
+        'Lead of the project submitted to the regional showcase event; responsible for managing the project, giving weekly updates, and communicating via sync calls to LamprosDAO.',
+    regional_showcase_finalist:
+        'Project selected to advance to judging rounds for final winner selection.',
+    regional_showcase_winner:
+        'Project selected for the win prize pool of 1,000 USDC.',
+};
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -77,14 +93,18 @@ export async function issueOnChainAttestation(
     const schemaEncoder = new SchemaEncoder(BADGE_SCHEMA);
     const issuedAt = Math.floor(Date.now() / 1000);
     const cohort = params.programCohort ?? String(new Date().getFullYear());
+    const achievementDescription =
+        BADGE_ACHIEVEMENT_DESCRIPTIONS[params.badgeType] ??
+        `Awarded ${params.badgeType} badge by Lampros DAO.`;
 
     const encodedData = schemaEncoder.encodeData([
-        { name: 'badgeType',     value: params.badgeType,       type: 'string'  },
-        { name: 'issuer',        value: 'Lampros DAO',           type: 'string'  },
-        { name: 'college',       value: params.college,          type: 'string'  },
-        { name: 'programCohort', value: cohort,                  type: 'string'  },
-        { name: 'walletAddress', value: params.recipientWallet,  type: 'address' },
-        { name: 'issuedAt',      value: issuedAt.toString(),     type: 'uint256' },
+        { name: 'badgeType', value: params.badgeType, type: 'string' },
+        { name: 'issuer', value: 'Lampros DAO', type: 'string' },
+        { name: 'college', value: params.college, type: 'string' },
+        { name: 'programCohort', value: cohort, type: 'string' },
+        { name: 'walletAddress', value: params.recipientWallet, type: 'address' },
+        { name: 'issuedAt', value: issuedAt.toString(), type: 'uint256' },
+        { name: 'achievementDescription', value: achievementDescription, type: 'string' },
     ]);
 
     const tx = await eas.attest({
