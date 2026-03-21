@@ -14,7 +14,7 @@ import {
     AlertCircle,
 } from "lucide-react";
 
-const fetcher = (url: string) => fetch(url, { credentials: "include" }).then((r) => r.json());
+import { adminFetcher, ADMIN_SWR_STATIC_OPTIONS } from "@/lib/fetchers";
 
 const BADGE_SLUGS = [
     { slug: "builder_lab_participant", label: "Lab Participant", color: "text-cyan-400", bg: "bg-cyan-500/10" },
@@ -25,11 +25,12 @@ const BADGE_SLUGS = [
 ];
 
 export default function AdminBadgesPage() {
-    const { data: badgeTypesData } = useSWR("/api/builder-pods/badges", fetcher);
+    const { data: badgeTypesData } = useSWR("/api/builder-pods/badges", adminFetcher, ADMIN_SWR_STATIC_OPTIONS);
     const [walletSearch, setWalletSearch] = useState("");
     const { data: userBadgesData, isLoading: userLoading } = useSWR(
         walletSearch.length >= 6 ? `/api/builder-pods/badges/user/${walletSearch}` : null,
-        fetcher
+        adminFetcher,
+        ADMIN_SWR_STATIC_OPTIONS
     );
 
     const [assigning, setAssigning] = useState(false);

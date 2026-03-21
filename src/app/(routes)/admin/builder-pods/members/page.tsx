@@ -25,9 +25,7 @@ import {
     Building2,
     ArrowUpCircle,
 } from "lucide-react";
-
-const fetcher = (url: string) =>
-    fetch(url, { credentials: "include" }).then((r) => r.json());
+import { adminFetcher, ADMIN_SWR_OPTIONS } from "@/lib/fetchers";
 
 const STATUS_TABS = ["all", "pending", "active", "inactive", "removed"] as const;
 type StatusTab = (typeof STATUS_TABS)[number];
@@ -272,7 +270,7 @@ export default function AdminMembersPage() {
 
     const apiUrl = `/api/admin/builder-pods/members?status=pending,active,inactive,removed`;
 
-    const { data, isLoading } = useSWR(apiUrl, fetcher);
+    const { data, isLoading, error } = useSWR(apiUrl, adminFetcher, ADMIN_SWR_OPTIONS);
 
     const allMembers: any[] = data?.members ?? [];
 
@@ -512,7 +510,22 @@ export default function AdminMembersPage() {
             </div>
 
             {/* Table */}
-            {isLoading ? (
+            {error ? (
+                <div className="glass-container rounded-2xl p-12 text-center">
+                    <Users className="w-8 h-8 text-amber-400/50 mx-auto mb-3" />
+                    <p className="text-sm text-amber-300 font-robotoMono">
+                        {(error as any)?.status === 401
+                            ? "Session expired. Please refresh or re-authenticate."
+                            : "Unable to load members right now."}
+                    </p>
+                    <button
+                        onClick={() => mutate(apiUrl)}
+                        className="mt-4 px-4 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-[10px] text-white/60 font-robotoMono transition-all"
+                    >
+                        Retry
+                    </button>
+                </div>
+            ) : isLoading ? (
                 <div className="glass-container rounded-2xl p-6 animate-pulse">
                     <div className="space-y-3">
                         {Array.from({ length: 8 }).map((_, i) => (

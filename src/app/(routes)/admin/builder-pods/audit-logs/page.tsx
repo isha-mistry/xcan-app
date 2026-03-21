@@ -12,7 +12,7 @@ import {
     User,
 } from "lucide-react";
 
-const fetcher = (url: string) => fetch(url, { credentials: "include" }).then((r) => r.json());
+import { adminFetcher, ADMIN_SWR_STATIC_OPTIONS } from "@/lib/fetchers";
 
 export default function AdminAuditLogsPage() {
     const [page, setPage] = useState(1);
@@ -21,11 +21,12 @@ export default function AdminAuditLogsPage() {
 
     const params = new URLSearchParams({ page: String(page), limit: "50" });
     if (actionFilter) params.set("action", actionFilter);
-    if (walletFilter) params.set("wallet", walletFilter);
+    if (walletFilter) params.set("actor", walletFilter);
 
-    const { data, isLoading } = useSWR(
+    const { data, isLoading, error } = useSWR(
         `/api/admin/builder-pods/audit-logs?${params.toString()}`,
-        fetcher
+        adminFetcher,
+        ADMIN_SWR_STATIC_OPTIONS
     );
 
     const logs = data?.logs ?? [];
@@ -84,7 +85,16 @@ export default function AdminAuditLogsPage() {
             </div>
 
             {/* Logs */}
-            {isLoading ? (
+            {error ? (
+                <div className="glass-container rounded-2xl p-12 text-center">
+                    <ScrollText className="w-8 h-8 text-amber-400/50 mx-auto mb-3" />
+                    <p className="text-sm text-amber-300 font-robotoMono">
+                        {(error as any)?.status === 401
+                            ? "Session expired. Please refresh or re-authenticate."
+                            : "Unable to load audit logs right now."}
+                    </p>
+                </div>
+            ) : isLoading ? (
                 <div className="space-y-1">
                     {Array.from({ length: 10 }).map((_, i) => (
                         <div key={i} className="h-12 bg-white/[0.02] rounded-lg animate-pulse" />

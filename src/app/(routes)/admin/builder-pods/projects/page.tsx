@@ -11,7 +11,7 @@ import {
     CheckCircle2,
 } from "lucide-react";
 
-const fetcher = (url: string) => fetch(url, { credentials: "include" }).then((r) => r.json());
+import { adminFetcher, ADMIN_SWR_OPTIONS } from "@/lib/fetchers";
 
 const STATUS_COLUMNS = [
     { key: "ideation", label: "Ideation", color: "text-gray-400", bg: "bg-gray-500/10" },
@@ -24,13 +24,15 @@ const STATUS_COLUMNS = [
 export default function AdminProjectsPage() {
     const { data, isLoading } = useSWR(
         "/api/admin/builder-pods/colleges",
-        fetcher
+        adminFetcher,
+        ADMIN_SWR_OPTIONS
     );
 
     const [selectedCollege, setSelectedCollege] = useState<string | null>(null);
     const { data: projectsData, isLoading: projectsLoading } = useSWR(
         selectedCollege ? `/api/builder-pods/colleges/${selectedCollege}/projects` : null,
-        fetcher
+        adminFetcher,
+        ADMIN_SWR_OPTIONS
     );
     const [updating, setUpdating] = useState<string | null>(null);
 

@@ -21,7 +21,7 @@ import {
     Clock,
 } from "lucide-react";
 
-const fetcher = (url: string) => fetch(url, { credentials: "include" }).then((r) => r.json());
+import { adminFetcher, ADMIN_SWR_OPTIONS } from "@/lib/fetchers";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -317,8 +317,8 @@ export default function AdminShowcasesPage() {
     const [currentPage, setCurrentPage] = useState(1);
 
     // API Hooks
-    const { data: subData, isLoading: subsLoading, mutate: boundMutate } = useSWR("/api/admin/builder-pods/showcases", fetcher);
-    const { data: eventData } = useSWR("/api/admin/builder-pods/events", fetcher);
+    const { data: subData, isLoading: subsLoading, error: subsError, mutate: boundMutate } = useSWR("/api/admin/builder-pods/showcases", adminFetcher, ADMIN_SWR_OPTIONS);
+    const { data: eventData } = useSWR("/api/admin/builder-pods/events", adminFetcher, ADMIN_SWR_OPTIONS);
 
     const allSubmissions: any[] = subData?.submissions ?? [];
     const events = eventData?.events ?? [];
@@ -452,6 +452,7 @@ export default function AdminShowcasesPage() {
             const res = await fetch(url, {
                 method: isEditing ? "PATCH" : "POST",
                 headers: { "Content-Type": "application/json" },
+                credentials: "include",
                 body: JSON.stringify(data),
             });
             if (res.ok) {
@@ -466,7 +467,7 @@ export default function AdminShowcasesPage() {
     const handleDeleteEvent = async (id: string) => {
         if (!confirm("Are you sure? This will delete the event and all its associated submissions.")) return;
         try {
-            const res = await fetch(`/api/admin/builder-pods/events/${id}`, { method: "DELETE" });
+            const res = await fetch(`/api/admin/builder-pods/events/${id}`, { method: "DELETE", credentials: "include" });
             if (res.ok) mutate("/api/admin/builder-pods/events");
         } catch (e) {
             console.error(e);
@@ -552,7 +553,22 @@ export default function AdminShowcasesPage() {
                         </div>
 
                         {/* Submissions List */}
-                        {subsLoading ? (
+                        {subsError ? (
+                            <div className="glass-container rounded-2xl p-12 text-center">
+                                <Trophy className="w-8 h-8 text-amber-400/50 mx-auto mb-3" />
+                                <p className="text-sm text-amber-300 font-robotoMono">
+                                    {(subsError as any)?.status === 401
+                                        ? "Session expired. Please refresh or re-authenticate."
+                                        : "Unable to load submissions right now."}
+                                </p>
+                                <button
+                                    onClick={() => boundMutate()}
+                                    className="mt-4 px-4 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-[10px] text-white/60 font-robotoMono transition-all"
+                                >
+                                    Retry
+                                </button>
+                            </div>
+                        ) : subsLoading ? (
                             <div className="space-y-2">
                                 {[1, 2, 3].map(i => <div key={i} className="glass-container h-24 animate-pulse rounded-xl" />)}
                             </div>

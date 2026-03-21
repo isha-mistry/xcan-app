@@ -11,12 +11,13 @@ import {
     BarChart3,
 } from "lucide-react";
 
-const fetcher = (url: string) => fetch(url, { credentials: "include" }).then((r) => r.json());
+import { adminFetcher, ADMIN_SWR_STATIC_OPTIONS } from "@/lib/fetchers";
 
 export default function AdminMilestonesPage() {
-    const { data, isLoading } = useSWR(
+    const { data, isLoading, error } = useSWR(
         "/api/admin/builder-pods/milestones",
-        fetcher
+        adminFetcher,
+        ADMIN_SWR_STATIC_OPTIONS
     );
 
     const milestones = data?.milestones ?? [];
@@ -90,7 +91,16 @@ export default function AdminMilestonesPage() {
                 </div>
             )}
 
-            {isLoading ? (
+            {error ? (
+                <div className="glass-container rounded-2xl p-12 text-center">
+                    <Target className="w-8 h-8 text-amber-400/50 mx-auto mb-3" />
+                    <p className="text-sm text-amber-300 font-robotoMono">
+                        {(error as any)?.status === 401
+                            ? "Session expired. Please refresh or re-authenticate."
+                            : "Unable to load milestones right now."}
+                    </p>
+                </div>
+            ) : isLoading ? (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                     {Array.from({ length: 6 }).map((_, i) => (
                         <div key={i} className="glass-container rounded-2xl p-6 animate-pulse">

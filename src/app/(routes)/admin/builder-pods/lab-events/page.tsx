@@ -16,7 +16,7 @@ import {
     Image as ImageIcon,
 } from "lucide-react";
 
-const fetcher = (url: string) => fetch(url, { credentials: "include" }).then((r) => r.json());
+import { adminFetcher, ADMIN_SWR_OPTIONS } from "@/lib/fetchers";
 
 interface AdminCollegeOption {
     _id: string;
@@ -28,13 +28,15 @@ interface AdminCollegeOption {
 }
 
 export default function AdminLabEventsPage() {
-    const { data, isLoading } = useSWR(
+    const { data, isLoading, error } = useSWR(
         "/api/admin/builder-pods/lab-events",
-        fetcher
+        adminFetcher,
+        ADMIN_SWR_OPTIONS
     );
     const { data: collegesData, isLoading: loadingColleges } = useSWR(
         "/api/admin/builder-pods/colleges",
-        fetcher
+        adminFetcher,
+        ADMIN_SWR_OPTIONS
     );
 
     const [showForm, setShowForm] = useState(false);
@@ -265,7 +267,22 @@ export default function AdminLabEventsPage() {
             )}
 
             {/* Events List */}
-            {isLoading ? (
+            {error ? (
+                <div className="glass-container rounded-2xl p-12 text-center">
+                    <QrCode className="w-8 h-8 text-amber-400/50 mx-auto mb-3" />
+                    <p className="text-sm text-amber-300 font-robotoMono">
+                        {(error as any)?.status === 401
+                            ? "Session expired. Please refresh or re-authenticate."
+                            : "Unable to load lab events right now."}
+                    </p>
+                    <button
+                        onClick={() => mutate("/api/admin/builder-pods/lab-events")}
+                        className="mt-4 px-4 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-[10px] text-white/60 font-robotoMono transition-all"
+                    >
+                        Retry
+                    </button>
+                </div>
+            ) : isLoading ? (
                 <div className="space-y-2">
                     {Array.from({ length: 3 }).map((_, i) => (
                         <div key={i} className="glass-container rounded-xl p-5 animate-pulse">

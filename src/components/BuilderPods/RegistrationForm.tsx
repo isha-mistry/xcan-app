@@ -166,7 +166,7 @@ export default function RegistrationForm({
             transition={{ duration: 0.5 }}
             className="glass-container rounded-2xl p-6 md:p-8 max-w-2xl mx-auto"
         >
-            <h2 className=" tracking-tight mb-1">
+            <h2 className=" tracking-tight mb-1 font-sans">
                 Join a Builder Pod
             </h2>
             <p className="text-xs text-white/60 font-robotoMono mb-8">
@@ -415,7 +415,7 @@ export default function RegistrationForm({
                             </p>
 
                             <a
-                                href={`/profile/${walletAddress}`}
+                                href={`/profile/${walletAddress}?active=info`}
                                 className="inline-flex items-center gap-2 px-6 py-3 bg-white text-black rounded-xl text-[11px] font-bold uppercase tracking-widest font-robotoMono transition-all hover:shadow-lg hover:shadow-white/10"
                             >
                                 View Profile
