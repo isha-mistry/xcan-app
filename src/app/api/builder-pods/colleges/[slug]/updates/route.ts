@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { dbConnect } from '@/lib/dbConnect';
 import { College } from '@/models/College';
 import { WeeklyUpdate } from '@/models/WeeklyUpdate';
+import { getAuthContext, hasAnyRole } from '@/lib/rbac';
 
 export async function GET(
     req: NextRequest,
@@ -26,7 +27,7 @@ export async function GET(
 
         const [updates, total] = await Promise.all([
             WeeklyUpdate.find({ collegeId: college._id, deletedAt: null })
-                .select('submittedBy weekNumber year completedThisWeek blockers nextMilestone githubLink reviewedBy reviewedAt createdAt')
+                .select('submittedBy targetProjectId weekNumber year completedThisWeek blockers nextMilestone githubLink reviewedBy reviewedAt createdAt')
                 .sort({ year: -1, weekNumber: -1 })
                 .skip(skip)
                 .limit(limit)
@@ -34,10 +35,16 @@ export async function GET(
             WeeklyUpdate.countDocuments({ collegeId: college._id, deletedAt: null }),
         ]);
 
+        const ctx = await getAuthContext(req);
+        const isCollegeAdmin = ctx
+            ? hasAnyRole(ctx, ['super_admin', 'college_admin'], college._id.toString())
+            : false;
+
         return NextResponse.json(
             {
                 success: true,
                 updates,
+                isCollegeAdmin,
                 pagination: {
                     page,
                     limit,
