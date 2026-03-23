@@ -85,6 +85,9 @@ export async function issueOnChainAttestation(
         );
     }
 
+    // Normalize recipient to checksummed format for consistent on-chain storage
+    const checksummedRecipient = ethers.getAddress(params.recipientWallet);
+
     const provider = new ethers.JsonRpcProvider(rpcUrl);
     const signer = new ethers.Wallet(privateKey, provider);
     const eas = new EAS(EAS_CONTRACT_ADDRESS);
@@ -102,7 +105,7 @@ export async function issueOnChainAttestation(
         { name: 'issuer', value: 'Lampros DAO', type: 'string' },
         { name: 'college', value: params.college, type: 'string' },
         { name: 'programCohort', value: cohort, type: 'string' },
-        { name: 'walletAddress', value: params.recipientWallet, type: 'address' },
+        { name: 'walletAddress', value: checksummedRecipient, type: 'address' },
         { name: 'issuedAt', value: issuedAt.toString(), type: 'uint256' },
         { name: 'achievementDescription', value: achievementDescription, type: 'string' },
     ]);
@@ -110,7 +113,7 @@ export async function issueOnChainAttestation(
     const tx = await eas.attest({
         schema: schemaUid,
         data: {
-            recipient: params.recipientWallet,
+            recipient: checksummedRecipient,
             expirationTime: BigInt(0), // Permanent — no expiration
             revocable: true,
             data: encodedData,
@@ -145,6 +148,11 @@ export async function findExistingAttestation(
     if (!schemaUid) return null;
 
     try {
+        // Normalize to checksummed format so the GraphQL `equals` filter
+        // matches the address format stored by the EAS indexer.
+        const { ethers } = await import('ethers');
+        const checksummedWallet = ethers.getAddress(recipientWallet);
+
         const query = `
             query FindExistingAttestation($where: AttestationWhereInput) {
                 attestations(where: $where) {
@@ -157,7 +165,7 @@ export async function findExistingAttestation(
         const variables = {
             where: {
                 schemaId: { equals: schemaUid },
-                recipient: { equals: recipientWallet },
+                recipient: { equals: checksummedWallet },
                 revoked: { equals: false },
             },
         };
@@ -169,8 +177,7 @@ export async function findExistingAttestation(
         });
 
         if (!res.ok) {
-            console.warn(`[attestation] EAS GraphQL query failed with status ${res.status}`);
-            return null;
+            throw new Error(`EAS GraphQL query failed with HTTP status ${res.status}`);
         }
 
         const json = await res.json();
@@ -207,9 +214,13 @@ export async function findExistingAttestation(
         return null;
     } catch (err) {
         console.error('[attestation] Error querying EAS GraphQL for existing attestation:', err);
-        // On error, return null so attestation proceeds (fail-open to avoid
-        // blocking legitimate first-time attestations)
-        return null;
+        // Fail-closed: throw error to prevent duplicate on-chain attestations.
+        // The caller (attestBadgeOnChain) will catch this and leave easUid null
+        // so the attestation can be retried later.
+        throw new Error(
+            `[attestation] Cannot verify on-chain duplicate status for ` +
+            `wallet=${recipientWallet}, badge=${badgeType}, college=${college}: ${err}`
+        );
     }
 }
 
