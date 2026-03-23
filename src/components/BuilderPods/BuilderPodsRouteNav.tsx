@@ -72,7 +72,7 @@ export default function BuilderPodsRouteNav() {
 
   const profileHref = address ? `/builder-pods/profile` : "/members";
   const profileItem: NavItem = { label: "Profile", href: profileHref, icon: User };
-  const userNavItems = [...coreItems, ...myPodItem, profileItem];
+  const userNavItems = [...coreItems, ...myPodItem];
   const navItems = isAdminRoute ? adminItems : userNavItems;
 
   // Only mark ONE item as active: the most specific match (longest href).

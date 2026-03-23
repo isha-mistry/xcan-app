@@ -123,8 +123,25 @@ export async function PATCH(req: NextRequest) {
             await recalculateMemberScore(member._id);
             await recalculatePodScore(member.collegeId);
         } else if (action === 'reject') {
-            member.status = 'inactive';
-            await member.save();
+            // Permanently delete the rejected pending member from the DB
+            await PodMember.findByIdAndDelete(memberId);
+            // Decrement the college memberCount (was incremented on registration)
+            await College.updateOne(
+                { _id: member.collegeId },
+                { $inc: { memberCount: -1 } }
+            );
+            await AuditLog.create({
+                actorWallet: adminWallet,
+                action: 'member.reject',
+                entityType: 'PodMember',
+                entityId: memberId,
+                oldValue: { status: oldStatus },
+                newValue: { deleted: true },
+            });
+            return NextResponse.json(
+                { success: true, deleted: true },
+                { status: 200 }
+            );
         } else if (action === 'deactivate') {
             member.status = 'inactive';
             await member.save();

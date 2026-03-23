@@ -27,6 +27,7 @@ interface WeeklyUpdateFormProps {
     collegeSlug: string;
     onSuccess?: () => void;
     projects?: any[];
+    canSubmitOverride?: boolean;
     editData?: {
         id: string;
         targetProjectId?: string;
@@ -42,6 +43,7 @@ export default function WeeklyUpdateForm({
     collegeSlug,
     projects = [],
     onSuccess,
+    canSubmitOverride = false,
     editData,
     trigger,
 }: WeeklyUpdateFormProps) {
@@ -81,8 +83,8 @@ export default function WeeklyUpdateForm({
     const userStatus = currentUser?.status || "pending";
     
     const isAuthorized = useMemo(() => {
-        return isActiveWeeklyUpdateLead(currentUser);
-    }, [currentUser]);
+        return canSubmitOverride || isActiveWeeklyUpdateLead(currentUser);
+    }, [canSubmitOverride, currentUser]);
 
     // Role display label
     const roleLabel = useMemo(() => {
