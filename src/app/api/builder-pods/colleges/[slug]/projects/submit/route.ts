@@ -72,6 +72,17 @@ export async function POST(
             );
         }
 
+        if (!isAdmin && membership.role !== 'pod_lead') {
+            return NextResponse.json(
+                {
+                    success: false,
+                    error:
+                        'Only Pod Leads can submit projects. Request Pod Lead from your college admin if you need to create a project.',
+                },
+                { status: 403 }
+            );
+        }
+
         const project = await PodProject.create({
             collegeId: college._id,
             name: name.trim(),
@@ -90,14 +101,6 @@ export async function POST(
                 joinedAt: new Date(),
             }],
         });
-
-        // Auto-promote the PodMember role from pod_member to pod_lead
-        if (membership.role === 'pod_member') {
-            await PodMember.updateOne(
-                { _id: membership._id },
-                { $set: { role: 'pod_lead' } }
-            );
-        }
 
         // Grant the submitting member the platform-level pod_lead role for this college.
         const podLeadPlatformRole = await PlatformRole.findOne({ slug: 'pod_lead' }).lean();

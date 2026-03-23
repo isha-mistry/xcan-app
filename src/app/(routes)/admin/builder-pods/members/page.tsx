@@ -657,7 +657,7 @@ export default function AdminMembersPage() {
                                                 {member.requestedRole ? (
                                                     <div className="flex items-center gap-1.5">
                                                         <span className="px-2 py-0.5 rounded-full bg-cyan-500/10 text-[9px] font-bold text-cyan-400 uppercase tracking-wider font-robotoMono whitespace-nowrap">
-                                                            → {member.requestedRole === "pod_member" ? "Pod Member" : member.requestedRole.replace(/_/g, " ")}
+                                                            → {member.requestedRole === "pod_member" ? "Pod Member" : member.requestedRole === "pod_lead" ? "Pod Lead" : member.requestedRole.replace(/_/g, " ")}
                                                         </span>
                                                         <button
                                                             onClick={() => handleRoleRequest(member._id, "approve_role")}

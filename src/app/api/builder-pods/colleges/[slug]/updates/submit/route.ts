@@ -26,8 +26,7 @@ function getCurrentWeekInfo(): { weekNumber: number; year: number } {
 
 // POST — submit a weekly update for a pod
 // Requires pod_lead, college_admin, or super_admin role.
-// Members must first submit a project (which grants pod_lead) before
-// they can submit weekly updates.
+// Pod members become eligible after an admin approves their Pod Lead request (or manual assignment).
 export async function POST(
     req: NextRequest,
     { params }: { params: Promise<{ slug: string }> }

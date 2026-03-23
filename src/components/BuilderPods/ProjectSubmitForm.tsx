@@ -14,6 +14,7 @@ import {
     CheckCircle,
     Wallet,
     Copy,
+    ArrowUpCircle,
 } from "lucide-react";
 
 interface ProjectSubmitFormProps {
@@ -21,6 +22,8 @@ interface ProjectSubmitFormProps {
     walletAddress: string | null;
     isMember: boolean;
     memberStatus?: string | null;
+    memberRole?: string | null;
+    memberRequestedRole?: string | null;
     isDisabled?: boolean;
     onRefresh?: () => void;
 }
@@ -30,12 +33,17 @@ export default function ProjectSubmitForm({
     walletAddress,
     isMember,
     memberStatus,
+    memberRole,
+    memberRequestedRole,
     isDisabled,
     onRefresh,
 }: ProjectSubmitFormProps) {
     const isActive = memberStatus === "active";
+    const isPodLead = memberRole === "pod_lead";
     const [isOpen, setIsOpen] = useState(false);
     const [submitting, setSubmitting] = useState(false);
+    const [requestingLead, setRequestingLead] = useState(false);
+    const [requestError, setRequestError] = useState<string | null>(null);
     const [result, setResult] = useState<{
         success: boolean;
         teamCode?: string;
@@ -132,8 +140,83 @@ export default function ProjectSubmitForm({
         }
     };
 
+    const handleRequestPodLead = async () => {
+        if (!walletAddress || !isActive || isDisabled) return;
+        setRequestError(null);
+        setRequestingLead(true);
+        try {
+            const res = await fetch("/api/builder-pods/request-role", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                credentials: "include",
+                body: JSON.stringify({
+                    collegeSlug,
+                    requestedRole: "pod_lead",
+                }),
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || "Failed to send request");
+            onRefresh?.();
+        } catch (err: unknown) {
+            setRequestError(err instanceof Error ? err.message : "Something went wrong");
+        } finally {
+            setRequestingLead(false);
+        }
+    };
+
     if (!walletAddress || !isMember) {
         return null;
+    }
+
+    if (!isPodLead) {
+        const pendingPodLead = memberRequestedRole === "pod_lead";
+        const canRequestLead =
+            isActive && !pendingPodLead && !requestingLead && !isDisabled;
+        return (
+            <div className="flex flex-col items-end gap-1">
+                <button
+                    type="button"
+                    onClick={() => canRequestLead && handleRequestPodLead()}
+                    disabled={!canRequestLead}
+                    title={
+                        !isActive
+                            ? "Your membership must be approved before you can request Pod Lead"
+                            : isDisabled
+                              ? "You are already part of a team"
+                              : pendingPodLead
+                                ? "Your Pod Lead request is pending admin review"
+                                : "Become a Pod Lead to submit a project"
+                    }
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-bold font-robotoMono uppercase tracking-wider transition-all ${
+                        canRequestLead
+                            ? "bg-amber-500/10 border border-amber-500/20 text-amber-400 hover:bg-amber-500/15"
+                            : "bg-white/5 border border-white/10 text-white/50 cursor-not-allowed"
+                    }`}
+                >
+                    {requestingLead ? (
+                        <>
+                            <Loader2 className="w-3 h-3 animate-spin" />
+                            Sending...
+                        </>
+                    ) : pendingPodLead ? (
+                        <>
+                            <ArrowUpCircle className="w-3 h-3" />
+                            Request pending
+                        </>
+                    ) : (
+                        <>
+                            <ArrowUpCircle className="w-3 h-3" />
+                            Request Pod Lead
+                        </>
+                    )}
+                </button>
+                {requestError && (
+                    <p className="text-[9px] text-red-400 font-robotoMono max-w-[220px] text-right">
+                        {requestError}
+                    </p>
+                )}
+            </div>
+        );
     }
 
     return (

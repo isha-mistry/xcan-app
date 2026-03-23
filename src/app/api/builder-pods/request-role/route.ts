@@ -9,7 +9,7 @@ import { z } from 'zod';
 
 const RequestRoleSchema = z.object({
     collegeSlug: z.string().min(2).max(100),
-    requestedRole: z.enum(['pod_member']),
+    requestedRole: z.enum(['pod_member', 'pod_lead']),
 });
 
 export async function POST(req: NextRequest) {

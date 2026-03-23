@@ -135,7 +135,7 @@ export default function CollegePodPage() {
                                     Become a Pod Member
                                 </h3>
                                 <p className="text-[11px] text-white/60 font-robotoMono leading-relaxed">
-                                    Pod members can submit projects, join teams, and contribute to weekly updates.
+                                    Pod members can join teams and contribute to projects. Request Pod Lead when you need to create a project or submit weekly updates.
                                 </p>
                             </div>
                             {memberRequestedRole === "pod_member" ? (
@@ -188,6 +188,7 @@ export default function CollegePodPage() {
                                 isMember={isMember}
                                 memberStatus={memberStatus}
                                 memberRole={memberRole}
+                                memberRequestedRole={memberRequestedRole}
                                 collegeSlug={slug}
                                 onRefresh={handleDataRefresh}
                             />
@@ -211,6 +212,7 @@ export default function CollegePodPage() {
                                 isMember={isMember}
                                 memberStatus={memberStatus}
                                 memberRole={memberRole}
+                                memberRequestedRole={memberRequestedRole}
                                 collegeSlug={slug}
                                 onRefresh={handleDataRefresh}
                                 isPodLead={isPodLead}

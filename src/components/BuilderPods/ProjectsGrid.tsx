@@ -50,6 +50,7 @@ interface ProjectsGridProps {
     isMember?: boolean;
     memberStatus?: string | null;
     memberRole?: string | null;
+    memberRequestedRole?: string | null;
     collegeSlug?: string;
     onRefresh?: () => void;
     isPodLead?: boolean;
@@ -308,6 +309,7 @@ export default function ProjectsGrid({
     isMember,
     memberStatus,
     memberRole,
+    memberRequestedRole,
     collegeSlug,
     onRefresh,
     isPodLead,
@@ -414,6 +416,8 @@ export default function ProjectsGrid({
                                 walletAddress={walletAddress!}
                                 isMember={true}
                                 memberStatus={memberStatus}
+                                memberRole={memberRole}
+                                memberRequestedRole={memberRequestedRole}
                                 isDisabled={isAlreadyInATeam}
                                 onRefresh={onRefresh}
                             />

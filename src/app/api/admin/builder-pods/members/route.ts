@@ -15,6 +15,7 @@ import {
 import { awardBadgeOnEvent } from '@/lib/builder-pods/badges';
 import { recalculateMemberScore, recalculatePodScore } from '@/lib/builder-pods/leaderboard';
 import { MemberApprovalSchema } from '@/schemas/builder-pods';
+import { PlatformRole, UserRole } from '@/models/PlatformRole';
 
 // GET — list pending members (admin only)
 export async function GET(req: NextRequest) {
@@ -152,11 +153,53 @@ export async function PATCH(req: NextRequest) {
                 });
             }
 
+            if (member.role === 'pod_lead') {
+                if (member.status === 'active') {
+                    await awardBadgeOnEvent('manual_assignment', member.walletAddress, {
+                        collegeId: member.collegeId?.toString(),
+                    });
+                }
+                const podLeadPlatformRole = await PlatformRole.findOne({ slug: 'pod_lead' }).lean();
+                if (podLeadPlatformRole) {
+                    await UserRole.updateOne(
+                        {
+                            walletAddress: member.walletAddress,
+                            roleSlug: 'pod_lead',
+                            collegeId: member.collegeId,
+                        },
+                        {
+                            $setOnInsert: {
+                                roleId: podLeadPlatformRole._id,
+                                grantedBy: adminWallet,
+                                grantedAt: new Date(),
+                            },
+                            $set: {
+                                revokedAt: null,
+                            },
+                        },
+                        { upsert: true }
+                    );
+                }
+            }
+
+            const roleLabel =
+                member.role === 'pod_member'
+                    ? 'Pod Member'
+                    : member.role === 'pod_lead'
+                      ? 'Pod Lead'
+                      : member.role.replace(/_/g, ' ');
+            const roleBody =
+                member.role === 'pod_member'
+                    ? 'You are now a Pod Member. You can join teams and request Pod Lead to submit projects.'
+                    : member.role === 'pod_lead'
+                      ? 'You are now a Pod Lead. You can submit projects and weekly updates for this pod.'
+                      : `You are now a ${roleLabel}.`;
+
             await Notification.create({
                 walletAddress: member.walletAddress,
                 type: 'role_assigned',
                 title: 'Role Upgrade Approved! 🎉',
-                body: `You are now a ${member.role === 'pod_member' ? 'Pod Member' : member.role}. You can now submit projects and join teams.`,
+                body: roleBody,
                 link: '/builder-pods',
             });
 
@@ -184,11 +227,18 @@ export async function PATCH(req: NextRequest) {
             member.requestedRole = null;
             await member.save();
 
+            const rejectedLabel =
+                rejectedRole === 'pod_member'
+                    ? 'Pod Member'
+                    : rejectedRole === 'pod_lead'
+                      ? 'Pod Lead'
+                      : rejectedRole.replace(/_/g, ' ');
+
             await Notification.create({
                 walletAddress: member.walletAddress,
                 type: 'role_assigned',
                 title: 'Role Request Update',
-                body: `Your request for ${rejectedRole === 'pod_member' ? 'Pod Member' : rejectedRole} role was not approved at this time.`,
+                body: `Your request for ${rejectedLabel} was not approved at this time.`,
                 link: '/builder-pods',
             });
 
