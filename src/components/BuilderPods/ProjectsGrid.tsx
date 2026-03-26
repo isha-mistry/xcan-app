@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
     FolderGit2,
@@ -16,32 +16,10 @@ import {
     KeyRound,
     LogOut,
     Trash2,
+    Presentation,
 } from "lucide-react";
 import ProjectSubmitForm from "./ProjectSubmitForm";
-
-interface TeamMember {
-    walletAddress: string;
-    name: string;
-    role: "team_leader" | "team_member";
-    joinedAt: string;
-}
-
-interface ProjectData {
-    _id: string;
-    name: string;
-    problemStatement: string;
-    githubRepo: string | null;
-    contractAddress: string | null;
-    demoLink: string | null;
-    techStack: string[];
-    status: string;
-    isApproved: boolean;
-    teamCode?: string;
-    teamLeader?: string;
-    teamMembers?: TeamMember[];
-    createdBy?: string;
-    createdAt: string;
-}
+import { TeamMember, ProjectData, ConfirmActionModalProps } from "@/types/builder-pods";
 
 interface ProjectsGridProps {
     projects: ProjectData[];
@@ -99,6 +77,14 @@ function JoinTeamModal({
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState<string | null>(null);
 
+    React.useEffect(() => {
+        const handleEscape = (e: KeyboardEvent) => {
+            if (e.key === "Escape") onClose();
+        };
+        document.addEventListener("keydown", handleEscape);
+        return () => document.removeEventListener("keydown", handleEscape);
+    }, [onClose]);
+
     const handleJoin = async (e: React.FormEvent) => {
         e.preventDefault();
         setError(null);
@@ -133,6 +119,9 @@ function JoinTeamModal({
 
     return (
         <motion.div
+            role="dialog"
+            aria-modal="true"
+            aria-label="Join a Team"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -235,9 +224,19 @@ function ConfirmActionModal({
     submitting,
     onConfirm,
     onClose,
-}: any) {
+}: ConfirmActionModalProps) {
+    React.useEffect(() => {
+        const handleEscape = (e: KeyboardEvent) => {
+            if (e.key === "Escape" && !submitting) onClose();
+        };
+        document.addEventListener("keydown", handleEscape);
+        return () => document.removeEventListener("keydown", handleEscape);
+    }, [onClose, submitting]);
+
     return (
         <motion.div
+            role="dialog"
+            aria-modal="true"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -318,6 +317,7 @@ export default function ProjectsGrid({
     const [actionModal, setActionModal] = useState<{ type: 'leave' | 'delete', projectId: string } | null>(null);
     const [submittingAction, setSubmittingAction] = useState(false);
     const [copiedId, setCopiedId] = useState<string | null>(null);
+    const [actionError, setActionError] = useState<string | null>(null);
     const wallet = walletAddress?.toLowerCase() ?? null;
     const canSubmitOrJoin = memberRole === "pod_member" || memberRole === "pod_lead";
     const showActions = wallet && isMember && canSubmitOrJoin;
@@ -336,6 +336,7 @@ export default function ProjectsGrid({
     const handleAction = async () => {
         if (!actionModal || !wallet) return;
         setSubmittingAction(true);
+        setActionError(null);
         try {
             const url = actionModal.type === 'leave'
                 ? `/api/builder-pods/projects/${actionModal.projectId}/leave`
@@ -356,8 +357,7 @@ export default function ProjectsGrid({
             setActionModal(null);
             onRefresh?.();
         } catch (error) {
-            console.error("Action error:", error);
-            alert((error as Error).message);
+            setActionError((error as Error).message);
         } finally {
             setSubmittingAction(false);
         }
@@ -458,11 +458,11 @@ export default function ProjectsGrid({
                             statusConfig[project.status] ||
                             statusConfig.ideation;
                         const isTeamLeader =
-                            wallet && project.teamLeader === wallet;
+                            wallet && project.teamLeader?.toLowerCase() === wallet;
                         const isInTeam =
                             wallet &&
                             project.teamMembers?.some(
-                                (m) => m.walletAddress === wallet
+                                (m) => m.walletAddress?.toLowerCase() === wallet
                             );
                         const teamSize = project.teamMembers?.length ?? 0;
 
@@ -494,6 +494,30 @@ export default function ProjectsGrid({
                                     </div>
                                 </div>
 
+                                {/* Progress Pipeline */}
+                                <div className="flex items-center gap-1 mb-3">
+                                    {["ideation", "architecture_finalized", "prototype", "deployed", "demo_ready"].map((step, stepIdx) => {
+                                        const statusOrder = ["ideation", "architecture_finalized", "prototype", "deployed", "demo_ready"];
+                                        const currentIdx = statusOrder.indexOf(project.status);
+                                        const isCompleted = stepIdx <= currentIdx;
+                                        const isCurrent = stepIdx === currentIdx;
+                                        return (
+                                            <React.Fragment key={step}>
+                                                <div
+                                                    className={`h-1.5 flex-1 rounded-full transition-all ${
+                                                        isCompleted
+                                                            ? isCurrent
+                                                                ? "bg-gradient-to-r from-cyan-500/80 to-cyan-400/60"
+                                                                : "bg-cyan-500/40"
+                                                            : "bg-white/[0.06]"
+                                                    }`}
+                                                    title={statusConfig[step]?.label || step}
+                                                />
+                                            </React.Fragment>
+                                        );
+                                    })}
+                                </div>
+
                                 {/* Problem Statement */}
                                 <p className="text-xs text-white/60 font-robotoMono leading-relaxed mb-4 line-clamp-2">
                                     {project.problemStatement}
@@ -510,6 +534,16 @@ export default function ProjectsGrid({
                                                 {tech}
                                             </span>
                                         ))}
+                                    </div>
+                                )}
+
+                                {/* Showcase Badge */}
+                                {project.submittedToShowcase && (
+                                    <div className="flex items-center gap-1.5 mb-3 px-2.5 py-1.5 rounded-lg bg-purple-500/5 border border-purple-500/15 w-fit">
+                                        <Presentation className="w-3 h-3 text-purple-400" />
+                                        <span className="text-[9px] font-bold text-purple-400 font-robotoMono uppercase tracking-wider">
+                                            Submitted to Showcase
+                                        </span>
                                     </div>
                                 )}
 
@@ -692,6 +726,18 @@ export default function ProjectsGrid({
                     />
                 )}
             </AnimatePresence>
+
+            {actionError && (
+                <div className="fixed bottom-4 right-4 z-50 p-3 rounded-xl bg-red-500/10 border border-red-500/20 max-w-sm animate-in fade-in">
+                    <p className="text-[11px] text-red-400 font-robotoMono">{actionError}</p>
+                    <button
+                        onClick={() => setActionError(null)}
+                        className="mt-1 text-[9px] text-red-400/60 font-robotoMono underline"
+                    >
+                        Dismiss
+                    </button>
+                </div>
+            )}
         </div>
     );
 }

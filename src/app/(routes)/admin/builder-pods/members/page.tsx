@@ -418,7 +418,7 @@ export default function AdminMembersPage() {
         { key: "programmingLevel", label: "Level", sortable: true },
         { key: "githubUsername", label: "GitHub", sortable: false },
         { key: "stylusModulesCompleted", label: "Modules", sortable: true },
-        { key: "contractsDeployed", label: "Deploys", sortable: true },
+        { key: "activeProjects", label: "Active Projects", sortable: true },
         { key: "totalScore", label: "Score", sortable: true },
         { key: "createdAt", label: "Joined", sortable: true },
         { key: "actions", label: "Actions", sortable: false },
@@ -735,10 +735,10 @@ export default function AdminMembersPage() {
                                                 </span>
                                             </td>
 
-                                            {/* Deploys */}
+                                            {/* Active Projects */}
                                             <td className="px-4 py-3 text-center">
                                                 <span className="text-sm text-white/75 font-robotoMono font-bold">
-                                                    {member.contractsDeployed}
+                                                    {member.activeProjects}
                                                 </span>
                                             </td>
 

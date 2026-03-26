@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import { usePrivy } from "@privy-io/react-auth";
 import useSWR from "swr";
@@ -36,6 +36,7 @@ export default function CollegePodPage() {
         activeMemberCount: 0,
         projectCount: 0,
         deploymentCount: 0,
+        pendingProjectCount: 0,
         activatedAt: null,
         facultyCoordinator: null,
     };
@@ -45,6 +46,26 @@ export default function CollegePodPage() {
     const members = data?.members ?? [];
     const projects = data?.projects ?? [];
     const recentUpdates = data?.recentUpdates ?? [];
+
+    const membersForTable = useMemo(() => {
+        const countByWallet = new Map<string, number>();
+
+        for (const p of projects as any[]) {
+            const leader = p.teamLeader?.toLowerCase?.();
+            if (leader) countByWallet.set(leader, (countByWallet.get(leader) ?? 0) + 1);
+
+            const membersArr = Array.isArray(p.teamMembers) ? p.teamMembers : [];
+            for (const tm of membersArr) {
+                const w = tm?.walletAddress?.toLowerCase?.();
+                if (w) countByWallet.set(w, (countByWallet.get(w) ?? 0) + 1);
+            }
+        }
+
+        return members.map((m: any) => ({
+            ...m,
+            activeProjectCount: countByWallet.get((m.walletAddress ?? "").toLowerCase()) ?? 0,
+        }));
+    }, [members, projects]);
 
     const wallet = walletAddress?.toLowerCase() ?? null;
     const currentMember = wallet
@@ -203,7 +224,7 @@ export default function CollegePodPage() {
                         </>
                     ) : collegeData?.status === 'active' ? (
                         <>
-                            <MembersTable members={members} isLoading={isLoading} />
+                            <MembersTable members={membersForTable} isLoading={isLoading} />
 
                             <ProjectsGrid
                                 projects={projects}

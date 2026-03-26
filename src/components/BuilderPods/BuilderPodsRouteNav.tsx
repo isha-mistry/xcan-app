@@ -10,6 +10,7 @@ import {
   builderPodsPrimaryItems,
   getBuilderPodsPersonalItems,
 } from "./builderPodsNav";
+import { useMyMembership } from "@/hooks/useBuilderPods";
 
 function matchesPath(pathname: string, href: string) {
   if (href === "/builder-pods") return pathname === href;
@@ -19,23 +20,11 @@ function matchesPath(pathname: string, href: string) {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
-const fetcher = (url: string) => fetch(url).then((res) => res.json());
-
 export default function BuilderPodsRouteNav() {
   const pathname = usePathname();
   const { address } = useAccount();
   const isAdminRoute = pathname.startsWith("/admin/builder-pods");
-  const { data: memberCheck } = useSWR(
-    !isAdminRoute && address ? "/api/builder-pods/members/me" : null,
-    fetcher,
-    {
-      revalidateOnFocus: false,
-      revalidateIfStale: false,
-      revalidateOnReconnect: false,
-      shouldRetryOnError: false,
-      errorRetryCount: 0,
-    }
-  );
+  const { data: memberCheck } = useMyMembership(!isAdminRoute ? address : undefined);
 
   const myCollegeSlug =
     (memberCheck?.membership?.collegeId?.slug as string | undefined) ??

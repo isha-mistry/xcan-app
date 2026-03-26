@@ -11,7 +11,7 @@ import {
     UnauthorizedError, ForbiddenError
 } from '@/lib/rbac';
 
-// GET — list pending showcase submissions
+// GET — list all showcase submissions (scoped by role)
 // super_admin sees all, college_admin/mentor sees their college's
 export async function GET(req: NextRequest) {
     try {
@@ -57,7 +57,6 @@ export async function PATCH(req: NextRequest) {
         const { submissionId, status, placement, isActive } = body;
         const adminWallet = ctx!.walletAddress;
 
-        console.log('[DEBUG] Admin Showcase PATCH:', { submissionId, status, placement, isActive });
 
         if (!submissionId) {
             return NextResponse.json(

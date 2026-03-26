@@ -8,14 +8,7 @@ import {
     Code2,
     FolderGit2,
 } from "lucide-react";
-
-interface StatsData {
-    totalColleges: number;
-    totalMembers: number;
-    totalActiveMembers: number;
-    totalDeployments: number;
-    totalProjects: number;
-}
+import { StatsData } from "@/types/builder-pods";
 
 interface LiveStatsPanelProps {
     stats: StatsData;

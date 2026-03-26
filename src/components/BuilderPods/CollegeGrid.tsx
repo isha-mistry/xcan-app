@@ -1,19 +1,7 @@
 "use client";
 import React from "react";
 import CollegeCard from "./CollegeCard";
-
-interface CollegeData {
-    _id: string;
-    name: string;
-    slug: string;
-    city: string;
-    state: string;
-    podName: string;
-    memberCount: number;
-    activeMemberCount: number;
-    projectCount: number;
-    status: "active" | "inactive" | "alumni";
-}
+import { CollegeData } from "@/types/builder-pods";
 
 interface CollegeGridProps {
     colleges: CollegeData[];

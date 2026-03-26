@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import {
     Users,
-    Code2,
+    FolderKanban,
     Trophy,
     Building2,
     AlertTriangle,
@@ -52,12 +52,12 @@ export default function AdminDashboardPage() {
                 href: "/admin/builder-pods/members",
             },
             {
-                label: "Unverified Deployments",
-                value: dashboard.pendingDeployments,
-                icon: Code2,
+                label: "Pending Projects",
+                value: dashboard.pendingProjects,
+                icon: FolderKanban,
                 color: "text-blue-400",
                 bg: "bg-blue-500/10",
-                href: "/admin/builder-pods/deployments",
+                href: "/admin/builder-pods/projects",
             },
             {
                 label: "Pending Submissions",
@@ -106,29 +106,29 @@ export default function AdminDashboardPage() {
                             </p>
                         </div>
                     )
-                    : pendingCards.map((card, i) => {
-                        const Icon = card.icon;
-                        return (
-                            <motion.div
-                                key={card.label}
-                                initial={{ opacity: 0, y: 12 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.4, delay: i * 0.05 }}
-                            >
-                                <Link href={card.href} className="glass-container rounded-2xl p-5 block hover:border-white/20 transition-all">
-                                    <div className={`${card.bg} p-2 rounded-lg w-fit mb-3`}>
-                                        <Icon className={`w-4 h-4 ${card.color}`} />
-                                    </div>
-                                    <span className="text-3xl font-black text-white font-unbounded block">
-                                        {card.value}
-                                    </span>
-                                    <p className="text-[9px] font-bold uppercase tracking-widest text-white/75 font-robotoMono mt-1">
-                                        {card.label}
-                                    </p>
-                                </Link>
-                            </motion.div>
-                        );
-                    })}
+                        : pendingCards.map((card, i) => {
+                            const Icon = card.icon;
+                            return (
+                                <motion.div
+                                    key={card.label}
+                                    initial={{ opacity: 0, y: 12 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ duration: 0.4, delay: i * 0.05 }}
+                                >
+                                    <Link href={card.href} className="glass-container rounded-2xl p-5 block hover:border-white/20 transition-all">
+                                        <div className={`${card.bg} p-2 rounded-lg w-fit mb-3`}>
+                                            <Icon className={`w-4 h-4 ${card.color}`} />
+                                        </div>
+                                        <span className="text-3xl font-black text-white font-unbounded block">
+                                            {card.value}
+                                        </span>
+                                        <p className="text-[9px] font-bold uppercase tracking-widest text-white/75 font-robotoMono mt-1">
+                                            {card.label}
+                                        </p>
+                                    </Link>
+                                </motion.div>
+                            );
+                        })}
             </div>
 
             {/* Missing Weekly Updates */}

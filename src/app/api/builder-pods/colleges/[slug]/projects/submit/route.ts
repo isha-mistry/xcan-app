@@ -46,16 +46,6 @@ export async function POST(
         const isAdmin = hasAnyRole(ctx, ['super_admin', 'college_admin'], college._id.toString());
         if (isAdmin) {
             verifyCollegeAccess(ctx, college._id.toString());
-        } else {
-            const member = await PodMember.findOne({
-                collegeId: college._id,
-                walletAddress,
-                status: { $in: ['active', 'pending'] },
-            }).lean();
-
-            if (!member) {
-                throw new ForbiddenError('Only a registered pod member can submit projects for this college');
-            }
         }
 
         const membership = await PodMember.findOne({
@@ -65,14 +55,14 @@ export async function POST(
             deletedAt: null,
         }).lean();
 
-        if (!membership) {
+        if (!membership && !isAdmin) {
             return NextResponse.json(
                 { success: false, error: 'You must be an active member of this pod to submit a project' },
                 { status: 403 }
             );
         }
 
-        if (!isAdmin && membership.role !== 'pod_lead') {
+        if (!isAdmin && (!membership || membership.role !== 'pod_lead')) {
             return NextResponse.json(
                 {
                     success: false,

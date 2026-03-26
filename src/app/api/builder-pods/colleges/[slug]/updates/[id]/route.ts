@@ -61,7 +61,7 @@ export async function PATCH(
                 collegeId: college._id,
                 walletAddress,
                 status: 'active',
-                role: 'tech_lead',
+                role: { $in: ['pod_lead'] },
             })
                 .select('role status')
                 .lean()

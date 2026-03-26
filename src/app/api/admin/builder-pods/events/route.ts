@@ -7,6 +7,8 @@ import {
     UnauthorizedError, ForbiddenError
 } from '@/lib/rbac';
 
+// Manages ShowcaseEvent entities (the events themselves, not submissions)
+
 // GET — list all showcase events and regions
 export async function GET(req: NextRequest) {
     try {

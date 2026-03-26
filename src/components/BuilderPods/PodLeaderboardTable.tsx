@@ -2,27 +2,7 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { Trophy, TrendingUp, Code2, BookOpen, Activity } from "lucide-react";
-
-interface PodScore {
-    _id: string;
-    collegeId: {
-        _id: string;
-        name: string;
-        slug: string;
-        city: string;
-        state: string;
-        podName: string;
-        status: string;
-    };
-    totalScore: number;
-    totalDeployments: number;
-    totalModuleCompletions: number;
-    projectStatusScore: number;
-    weeklyActivityScore: number;
-    activeMembersCount: number;
-    totalMembersCount: number;
-    rank: number | null;
-}
+import { PodScore } from "@/types/builder-pods";
 
 interface PodLeaderboardTableProps {
     pods: PodScore[];

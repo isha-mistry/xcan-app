@@ -5,24 +5,11 @@ import { motion } from "framer-motion";
 import { FolderGit2, CalendarDays, Github, AlertTriangle, Target, CheckCircle, FileText, Edit3 } from "lucide-react";
 import WeeklyUpdateForm from "./WeeklyUpdateForm";
 import { useAccount } from "wagmi";
-
-interface UpdateData {
-    _id: string;
-    submittedBy: string;
-    targetProjectId?: string;
-    weekNumber: number;
-    year: number;
-    completedThisWeek: string;
-    blockers: string | null;
-    nextMilestone: string;
-    githubLink: string | null;
-    reviewedBy: string | null;
-    createdAt: string;
-}
+import { UpdateData, ProjectData } from "@/types/builder-pods";
 
 interface WeeklyUpdatesFeedProps {
     updates: UpdateData[];
-    projects?: any[];
+    projects?: ProjectData[];
     isLoading?: boolean;
     slug?: string;
     isTeamLead?: boolean;
@@ -127,7 +114,7 @@ export default function WeeklyUpdatesFeed({
                                     </div>
                                     <div className="flex items-center gap-3">
                                         {slug && (
-                                            (update.targetProjectId && projects && projects.find((p: any) => p._id === update.targetProjectId)?.teamLeader.toLowerCase() === address?.toLowerCase()) ||
+                                            (update.targetProjectId && projects && projects.find((p) => p._id === update.targetProjectId)?.teamLeader?.toLowerCase() === address?.toLowerCase()) ||
                                             (update.submittedBy.toLowerCase() === address?.toLowerCase()) ||
                                             // Fallback for older updates with no target project where the user is just a team lead
                                             (isTeamLead && !update.targetProjectId && update.submittedBy.toLowerCase() === address?.toLowerCase())

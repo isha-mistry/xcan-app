@@ -22,7 +22,8 @@ export const RegisterSchema = z.object({
     collegeSlug: z.string().min(2).max(100),
     programmingLevel: z.enum(['beginner', 'intermediate', 'advanced']).optional(),
     githubUsername: z.string().max(39).optional(),
-    semester: z.string().max(10).optional(),
+    // Typical values like "6th Semester" are longer than 10 chars.
+    semester: z.string().trim().max(20).optional(),
 });
 
 export const WeeklyUpdateSchema = z.object({

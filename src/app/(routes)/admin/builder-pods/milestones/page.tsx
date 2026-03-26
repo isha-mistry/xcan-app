@@ -29,7 +29,7 @@ export default function AdminMilestonesPage() {
             { label: "Pods", value: live.podCount },
             { label: "Students", value: live.studentCount },
             { label: "Projects", value: live.projectCount },
-            { label: "Deployments", value: live.deployCount },
+            { label: "Pending Projects", value: live.pendingProjectCount },
             { label: "Showcases", value: live.showcaseCount },
         ]
         : [];

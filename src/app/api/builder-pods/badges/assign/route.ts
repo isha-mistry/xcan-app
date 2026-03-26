@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { dbConnect } from '@/lib/dbConnect';
 import { assignBadgeManually } from '@/lib/builder-pods/badges';
 import { AuditLog } from '@/models/AuditLog';
+import { BadgeType } from '@/models/BadgeType';
 import { Notification } from '@/models/Notification';
 import { ForbiddenError, getAuthContext, requireRole, UnauthorizedError } from '@/lib/rbac';
 
@@ -19,6 +20,14 @@ export async function POST(req: NextRequest) {
         if (!badgeSlug || !walletAddress) {
             return NextResponse.json(
                 { success: false, error: 'badgeSlug and walletAddress are required' },
+                { status: 400 }
+            );
+        }
+
+        const badgeTypeExists = await BadgeType.exists({ slug: badgeSlug });
+        if (!badgeTypeExists) {
+            return NextResponse.json(
+                { success: false, error: `Badge type '${badgeSlug}' does not exist` },
                 { status: 400 }
             );
         }

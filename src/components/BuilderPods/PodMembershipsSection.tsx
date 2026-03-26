@@ -11,6 +11,7 @@ import {
     Rocket,
     Trophy,
 } from "lucide-react";
+import { MembershipEntry, BadgeEntry } from "@/types/builder-pods";
 
 const BADGE_COLORS: Record<string, { color: string; bg: string }> = {
     builder_lab_participant: { color: "text-cyan-400", bg: "bg-cyan-500/10" },
@@ -19,37 +20,6 @@ const BADGE_COLORS: Record<string, { color: string; bg: string }> = {
     regional_showcase_finalist: { color: "text-purple-400", bg: "bg-purple-500/10" },
     regional_showcase_winner: { color: "text-amber-400", bg: "bg-amber-500/10" },
 };
-
-interface MembershipEntry {
-    member: {
-        name?: string | null;
-        role?: string | null;
-        status?: string | null;
-        programmingLevel?: string | null;
-        githubUsername?: string | null;
-        stylusModulesCompleted?: number | null;
-        contractsDeployed?: number | null;
-        totalScore?: number | null;
-        individualRank?: number | null;
-        joinedAt?: string | null;
-    };
-    college: {
-        _id?: string;
-        slug?: string | null;
-        podName?: string | null;
-        name?: string | null;
-        city?: string | null;
-        state?: string | null;
-    } | null;
-    projectCount?: number;
-}
-
-interface BadgeEntry {
-    _id: string;
-    slug?: string | null;
-    label?: string | null;
-    easUid?: string | null;
-}
 
 interface PodMembershipsSectionProps {
     memberships: MembershipEntry[];

@@ -17,7 +17,28 @@ export async function GET(req: NextRequest) {
             Math.max(1, Number(req.nextUrl.searchParams.get('limit') || 25))
         );
 
-        const notifications = await Notification.find({ walletAddress: wallet })
+        const podNotificationTypes = [
+            'badge_awarded',
+            'member_approved',
+            'weekly_update_due',
+            'deployment_verified',
+            'showcase_result',
+            'showcase_finalist',
+            'showcase_winner',
+            'project_status_changed',
+            'role_assigned',
+        ];
+
+        const typeFilter = req.nextUrl.searchParams.get('type');
+        const filter: Record<string, unknown> = { walletAddress: wallet };
+
+        if (typeFilter === 'pod') {
+            filter.type = { $in: podNotificationTypes };
+        } else if (typeFilter) {
+            filter.type = typeFilter;
+        }
+
+        const notifications = await Notification.find(filter)
             .sort({ createdAt: -1 })
             .limit(limit)
             .lean();

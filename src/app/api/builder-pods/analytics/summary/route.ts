@@ -5,6 +5,7 @@ import { PodMember } from '@/models/PodMember';
 import { Deployment } from '@/models/Deployment';
 import { PodProject } from '@/models/PodProject';
 import { UserBadge } from '@/models/UserBadge';
+import { BadgeType } from '@/models/BadgeType';
 
 export async function GET() {
     try {
@@ -24,6 +25,7 @@ export async function GET() {
                 ]),
 
                 PodMember.aggregate([
+                    { $match: { deletedAt: null } },
                     {
                         $group: {
                             _id: null,
@@ -46,7 +48,10 @@ export async function GET() {
                     },
                 ]),
 
-                UserBadge.countDocuments(),
+                (async () => {
+                    const podBadgeSlugs = await BadgeType.find({ category: 'builder_pods' }).distinct('slug');
+                    return UserBadge.countDocuments({ 'badgeSnapshot.slug': { $in: podBadgeSlugs } });
+                })(),
             ]);
 
         const members = memberStats[0] ?? { total: 0, active: 0 };

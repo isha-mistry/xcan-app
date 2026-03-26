@@ -5,7 +5,9 @@ import { College } from '@/models/College';
 import { AuditLog } from '@/models/AuditLog';
 import { Notification } from '@/models/Notification';
 import { getAuthContext, UnauthorizedError } from '@/lib/rbac';
+import { checkRateLimit } from '@/lib/rate-limit';
 import { z } from 'zod';
+import { handleApiError, validationError } from '@/lib/api-response';
 
 const RequestRoleSchema = z.object({
     collegeSlug: z.string().min(2).max(100),
@@ -17,14 +19,19 @@ export async function POST(req: NextRequest) {
         const ctx = await getAuthContext(req);
         if (!ctx) throw new UnauthorizedError('Not authenticated');
 
+        const rateCheck = checkRateLimit(`role-request:${ctx.walletAddress}`, 3, 60_000);
+        if (!rateCheck.allowed) {
+            return NextResponse.json(
+                { success: false, error: 'Too many role requests. Please try again later.' },
+                { status: 429 }
+            );
+        }
+
         await dbConnect();
 
         const parsed = RequestRoleSchema.safeParse(await req.json());
         if (!parsed.success) {
-            return NextResponse.json(
-                { success: false, error: parsed.error.issues[0]?.message || 'Invalid request payload' },
-                { status: 400 }
-            );
+            return validationError(parsed.error);
         }
 
         const { collegeSlug, requestedRole } = parsed.data;
@@ -91,17 +98,7 @@ export async function POST(req: NextRequest) {
             { success: true, message: 'Role request submitted. An admin will review your request.' },
             { status: 200 }
         );
-    } catch (error: any) {
-        if (error instanceof UnauthorizedError) {
-            return NextResponse.json(
-                { success: false, error: 'Not authenticated' },
-                { status: 401 }
-            );
-        }
-        console.error('Role request error:', error);
-        return NextResponse.json(
-            { success: false, error: 'Internal Server Error' },
-            { status: 500 }
-        );
+    } catch (error: unknown) {
+        return handleApiError(error, 'Role request error');
     }
 }

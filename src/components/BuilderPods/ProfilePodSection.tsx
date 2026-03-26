@@ -1,18 +1,13 @@
 "use client";
 import React from "react";
-import useSWR from "swr";
 import ConnectYourWallet from "../ComponentUtils/ConnectYourWallet";
 import { useAccount } from "wagmi";
 import PodMembershipsSection from "./PodMembershipsSection";
-
-const fetcher = (url: string) => fetch(url).then((r) => r.json());
+import { useMyMembership } from "@/hooks/useBuilderPods";
 
 export default function ProfilePodSection() {
     const { address: walletAddress } = useAccount();
-    const { data, isLoading } = useSWR(
-        walletAddress ? "/api/builder-pods/members/me" : null,
-        fetcher
-    );
+    const { data, isLoading } = useMyMembership(walletAddress ?? undefined);
 
     if (!walletAddress) {
         return (
