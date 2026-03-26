@@ -20,13 +20,14 @@ import {
 } from "lucide-react";
 import { useAccount } from "wagmi";
 import { isActiveWeeklyUpdateLead } from "@/lib/builder-pods/membership";
+import { ProjectData } from "@/types/builder-pods";
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
 interface WeeklyUpdateFormProps {
     collegeSlug: string;
     onSuccess?: () => void;
-    projects?: any[];
+    projects?: ProjectData[];
     canSubmitOverride?: boolean;
     editData?: {
         id: string;
@@ -56,6 +57,15 @@ export default function WeeklyUpdateForm({
     const [mounted, setMounted] = useState(false);
     useEffect(() => setMounted(true), []);
 
+    useEffect(() => {
+        if (!isOpen) return;
+        const handleEscape = (e: KeyboardEvent) => {
+            if (e.key === "Escape") setIsOpen(false);
+        };
+        document.addEventListener("keydown", handleEscape);
+        return () => document.removeEventListener("keydown", handleEscape);
+    }, [isOpen]);
+
     const isEdit = !!editData;
 
     const [form, setForm] = useState({
@@ -80,8 +90,7 @@ export default function WeeklyUpdateForm({
     }, [collegeData, address]);
 
     const userRole = currentUser?.role || "pod_member";
-    const userStatus = currentUser?.status || "pending";
-    
+
     const isAuthorized = useMemo(() => {
         return canSubmitOverride || isActiveWeeklyUpdateLead(currentUser);
     }, [canSubmitOverride, currentUser]);
@@ -97,7 +106,7 @@ export default function WeeklyUpdateForm({
         if (!address) return [];
         return projects.filter(
             (p) =>
-                p.teamLeader.toLowerCase() === address.toLowerCase() ||
+                p.teamLeader?.toLowerCase() === address.toLowerCase() ||
                 (p.teamMembers && p.teamMembers.some((m: any) => m.walletAddress.toLowerCase() === address.toLowerCase()))
         );
     }, [projects, address]);
@@ -178,6 +187,9 @@ export default function WeeklyUpdateForm({
                 <AnimatePresence>
                     {isOpen && (
                     <motion.div
+                        role="dialog"
+                        aria-modal="true"
+                        aria-label={isEdit ? "Edit Weekly Update" : "Submit Weekly Update"}
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}

@@ -11,6 +11,9 @@ export async function GET(
         await dbConnect();
         const { slug } = params;
 
+        const page = Math.max(1, parseInt(req.nextUrl.searchParams.get('page') || '1', 10));
+        const limit = Math.min(100, Math.max(1, parseInt(req.nextUrl.searchParams.get('limit') || '50', 10)));
+
         const college = await College.findOne({ slug, deletedAt: null }, '_id').lean();
         if (!college) {
             return NextResponse.json(
@@ -19,12 +22,26 @@ export async function GET(
             );
         }
 
-        const members = await PodMember.find({ collegeId: college._id, deletedAt: null })
-            .select('walletAddress name role programmingLevel githubUsername status stylusModulesCompleted contractsDeployed totalScore approvedAt')
-            .sort({ role: 1, name: 1 })
-            .lean();
+        const memberFilter = { collegeId: college._id, deletedAt: null };
 
-        return NextResponse.json({ success: true, members }, { status: 200 });
+        const [members, totalCount] = await Promise.all([
+            PodMember.find(memberFilter)
+                .select('walletAddress name role programmingLevel githubUsername status stylusModulesCompleted contractsDeployed totalScore approvedAt')
+                .sort({ role: 1, name: 1 })
+                .skip((page - 1) * limit)
+                .limit(limit)
+                .lean(),
+            PodMember.countDocuments(memberFilter),
+        ]);
+
+        const pagination = {
+            page,
+            limit,
+            total: totalCount,
+            totalPages: Math.ceil(totalCount / limit),
+        };
+
+        return NextResponse.json({ success: true, members, pagination }, { status: 200 });
     } catch (error) {
         console.error('Error fetching pod members:', error);
         return NextResponse.json(

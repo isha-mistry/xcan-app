@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { dbConnect } from '@/lib/dbConnect';
 import { PodMember } from '@/models/PodMember';
 import { College } from '@/models/College';
+import { Deployment } from '@/models/Deployment';
+import { PodProject } from '@/models/PodProject';
 import { AuditLog } from '@/models/AuditLog';
 import { Notification } from '@/models/Notification';
 import {
@@ -13,7 +15,7 @@ import {
     verifyCollegeAccess,
 } from '@/lib/rbac';
 import { awardBadgeOnEvent } from '@/lib/builder-pods/badges';
-import { recalculateMemberScore, recalculatePodScore } from '@/lib/builder-pods/leaderboard';
+import { recalculateMemberScore, recalculatePodScore, SCORE_WEIGHTS } from '@/lib/builder-pods/leaderboard';
 import { MemberApprovalSchema } from '@/schemas/builder-pods';
 import { PlatformRole, UserRole } from '@/models/PlatformRole';
 
@@ -46,7 +48,82 @@ export async function GET(req: NextRequest) {
             .sort({ createdAt: -1 })
             .lean();
 
-        return NextResponse.json({ success: true, members }, { status: 200 });
+        // Ensure any "deployment-derived" stats reflect only deployments that belong to
+        // active (non-deleted) projects.
+        const wallets = members.map((m: any) => m.walletAddress).filter(Boolean);
+        const uniqueWallets = Array.from(new Set(wallets));
+
+        const [activeDeploymentsCounts, activeProjectsCounts] = await Promise.all([
+            uniqueWallets.length
+                ? Deployment.aggregate([
+                      {
+                          $match: {
+                              isVerified: true,
+                              walletAddress: { $in: uniqueWallets },
+                              ...collegeScopeFilter,
+                          },
+                      },
+                      {
+                          $lookup: {
+                              from: PodProject.collection.name,
+                              localField: 'projectId',
+                              foreignField: '_id',
+                              as: 'project',
+                          },
+                      },
+                      // If deployment.projectId is null, it won't match any PodProject and will drop here.
+                      { $unwind: '$project' },
+                      { $match: { 'project.deletedAt': null } },
+                      { $group: { _id: '$walletAddress', count: { $sum: 1 } } },
+                  ])
+                : Promise.resolve([]),
+            uniqueWallets.length
+                ? PodProject.aggregate([
+                      { $match: { deletedAt: null, ...collegeScopeFilter } },
+                      {
+                          // Include both teamLeader and teamMembers wallets.
+                          $project: {
+                              wallets: {
+                                  // Avoid double-counting when the leader is also in teamMembers.
+                                  $setUnion: [['$teamLeader'], '$teamMembers.walletAddress'],
+                              },
+                          },
+                      },
+                      { $unwind: '$wallets' },
+                      { $match: { wallets: { $in: uniqueWallets } } },
+                      { $group: { _id: '$wallets', count: { $sum: 1 } } },
+                  ])
+                : Promise.resolve([]),
+        ]);
+
+        const activeDeploymentsByWallet = new Map(
+            (activeDeploymentsCounts as any[]).map((r: any) => [r._id, r.count])
+        );
+        const activeProjectsByWallet = new Map(
+            (activeProjectsCounts as any[]).map((r: any) => [r._id, r.count])
+        );
+
+        const membersEnhanced = members.map((m: any) => {
+            const activeContractsDeployed = activeDeploymentsByWallet.get(m.walletAddress) ?? 0;
+            const activeProjects = activeProjectsByWallet.get(m.walletAddress) ?? 0;
+
+            // Keep score consistent with the updated "active deployments" count.
+            const totalScore =
+                (m.stylusModulesCompleted || 0) * SCORE_WEIGHTS.individual.moduleCompleted +
+                activeContractsDeployed * SCORE_WEIGHTS.individual.contractDeployed +
+                (m.weeklyActivityScore || 0) * SCORE_WEIGHTS.individual.weeklyActivity +
+                (m.projectContributionScore || 0) * SCORE_WEIGHTS.individual.projectContribution;
+
+            return {
+                ...m,
+                // Used for scoring; the UI may choose not to display it.
+                contractsDeployed: activeContractsDeployed,
+                activeProjects,
+                totalScore,
+            };
+        });
+
+        return NextResponse.json({ success: true, members: membersEnhanced }, { status: 200 });
     } catch (error: any) {
         if (error instanceof UnauthorizedError) return NextResponse.json({ success: false, error: 'Not authenticated' }, { status: 401 });
         if (error instanceof ForbiddenError) return NextResponse.json({ success: false, error: 'Admin access required' }, { status: 403 });

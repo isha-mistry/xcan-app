@@ -6,22 +6,29 @@ import { LabEvent } from '@/models/LabEvent';
 import { AuditLog } from '@/models/AuditLog';
 import { awardBadgeOnEvent } from '@/lib/builder-pods/badges';
 import { getAuthContext, UnauthorizedError } from '@/lib/rbac';
+import { checkRateLimit } from '@/lib/rate-limit';
 import { RegisterSchema } from '@/schemas/builder-pods';
 import { getMembershipDisplayRoleData } from '@/lib/builder-pods/membership';
+import { apiError, handleApiError, validationError } from '@/lib/api-response';
 
 export async function POST(req: NextRequest) {
     try {
         const ctx = await getAuthContext(req);
         if (!ctx) throw new UnauthorizedError('Not authenticated');
 
+        const rateCheck = checkRateLimit(`register:${ctx.walletAddress}`, 5, 60_000);
+        if (!rateCheck.allowed) {
+            return NextResponse.json(
+                { success: false, error: 'Too many registration attempts. Please try again later.' },
+                { status: 429 }
+            );
+        }
+
         await dbConnect();
 
         const parsed = RegisterSchema.safeParse(await req.json());
         if (!parsed.success) {
-            return NextResponse.json(
-                { success: false, error: parsed.error.issues[0]?.message || 'Invalid registration payload' },
-                { status: 400 }
-            );
+            return validationError(parsed.error);
         }
         const walletAddress = ctx.walletAddress.toLowerCase();
         const {
@@ -45,6 +52,7 @@ export async function POST(req: NextRequest) {
         const existing = await PodMember.findOne({
             collegeId: college._id,
             walletAddress,
+            deletedAt: null,
         });
         if (existing) {
             return NextResponse.json(
@@ -134,24 +142,15 @@ export async function POST(req: NextRequest) {
             },
             { status: 201 }
         );
-    } catch (error: any) {
+    } catch (error: unknown) {
         if (error instanceof UnauthorizedError) {
-            return NextResponse.json(
-                { success: false, error: 'Not authenticated' },
-                { status: 401 }
-            );
+            return apiError('Not authenticated', { status: 401 });
         }
-        console.error('Registration error:', error);
-        if (error.code === 11000) {
-            return NextResponse.json(
-                { success: false, error: 'Already registered with this college' },
-                { status: 409 }
-            );
+        const mongoError = error as { code?: number };
+        if (mongoError.code === 11000) {
+            return apiError('Already registered with this college', { status: 409 });
         }
-        return NextResponse.json(
-            { success: false, error: 'Internal Server Error' },
-            { status: 500 }
-        );
+        return handleApiError(error, 'Registration error');
     }
 }
 

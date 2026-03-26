@@ -2,10 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { dbConnect } from '@/lib/dbConnect';
 import mongoose from 'mongoose';
 import { PodMember } from '@/models/PodMember';
-import { Deployment } from '@/models/Deployment';
 import { ShowcaseSubmission } from '@/models/ShowcaseSubmission';
 import { AuditLog } from '@/models/AuditLog';
 import { College } from '@/models/College';
+import { PodProject } from '@/models/PodProject';
 import { WeeklyUpdate } from '@/models/WeeklyUpdate';
 import {
     getAuthContext, requireAnyRole, isSuperAdmin,
@@ -38,7 +38,7 @@ export async function GET(req: NextRequest) {
 
         const [
             pendingMembers,
-            pendingDeployments,
+            pendingProjects,
             pendingSubmissions,
             recentAudit,
             podsMissingUpdate,
@@ -46,7 +46,11 @@ export async function GET(req: NextRequest) {
             totalMembers,
         ] = await Promise.all([
             PodMember.countDocuments({ status: 'pending', ...collegeFilter }),
-            Deployment.countDocuments({ isVerified: false, ...collegeFilter }),
+            PodProject.countDocuments({
+                isApproved: false,
+                deletedAt: null,
+                ...collegeFilter,
+            }),
             ShowcaseSubmission.countDocuments({ status: 'pending', ...collegeFilter }),
 
             // Audit logs: super_admin sees all, others see only their own actions
@@ -95,7 +99,7 @@ export async function GET(req: NextRequest) {
             success: true,
             dashboard: {
                 pendingMembers,
-                pendingDeployments,
+                pendingProjects,
                 pendingSubmissions,
                 totalColleges,
                 totalMembers,

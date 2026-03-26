@@ -28,7 +28,7 @@ export async function GET(
                 .lean(),
 
             PodProject.find({ collegeId: college._id, deletedAt: null })
-                .select('name problemStatement githubRepo contractAddress demoLink techStack status isApproved teamCode teamLeader teamMembers createdBy createdAt')
+                .select('name problemStatement githubRepo contractAddress demoLink techStack status isApproved teamCode teamLeader teamMembers createdBy createdAt submittedToShowcase')
                 .sort({ createdAt: -1 })
                 .lean(),
 
@@ -41,11 +41,18 @@ export async function GET(
 
         const memberCount = members.length;
         const activeMemberCount = members.filter((m: any) => m.status === 'active').length;
+        const approvedProjectCount = projects.filter((p: any) => Boolean(p.isApproved)).length;
+        const showcaseReadyProjectCount = projects.filter(
+            (p: any) => p.status === 'demo_ready' || Boolean(p.submittedToShowcase)
+        ).length;
 
         const responseCollege = {
             ...college,
             memberCount,
             activeMemberCount,
+            projectCount: projects.length,
+            approvedProjectCount,
+            showcaseReadyProjectCount,
         };
 
         return NextResponse.json(

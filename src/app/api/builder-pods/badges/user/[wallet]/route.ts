@@ -10,7 +10,7 @@ export async function GET(
         await dbConnect();
         const { wallet } = params;
 
-        if (!wallet || wallet.length < 10) {
+        if (!wallet || !/^0x[a-fA-F0-9]{40}$/.test(wallet)) {
             return NextResponse.json(
                 { success: false, error: 'Invalid wallet address' },
                 { status: 400 }

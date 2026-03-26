@@ -92,14 +92,14 @@ export default function ProjectSubmitForm({
         setSubmitting(true);
 
         try {
-            const payload: any = { ...form };
-            if (!payload.githubRepo.trim()) {
+            const payload: Record<string, string | string[]> = { ...form };
+            if (!(payload.githubRepo as string).trim()) {
                 delete payload.githubRepo;
             }
-            if (!payload.contractAddress.trim()) {
+            if (!(payload.contractAddress as string).trim()) {
                 delete payload.contractAddress;
             }
-            if (!payload.demoLink.trim()) {
+            if (!(payload.demoLink as string).trim()) {
                 delete payload.demoLink;
             }
 
@@ -139,6 +139,15 @@ export default function ProjectSubmitForm({
             onRefresh?.();
         }
     };
+
+    React.useEffect(() => {
+        if (!isOpen) return;
+        const handleEscape = (e: KeyboardEvent) => {
+            if (e.key === "Escape") handleClose();
+        };
+        document.addEventListener("keydown", handleEscape);
+        return () => document.removeEventListener("keydown", handleEscape);
+    }, [isOpen]);
 
     const handleRequestPodLead = async () => {
         if (!walletAddress || !isActive || isDisabled) return;
@@ -244,6 +253,9 @@ export default function ProjectSubmitForm({
             <AnimatePresence>
                 {isOpen && (
                     <motion.div
+                        role="dialog"
+                        aria-modal="true"
+                        aria-label="Submit Project"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}

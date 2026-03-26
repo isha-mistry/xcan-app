@@ -3,19 +3,7 @@ import React from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { MapPin, Users, UserCheck, FolderGit2, Eye } from "lucide-react";
-
-interface CollegeData {
-    _id: string;
-    name: string;
-    slug: string;
-    city: string;
-    state: string;
-    podName: string;
-    memberCount: number;
-    activeMemberCount: number;
-    projectCount: number;
-    status: "active" | "inactive" | "alumni";
-}
+import { CollegeData } from "@/types/builder-pods";
 
 interface CollegeCardProps {
     college: CollegeData;

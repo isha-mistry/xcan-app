@@ -1,4 +1,4 @@
-export const WEEKLY_UPDATE_LEAD_ROLES = ['pod_lead', 'tech_lead'] as const;
+export const WEEKLY_UPDATE_LEAD_ROLES = ['pod_lead'] as const;
 
 type DateLike = Date | string | null | undefined;
 

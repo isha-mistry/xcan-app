@@ -1,22 +1,30 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { dbConnect } from "@/lib/dbConnect";
 import { College } from "@/models/College";
 import { PodMember } from "@/models/PodMember";
 export const revalidate = 0;
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
     await dbConnect();
 
-    const [rawColleges, memberAgg] = await Promise.all([
-      College.find({
-        status: "active",
-        $or: [{ deletedAt: null }, { deletedAt: { $exists: false } }],
-      })
+    const url = new URL(req.url);
+    const page = Math.max(1, parseInt(url.searchParams.get("page") || "1", 10));
+    const limit = Math.min(100, Math.max(1, parseInt(url.searchParams.get("limit") || "50", 10)));
+
+    const collegeFilter = {
+      status: "active",
+      $or: [{ deletedAt: null }, { deletedAt: { $exists: false } }],
+    };
+
+    const [rawColleges, memberAgg, totalCount] = await Promise.all([
+      College.find(collegeFilter)
         .select(
           "name slug city state regionSnapshot podName memberCount activeMemberCount projectCount deploymentCount status activatedAt logoUrl",
         )
         .sort({ name: 1 })
+        .skip((page - 1) * limit)
+        .limit(limit)
         .lean(),
 
       PodMember.aggregate([
@@ -37,6 +45,8 @@ export async function GET() {
           },
         },
       ]),
+
+      College.countDocuments(collegeFilter),
     ]);
 
     const countsByCollegeId = new Map<
@@ -84,8 +94,15 @@ export async function GET() {
       ),
     };
 
+    const pagination = {
+      page,
+      limit,
+      total: totalCount,
+      totalPages: Math.ceil(totalCount / limit),
+    };
+
     return NextResponse.json(
-      { success: true, colleges, stats },
+      { success: true, colleges, stats, pagination },
       { status: 200 },
     );
   } catch (error) {

@@ -2,19 +2,7 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { Users, Shield, Github, Award, Copy, CheckCircle2 } from "lucide-react";
-
-interface MemberData {
-    _id: string;
-    walletAddress: string;
-    name: string;
-    role: string;
-    programmingLevel: string | null;
-    githubUsername: string | null;
-    status: string;
-    stylusModulesCompleted: number;
-    contractsDeployed: number;
-    totalScore: number;
-}
+import { MemberData } from "@/types/builder-pods";
 
 interface MembersTableProps {
     members: MemberData[];
@@ -78,10 +66,10 @@ export default function MembersTable({
                 </p>
             ) : (
                 <div className="overflow-x-auto">
-                    <table className="w-full">
+                    <table className="w-full min-w-[700px]">
                         <thead>
                             <tr className="border-b border-white/5">
-                                {["Name", "Wallet", "Role", "Status", "Level", "Modules", "Deploys", "Score"].map(
+                                {["Name", "Wallet", "Role", "Status", "Level", "Modules", "Active Projects", "Score"].map(
                                     (h) => (
                                         <th
                                             key={h}
@@ -142,7 +130,7 @@ export default function MembersTable({
                                             {m.stylusModulesCompleted}
                                         </td>
                                         <td className="py-3 pr-4 text-sm text-white/75 font-robotoMono font-bold">
-                                            {m.contractsDeployed}
+                                            {m.activeProjectCount ?? 0}
                                         </td>
                                         <td className="py-3 pr-4">
                                             <div className="flex items-center gap-1">

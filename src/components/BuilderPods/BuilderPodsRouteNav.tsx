@@ -4,8 +4,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAccount } from "wagmi";
 import type { ComponentType } from "react";
-import useSWR from "swr";
 import { Shield, LineChart, Trophy, ClipboardCheck, Presentation, Home, User, Sparkles } from "lucide-react";
+import { useMyMembership } from "@/hooks/useBuilderPods";
 
 type NavItem = {
   label: string;
@@ -45,23 +45,11 @@ function matchesPath(pathname: string, href: string) {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
-const fetcher = (url: string) => fetch(url).then((res) => res.json());
-
 export default function BuilderPodsRouteNav() {
   const pathname = usePathname();
   const { address } = useAccount();
   const isAdminRoute = pathname.startsWith("/admin/builder-pods");
-  const { data: memberCheck } = useSWR(
-    !isAdminRoute && address ? "/api/builder-pods/members/me" : null,
-    fetcher,
-    {
-      revalidateOnFocus: false,
-      revalidateIfStale: false,
-      revalidateOnReconnect: false,
-      shouldRetryOnError: false,
-      errorRetryCount: 0,
-    }
-  );
+  const { data: memberCheck } = useMyMembership(!isAdminRoute ? address : undefined);
 
   const myCollegeSlug =
     (memberCheck?.membership?.collegeId?.slug as string | undefined) ??
@@ -72,7 +60,7 @@ export default function BuilderPodsRouteNav() {
 
   const profileHref = address ? `/builder-pods/profile` : "/members";
   const profileItem: NavItem = { label: "Profile", href: profileHref, icon: User };
-  const userNavItems = [...coreItems, ...myPodItem];
+  const userNavItems = [...coreItems, ...myPodItem, profileItem];
   const navItems = isAdminRoute ? adminItems : userNavItems;
 
   // Only mark ONE item as active: the most specific match (longest href).

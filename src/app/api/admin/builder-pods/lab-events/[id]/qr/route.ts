@@ -33,7 +33,7 @@ export async function GET(
         // Verify college-scoped access
         verifyCollegeAccess(ctx!, event.collegeId.toString());
 
-        const appUrl = process.env.NEXT_PUBLIC_LOCAL_BASE_URL || 'http://localhost:3000';
+        const appUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_LOCAL_BASE_URL || 'http://localhost:3000';
         const registrationUrl = `${appUrl}/builder-pods/register?token=${event.qrToken}`;
 
         try {

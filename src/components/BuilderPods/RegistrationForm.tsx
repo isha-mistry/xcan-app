@@ -14,14 +14,7 @@ import {
     Award,
     X,
 } from "lucide-react";
-
-interface CollegeOption {
-    _id: string;
-    name: string;
-    slug: string;
-    city: string;
-    state: string;
-}
+import { CollegeOption } from "@/types/builder-pods";
 
 interface RegistrationFormProps {
     walletAddress: string | null;
@@ -97,6 +90,15 @@ export default function RegistrationForm({
         };
         frame();
     }, []);
+
+    useEffect(() => {
+        if (!showCelebration) return;
+        const handleEscape = (e: KeyboardEvent) => {
+            if (e.key === "Escape") setShowCelebration(false);
+        };
+        document.addEventListener("keydown", handleEscape);
+        return () => document.removeEventListener("keydown", handleEscape);
+    }, [showCelebration]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -303,7 +305,8 @@ export default function RegistrationForm({
                             onChange={(e) =>
                                 setForm((f) => ({ ...f, semester: e.target.value }))
                             }
-                            placeholder="e.g. 6th Semester"
+                            placeholder="e.g. Sem 6"
+                            maxLength={20}
                             className={inputClass}
                         />
                     </div>
@@ -370,6 +373,9 @@ export default function RegistrationForm({
             <AnimatePresence>
                 {showCelebration && (
                     <motion.div
+                        role="dialog"
+                        aria-modal="true"
+                        aria-label="Registration Success"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}

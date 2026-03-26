@@ -3,23 +3,30 @@ import { LabEvent } from '@/models/LabEvent';
 import { College } from '@/models/College';
 import { PodMember } from '@/models/PodMember';
 import { PodProject } from '@/models/PodProject';
-import { Deployment } from '@/models/Deployment';
 import { ShowcaseEvent } from '@/models/ShowcaseEvent';
 
 export async function getMilestoneKPIs() {
-    const [milestones, labCount, podCount, studentCount, projectCount, deployCount, showcaseCount] =
+    const [
+        milestones,
+        labCount,
+        podCount,
+        studentCount,
+        projectCount,
+        pendingProjectCount,
+        showcaseCount,
+    ] =
         await Promise.all([
             ProgramMilestone.find().sort({ milestoneNumber: 1 }).lean(),
             LabEvent.countDocuments(),
             College.countDocuments({ status: { $in: ['active', 'alumni'] }, deletedAt: null }),
             PodMember.countDocuments({ deletedAt: null }),
             PodProject.countDocuments({ deletedAt: null }),
-            Deployment.countDocuments({ isVerified: true }),
+            PodProject.countDocuments({ deletedAt: null, isApproved: false }),
             ShowcaseEvent.countDocuments({ status: 'completed' }),
         ]);
 
     return {
-        live: { labCount, podCount, studentCount, projectCount, deployCount, showcaseCount },
+        live: { labCount, podCount, studentCount, projectCount, pendingProjectCount, showcaseCount },
         milestones: milestones.map((milestone: any) => ({
             ...milestone,
             progress: {

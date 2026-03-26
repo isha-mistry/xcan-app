@@ -36,9 +36,6 @@ export async function POST(
         if (!ctx) throw new UnauthorizedError('Not authenticated');
 
         await dbConnect();
-        
-        // Ensure old indexes without targetProjectId are removed
-        await WeeklyUpdate.syncIndexes();
 
         const { slug } = await params;
         const parsed = WeeklyUpdateSchema.safeParse(await req.json());

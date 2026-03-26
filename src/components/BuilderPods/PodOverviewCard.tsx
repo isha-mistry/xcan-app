@@ -5,27 +5,12 @@ import {
     MapPin,
     Users,
     UserCheck,
-    Code2,
     FolderGit2,
     Calendar,
     Building2,
+    Trophy,
 } from "lucide-react";
-
-interface CollegeData {
-    name: string;
-    podName: string;
-    city: string;
-    state: string;
-    regionSnapshot?: { name: string; showcaseCity: string };
-    status: string;
-    tier: string;
-    memberCount: number;
-    activeMemberCount: number;
-    projectCount: number;
-    deploymentCount: number;
-    activatedAt: string | null;
-    facultyCoordinator: string | null;
-}
+import { CollegeData } from "@/types/builder-pods";
 
 interface PodOverviewCardProps {
     college: CollegeData;
@@ -97,11 +82,11 @@ export default function PodOverviewCard({ college, isLoading }: PodOverviewCardP
             bg: "bg-purple-500/10",
         },
         {
-            label: "Deployments",
-            value: college.deploymentCount,
-            icon: Code2,
-            color: "text-cyan-400",
-            bg: "bg-cyan-500/10",
+            label: "Showcase Ready",
+            value: college.showcaseReadyProjectCount ?? 0,
+            icon: Trophy,
+            color: "text-amber-400",
+            bg: "bg-amber-500/10",
         },
     ];
 

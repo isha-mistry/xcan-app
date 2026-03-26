@@ -2,20 +2,7 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { Trophy, Code2, BookOpen, Award } from "lucide-react";
-
-interface IndividualScore {
-    _id: string;
-    walletAddress: string;
-    name: string;
-    role: string;
-    totalScore: number;
-    individualRank: number | null;
-    stylusModulesCompleted: number;
-    contractsDeployed: number;
-    weeklyActivityScore: number;
-    projectContributionScore: number;
-    collegeId: { name: string; slug: string; podName: string } | null;
-}
+import { IndividualScore } from "@/types/builder-pods";
 
 interface IndividualLeaderboardTableProps {
     individuals: IndividualScore[];
