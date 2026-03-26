@@ -9,6 +9,7 @@ export interface IWeeklyUpdate extends Document {
     completedThisWeek: string;
     blockers: string | null;
     nextMilestone: string;
+    contractAddresses: string[];
     githubLink: string | null;
     reviewedBy: string | null;
     reviewedAt: Date | null;
@@ -27,6 +28,7 @@ const WeeklyUpdateSchema = new Schema<IWeeklyUpdate>(
         completedThisWeek: { type: String, required: true, maxlength: 2000 },
         blockers: { type: String, default: null, maxlength: 1000 },
         nextMilestone: { type: String, required: true, maxlength: 500 },
+        contractAddresses: { type: [String], default: [] },
         githubLink: { type: String, default: null },
         reviewedBy: { type: String, default: null, lowercase: true },
         reviewedAt: { type: Date, default: null },

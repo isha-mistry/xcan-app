@@ -45,7 +45,7 @@ export async function POST(
                 { status: 400 }
             );
         }
-        const { completedThisWeek, blockers, nextMilestone, githubLink, targetProjectId } = parsed.data;
+        const { completedThisWeek, blockers, nextMilestone, contractAddresses, targetProjectId } = parsed.data;
 
         // Wallet address comes from verified auth context, not body
         const walletAddress = ctx.walletAddress;
@@ -97,7 +97,7 @@ export async function POST(
             completedThisWeek,
             blockers: blockers || null,
             nextMilestone,
-            githubLink: githubLink || null,
+            contractAddresses: (contractAddresses || []).map((a) => a.toLowerCase()),
         });
 
         await AuditLog.create({

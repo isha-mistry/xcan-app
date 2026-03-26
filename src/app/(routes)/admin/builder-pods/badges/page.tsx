@@ -26,6 +26,7 @@ const BADGE_SLUGS = [
 
 export default function AdminBadgesPage() {
     const { data: badgeTypesData } = useSWR("/api/builder-pods/badges", adminFetcher, ADMIN_SWR_STATIC_OPTIONS);
+    const { data: collegesData } = useSWR("/api/builder-pods/colleges", adminFetcher, ADMIN_SWR_STATIC_OPTIONS);
     const [walletSearch, setWalletSearch] = useState("");
     const { data: userBadgesData, isLoading: userLoading } = useSWR(
         walletSearch.length >= 6 ? `/api/builder-pods/badges/user/${walletSearch}` : null,
@@ -87,6 +88,7 @@ export default function AdminBadgesPage() {
     };
 
     const badgeTypes = badgeTypesData?.badges ?? [];
+    const colleges = collegesData?.colleges ?? [];
     const userBadges = userBadgesData?.badges ?? [];
 
     return (
@@ -153,13 +155,20 @@ export default function AdminBadgesPage() {
                             <label className="block text-[9px] font-bold uppercase tracking-widest text-white/50 font-robotoMono mb-1.5">
                                 College ID (optional)
                             </label>
-                            <input
-                                type="text"
+                            <select
                                 value={form.collegeId}
                                 onChange={(e) => setForm({ ...form, collegeId: e.target.value })}
-                                placeholder="MongoDB ObjectId"
-                                className="w-full px-3 py-2.5 rounded-xl bg-white/[0.03] border border-white/[0.06] text-xs text-white/80 font-robotoMono placeholder:text-white/40 focus:outline-none focus:border-white/15 transition-colors"
-                            />
+                                className="w-full px-3 py-2.5 rounded-xl bg-white/[0.03] border border-white/[0.06] text-xs text-white/80 font-robotoMono focus:outline-none focus:border-white/15 transition-colors"
+                            >
+                                <option value="" className="bg-gray-900 text-white/60">
+                                    None
+                                </option>
+                                {colleges.map((c: any) => (
+                                    <option key={c._id} value={c._id} className="bg-gray-900 text-white">
+                                        {c.name} ({c.slug})
+                                    </option>
+                                ))}
+                            </select>
                         </div>
                         <button
                             type="submit"

@@ -28,7 +28,7 @@ export async function PATCH(
         await dbConnect();
         const { slug, id } = await params;
         const body = await req.json();
-        const { completedThisWeek, blockers, nextMilestone, githubLink } = body;
+        const { completedThisWeek, blockers, nextMilestone, contractAddresses } = body;
 
         const college = await College.findOne({ slug, deletedAt: null });
         if (!college) {
@@ -86,13 +86,16 @@ export async function PATCH(
             completedThisWeek: existing.completedThisWeek,
             blockers: existing.blockers,
             nextMilestone: existing.nextMilestone,
-            githubLink: existing.githubLink,
+            contractAddresses: existing.contractAddresses,
         };
 
         if (completedThisWeek !== undefined) existing.completedThisWeek = completedThisWeek;
         if (blockers !== undefined) existing.blockers = blockers || null;
         if (nextMilestone !== undefined) existing.nextMilestone = nextMilestone;
-        if (githubLink !== undefined) existing.githubLink = githubLink || null;
+        if (contractAddresses !== undefined)
+            existing.contractAddresses = Array.isArray(contractAddresses)
+                ? contractAddresses.map((a: string) => a.toLowerCase())
+                : [];
 
         await existing.save();
 
@@ -106,7 +109,7 @@ export async function PATCH(
                 completedThisWeek: existing.completedThisWeek,
                 blockers: existing.blockers,
                 nextMilestone: existing.nextMilestone,
-                githubLink: existing.githubLink,
+                    contractAddresses: existing.contractAddresses,
             },
             ipAddress: req.headers.get('x-forwarded-for') || req.ip || null,
         });
@@ -119,7 +122,7 @@ export async function PATCH(
                     completedThisWeek: existing.completedThisWeek,
                     blockers: existing.blockers,
                     nextMilestone: existing.nextMilestone,
-                    githubLink: existing.githubLink,
+                        contractAddresses: existing.contractAddresses,
                 },
             },
             { status: 200 }

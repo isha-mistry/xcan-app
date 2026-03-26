@@ -2,10 +2,11 @@
 import React from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { FolderGit2, CalendarDays, Github, AlertTriangle, Target, CheckCircle, FileText, Edit3 } from "lucide-react";
+import { FolderGit2, CalendarDays, AlertTriangle, Target, CheckCircle, FileText, Edit3, Code2 } from "lucide-react";
 import WeeklyUpdateForm from "./WeeklyUpdateForm";
 import { useAccount } from "wagmi";
 import { UpdateData, ProjectData } from "@/types/builder-pods";
+import MarkdownContent from "./MarkdownContent";
 
 interface WeeklyUpdatesFeedProps {
     updates: UpdateData[];
@@ -129,7 +130,7 @@ export default function WeeklyUpdatesFeed({
                                                     completedThisWeek: update.completedThisWeek,
                                                     blockers: update.blockers,
                                                     nextMilestone: update.nextMilestone,
-                                                    githubLink: update.githubLink,
+                                                    contractAddresses: update.contractAddresses || [],
                                                 }}
                                                 trigger={
                                                     <button className="p-1 rounded-md hover:bg-white/5 text-white/50 hover:text-white/70 transition-all cursor-pointer">
@@ -155,9 +156,10 @@ export default function WeeklyUpdatesFeed({
                                     <p className="text-[10px] font-bold uppercase tracking-widest text-white/50 font-robotoMono mb-1">
                                         Completed
                                     </p>
-                                    <p className="text-xs text-white/75 font-robotoMono leading-relaxed">
-                                        {update.completedThisWeek}
-                                    </p>
+                                    <MarkdownContent
+                                        markdown={update.completedThisWeek}
+                                        className="text-xs text-white/75"
+                                    />
                                 </div>
 
                                 {/* Blockers */}
@@ -183,22 +185,27 @@ export default function WeeklyUpdatesFeed({
                                         {update.nextMilestone}
                                     </p>
                                 </div>
-                            </div>
 
-                            {/* GitHub Link */}
-                            {update.githubLink && (
-                                <div className="mt-3 pt-3 border-t border-white/5">
-                                    <a
-                                        href={update.githubLink}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="flex items-center gap-1 text-[10px] font-bold text-white/55 hover:text-white/75 font-robotoMono uppercase tracking-wider transition-colors"
-                                    >
-                                        <Github className="w-3.5 h-3.5" />
-                                        View commits
-                                    </a>
-                                </div>
-                            )}
+                                {/* Contract Addresses */}
+                                {update.contractAddresses && update.contractAddresses.length > 0 && (
+                                    <div>
+                                        <p className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-white/50 font-robotoMono mb-1">
+                                            <Code2 className="w-3 h-3" />
+                                            Contract Addresses
+                                        </p>
+                                        <div className="flex flex-wrap gap-1.5">
+                                            {update.contractAddresses.map((addr) => (
+                                                <span
+                                                    key={addr}
+                                                    className="px-2 py-0.5 rounded-full bg-white/5 text-[9px] font-bold text-white/60 font-robotoMono uppercase tracking-wider"
+                                                >
+                                                    {addr.slice(0, 6)}...{addr.slice(-4)}
+                                                </span>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
                         </motion.div>
                     ))}
                 </div>

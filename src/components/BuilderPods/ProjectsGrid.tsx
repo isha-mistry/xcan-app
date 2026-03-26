@@ -3,9 +3,8 @@ import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
     FolderGit2,
-    Github,
     ExternalLink,
-    Code2,
+    Github,
     CheckCircle,
     Users,
     Crown,
@@ -13,10 +12,12 @@ import {
     Loader2,
     UserPlus,
     X,
+    FileText,
     KeyRound,
     LogOut,
     Trash2,
     Presentation,
+    Edit3,
 } from "lucide-react";
 import ProjectSubmitForm from "./ProjectSubmitForm";
 import { TeamMember, ProjectData, ConfirmActionModalProps } from "@/types/builder-pods";
@@ -301,6 +302,244 @@ function ConfirmActionModal({
     );
 }
 
+function ProjectEditModal({
+    project,
+    onClose,
+    onSuccess,
+}: {
+    project: ProjectData;
+    onClose: () => void;
+    onSuccess: () => void;
+}) {
+    const [submitting, setSubmitting] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
+    const [techInput, setTechInput] = useState("");
+
+    const [form, setForm] = useState({
+        name: project.name || "",
+        problemStatement: project.problemStatement || "",
+        demoLink: project.demoLink || "",
+        techStack: project.techStack || ([] as string[]),
+    });
+
+    const addTech = () => {
+        const trimmed = techInput.trim();
+        if (!trimmed) return;
+        setForm((prev) => {
+            if (prev.techStack.includes(trimmed)) return prev;
+            return { ...prev, techStack: [...prev.techStack, trimmed] };
+        });
+        setTechInput("");
+    };
+
+    const removeTech = (tech: string) => {
+        setForm((prev) => ({
+            ...prev,
+            techStack: prev.techStack.filter((t) => t !== tech),
+        }));
+    };
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setError(null);
+        setSubmitting(true);
+
+        try {
+            const payload = {
+                name: form.name.trim(),
+                problemStatement: form.problemStatement.trim(),
+                demoLink: form.demoLink.trim() ? form.demoLink.trim() : null,
+                techStack: form.techStack || [],
+            };
+
+            const res = await fetch(`/api/builder-pods/projects/${project._id}`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                credentials: "include",
+                body: JSON.stringify(payload),
+            });
+
+            const data = await res.json();
+            if (!res.ok) {
+                throw new Error(data.error || "Failed to update project");
+            }
+
+            onSuccess();
+            onClose();
+        } catch (err: any) {
+            setError(err.message || "Something went wrong");
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
+    return (
+        <motion.div
+            role="dialog"
+            aria-modal="true"
+            aria-label="Edit Project"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+            onClick={(e) => {
+                if (e.target === e.currentTarget) onClose();
+            }}
+        >
+            <motion.div
+                initial={{ opacity: 0, y: 20, scale: 0.97 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 20, scale: 0.97 }}
+                transition={{ duration: 0.25 }}
+                className="w-full max-w-2xl glass-container rounded-3xl border border-white/10 bg-black/80 backdrop-blur-xl shadow-[0_24px_80px_rgba(0,0,0,0.85)] max-h-[83vh] flex flex-col overflow-hidden"
+            >
+                <div className="flex items-center justify-between px-6 py-4 border-b border-white/10 bg-black/70 backdrop-blur-sm">
+                    <div className="flex items-center gap-3">
+                        <FolderGit2 className="w-5 h-5 text-cyan-400/80" />
+                        <div>
+                            <h2 className="text-lg font-black text-white font-unbounded tracking-tight">
+                                Edit Project
+                            </h2>
+                            <p className="mt-0.5 text-[11px] text-white/70 font-robotoMono">
+                                Update project details for your team.
+                            </p>
+                        </div>
+                    </div>
+                    <button
+                        onClick={onClose}
+                        className="p-1.5 rounded-lg hover:bg-white/5 transition-colors"
+                        disabled={submitting}
+                    >
+                        <X className="w-4 h-4 text-white/70" />
+                    </button>
+                </div>
+
+                <div className="px-6 py-5 overflow-y-auto technical-scrollbar">
+                    <form onSubmit={handleSubmit} className="space-y-5">
+                        <div>
+                            <label className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-white/70 font-robotoMono mb-2">
+                                <FileText className="w-3.5 h-3.5" />
+                                Project Name *
+                            </label>
+                            <input
+                                type="text"
+                                required
+                                value={form.name}
+                                onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))}
+                                className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-sm text-white font-robotoMono placeholder:text-white/50 focus:outline-none focus:border-cyan-500/40 focus:bg-white/[0.05] transition-all"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-white/70 font-robotoMono mb-2">
+                                <FileText className="w-3.5 h-3.5" />
+                                Problem Statement *
+                            </label>
+                            <textarea
+                                required
+                                value={form.problemStatement}
+                                onChange={(e) =>
+                                    setForm((prev) => ({ ...prev, problemStatement: e.target.value }))
+                                }
+                                rows={4}
+                                className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-sm text-white font-robotoMono placeholder:text-white/50 focus:outline-none focus:border-cyan-500/40 focus:bg-white/[0.05] transition-all resize-none technical-scrollbar"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-white/70 font-robotoMono mb-2">
+                                <ExternalLink className="w-3.5 h-3.5" />
+                                Demo Link
+                            </label>
+                            <input
+                                type="url"
+                                value={form.demoLink}
+                                onChange={(e) => setForm((prev) => ({ ...prev, demoLink: e.target.value }))}
+                                placeholder="https://..."
+                                className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-sm text-white font-robotoMono placeholder:text-white/50 focus:outline-none focus:border-cyan-500/40 focus:bg-white/[0.05] transition-all"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-white/70 font-robotoMono mb-2">
+                                <FolderGit2 className="w-3.5 h-3.5" />
+                                Tech Stack
+                            </label>
+                            <div className="flex flex-col gap-2 mb-2 sm:flex-row">
+                                <input
+                                    type="text"
+                                    value={techInput}
+                                    onChange={(e) => setTechInput(e.target.value)}
+                                    onKeyDown={(e) => {
+                                        if (e.key === "Enter") {
+                                            e.preventDefault();
+                                            addTech();
+                                        }
+                                    }}
+                                    placeholder="e.g. Stylus, Rust, React"
+                                    className="flex-1 bg-white/[0.03] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white font-robotoMono placeholder:text-white/50 focus:outline-none focus:border-cyan-500/40 focus:bg-white/[0.05] transition-all"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={addTech}
+                                    className="px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-[10px] font-bold text-white/80 font-robotoMono hover:bg-white/10 transition-all"
+                                >
+                                    Add
+                                </button>
+                            </div>
+
+                            {form.techStack.length > 0 && (
+                                <div className="flex flex-wrap gap-1.5">
+                                    {form.techStack.map((tech) => (
+                                        <span
+                                            key={tech}
+                                            className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-500/10 text-[9px] font-bold text-blue-400/80 font-robotoMono uppercase tracking-wider"
+                                        >
+                                            {tech}
+                                            <button
+                                                type="button"
+                                                onClick={() => removeTech(tech)}
+                                                className="hover:text-red-400 transition-colors"
+                                            >
+                                                <X className="w-2.5 h-2.5" />
+                                            </button>
+                                        </span>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+
+                        {error && (
+                            <div className="p-3 rounded-xl bg-red-500/5 border border-red-500/20">
+                                <p className="text-[11px] text-red-400 font-robotoMono">{error}</p>
+                            </div>
+                        )}
+
+                        <button
+                            type="submit"
+                            disabled={submitting}
+                            className="w-full flex items-center justify-center gap-2 px-6 py-3.5 bg-white text-black rounded-xl text-[11px] font-bold uppercase tracking-widest font-robotoMono transition-all hover:shadow-lg hover:shadow-white/10 disabled:opacity-30 disabled:cursor-not-allowed"
+                        >
+                            {submitting ? (
+                                <>
+                                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                    Saving...
+                                </>
+                            ) : (
+                                <>
+                                    <Edit3 className="w-3.5 h-3.5" />
+                                    Save Changes
+                                </>
+                            )}
+                        </button>
+                    </form>
+                </div>
+            </motion.div>
+        </motion.div>
+    );
+}
+
 export default function ProjectsGrid({
     projects,
     isLoading,
@@ -315,6 +554,7 @@ export default function ProjectsGrid({
 }: ProjectsGridProps) {
     const [joinModalOpen, setJoinModalOpen] = useState(false);
     const [actionModal, setActionModal] = useState<{ type: 'leave' | 'delete', projectId: string } | null>(null);
+    const [editModalProject, setEditModalProject] = useState<ProjectData | null>(null);
     const [submittingAction, setSubmittingAction] = useState(false);
     const [copiedId, setCopiedId] = useState<string | null>(null);
     const [actionError, setActionError] = useState<string | null>(null);
@@ -649,13 +889,24 @@ export default function ProjectsGrid({
                                                 </button>
                                             )}
                                             {(isTeamLeader) && (
-                                                <button
-                                                    onClick={() => setActionModal({ type: 'delete', projectId: project._id })}
-                                                    className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-red-500/10 text-red-400 border border-red-500/20 text-[9px] font-bold uppercase tracking-wider font-robotoMono hover:bg-red-500/20 transition-colors"
-                                                >
-                                                    <Trash2 className="w-3 h-3" />
-                                                    Delete
-                                                </button>
+                                                <div className="flex items-center gap-2">
+                                                    <button
+                                                        onClick={() => setEditModalProject(project)}
+                                                        className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 text-[9px] font-bold uppercase tracking-wider font-robotoMono hover:bg-cyan-500/20 transition-colors"
+                                                    >
+                                                        <Edit3 className="w-3 h-3" />
+                                                        Edit
+                                                    </button>
+                                                    <button
+                                                        onClick={() =>
+                                                            setActionModal({ type: 'delete', projectId: project._id })
+                                                        }
+                                                        className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-red-500/10 text-red-400 border border-red-500/20 text-[9px] font-bold uppercase tracking-wider font-robotoMono hover:bg-red-500/20 transition-colors"
+                                                    >
+                                                        <Trash2 className="w-3 h-3" />
+                                                        Delete
+                                                    </button>
+                                                </div>
                                             )}
                                         </div>
                                     </div>
@@ -673,17 +924,6 @@ export default function ProjectsGrid({
                                             <Github className="w-3.5 h-3.5" />
                                             Repo
                                         </a>
-                                    )}
-                                    {project.contractAddress && (
-                                        <span className="flex items-center gap-1 text-[10px] font-bold text-white/55 font-robotoMono">
-                                            <Code2 className="w-3.5 h-3.5" />
-                                            {project.contractAddress.slice(
-                                                0,
-                                                6
-                                            )}
-                                            ...
-                                            {project.contractAddress.slice(-4)}
-                                        </span>
                                     )}
                                     {project.demoLink && (
                                         <a
@@ -723,6 +963,13 @@ export default function ProjectsGrid({
                         submitting={submittingAction}
                         onConfirm={handleAction}
                         onClose={() => setActionModal(null)}
+                    />
+                )}
+                {editModalProject && (
+                    <ProjectEditModal
+                        project={editModalProject}
+                        onClose={() => setEditModalProject(null)}
+                        onSuccess={() => onRefresh?.()}
                     />
                 )}
             </AnimatePresence>

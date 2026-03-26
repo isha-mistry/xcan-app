@@ -125,7 +125,7 @@ export interface UpdateData {
     completedThisWeek: string;
     blockers: string | null;
     nextMilestone: string;
-    githubLink: string | null;
+    contractAddresses?: string[];
     reviewedBy: string | null;
     createdAt: string;
 }

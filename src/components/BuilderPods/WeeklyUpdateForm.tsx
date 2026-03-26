@@ -1,13 +1,13 @@
 "use client";
 import React, { useState, useEffect, useMemo } from "react";
 import { createPortal } from "react-dom";
+import dynamic from "next/dynamic";
 import useSWR from "swr";
 import { motion, AnimatePresence } from "framer-motion";
 import {
     Plus,
     X,
     CalendarDays,
-    Github,
     AlertTriangle,
     Target,
     FileText,
@@ -17,12 +17,21 @@ import {
     RotateCw,
     ShieldAlert,
     FolderGit2,
+    Code2,
 } from "lucide-react";
 import { useAccount } from "wagmi";
 import { isActiveWeeklyUpdateLead } from "@/lib/builder-pods/membership";
 import { ProjectData } from "@/types/builder-pods";
+import rehypeSanitize from "rehype-sanitize";
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
+
+const MDEditor = dynamic(
+    () => import("@uiw/react-md-editor").then((mod) => mod.default),
+    { ssr: false }
+);
+
+const CONTRACT_ADDRESS_REGEX = /^0x[a-fA-F0-9]{40}$/;
 
 interface WeeklyUpdateFormProps {
     collegeSlug: string;
@@ -33,9 +42,9 @@ interface WeeklyUpdateFormProps {
         id: string;
         targetProjectId?: string;
         completedThisWeek: string;
+        contractAddresses: string[];
         blockers: string | null;
         nextMilestone: string;
-        githubLink: string | null;
     };
     trigger?: React.ReactNode;
 }
@@ -71,10 +80,36 @@ export default function WeeklyUpdateForm({
     const [form, setForm] = useState({
         targetProjectId: editData?.targetProjectId || "",
         completedThisWeek: editData?.completedThisWeek || "",
+        contractAddresses: editData?.contractAddresses || [],
         blockers: editData?.blockers || "",
         nextMilestone: editData?.nextMilestone || "",
-        githubLink: editData?.githubLink || "",
     });
+
+    const [contractInput, setContractInput] = useState("");
+    const [contractInputError, setContractInputError] = useState<string | null>(null);
+
+    const addContractAddress = () => {
+        const trimmed = contractInput.trim();
+        if (!trimmed) return;
+        if (!CONTRACT_ADDRESS_REGEX.test(trimmed)) {
+            setContractInputError("Invalid contract address. Expected 0x...40 hex chars.");
+            return;
+        }
+        const normalized = trimmed.toLowerCase();
+        setForm((prev) => {
+            if (prev.contractAddresses.includes(normalized)) return prev;
+            return { ...prev, contractAddresses: [...prev.contractAddresses, normalized] };
+        });
+        setContractInput("");
+        setContractInputError(null);
+    };
+
+    const removeContractAddress = (addr: string) => {
+        setForm((prev) => ({
+            ...prev,
+            contractAddresses: prev.contractAddresses.filter((a) => a !== addr),
+        }));
+    };
 
     // Fetch college data to get member role and status
     const { data: collegeData, isLoading: loadingRole } = useSWR(
@@ -136,7 +171,6 @@ export default function WeeklyUpdateForm({
                 body: JSON.stringify({
                     ...form,
                     blockers: form.blockers || null,
-                    githubLink: form.githubLink || null,
                 }),
             });
 
@@ -151,9 +185,9 @@ export default function WeeklyUpdateForm({
                 setForm({
                     targetProjectId: userProjects.length === 1 ? userProjects[0]._id : "",
                     completedThisWeek: "",
+                    contractAddresses: [],
                     blockers: "",
                     nextMilestone: "",
-                    githubLink: "",
                 });
             }
 
@@ -203,7 +237,7 @@ export default function WeeklyUpdateForm({
                             animate={{ opacity: 1, y: 0, scale: 1 }}
                             exit={{ opacity: 0, y: 20, scale: 0.97 }}
                             transition={{ duration: 0.25 }}
-                            className="w-full max-w-2xl glass-container rounded-3xl border border-white/10 bg-black/80 backdrop-blur-xl shadow-[0_24px_80px_rgba(0,0,0,0.85)] max-h-[83vh] flex flex-col overflow-hidden"
+                            className="w-full max-w-4xl glass-container rounded-3xl border border-white/10 bg-black/80 backdrop-blur-xl shadow-[0_24px_80px_rgba(0,0,0,0.85)] max-h-[83vh] flex flex-col overflow-hidden"
                         >
                             {/* Header */}
                             <div className="flex items-center justify-between px-6 py-4 md:px-8 md:py-5 border-b border-white/10 bg-black/70 backdrop-blur-sm">
@@ -302,20 +336,35 @@ export default function WeeklyUpdateForm({
                                                 <FileText className="w-3.5 h-3.5" />
                                                 What was completed this week? *
                                             </label>
-                                            <textarea
-                                                required
-                                                value={form.completedThisWeek}
-                                                onChange={(e) =>
-                                                    setForm((prev) => ({
-                                                        ...prev,
-                                                        completedThisWeek:
-                                                            e.target.value,
-                                                    }))
-                                                }
-                                                placeholder="Describe what was accomplished this week..."
-                                                rows={4}
-                                                className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-sm text-white font-robotoMono placeholder:text-white/50 focus:outline-none focus:border-purple-500/40 focus:bg-white/[0.05] transition-all resize-none technical-scrollbar"
-                                            />
+                                            <div className="w-full">
+                                                <MDEditor
+                                                    value={form.completedThisWeek}
+                                                    onChange={(value) =>
+                                                        setForm((prev) => ({
+                                                            ...prev,
+                                                            completedThisWeek: value || "",
+                                                        }))
+                                                    }
+                                                    preview="live"
+                                                    height={220}
+                                                    hideToolbar={false}
+                                                    visibleDragbar={false}
+                                                    previewOptions={{
+                                                        rehypePlugins: [
+                                                            [rehypeSanitize],
+                                                        ],
+                                                    }}
+                                                    textareaProps={{
+                                                        placeholder:
+                                                            "Describe what was accomplished this week...\n\nTip: Use markdown like **bold**, `code`, lists, etc.",
+                                                    }}
+                                                    commandsFilter={(cmd) =>
+                                                        cmd.name === "fullscreen"
+                                                            ? false
+                                                            : cmd
+                                                    }
+                                                />
+                                            </div>
                                         </div>
 
                                         {/* Blockers */}
@@ -360,24 +409,63 @@ export default function WeeklyUpdateForm({
                                             />
                                         </div>
 
-                                        {/* GitHub Link */}
+                                        {/* Contract Addresses */}
                                         <div>
                                             <label className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-white/70 font-robotoMono mb-2">
-                                                <Github className="w-3.5 h-3.5" />
-                                                GitHub Link
+                                                <Code2 className="w-3.5 h-3.5" />
+                                                Contract Addresses
                                             </label>
-                                            <input
-                                                type="url"
-                                                value={form.githubLink}
-                                                onChange={(e) =>
-                                                    setForm((prev) => ({
-                                                        ...prev,
-                                                        githubLink: e.target.value,
-                                                    }))
-                                                }
-                                                placeholder="https://github.com/..."
-                                                className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-sm text-white font-robotoMono placeholder:text-white/50 focus:outline-none focus:border-purple-500/40 focus:bg-white/[0.05] transition-all"
-                                            />
+
+                                            <div className="flex flex-col gap-2 sm:flex-row">
+                                                <input
+                                                    type="text"
+                                                    value={contractInput}
+                                                    onChange={(e) => {
+                                                        setContractInputError(null);
+                                                        setContractInput(e.target.value);
+                                                    }}
+                                                    placeholder="0x..."
+                                                    className="flex-1 bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-sm text-white font-robotoMono placeholder:text-white/50 focus:outline-none focus:border-purple-500/40 focus:bg-white/[0.05] transition-all"
+                                                />
+                                                <button
+                                                    type="button"
+                                                    onClick={addContractAddress}
+                                                    className="px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-[10px] font-bold text-white/80 font-robotoMono hover:bg-white/10 transition-all whitespace-nowrap"
+                                                >
+                                                    Add
+                                                </button>
+                                            </div>
+
+                                            {contractInputError && (
+                                                <p className="mt-1 text-[9px] text-red-400 font-robotoMono">
+                                                    {contractInputError}
+                                                </p>
+                                            )}
+
+                                            {form.contractAddresses.length > 0 && (
+                                                <div className="flex flex-wrap gap-1.5 mt-3">
+                                                    {form.contractAddresses.map((addr) => (
+                                                        <span
+                                                            key={addr}
+                                                            className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-500/10 text-[9px] font-bold text-blue-400 font-robotoMono uppercase tracking-wider"
+                                                        >
+                                                            {addr.slice(0, 6)}...{addr.slice(-4)}
+                                                            <button
+                                                                type="button"
+                                                                onClick={() =>
+                                                                    removeContractAddress(
+                                                                        addr
+                                                                    )
+                                                                }
+                                                                className="hover:text-red-400 transition-colors"
+                                                                aria-label="Remove contract address"
+                                                            >
+                                                                <X className="w-2.5 h-2.5" />
+                                                            </button>
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                            )}
                                         </div>
 
                                         {error && (

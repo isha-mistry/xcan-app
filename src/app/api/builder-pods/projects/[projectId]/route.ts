@@ -4,7 +4,8 @@ import { PodProject } from "@/models/PodProject";
 import { PodMember } from "@/models/PodMember";
 import { AuditLog } from "@/models/AuditLog";
 import { WeeklyUpdate } from "@/models/WeeklyUpdate";
-import { getAuthContext, UnauthorizedError } from "@/lib/rbac";
+import { getAuthContext, UnauthorizedError, ForbiddenError } from "@/lib/rbac";
+import { ProjectUpdateSchema } from "@/schemas/builder-pods";
 
 export async function DELETE(
     req: NextRequest,
@@ -71,22 +72,8 @@ export async function DELETE(
             newValue: { status: "deleted" },
         });
 
-        // Demote if they have no other projects
-        const remainingProjects = await PodProject.countDocuments({
-            collegeId: project.collegeId,
-            teamLeader: { $regex: new RegExp(`^${wallet}$`, "i") },
-            deletedAt: null,
-        });
-
-        if (remainingProjects === 0) {
-            await PodMember.updateOne(
-                { collegeId: project.collegeId, walletAddress: { $regex: new RegExp(`^${wallet}$`, "i") }, deletedAt: null },
-                { $set: { role: "pod_member" } }
-            );
-            
-            // Note: Inorbit platform roles could also be updated here if PlatformRole/UserRole models are imported,
-            // but the PodMember is the primary indicator of role in the pod.
-        }
+        // Note: Do not demote project creators on project deletion.
+        // Pod role should remain `pod_lead` even if they delete their last project.
 
         return NextResponse.json(
             { success: true, message: "Project deleted successfully" },
@@ -100,6 +87,120 @@ export async function DELETE(
             );
         }
         console.error("Delete project error:", error);
+        return NextResponse.json(
+            { success: false, error: "Internal Server Error" },
+            { status: 500 }
+        );
+    }
+}
+
+export async function PATCH(
+    req: NextRequest,
+    { params }: { params: { projectId: string } }
+) {
+    try {
+        const ctx = await getAuthContext(req);
+        if (!ctx) throw new UnauthorizedError("Not authenticated");
+
+        await dbConnect();
+
+        const projectId = params.projectId;
+        const wallet = ctx.walletAddress.toLowerCase();
+
+        const project = await PodProject.findOne({
+            _id: projectId,
+            deletedAt: null,
+        });
+
+        if (!project) {
+            return NextResponse.json(
+                { success: false, error: "Project not found" },
+                { status: 404 }
+            );
+        }
+
+        const member = await PodMember.findOne({
+            collegeId: project.collegeId,
+            walletAddress: wallet,
+            status: "active",
+            deletedAt: null,
+        }).lean();
+
+        if (!member) {
+            return NextResponse.json(
+                { success: false, error: "You are not an active member of this pod" },
+                { status: 403 }
+            );
+        }
+
+        const isProjectCreator = project.teamLeader.toLowerCase() === wallet;
+        if (!isProjectCreator) {
+            return NextResponse.json(
+                { success: false, error: "Only the project creator can edit this project" },
+                { status: 403 }
+            );
+        }
+
+        const parsed = ProjectUpdateSchema.safeParse(await req.json());
+        if (!parsed.success) {
+            return NextResponse.json(
+                { success: false, error: parsed.error.issues[0]?.message || "Invalid project payload" },
+                { status: 400 }
+            );
+        }
+
+        const oldValue = {
+            name: project.name,
+            problemStatement: project.problemStatement,
+            demoLink: project.demoLink,
+            techStack: project.techStack,
+        };
+
+        const { name, problemStatement, demoLink, techStack } = parsed.data;
+
+        if (name !== undefined) project.name = name.trim();
+        if (problemStatement !== undefined) project.problemStatement = problemStatement.trim();
+        if (demoLink !== undefined) project.demoLink = demoLink;
+        if (techStack !== undefined) {
+            project.techStack = Array.from(new Set(techStack))
+                .map((t) => t.trim())
+                .filter(Boolean)
+                .slice(0, 10);
+        }
+
+        await project.save();
+
+        await AuditLog.create({
+            actorWallet: wallet,
+            action: "project.edit",
+            entityType: "PodProject",
+            entityId: project._id.toString(),
+            oldValue,
+            newValue: {
+                name: project.name,
+                problemStatement: project.problemStatement,
+                demoLink: project.demoLink,
+                techStack: project.techStack,
+            },
+        });
+
+        return NextResponse.json({ success: true, project }, { status: 200 });
+    } catch (error: any) {
+        if (error instanceof UnauthorizedError) {
+            return NextResponse.json(
+                { success: false, error: "Not authenticated" },
+                { status: 401 }
+            );
+        }
+
+        if (error instanceof ForbiddenError) {
+            return NextResponse.json(
+                { success: false, error: error.message },
+                { status: 403 }
+            );
+        }
+
+        console.error("Edit project error:", error);
         return NextResponse.json(
             { success: false, error: "Internal Server Error" },
             { status: 500 }

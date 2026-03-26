@@ -5,9 +5,7 @@ import {
     Plus,
     X,
     FolderGit2,
-    Github,
     ExternalLink,
-    Code2,
     Layers,
     FileText,
     Loader2,
@@ -15,6 +13,7 @@ import {
     Wallet,
     Copy,
     ArrowUpCircle,
+    Github,
 } from "lucide-react";
 
 interface ProjectSubmitFormProps {
@@ -56,7 +55,6 @@ export default function ProjectSubmitForm({
         name: "",
         problemStatement: "",
         githubRepo: "",
-        contractAddress: "",
         demoLink: "",
         techStack: [] as string[],
     });
@@ -96,9 +94,6 @@ export default function ProjectSubmitForm({
             if (!(payload.githubRepo as string).trim()) {
                 delete payload.githubRepo;
             }
-            if (!(payload.contractAddress as string).trim()) {
-                delete payload.contractAddress;
-            }
             if (!(payload.demoLink as string).trim()) {
                 delete payload.demoLink;
             }
@@ -121,7 +116,6 @@ export default function ProjectSubmitForm({
                 name: "",
                 problemStatement: "",
                 githubRepo: "",
-                contractAddress: "",
                 demoLink: "",
                 techStack: [],
             });
@@ -400,47 +394,6 @@ export default function ProjectSubmitForm({
                                                 />
                                             </div>
 
-                                            {/* GitHub Repo */}
-                                            <div>
-                                                <label className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-white/70 font-robotoMono mb-2">
-                                                    <Github className="w-3.5 h-3.5" />
-                                                    GitHub Repo
-                                                </label>
-                                                <input
-                                                    type="url"
-                                                    value={form.githubRepo}
-                                                    onChange={(e) =>
-                                                        setForm((prev) => ({
-                                                            ...prev,
-                                                            githubRepo: e.target.value,
-                                                        }))
-                                                    }
-                                                    placeholder="https://github.com/..."
-                                                    className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-sm text-white font-robotoMono placeholder:text-white/50 focus:outline-none focus:border-blue-500/40 focus:bg-white/[0.05] transition-all"
-                                                />
-                                            </div>
-
-                                            {/* Contract Address */}
-                                            <div>
-                                                <label className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-white/70 font-robotoMono mb-2">
-                                                    <Code2 className="w-3.5 h-3.5" />
-                                                    Contract Address
-                                                </label>
-                                                <input
-                                                    type="text"
-                                                    value={form.contractAddress}
-                                                    onChange={(e) =>
-                                                        setForm((prev) => ({
-                                                            ...prev,
-                                                            contractAddress:
-                                                                e.target.value,
-                                                        }))
-                                                    }
-                                                    placeholder="0x..."
-                                                    className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-sm text-white font-robotoMono placeholder:text-white/50 focus:outline-none focus:border-blue-500/40 focus:bg-white/[0.05] transition-all"
-                                                />
-                                            </div>
-
                                             {/* Demo Link */}
                                             <div className="md:col-span-2">
                                                 <label className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-white/70 font-robotoMono mb-2">
@@ -457,6 +410,26 @@ export default function ProjectSubmitForm({
                                                         }))
                                                     }
                                                     placeholder="https://..."
+                                                    className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-sm text-white font-robotoMono placeholder:text-white/50 focus:outline-none focus:border-blue-500/40 focus:bg-white/[0.05] transition-all"
+                                                />
+                                            </div>
+
+                                            {/* GitHub Repo */}
+                                            <div className="md:col-span-2">
+                                                <label className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-white/70 font-robotoMono mb-2">
+                                                    <Github className="w-3.5 h-3.5" />
+                                                    GitHub Repo
+                                                </label>
+                                                <input
+                                                    type="url"
+                                                    value={form.githubRepo}
+                                                    onChange={(e) =>
+                                                        setForm((prev) => ({
+                                                            ...prev,
+                                                            githubRepo: e.target.value,
+                                                        }))
+                                                    }
+                                                    placeholder="https://github.com/..."
                                                     className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-sm text-white font-robotoMono placeholder:text-white/50 focus:outline-none focus:border-blue-500/40 focus:bg-white/[0.05] transition-all"
                                                 />
                                             </div>

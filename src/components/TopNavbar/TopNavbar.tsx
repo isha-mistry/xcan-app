@@ -551,7 +551,7 @@ function TopNavbar() {
               kicker: "Arbitrum Ecosystem",
               title: "Builder Pods",
               description:
-                "Move between discovery, analytics, showcases, and participation flows from one focused navigation layer.",
+                "Move between discovery, analytics, showcases, and participation flows.",
               href: "/builder-pods",
               cta: "Open Landing",
               accentClassName:

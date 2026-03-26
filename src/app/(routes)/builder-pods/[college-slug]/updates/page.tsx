@@ -12,7 +12,7 @@ import {
     CheckCircle,
     AlertTriangle,
     Target,
-    Github,
+    Code2,
     ChevronLeft,
     ChevronRight,
     ChevronDown,
@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { usePrivy } from "@privy-io/react-auth";
 import WeeklyUpdateForm from "@/components/BuilderPods/WeeklyUpdateForm";
+import MarkdownContent from "@/components/BuilderPods/MarkdownContent";
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
@@ -240,9 +241,12 @@ export default function CollegeUpdatesPage() {
                                                     )}
                                                 </div>
                                                 {group.latestUpdate?.completedThisWeek && (
-                                                    <p className="mt-3 text-xs text-white/60 font-robotoMono line-clamp-2 max-w-3xl">
-                                                        {group.latestUpdate.completedThisWeek}
-                                                    </p>
+                                                    <div className="mt-3 line-clamp-2 max-w-3xl">
+                                                        <MarkdownContent
+                                                            markdown={group.latestUpdate.completedThisWeek}
+                                                            className="text-xs text-white/60"
+                                                        />
+                                                    </div>
                                                 )}
                                             </div>
                                             <div className="flex items-center justify-between sm:justify-end gap-3">
@@ -304,7 +308,7 @@ export default function CollegeUpdatesPage() {
                                                                         completedThisWeek: update.completedThisWeek,
                                                                         blockers: update.blockers,
                                                                         nextMilestone: update.nextMilestone,
-                                                                        githubLink: update.githubLink,
+                                                                        contractAddresses: update.contractAddresses || [],
                                                                     }}
                                                                     trigger={
                                                                         <button className="p-1 rounded-md hover:bg-white/5 text-white/50 hover:text-white/80 transition-all cursor-pointer">
@@ -323,9 +327,10 @@ export default function CollegeUpdatesPage() {
                                                             <p className="text-[10px] font-bold uppercase tracking-widest text-white/50 font-robotoMono mb-1">
                                                                 Completed
                                                             </p>
-                                                            <p className="text-xs text-white/75 font-robotoMono leading-relaxed">
-                                                                {update.completedThisWeek}
-                                                            </p>
+                                                            <MarkdownContent
+                                                                markdown={update.completedThisWeek}
+                                                                className="text-xs text-white/75"
+                                                            />
                                                         </div>
 
                                                         {/* Blockers */}
@@ -361,17 +366,20 @@ export default function CollegeUpdatesPage() {
                                                                 {update.submittedBy.slice(0, 8)}...
                                                             </div>
                                                         )}
-                                                        {update.githubLink && (
-                                                            <a
-                                                                href={update.githubLink}
-                                                                target="_blank"
-                                                                rel="noopener noreferrer"
-                                                                className="flex items-center gap-1 text-[9px] font-bold text-white/45 hover:text-white/80 font-robotoMono uppercase tracking-wider transition-colors"
-                                                            >
-                                                                <Github className="w-3 h-3" />
-                                                                View commits
-                                                            </a>
-                                                        )}
+                                                        {update.contractAddresses &&
+                                                            update.contractAddresses.length > 0 && (
+                                                                <div className="flex flex-wrap gap-1">
+                                                                    {update.contractAddresses.map((addr: string) => (
+                                                                        <span
+                                                                            key={addr}
+                                                                            className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/5 text-[9px] font-bold text-white/60 font-robotoMono uppercase tracking-wider"
+                                                                        >
+                                                                            <Code2 className="w-2.5 h-2.5 text-white/40" />
+                                                                            {addr.slice(0, 6)}...{addr.slice(-4)}
+                                                                        </span>
+                                                                    ))}
+                                                                </div>
+                                                            )}
                                                     </div>
                                                 </motion.div>
                                             ))}

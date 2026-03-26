@@ -32,7 +32,7 @@ export async function POST(
                 { status: 400 }
             );
         }
-        const { name, problemStatement, githubRepo, contractAddress, demoLink, techStack } = parsed.data;
+        const { name, problemStatement, githubRepo, demoLink, techStack } = parsed.data;
         const walletAddress = ctx.walletAddress;
 
         const college = await College.findOne({ slug, deletedAt: null });
@@ -78,7 +78,6 @@ export async function POST(
             name: name.trim(),
             problemStatement: problemStatement.trim(),
             githubRepo: githubRepo || null,
-            contractAddress: contractAddress?.toLowerCase() || null,
             demoLink: demoLink || null,
             techStack: techStack || [],
             status: 'ideation',

@@ -30,7 +30,11 @@ export const WeeklyUpdateSchema = z.object({
     completedThisWeek: z.string().min(10).max(2000),
     blockers: z.string().max(1000).nullable().optional(),
     nextMilestone: z.string().min(5).max(500),
-    githubLink: z.string().url().nullable().optional(),
+    contractAddresses: z
+        .array(z.string().regex(/^0x[a-fA-F0-9]{40}$/))
+        .max(20)
+        .optional()
+        .default([]),
     targetProjectId: z.string().regex(/^[a-f\d]{24}$/i).optional(),
 });
 
@@ -47,10 +51,6 @@ export const ProjectSchema = z.object({
     name: z.string().min(3).max(100).trim(),
     problemStatement: z.string().min(10).max(1000),
     githubRepo: z.string().url().optional(),
-    contractAddress: z.preprocess(
-        (value) => (typeof value === 'string' && value.trim() === '' ? undefined : value),
-        z.string().regex(/^0x[a-fA-F0-9]{40}$/)
-    ).optional(),
     demoLink: z.string().url().optional(),
     techStack: z.array(z.string()).max(10).default([]),
 });
@@ -72,6 +72,19 @@ export const ProjectStatusUpdateSchema = z.object({
 }).refine((data) => data.status !== undefined || data.isApproved !== undefined, {
     message: 'Provide at least one change to update',
     path: ['status'],
+});
+
+export const ProjectUpdateSchema = z.object({
+    name: z.string().min(3).max(100).trim().optional(),
+    problemStatement: z.string().min(10).max(1000).optional(),
+    demoLink: z
+        .string()
+        .url()
+        .nullable()
+        .optional(),
+    techStack: z.array(z.string().max(30)).max(10).optional(),
+}).refine((data) => Object.keys(data).length > 0, {
+    message: "Provide at least one field to update",
 });
 
 export const MemberManagementSchema = z.object({

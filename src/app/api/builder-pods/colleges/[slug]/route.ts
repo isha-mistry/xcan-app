@@ -33,7 +33,7 @@ export async function GET(
                 .lean(),
 
             WeeklyUpdate.find({ collegeId: college._id, deletedAt: null })
-                .select('submittedBy targetProjectId weekNumber year completedThisWeek blockers nextMilestone githubLink createdAt')
+                .select('submittedBy targetProjectId weekNumber year completedThisWeek contractAddresses blockers nextMilestone createdAt')
                 .sort({ year: -1, weekNumber: -1 })
                 .limit(10)
                 .lean(),
