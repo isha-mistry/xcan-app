@@ -8,7 +8,9 @@ export default function AdminBuilderPodsLayout({
 }) {
   return (
     <>
-      <BuilderPodsRouteNav />
+      <div className="lg:hidden">
+        <BuilderPodsRouteNav />
+      </div>
       <div className="min-h-[550px]">
         {children}
       </div>

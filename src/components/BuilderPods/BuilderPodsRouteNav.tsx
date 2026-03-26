@@ -3,39 +3,13 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAccount } from "wagmi";
-import type { ComponentType } from "react";
 import useSWR from "swr";
-import { Shield, LineChart, Trophy, ClipboardCheck, Presentation, Home, User, Sparkles } from "lucide-react";
-
-type NavItem = {
-  label: string;
-  href: string;
-  icon: ComponentType<{ className?: string }>;
-};
-
-const coreItems: NavItem[] = [
-  { label: "Landing", href: "/builder-pods", icon: Home },
-  { label: "Leaderboard", href: "/builder-pods/leaderboard", icon: Trophy },
-  { label: "Showcase", href: "/builder-pods/showcase", icon: Presentation },
-  { label: "Analytics", href: "/builder-pods/analytics", icon: LineChart },
-  { label: "Register", href: "/builder-pods/register", icon: ClipboardCheck },
-  { label: "Submit Showcase", href: "/builder-pods/showcase-submit", icon: Presentation },
-];
-
-const adminItems: NavItem[] = [
-  { label: "Admin Dashboard", href: "/admin/builder-pods", icon: Shield },
-  { label: "Colleges", href: "/admin/builder-pods/colleges", icon: Sparkles },
-  { label: "Members", href: "/admin/builder-pods/members", icon: Sparkles },
-  { label: "Projects", href: "/admin/builder-pods/projects", icon: Sparkles },
-  { label: "Deployments", href: "/admin/builder-pods/deployments", icon: Sparkles },
-  { label: "Lab Events", href: "/admin/builder-pods/lab-events", icon: Sparkles },
-  { label: "Badges", href: "/admin/builder-pods/badges", icon: Sparkles },
-  { label: "Showcases", href: "/admin/builder-pods/showcases", icon: Sparkles },
-  { label: "Milestones", href: "/admin/builder-pods/milestones", icon: Sparkles },
-  { label: "Audit Logs", href: "/admin/builder-pods/audit-logs", icon: Sparkles },
-  { label: "Export", href: "/admin/builder-pods/export", icon: Sparkles },
-  { label: "Add College", href: "/admin/builder-pods/colleges/new", icon: Sparkles },
-];
+import {
+  builderPodsActionItems,
+  builderPodsAdminItems,
+  builderPodsPrimaryItems,
+  getBuilderPodsPersonalItems,
+} from "./builderPodsNav";
 
 function matchesPath(pathname: string, href: string) {
   if (href === "/builder-pods") return pathname === href;
@@ -66,14 +40,15 @@ export default function BuilderPodsRouteNav() {
   const myCollegeSlug =
     (memberCheck?.membership?.collegeId?.slug as string | undefined) ??
     (memberCheck?.memberships?.[0]?.college?.slug as string | undefined);
-  const myPodItem = myCollegeSlug
-    ? [{ label: "My Pod", href: `/builder-pods/${myCollegeSlug}`, icon: Sparkles }]
-    : [];
-
-  const profileHref = address ? `/builder-pods/profile` : "/members";
-  const profileItem: NavItem = { label: "Profile", href: profileHref, icon: User };
-  const userNavItems = [...coreItems, ...myPodItem];
-  const navItems = isAdminRoute ? adminItems : userNavItems;
+  const userNavItems = [
+    ...builderPodsPrimaryItems,
+    ...builderPodsActionItems,
+    ...getBuilderPodsPersonalItems({
+      address,
+      myCollegeSlug,
+    }),
+  ];
+  const navItems = isAdminRoute ? builderPodsAdminItems : userNavItems;
 
   // Only mark ONE item as active: the most specific match (longest href).
   // This prevents parent routes like "/colleges" from also looking active on

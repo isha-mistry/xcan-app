@@ -7,7 +7,7 @@ import { usePrivy } from "@privy-io/react-auth";
 import { IoClose, IoGiftSharp } from "react-icons/io5";
 import { IoMdNotifications } from "react-icons/io";
 import { PiUsersThreeFill } from "react-icons/pi";
-import { FaBusinessTime, FaUser } from "react-icons/fa6";
+import { FaBusinessTime, FaUser, FaUserShield } from "react-icons/fa6";
 import { FiArrowUpRight, FiCodesandbox } from "react-icons/fi";
 import { MdHub } from "react-icons/md";
 import { useSidebar } from "../../app/hooks/useSidebar";
@@ -15,6 +15,13 @@ import ConnectWalletWithENS from "../ConnectWallet/ConnectWalletWithENS";
 import logo from "@/assets/images/icon.svg";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSidebarStore } from "@/store/sidebarStore";
+import { useIsSuperAdmin } from "@/app/hooks/useRoleCheck";
+
+function isRouteActive(pathname: string, href: string) {
+  const base = href.split("?")[0];
+  if (base === "/") return pathname === "/";
+  return pathname === base || pathname.startsWith(`${base}/`);
+}
 
 const SidebarMainMobile = () => {
   const { isOpen, setOpen } = useSidebarStore();
@@ -26,6 +33,7 @@ const SidebarMainMobile = () => {
     address,
     isConnected,
   } = useSidebar();
+  const { isSuperAdmin } = useIsSuperAdmin(isConnected && authenticated);
   const sidebarRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -77,6 +85,10 @@ const SidebarMainMobile = () => {
       icon: <FiCodesandbox className="size-5" />,
       external: true
     },
+    { label: "Builder Pods", href: "/builder-pods", icon: <FiCodesandbox className="size-5" /> },
+    ...(isSuperAdmin
+      ? [{ label: "Builder Pods Admin", href: "/admin/builder-pods", icon: <FaUserShield className="size-5" /> }]
+      : []),
     { label: "Dashboard", href: "/dashboard", icon: <FaUser className="size-5" /> },
     { label: "Lectures", href: "/lectures?hours=ongoing", icon: <FaBusinessTime className="size-5" /> },
     { label: "Expert Sessions", href: "/sessions?active=availableExperts", icon: <PiUsersThreeFill className="size-5" /> },
@@ -128,9 +140,13 @@ const SidebarMainMobile = () => {
                     key={item.href}
                     href={item.href}
                     target={item.external ? "_blank" : undefined}
+                    rel={item.external ? "noreferrer" : undefined}
                     onClick={() => setOpen(false)}
-                    className={`flex items-center justify-between p-4 rounded-2xl transition-all group ${pathname === item.href ? "bg-white/10 text-white" : "text-white/60 hover:bg-white/5 hover:text-white"
-                      }`}
+                    className={`flex items-center justify-between p-4 rounded-2xl transition-all group ${
+                      !item.external && isRouteActive(pathname, item.href)
+                        ? "bg-white/10 text-white"
+                        : "text-white/60 hover:bg-white/5 hover:text-white"
+                    }`}
                   >
                     <div className="flex items-center gap-4">
                       {item.icon}
