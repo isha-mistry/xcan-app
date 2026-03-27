@@ -28,7 +28,7 @@ export type BuilderPodsNavItem = {
 
 export const builderPodsPrimaryItems: BuilderPodsNavItem[] = [
   {
-    label: "Landing",
+    label: "Home",
     href: "/builder-pods",
     description: "Start from the Builder Pods overview and ecosystem entry point.",
     icon: Home,

@@ -553,7 +553,7 @@ function TopNavbar() {
               description:
                 "Move between discovery, analytics, showcases, and participation flows.",
               href: "/builder-pods",
-              cta: "Open Landing",
+              cta: "Navigate to Home",
               accentClassName:
                 "bg-[linear-gradient(145deg,rgba(37,99,235,0.22),rgba(14,165,233,0.10),rgba(79,70,229,0.18))]",
             }}

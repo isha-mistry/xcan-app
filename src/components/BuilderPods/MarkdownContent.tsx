@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo } from "react";
+import React, { useEffect, useState } from "react";
 import DOMPurify from "dompurify";
 import { marked } from "marked";
 
@@ -13,9 +13,20 @@ export default function MarkdownContent({
     markdown: string;
     className?: string;
 }) {
-    const html = useMemo(() => {
-        const raw = marked.parse(markdown || "");
-        return DOMPurify.sanitize(raw, { USE_PROFILES: { html: true } });
+    const [html, setHtml] = useState("");
+
+    useEffect(() => {
+        let cancelled = false;
+        const parsed = marked.parse(markdown || "");
+
+        Promise.resolve(parsed).then((raw) => {
+            if (cancelled) return;
+            setHtml(DOMPurify.sanitize(raw, { USE_PROFILES: { html: true } }));
+        });
+
+        return () => {
+            cancelled = true;
+        };
     }, [markdown]);
 
     return (

@@ -15,7 +15,7 @@ export default function HeroSection() {
             />
             {/* Dark overlay for readability */}
             <div className="absolute inset-0 bg-black/25 rounded-3xl" />
-            <div className="absolute inset-0 backdrop-blur-3xl rounded-3xl" />
+            <div className="absolute inset-0 backdrop-blur-lg rounded-3xl" />
 
             {/* Animated glow orbs */}
             {/* <motion.div
@@ -50,10 +50,12 @@ export default function HeroSection() {
                     </motion.div>
 
                     {/* Title */}
-                    <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-white font-unbounded tracking-tighter leading-[1.1] mb-5">
-                        Arbitrum
-                        <span className="bg-gradient-to-r from-blue-400 via-cyan-400 to-purple-400 bg-clip-text text-transparent">
-                            {" "}Builder Pods
+                    <h1 className="text-4xl md:text-5xl lg:text-6xl font-black font-unbounded tracking-tighter leading-[1.1] mb-5">
+                        <span className="bg-gradient-to-r from-[#E9D5FF] via-[#A5B4FC] to-[#7DD3FC] bg-clip-text text-transparent drop-shadow-[0_10px_30px_rgba(125,211,252,0.14)]">
+                            Arbitrum{" "}
+                            <span className="bg-gradient-to-r from-[#C4B5FD] via-[#93C5FD] to-[#E9D5FF] bg-clip-text text-transparent drop-shadow-[0_10px_30px_rgba(233,213,255,0.12)]">
+                                Builder Pods
+                            </span>
                         </span>
                     </h1>
 

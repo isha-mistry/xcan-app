@@ -117,7 +117,7 @@ export default function Home() {
                 transition={{ duration: 1, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
                 className="text-4xl md:text-5xl lg:text-8xl font-unbounded font-black mb-6 leading-[1.05] text-white tracking-[-0.04em]"
               >
-                Learn. <br/> Connect.<br className="hidden md:block" />
+                Learn. <br /> Connect.<br className="hidden md:block" />
                 <span className="relative inline-block px-2">
                   <span className="relative z-10 text-transparent bg-clip-text bg-gradient-to-r from-white via-blue-100 to-blue-400">
                     Earn On-Chain.
@@ -125,7 +125,7 @@ export default function Home() {
                   <div className="absolute -inset-x-4 -inset-y-2 bg-blue-500/5 blur-[40px] -z-10 rounded-full opacity-50" />
                 </span>
               </motion.h1>
-      
+
               <motion.p
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
