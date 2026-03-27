@@ -1,9 +1,9 @@
 "use client";
 
 import React from "react";
+import Image from "next/image";
 import Link from "next/link";
 import {
-    Award,
     Code2,
     ExternalLink,
     GraduationCap,
@@ -12,14 +12,7 @@ import {
     Trophy,
 } from "lucide-react";
 import { MembershipEntry, BadgeEntry } from "@/types/builder-pods";
-
-const BADGE_COLORS: Record<string, { color: string; bg: string }> = {
-    builder_lab_participant: { color: "text-cyan-400", bg: "bg-cyan-500/10" },
-    builder_pod_member: { color: "text-green-400", bg: "bg-green-500/10" },
-    builder_pod_lead: { color: "text-yellow-400", bg: "bg-yellow-500/10" },
-    regional_showcase_finalist: { color: "text-purple-400", bg: "bg-purple-500/10" },
-    regional_showcase_winner: { color: "text-amber-400", bg: "bg-amber-500/10" },
-};
+import { getBuilderPodBadgeMeta } from "@/lib/builder-pods/badge-ui";
 
 interface PodMembershipsSectionProps {
     memberships: MembershipEntry[];
@@ -115,31 +108,58 @@ export default function PodMembershipsSection({
                         <p className="text-[9px] font-bold uppercase tracking-widest text-white/50 font-robotoMono mb-2">
                             Badges ({badges.length})
                         </p>
-                        <div className="flex flex-wrap gap-2">
+                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4 2xl:grid-cols-5">
                             {badges.map((badge) => {
-                                const badgeColors = badge.slug
-                                    ? BADGE_COLORS[badge.slug] || { color: "text-white/70", bg: "bg-white/[0.03]" }
-                                    : { color: "text-white/70", bg: "bg-white/[0.03]" };
+                                const badgeMeta = getBuilderPodBadgeMeta(badge);
 
                                 return (
                                     <div
                                         key={badge._id}
-                                        className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg ${badgeColors.bg} border border-white/[0.05]`}
+                                        className={`group relative flex h-full flex-col overflow-hidden rounded-[1.6rem] border p-3 sm:p-4 ${badgeMeta.surfaceClass}`}
                                     >
-                                        <Award className={`w-3 h-3 ${badgeColors.color}`} />
-                                        <span className={`text-[10px] font-bold font-robotoMono ${badgeColors.color}`}>
-                                            {badge.label}
-                                        </span>
-                                        {badge.easUid && (
-                                            <a
-                                                href={`https://sepolia.easscan.org/attestation/view/${badge.easUid}`}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="text-white/50 hover:text-white/75 transition-colors"
+                                        <div className="relative">
+                                            <div
+                                                className={`relative overflow-hidden rounded-[1.25rem] border border-white/10 ${badgeMeta.imagePanelClass}`}
                                             >
-                                                <ExternalLink className="w-2.5 h-2.5" />
-                                            </a>
-                                        )}
+                                                <div className={`pointer-events-none absolute inset-x-10 top-6 h-24 rounded-full blur-3xl opacity-90 ${badgeMeta.auraClass}`} />
+                                                <div
+                                                    className={`pointer-events-none absolute inset-0 bg-gradient-to-br ${badgeMeta.glowGradientClass} opacity-60`}
+                                                />
+                                                <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.18),transparent_55%)]" />
+                                                <div className="relative aspect-[4/3] w-full overflow-hidden">
+                                                    <Image
+                                                        src={badgeMeta.imageSrc}
+                                                        alt={badgeMeta.label}
+                                                        fill
+                                                        sizes="(min-width: 1536px) 18vw, (min-width: 1280px) 22vw, (min-width: 640px) 40vw, 100vw"
+                                                        className="object-contain p-5 sm:p-6 drop-shadow-[0_18px_36px_rgba(0,0,0,0.45)] transition-transform duration-300 group-hover:scale-[1.04]"
+                                                    />
+                                                </div>
+                                            </div>
+
+                                            <div className="mt-4 flex flex-1 flex-col">
+                                                <p className="text-[9px] uppercase tracking-[0.22em] text-white/40 font-robotoMono">
+                                                    Earned Badge
+                                                </p>
+                                                <p className={`mt-2 text-sm font-bold font-robotoMono ${badgeMeta.titleClass}`}>
+                                                    {badgeMeta.label}
+                                                </p>
+                                                <p className="mt-2 text-xs leading-relaxed text-white/60 font-robotoMono">
+                                                    {badgeMeta.description}
+                                                </p>
+                                                {badge.easUid && (
+                                                    <a
+                                                        href={`https://sepolia.easscan.org/attestation/view/${badge.easUid}`}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className={`mt-4 inline-flex w-fit items-center gap-1.5 rounded-full px-4 py-2 text-[10px] font-bold uppercase tracking-[0.18em] font-robotoMono transition-all ${badgeMeta.buttonClass}`}
+                                                    >
+                                                        View EAS
+                                                        <ExternalLink className="h-3 w-3" />
+                                                    </a>
+                                                )}
+                                            </div>
+                                        </div>
                                     </div>
                                 );
                             })}
