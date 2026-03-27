@@ -5,6 +5,7 @@ import {
     getAuthContext, requireAnyRole, verifyCollegeAccess,
     UnauthorizedError, ForbiddenError
 } from '@/lib/rbac';
+import { BASE_URL } from '@/config/constants';
 
 /**
  * GET /api/admin/builder-pods/lab-events/:id/qr
@@ -33,7 +34,7 @@ export async function GET(
         // Verify college-scoped access
         verifyCollegeAccess(ctx!, event.collegeId.toString());
 
-        const appUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_LOCAL_BASE_URL || 'http://localhost:3000';
+        const appUrl = BASE_URL;
         const registrationUrl = `${appUrl}/builder-pods/register?token=${event.qrToken}`;
 
         try {
