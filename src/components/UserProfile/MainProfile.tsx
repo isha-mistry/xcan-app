@@ -19,7 +19,7 @@ import SelectDaoButton from "../ComponentUtils/SelectDaoButton";
 import RewardButton from "../ClaimReward/RewardButton";
 import Heading from "../ComponentUtils/Heading";
 import toast, { Toaster } from "react-hot-toast";
-import { ChevronDownIcon } from "lucide-react";
+import { ChevronDownIcon, ExternalLink } from "lucide-react";
 import { usePrivy, useWallets } from "@privy-io/react-auth";
 import { fetchApi } from "@/utils/api";
 import { BrowserProvider, Contract } from "ethers";
@@ -47,6 +47,7 @@ import UploadVideoButton from "../ComponentUtils/UploadVideoButton";
 import UploadedVideosTab from "../ComponentUtils/UploadedVideosTab";
 import ProfileSection from "../BuilderPods/ProfileSection";
 import confetti from "canvas-confetti";
+import { getBuilderPodBadgeMeta } from "@/lib/builder-pods/badge-ui";
 interface Following {
   follower_address: string;
   isFollowing: boolean;
@@ -635,6 +636,11 @@ function MainProfile() {
     };
   }, [address]);
 
+  const closeBadgeCelebration = () => {
+    setShowBadgeCelebration(false);
+    setNewBadges([]);
+  };
+
   return (
     <>
       <div className="lg:hidden pt-2 xs:pt-4 sm:pt-6 px-4 md:px-6 lg:px-14">
@@ -979,29 +985,74 @@ function MainProfile() {
       )}
       {showBadgeCelebration && (
         <div className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/70 backdrop-blur-sm">
-          <div className="w-full max-w-sm glass-container rounded-2xl p-6 border border-white/10">
-            <h2 className="text-lg font-black text-white font-unbounded tracking-tight mb-2">
+          <div className="relative w-full max-w-2xl overflow-hidden glass-container rounded-[2rem] p-6 md:p-8 border border-white/10">
+            <div className="pointer-events-none absolute left-1/2 top-0 h-64 w-64 -translate-x-1/2 rounded-full bg-gradient-to-br from-orange-400/20 via-amber-300/15 to-transparent blur-3xl animate-pulse" />
+            <h2 className="relative text-lg font-black text-white font-unbounded tracking-tight mb-2">
               New Builder Pods Badge!
             </h2>
-            <p className="text-xs text-white/75 font-robotoMono mb-3">
-              You just earned new Builder Pods badge(s):
+            <p className="relative text-xs text-white/75 font-robotoMono mb-4">
+              {newBadges.length > 1
+                ? "You just unlocked a new set of Builder Pods badges."
+                : "You just unlocked a new Builder Pods badge."}
             </p>
-            <ul className="mb-4 space-y-1">
-              {newBadges.map((b) => (
-                <li
-                  key={b._id}
-                  className="text-[11px] text-white/85 font-robotoMono flex items-center gap-2"
-                >
-                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-blue-400" />
-                  <span className="font-bold">{b.badgeSnapshot?.label ?? b.label}</span>
-                </li>
-              ))}
-            </ul>
+
+            <div className={`relative mb-5 grid gap-4 ${newBadges.length > 1 ? "sm:grid-cols-2" : ""}`}>
+              {newBadges.map((b) => {
+                const badgeMeta = getBuilderPodBadgeMeta(b);
+
+                return (
+                  <div
+                    key={b._id}
+                    className={`relative overflow-hidden rounded-[1.75rem] border p-4 md:p-5 ${badgeMeta.surfaceClass}`}
+                  >
+                    <div className="relative flex flex-col">
+                      <div
+                        className={`relative overflow-hidden rounded-[1.35rem] border border-white/10 ${badgeMeta.imagePanelClass}`}
+                      >
+                        <div className={`pointer-events-none absolute inset-x-10 top-6 h-24 rounded-full bg-gradient-to-br ${badgeMeta.glowGradientClass} blur-3xl opacity-90 animate-pulse`} />
+                        <div className={`pointer-events-none absolute inset-x-10 top-8 h-20 rounded-full blur-3xl ${badgeMeta.auraClass}`} />
+                        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.2),transparent_55%)]" />
+                        <div className="relative aspect-[4/3] w-full overflow-hidden">
+                          <Image
+                            src={badgeMeta.imageSrc}
+                            alt={badgeMeta.label}
+                            fill
+                            sizes="(min-width: 768px) 20vw, 100vw"
+                            className="object-contain p-6 drop-shadow-[0_18px_36px_rgba(0,0,0,0.48)]"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="mt-4 text-left">
+                        <p className="text-[9px] uppercase tracking-[0.22em] text-white/45 font-robotoMono">
+                          Earned Badge
+                        </p>
+                        <p className={`mt-2 text-sm font-bold font-robotoMono ${badgeMeta.titleClass}`}>
+                          {badgeMeta.label}
+                        </p>
+                        <p className="mt-2 text-xs leading-relaxed text-white/65 font-robotoMono">
+                          {badgeMeta.description}
+                        </p>
+
+                        {b.easUid && (
+                          <a
+                            href={`https://sepolia.easscan.org/attestation/view/${b.easUid}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className={`mt-4 inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-[10px] font-bold uppercase tracking-[0.18em] font-robotoMono transition-all ${badgeMeta.buttonClass}`}
+                          >
+                            View EAS
+                            <ExternalLink className="h-3 w-3" />
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
             <button
-              onClick={() => {
-                setShowBadgeCelebration(false);
-                setNewBadges([]);
-              }}
+              onClick={closeBadgeCelebration}
               className="mt-1 w-full px-4 py-2.5 bg-white text-black rounded-xl text-[11px] font-bold uppercase tracking-widest font-robotoMono hover:shadow-lg hover:shadow-white/10 transition-all"
             >
               Awesome
