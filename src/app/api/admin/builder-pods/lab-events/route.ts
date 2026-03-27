@@ -9,6 +9,7 @@ import {
     UnauthorizedError, ForbiddenError
 } from '@/lib/rbac';
 import crypto from 'crypto';
+import { BASE_URL } from '@/config/constants';
 
 // GET — list all lab events
 // super_admin sees all, college_admin sees only their college's events
@@ -27,11 +28,13 @@ export async function GET(req: NextRequest) {
             .lean();
 
         // Attach registration URL to each event
-        const appUrl = process.env.NEXT_PUBLIC_LOCAL_BASE_URL || 'http://localhost:3000';
+        const appUrl = BASE_URL;
         const eventsWithUrls = events.map((e: any) => ({
             ...e,
             registrationUrl: `${appUrl}/builder-pods/register?token=${e.qrToken}`,
         }));
+
+        console.log("eventsWithUrls", eventsWithUrls);
 
         return NextResponse.json({ success: true, events: eventsWithUrls }, { status: 200 });
     } catch (error: any) {

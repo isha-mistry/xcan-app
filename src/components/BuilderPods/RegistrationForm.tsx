@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect, useCallback } from "react";
+import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import confetti from "canvas-confetti";
 import {
@@ -13,12 +14,25 @@ import {
     AlertCircle,
     Award,
     X,
+    ExternalLink,
 } from "lucide-react";
 import { CollegeOption } from "@/types/builder-pods";
+import { getBuilderPodBadgeMeta } from "@/lib/builder-pods/badge-ui";
 
 interface RegistrationFormProps {
     walletAddress: string | null;
     initialQrToken?: string;
+}
+
+interface CelebrationBadge {
+    slug?: string | null;
+    label?: string | null;
+    easUid?: string | null;
+}
+
+interface ExistingMembership {
+    collegeName: string | null;
+    status: string | null;
 }
 
 export default function RegistrationForm({
@@ -30,6 +44,8 @@ export default function RegistrationForm({
     const [submitting, setSubmitting] = useState(false);
     const [collegeLocked, setCollegeLocked] = useState(false);
     const [qrEventName, setQrEventName] = useState("");
+    const [checkingExistingMembership, setCheckingExistingMembership] = useState(false);
+    const [existingMembership, setExistingMembership] = useState<ExistingMembership | null>(null);
     const [result, setResult] = useState<{
         success: boolean;
         message: string;
@@ -78,7 +94,53 @@ export default function RegistrationForm({
             .catch(console.error);
     }, [initialQrToken]);
 
+    useEffect(() => {
+        if (!walletAddress) {
+            setExistingMembership(null);
+            return;
+        }
+
+        let cancelled = false;
+        setCheckingExistingMembership(true);
+
+        fetch("/api/builder-pods/members/me", { credentials: "include" })
+            .then((res) => (res.ok ? res.json() : null))
+            .then((data) => {
+                if (cancelled || !data?.success) return;
+                const membership = data.membership;
+                if (!membership) {
+                    setExistingMembership(null);
+                    return;
+                }
+                setExistingMembership({
+                    collegeName: membership.collegeId?.name ?? null,
+                    status: membership.status ?? null,
+                });
+                setResult({
+                    success: false,
+                    message: membership.collegeId?.name
+                        ? `You are already registered with ${membership.collegeId.name}. This wallet cannot register for another college.`
+                        : "You are already registered with another Builder Pod. This wallet cannot register again.",
+                });
+            })
+            .catch(() => {
+                if (!cancelled) {
+                    setExistingMembership(null);
+                }
+            })
+            .finally(() => {
+                if (!cancelled) {
+                    setCheckingExistingMembership(false);
+                }
+            });
+
+        return () => {
+            cancelled = true;
+        };
+    }, [walletAddress]);
+
     const [showCelebration, setShowCelebration] = useState(false);
+    const [celebrationBadges, setCelebrationBadges] = useState<CelebrationBadge[]>([]);
 
     const fireConfetti = useCallback(() => {
         const duration = 3000;
@@ -94,15 +156,34 @@ export default function RegistrationForm({
     useEffect(() => {
         if (!showCelebration) return;
         const handleEscape = (e: KeyboardEvent) => {
-            if (e.key === "Escape") setShowCelebration(false);
+            if (e.key === "Escape") {
+                setShowCelebration(false);
+                setCelebrationBadges([]);
+            }
         };
         document.addEventListener("keydown", handleEscape);
         return () => document.removeEventListener("keydown", handleEscape);
     }, [showCelebration]);
 
+    const closeCelebration = () => {
+        setShowCelebration(false);
+        setCelebrationBadges([]);
+    };
+
+    const isRegistrationBlocked = Boolean(existingMembership);
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!walletAddress) return;
+        if (isRegistrationBlocked) {
+            setResult({
+                success: false,
+                message: existingMembership?.collegeName
+                    ? `You are already registered with ${existingMembership.collegeName}. This wallet cannot register for another college.`
+                    : "You are already registered with another Builder Pod. This wallet cannot register again.",
+            });
+            return;
+        }
         setSubmitting(true);
         setResult(null);
 
@@ -143,6 +224,12 @@ export default function RegistrationForm({
                     qrToken: "",
                 });
                 if (viaQr) {
+                    setCelebrationBadges([
+                        {
+                            slug: "builder_lab_participant",
+                            label: "Builder Lab Participant",
+                        },
+                    ]);
                     setShowCelebration(true);
                     fireConfetti();
                 }
@@ -206,6 +293,7 @@ export default function RegistrationForm({
                             type="text"
                             required
                             value={form.name}
+                            disabled={isRegistrationBlocked}
                             onChange={(e) =>
                                 setForm((f) => ({ ...f, name: e.target.value }))
                             }
@@ -233,7 +321,7 @@ export default function RegistrationForm({
                                     onChange={(e) =>
                                         setForm((f) => ({ ...f, collegeSlug: e.target.value }))
                                     }
-                                    disabled={collegeLocked}
+                                    disabled={collegeLocked || isRegistrationBlocked}
                                     className={inputClass}
                                 >
                                     <option value="" className="bg-[#0a0d12]">
@@ -259,6 +347,7 @@ export default function RegistrationForm({
                         <label className={labelClass}>Programming Level</label>
                         <select
                             value={form.programmingLevel}
+                            disabled={isRegistrationBlocked}
                             onChange={(e) =>
                                 setForm((f) => ({ ...f, programmingLevel: e.target.value }))
                             }
@@ -288,6 +377,7 @@ export default function RegistrationForm({
                         <input
                             type="text"
                             value={form.githubUsername}
+                            disabled={isRegistrationBlocked}
                             onChange={(e) =>
                                 setForm((f) => ({ ...f, githubUsername: e.target.value }))
                             }
@@ -302,6 +392,7 @@ export default function RegistrationForm({
                         <input
                             type="text"
                             value={form.semester}
+                            disabled={isRegistrationBlocked}
                             onChange={(e) =>
                                 setForm((f) => ({ ...f, semester: e.target.value }))
                             }
@@ -320,6 +411,7 @@ export default function RegistrationForm({
                         <input
                             type="text"
                             value={form.qrToken}
+                            disabled={isRegistrationBlocked}
                             onChange={(e) =>
                                 setForm((f) => ({ ...f, qrToken: e.target.value }))
                             }
@@ -351,10 +443,23 @@ export default function RegistrationForm({
                         </div>
                     )}
 
+                    {checkingExistingMembership && (
+                        <div className="flex items-center gap-2 text-xs text-white/50 font-robotoMono">
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                            Checking your Builder Pod membership...
+                        </div>
+                    )}
+
                     {/* Submit */}
                     <button
                         type="submit"
-                        disabled={submitting || !form.name || !form.collegeSlug}
+                        disabled={
+                            submitting ||
+                            checkingExistingMembership ||
+                            isRegistrationBlocked ||
+                            !form.name ||
+                            !form.collegeSlug
+                        }
                         className="w-full flex items-center justify-center gap-2 px-6 py-3.5 bg-white text-black rounded-xl text-[11px] font-bold uppercase tracking-widest font-robotoMono transition-all hover:shadow-lg hover:shadow-white/10 disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:shadow-none"
                     >
                         {submitting ? (
@@ -380,44 +485,106 @@ export default function RegistrationForm({
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-lg p-4"
-                        onClick={() => setShowCelebration(false)}
+                        onClick={closeCelebration}
                     >
                         <motion.div
                             initial={{ scale: 0.8, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
                             exit={{ scale: 0.8, opacity: 0 }}
                             transition={{ type: "spring", duration: 0.5 }}
-                            className="relative glass-container rounded-3xl p-8 md:p-10 max-w-md w-full text-center backdrop-blur-md"
+                            className="relative glass-container rounded-3xl p-8 md:p-10 max-w-2xl w-full text-center backdrop-blur-md overflow-hidden"
                             onClick={(e) => e.stopPropagation()}
                         >
                             <button
-                                onClick={() => setShowCelebration(false)}
+                                onClick={closeCelebration}
                                 className="absolute top-4 right-4 text-white/50 hover:text-white/75 transition-colors"
                             >
                                 <X className="w-5 h-5" />
                             </button>
 
-                            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-yellow-400/20 to-amber-500/20 border border-yellow-500/20 flex items-center justify-center mx-auto mb-5">
+                            <div className="pointer-events-none absolute left-1/2 top-0 h-56 w-56 -translate-x-1/2 rounded-full bg-gradient-to-br from-orange-400/20 via-amber-400/15 to-transparent blur-3xl animate-pulse" />
+
+                            <div className="relative w-16 h-16 rounded-full bg-gradient-to-br from-yellow-400/20 to-amber-500/20 border border-yellow-500/20 flex items-center justify-center mx-auto mb-5">
                                 <Award className="w-8 h-8 text-yellow-400" />
                             </div>
 
-                            <h3 className="text-2xl font-black text-white font-unbounded tracking-tight mb-2">
+                            <h3 className="relative text-2xl font-black text-white font-unbounded tracking-tight mb-2">
                                 Congratulations!
                             </h3>
-                            <p className="text-sm text-white/70 font-robotoMono mb-4">
-                                You&apos;ve earned your first badge
+                            <p className="relative text-sm text-white/70 font-robotoMono mb-4">
+                                {celebrationBadges.length > 1
+                                    ? "You've unlocked new Builder Pods badges"
+                                    : "You've unlocked a new Builder Pods badge"}
                             </p>
 
-                            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-cyan-500/10 border border-cyan-500/15 mb-6">
-                                <Award className="w-4 h-4 text-cyan-400" />
-                                <span className="text-xs font-bold text-cyan-400 font-robotoMono">
-                                    Builder Lab Participant
-                                </span>
+                            <div className={`relative mb-6 grid gap-4 ${celebrationBadges.length > 1 ? "sm:grid-cols-2" : ""}`}>
+                                {celebrationBadges.map((badge, index) => {
+                                    const badgeMeta = getBuilderPodBadgeMeta(badge);
+
+                                    return (
+                                        <div
+                                            key={`${badgeMeta.slug}-${index}`}
+                                            className={`relative overflow-hidden rounded-[1.75rem] border p-4 md:p-5 ${badgeMeta.surfaceClass}`}
+                                        >
+                                            <motion.div
+                                                animate={{ scale: [0.92, 1.08, 0.92], opacity: [0.55, 0.9, 0.55], rotate: [0, 6, -6, 0] }}
+                                                transition={{ duration: 3.2, repeat: Infinity, ease: "easeInOut" }}
+                                                className={`pointer-events-none absolute inset-x-8 top-5 h-24 rounded-full bg-gradient-to-br ${badgeMeta.glowGradientClass} blur-3xl`}
+                                            />
+                                            <div className="relative flex flex-col">
+                                                <div
+                                                    className={`relative overflow-hidden rounded-[1.35rem] border border-white/10 ${badgeMeta.imagePanelClass}`}
+                                                >
+                                                    <div className={`pointer-events-none absolute inset-x-10 top-8 h-20 rounded-full blur-3xl ${badgeMeta.auraClass}`} />
+                                                    <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.2),transparent_55%)]" />
+                                                    <motion.div
+                                                        animate={{ y: [0, -4, 0], scale: [1, 1.03, 1] }}
+                                                        transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut" }}
+                                                        className="relative aspect-[4/3] w-full overflow-hidden"
+                                                    >
+                                                        <Image
+                                                            src={badgeMeta.imageSrc}
+                                                            alt={badgeMeta.label}
+                                                            fill
+                                                            sizes="(min-width: 768px) 20vw, 100vw"
+                                                            className="object-contain p-6 drop-shadow-[0_18px_36px_rgba(0,0,0,0.48)]"
+                                                        />
+                                                    </motion.div>
+                                                </div>
+
+                                                <div className="mt-4 text-left">
+                                                    <div className="inline-flex items-center gap-2 rounded-full bg-black/20 px-3 py-1.5 border border-white/10">
+                                                        <Award className="w-4 h-4 text-orange-300" />
+                                                        <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-white/55 font-robotoMono">
+                                                            Earned Badge
+                                                        </span>
+                                                    </div>
+                                                    <p className={`mt-3 text-sm font-bold font-robotoMono ${badgeMeta.titleClass}`}>
+                                                        {badgeMeta.label}
+                                                    </p>
+                                                    <p className="mt-2 text-xs leading-relaxed text-white/65 font-robotoMono">
+                                                        {badgeMeta.description}
+                                                    </p>
+                                                    {badge.easUid && (
+                                                        <a
+                                                            href={`https://sepolia.easscan.org/attestation/view/${badge.easUid}`}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className={`mt-4 inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-[10px] font-bold uppercase tracking-[0.18em] font-robotoMono transition-all ${badgeMeta.buttonClass}`}
+                                                        >
+                                                            View EAS
+                                                            <ExternalLink className="h-3 w-3" />
+                                                        </a>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
                             </div>
 
-                            <p className="text-xs text-white/55 font-robotoMono mb-6">
-                                You&apos;re officially part of the Arbitrum Builder Pod program.
-                                Keep building to earn more badges!
+                            <p className="relative text-xs text-white/55 font-robotoMono mb-6">
+                                Your badge artwork will now show up on your profile too. Keep building to unlock the rest of the collection.
                             </p>
 
                             <a

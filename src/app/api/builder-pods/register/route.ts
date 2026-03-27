@@ -48,15 +48,37 @@ export async function POST(req: NextRequest) {
             );
         }
 
-        // Check for duplicate registration
+        // A wallet can belong to only one college pod at a time.
         const existing = await PodMember.findOne({
-            collegeId: college._id,
             walletAddress,
             deletedAt: null,
-        });
+        })
+            .populate('collegeId', 'name slug')
+            .lean() as
+            | ({
+                collegeId?: { _id?: { toString(): string }; name?: string; slug?: string } | string | null;
+            } & Record<string, any>)
+            | null;
+
         if (existing) {
+            const existingCollegeId =
+                typeof existing.collegeId === 'string'
+                    ? existing.collegeId
+                    : existing.collegeId?._id?.toString?.() ?? null;
+            const existingCollegeName =
+                typeof existing.collegeId === 'string'
+                    ? null
+                    : existing.collegeId?.name ?? null;
+
+            const errorMessage =
+                existingCollegeId === college._id.toString()
+                    ? 'Already registered with this college'
+                    : existingCollegeName
+                        ? `Already registered with another college: ${existingCollegeName}`
+                        : 'Already registered with another college';
+
             return NextResponse.json(
-                { success: false, error: 'Already registered with this college' },
+                { success: false, error: errorMessage },
                 { status: 409 }
             );
         }
@@ -148,7 +170,7 @@ export async function POST(req: NextRequest) {
         }
         const mongoError = error as { code?: number };
         if (mongoError.code === 11000) {
-            return apiError('Already registered with this college', { status: 409 });
+            return apiError('Already registered with a Builder Pod', { status: 409 });
         }
         return handleApiError(error, 'Registration error');
     }
