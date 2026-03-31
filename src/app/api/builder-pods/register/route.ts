@@ -118,7 +118,7 @@ export async function POST(req: NextRequest) {
             collegeId: college._id,
             walletAddress,
             name: name.trim(),
-            role: 'pod_participant',
+            role: 'lab_participant',
             programmingLevel: programmingLevel || null,
             githubUsername: githubUsername || null,
             semester: semester || null,

@@ -65,7 +65,7 @@ export async function POST(req: NextRequest) {
             );
         }
 
-        const roleHierarchy = ['pod_participant', 'pod_member', 'pod_lead'];
+        const roleHierarchy = ['lab_participant', 'pod_member', 'pod_lead'];
         const currentIdx = roleHierarchy.indexOf(member.role);
         const requestedIdx = roleHierarchy.indexOf(requestedRole);
 

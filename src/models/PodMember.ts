@@ -1,6 +1,6 @@
 import mongoose, { Document, Schema, Types } from 'mongoose';
 
-export const POD_MEMBER_ROLES = ['pod_participant', 'pod_lead', 'pod_member', 'faculty_coordinator', 'mentor'] as const;
+export const POD_MEMBER_ROLES = ['lab_participant', 'pod_lead', 'pod_member', 'faculty_coordinator', 'mentor'] as const;
 export const POD_MEMBER_STATUS = ['pending', 'active', 'inactive', 'removed'] as const;
 
 export interface IPodMember extends Document {
@@ -34,7 +34,7 @@ const PodMemberSchema = new Schema<IPodMember>(
         collegeId: { type: Schema.Types.ObjectId, ref: 'College', required: true },
         walletAddress: { type: String, required: true, lowercase: true },
         name: { type: String, required: true, trim: true },
-        role: { type: String, enum: POD_MEMBER_ROLES, default: 'pod_participant' },
+        role: { type: String, enum: POD_MEMBER_ROLES, default: 'lab_participant' },
         requestedRole: { type: String, enum: [...POD_MEMBER_ROLES, null], default: null },
         programmingLevel: { type: String, enum: ['beginner', 'intermediate', 'advanced'], default: null },
         githubUsername: { type: String, default: null },
@@ -64,7 +64,7 @@ PodMemberSchema.index({ totalScore: -1 });
 export const PodMember =
     (() => {
         // In Next.js dev, the mongoose model cache can survive hot reloads.
-        // If the schema enum changes (e.g. adding `pod_participant`), the old model can
+        // If the schema enum changes (e.g. adding `lab_participant`), the old model can
         // keep rejecting new enum values. Force a recompile in non-production.
         if (process.env.NODE_ENV !== 'production' && mongoose.models.PodMember) {
             delete mongoose.models.PodMember;

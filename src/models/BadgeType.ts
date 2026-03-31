@@ -3,7 +3,7 @@ import mongoose, { Document, Schema } from 'mongoose';
 export const BADGE_TRIGGER_EVENTS = [
     'lab_registration',
     'pod_member_approved',
-    'pod_participant_approved',
+    'lab_participant_approved',
     'manual_assignment',
     'showcase_finalist',
     'showcase_winner',

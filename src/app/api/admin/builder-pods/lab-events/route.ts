@@ -34,7 +34,7 @@ export async function GET(req: NextRequest) {
             registrationUrl: `${appUrl}/builder-pods/register?token=${e.qrToken}`,
         }));
 
-        console.log("eventsWithUrls", eventsWithUrls);
+        // console.log("eventsWithUrls", eventsWithUrls);
 
         return NextResponse.json({ success: true, events: eventsWithUrls }, { status: 200 });
     } catch (error: any) {

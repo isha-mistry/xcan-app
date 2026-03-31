@@ -57,7 +57,7 @@ export interface SerializedProfileMembership {
 const weeklyUpdateLeadRoleSet = new Set<string>(WEEKLY_UPDATE_LEAD_ROLES);
 
 const membershipRoleLabels: Record<string, string> = {
-    pod_participant: 'Pod Participant',
+    lab_participant: 'Lab Participant',
     builder_lab_participant: 'Builder Lab Participant',
     pod_lead: 'Pod Lead',
     pod_member: 'Pod Member',
@@ -111,9 +111,9 @@ export function isActiveWeeklyUpdateLead(member: WeeklyUpdateLeadLike | null | u
 
 export function getMembershipDisplayRole(member: Pick<ProfileMemberLike, 'role' | 'status'> | null | undefined): string | null {
     if (!member) return null;
-    if (member.role === 'pod_participant') return 'pod_participant';
+    if (member.role === 'lab_participant') return 'lab_participant';
     // Backward compatibility: older pending records stored as pod_member
-    if (member.status === 'pending' && member.role === 'pod_member') return 'pod_participant';
+    if (member.status === 'pending' && member.role === 'pod_member') return 'lab_participant';
     return member.role ?? null;
 }
 

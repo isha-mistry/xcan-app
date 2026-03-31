@@ -87,7 +87,7 @@ export default function CollegePodPage() {
     const canRequestPodMember =
         isMember &&
         memberStatus === "active" &&
-        memberRole === "pod_participant" &&
+        memberRole === "lab_participant" &&
         !memberRequestedRole;
 
     const [requestingRole, setRequestingRole] = useState(false);

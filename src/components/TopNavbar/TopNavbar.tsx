@@ -77,6 +77,11 @@ type DesktopMegaMenuProps = {
   pathname: string;
   isActive: boolean;
   align?: "trigger-center" | "screen-center";
+  /**
+   * Default layout stacks title above nav on smaller widths.
+   * "side" keeps title on the left and nav on the right for all breakpoints.
+   */
+  layout?: "default" | "side";
   anchorRef?: RefObject<HTMLDivElement>;
   feature: {
     kicker: string;
@@ -129,6 +134,7 @@ function DesktopMegaMenu({
   pathname,
   isActive,
   align = "trigger-center",
+  layout = "default",
   anchorRef,
   feature,
   sections,
@@ -137,6 +143,7 @@ function DesktopMegaMenu({
   const [isOpen, setIsOpen] = useState(false);
   const [panelTop, setPanelTop] = useState<number | null>(null);
   const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isSideLayout = layout === "side";
   const activeHref = getMostSpecificActiveHref(
     pathname,
     sections.flatMap((section) => section.items)
@@ -235,7 +242,11 @@ function DesktopMegaMenu({
         }
       >
         <div
-          className={`${panelClassName} relative overflow-hidden rounded-[32px] border border-white/10 bg-[#05070d]/95 p-3 shadow-[0_32px_90px_rgba(0,0,0,0.45)] backdrop-blur-2xl transition-all duration-300 ease-out ${
+          className={`${panelClassName} relative rounded-[32px] border border-white/10 bg-[#05070d]/95 p-3 shadow-[0_32px_90px_rgba(0,0,0,0.45)] backdrop-blur-2xl transition-all duration-300 ease-out ${
+            isSideLayout
+              ? "max-h-[calc(100vh-180px)] overflow-y-auto overflow-x-hidden"
+              : "overflow-hidden"
+          } ${
             isOpen
               ? "translate-y-0 scale-100 opacity-100"
               : "-translate-y-3 scale-[0.98] opacity-0"
@@ -247,7 +258,13 @@ function DesktopMegaMenu({
             <div className="absolute -right-10 bottom-6 h-40 w-40 rounded-full bg-blue-500/10 blur-3xl" />
           </div>
 
-          <div className="relative grid gap-3 xl:grid-cols-[270px_minmax(0,1fr)]">
+          <div
+            className={`relative grid gap-3 ${
+              isSideLayout
+                ? "grid-cols-[minmax(160px,220px)_minmax(0,1fr)] md:grid-cols-[minmax(210px,270px)_minmax(0,1fr)]"
+                : "xl:grid-cols-[270px_minmax(0,1fr)]"
+            }`}
+          >
             <div
               className={`relative overflow-hidden rounded-[28px] border border-white/10 p-6 ${feature.accentClassName}`}
             >
@@ -292,7 +309,11 @@ function DesktopMegaMenu({
                     </h4>
                   </div>
 
-                  <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
+                  <div
+                    className={`grid gap-3 ${
+                      isSideLayout ? "grid-cols-1" : "sm:grid-cols-2 xl:grid-cols-1"
+                    }`}
+                  >
                     {section.items.map((item) => {
                       const active = activeHref === item.href;
                       const Icon = item.icon;
@@ -428,6 +449,39 @@ function TopNavbar() {
     },
   ];
 
+  // Hover-controlled dropdown for the "Explore" button.
+  // NextUI's Dropdown trigger type is limited (press/longPress), so we
+  // explicitly open/close on pointer enter/leave to match the mega menu.
+  const [isExploreOpen, setIsExploreOpen] = useState(false);
+  const exploreCloseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const clearExploreCloseTimer = () => {
+    if (exploreCloseTimerRef.current) {
+      clearTimeout(exploreCloseTimerRef.current);
+      exploreCloseTimerRef.current = null;
+    }
+  };
+
+  const openExploreMenu = () => {
+    clearExploreCloseTimer();
+    setIsExploreOpen(true);
+  };
+
+  const scheduleExploreClose = () => {
+    clearExploreCloseTimer();
+    exploreCloseTimerRef.current = setTimeout(() => {
+      setIsExploreOpen(false);
+    }, 120);
+  };
+
+  useEffect(() => {
+    setIsExploreOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
+    return () => clearExploreCloseTimer();
+  }, []);
+
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 20);
@@ -546,6 +600,7 @@ function TopNavbar() {
             pathname={pathname}
             isActive={isBuilderPodsActive}
             align="screen-center"
+            layout="side"
             anchorRef={desktopNavRef}
             feature={{
               kicker: "Arbitrum Ecosystem",
@@ -569,6 +624,7 @@ function TopNavbar() {
               pathname={pathname}
               isActive={isBuilderPodsAdminActive}
               align="screen-center"
+              layout="side"
               anchorRef={desktopNavRef}
               feature={{
                 kicker: "Internal Access",
@@ -585,37 +641,54 @@ function TopNavbar() {
             />
           )}
 
-          <Dropdown placement="bottom-end" className="bg-[#0D1117] border border-white/10">
-            <DropdownTrigger>
-              <button
-                className={`text-[11px] font-bold transition-all px-4 py-2.5 rounded-full uppercase tracking-widest flex items-center gap-1.5 outline-none ${
-                  isSessionActive
-                    ? "bg-white text-black"
-                    : "text-white/60 hover:text-white hover:bg-white/5"
-                }`}
-              >
-                Explore <ChevronDown className="w-3.5 h-3.5" />
-              </button>
-            </DropdownTrigger>
-            <DropdownMenu aria-label="Sessions" className="p-2">
+          <div
+            className="relative"
+            onMouseEnter={openExploreMenu}
+            onMouseLeave={scheduleExploreClose}
+            onFocusCapture={openExploreMenu}
+            onBlurCapture={(event) => {
+              const nextTarget = event.relatedTarget as Node | null;
+              if (!event.currentTarget.contains(nextTarget)) {
+                setIsExploreOpen(false);
+              }
+            }}
+          >
+            <button
+              type="button"
+              aria-expanded={isExploreOpen}
+              onClick={() => setIsExploreOpen((v) => !v)}
+              className={`text-[11px] font-bold transition-all px-4 py-2.5 rounded-full uppercase tracking-widest flex items-center gap-1.5 outline-none ${
+                isSessionActive
+                  ? "bg-white text-black"
+                  : "text-white/60 hover:text-white hover:bg-white/5"
+              }`}
+            >
+              Explore <ChevronDown className="w-3.5 h-3.5" />
+            </button>
+
+            <div
+              className={`absolute right-0 mt-2 min-w-[210px] rounded-lg border border-white/10 bg-[#0D1117] p-2 shadow-[0_24px_80px_rgba(0,0,0,0.35)] backdrop-blur-md transition-all duration-150 ${
+                isExploreOpen
+                  ? "opacity-100 translate-y-0 pointer-events-auto"
+                  : "opacity-0 -translate-y-1 pointer-events-none"
+              }`}
+            >
               {sessionLinks.map((item) => (
-                <DropdownItem
+                <Link
                   key={item.href}
-                  textValue={item.label}
-                  className="rounded-lg data-[hover=true]:bg-white/10"
+                  href={item.href}
+                  onClick={() => setIsExploreOpen(false)}
+                  className={`block w-full text-[11px] font-bold uppercase tracking-wider rounded-md px-2 py-1.5 transition-colors ${
+                    isRouteActive(pathname, item.href)
+                      ? "text-white"
+                      : "text-white/60 hover:text-white hover:bg-white/10"
+                  }`}
                 >
-                  <Link
-                    href={item.href}
-                    className={`block w-full text-[11px] font-bold uppercase tracking-wider ${
-                      isRouteActive(pathname, item.href) ? "text-white" : "text-white/60"
-                    }`}
-                  >
-                    {item.label}
-                  </Link>
-                </DropdownItem>
+                  {item.label}
+                </Link>
               ))}
-            </DropdownMenu>
-          </Dropdown>
+            </div>
+          </div>
         </div>
 
         <div className="flex items-center gap-3">

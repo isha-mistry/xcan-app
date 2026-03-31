@@ -177,7 +177,7 @@ export async function PATCH(req: NextRequest) {
             }
 
             if (action === 'approve') {
-                const badgeTrigger = member.joinedViaQr ? 'pod_member_approved' : 'pod_participant_approved';
+                const badgeTrigger = member.joinedViaQr ? 'pod_member_approved' : 'lab_participant_approved';
                 await awardBadgeOnEvent(badgeTrigger, member.walletAddress, {
                     collegeId: member.collegeId?.toString(),
                 });

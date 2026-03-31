@@ -161,7 +161,7 @@ export function getBuilderPodsPersonalItems(options: {
   if (options.address) {
     items.push({
       label: "Profile",
-      href: "/builder-pods/profile",
+      href: `/profile/${options.address}?active=info`,
       description: "View your Builder Pods profile, roles, and earned badges.",
       icon: User,
     });

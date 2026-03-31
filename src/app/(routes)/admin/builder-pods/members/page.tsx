@@ -33,7 +33,7 @@ type StatusTab = (typeof STATUS_TABS)[number];
 const ASSIGNABLE_ROLES = [
     { value: "pod_lead", label: "Pod Lead" },
     { value: "pod_member", label: "Pod Member" },
-    { value: "pod_participant", label: "Pod Participant" },
+    { value: "lab_participant", label: "Lab Participant" },
     { value: "faculty_coordinator", label: "Faculty Coordinator" },
     { value: "mentor", label: "Mentor" },
 ] as const;
@@ -48,7 +48,7 @@ const statusStyles: Record<string, { bg: string; text: string }> = {
 const roleStyles: Record<string, { bg: string; text: string }> = {
     pod_lead: { bg: "bg-amber-500/10", text: "text-amber-400" },
     pod_member: { bg: "bg-blue-500/10", text: "text-blue-400" },
-    pod_participant: { bg: "bg-teal-500/10", text: "text-teal-400" },
+    lab_participant: { bg: "bg-teal-500/10", text: "text-teal-400" },
     faculty_coordinator: { bg: "bg-purple-500/10", text: "text-purple-400" },
     mentor: { bg: "bg-cyan-500/10", text: "text-cyan-400" },
 };

@@ -48,7 +48,7 @@ export async function PATCH(req: NextRequest) {
 
         // Role assignment
         if (role) {
-            const validRoles = ['pod_lead', 'pod_member', 'faculty_coordinator', 'mentor', 'pod_participant'];
+            const validRoles = ['pod_lead', 'pod_member', 'faculty_coordinator', 'mentor', 'lab_participant'];
             if (!validRoles.includes(role)) {
                 return NextResponse.json(
                     { success: false, error: `Invalid role. Must be one of: ${validRoles.join(', ')}` },
