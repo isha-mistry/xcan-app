@@ -14,6 +14,7 @@ import {
 import { MemberManagementSchema } from '@/schemas/builder-pods';
 import { recalculateMemberScore, recalculatePodScore } from '@/lib/builder-pods/leaderboard';
 import { awardBadgeOnEvent } from '@/lib/builder-pods/badges';
+import { sendRoleChangeEmail } from '@/lib/builder-pods/notify-role-change';
 
 // PATCH — assign role to a member or change status (admin only)
 export async function PATCH(req: NextRequest) {
@@ -124,6 +125,14 @@ export async function PATCH(req: NextRequest) {
                 body: 'Your Pod Lead badge will appear once the on-chain attestation completes.',
                 link: `/profile/${member.walletAddress.toLowerCase()}`,
             });
+
+            // Fire-and-forget email notification
+            sendRoleChangeEmail({
+                walletAddress: member.walletAddress,
+                memberName: member.name,
+                role: 'pod_lead',
+                collegeId: member.collegeId.toString(),
+            }).catch(() => {});
         }
 
         // Award builder_pod_member badge when an active member is promoted to pod_member
@@ -131,6 +140,14 @@ export async function PATCH(req: NextRequest) {
             await awardBadgeOnEvent('pod_member_approved', member.walletAddress, {
                 collegeId: member.collegeId.toString(),
             });
+
+            // Fire-and-forget email notification
+            sendRoleChangeEmail({
+                walletAddress: member.walletAddress,
+                memberName: member.name,
+                role: 'pod_member',
+                collegeId: member.collegeId.toString(),
+            }).catch(() => {});
         }
 
         if (newValues.status) {

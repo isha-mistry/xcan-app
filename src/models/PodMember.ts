@@ -7,6 +7,7 @@ export interface IPodMember extends Document {
     collegeId: Types.ObjectId;
     walletAddress: string;
     name: string;
+    email: string | null;
     role: typeof POD_MEMBER_ROLES[number];
     requestedRole: typeof POD_MEMBER_ROLES[number] | null;
     programmingLevel: 'beginner' | 'intermediate' | 'advanced' | null;
@@ -34,6 +35,7 @@ const PodMemberSchema = new Schema<IPodMember>(
         collegeId: { type: Schema.Types.ObjectId, ref: 'College', required: true },
         walletAddress: { type: String, required: true, lowercase: true },
         name: { type: String, required: true, trim: true },
+        email: { type: String, default: null, lowercase: true, trim: true },
         role: { type: String, enum: POD_MEMBER_ROLES, default: 'lab_participant' },
         requestedRole: { type: String, enum: [...POD_MEMBER_ROLES, null], default: null },
         programmingLevel: { type: String, enum: ['beginner', 'intermediate', 'advanced'], default: null },

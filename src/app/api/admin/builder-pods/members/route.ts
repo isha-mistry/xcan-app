@@ -18,6 +18,7 @@ import { awardBadgeOnEvent } from '@/lib/builder-pods/badges';
 import { recalculateMemberScore, recalculatePodScore, SCORE_WEIGHTS } from '@/lib/builder-pods/leaderboard';
 import { MemberApprovalSchema } from '@/schemas/builder-pods';
 import { PlatformRole, UserRole } from '@/models/PlatformRole';
+import { sendRoleChangeEmail } from '@/lib/builder-pods/notify-role-change';
 
 // GET — list pending members (admin only)
 export async function GET(req: NextRequest) {
@@ -296,6 +297,16 @@ export async function PATCH(req: NextRequest) {
                 body: roleBody,
                 link: '/builder-pods',
             });
+
+            // Fire-and-forget email notification for pod_lead / pod_member
+            if (member.role === 'pod_lead' || member.role === 'pod_member') {
+                sendRoleChangeEmail({
+                    walletAddress: member.walletAddress,
+                    memberName: member.name,
+                    role: member.role as 'pod_lead' | 'pod_member',
+                    collegeId: member.collegeId.toString(),
+                }).catch(() => {});
+            }
 
             await AuditLog.create({
                 actorWallet: adminWallet,

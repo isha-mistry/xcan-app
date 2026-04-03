@@ -15,6 +15,7 @@ import {
     Award,
     X,
     ExternalLink,
+    Mail,
 } from "lucide-react";
 import { CollegeOption } from "@/types/builder-pods";
 import { getBuilderPodBadgeMeta } from "@/lib/builder-pods/badge-ui";
@@ -54,6 +55,7 @@ export default function RegistrationForm({
 
     const [form, setForm] = useState({
         name: "",
+        email: "",
         collegeSlug: "",
         programmingLevel: "",
         githubUsername: "",
@@ -217,6 +219,7 @@ export default function RegistrationForm({
                 });
                 setForm({
                     name: "",
+                    email: "",
                     collegeSlug: "",
                     programmingLevel: "",
                     githubUsername: "",
@@ -300,6 +303,27 @@ export default function RegistrationForm({
                             placeholder="Enter your full name"
                             className={inputClass}
                         />
+                    </div>
+
+                    {/* Email */}
+                    <div>
+                        <label className={labelClass}>
+                            <Mail className="w-3 h-3" />
+                            Email Address
+                        </label>
+                        <input
+                            type="email"
+                            value={form.email}
+                            disabled={isRegistrationBlocked}
+                            onChange={(e) =>
+                                setForm((f) => ({ ...f, email: e.target.value }))
+                            }
+                            placeholder="you@example.com"
+                            className={inputClass}
+                        />
+                        <p className="text-[10px] text-white/45 font-robotoMono mt-1">
+                            Used for role change notifications. Will not be shared publicly.
+                        </p>
                     </div>
 
                     {/* College */}

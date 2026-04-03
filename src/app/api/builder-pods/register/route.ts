@@ -33,6 +33,7 @@ export async function POST(req: NextRequest) {
         const walletAddress = ctx.walletAddress.toLowerCase();
         const {
             name,
+            email,
             collegeSlug,
             programmingLevel,
             githubUsername,
@@ -118,6 +119,7 @@ export async function POST(req: NextRequest) {
             collegeId: college._id,
             walletAddress,
             name: name.trim(),
+            email: email || null,
             role: 'lab_participant',
             programmingLevel: programmingLevel || null,
             githubUsername: githubUsername || null,
