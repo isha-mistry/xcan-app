@@ -258,7 +258,7 @@ export default function RegistrationForm({
             transition={{ duration: 0.5 }}
             className="glass-container rounded-2xl p-6 md:p-8 max-w-2xl mx-auto"
         >
-            <h2 className=" tracking-tight mb-1 font-sans">
+            <h2 className=" tracking-tight mb-1 font-robotoMono">
                 Join a Builder Pod
             </h2>
             <p className="text-xs text-white/60 font-robotoMono mb-8">
@@ -309,10 +309,11 @@ export default function RegistrationForm({
                     <div>
                         <label className={labelClass}>
                             <Mail className="w-3 h-3" />
-                            Email Address
+                            Email Address *
                         </label>
                         <input
                             type="email"
+                            required
                             value={form.email}
                             disabled={isRegistrationBlocked}
                             onChange={(e) =>
@@ -396,10 +397,11 @@ export default function RegistrationForm({
                     <div>
                         <label className={labelClass}>
                             <Github className="w-3 h-3" />
-                            GitHub Username
+                            GitHub Username *
                         </label>
                         <input
                             type="text"
+                            required
                             value={form.githubUsername}
                             disabled={isRegistrationBlocked}
                             onChange={(e) =>
@@ -482,7 +484,9 @@ export default function RegistrationForm({
                             checkingExistingMembership ||
                             isRegistrationBlocked ||
                             !form.name ||
-                            !form.collegeSlug
+                            !form.email.trim() ||
+                            !form.collegeSlug ||
+                            !form.githubUsername.trim()
                         }
                         className="w-full flex items-center justify-center gap-2 px-6 py-3.5 bg-white text-black rounded-xl text-[11px] font-bold uppercase tracking-widest font-robotoMono transition-all hover:shadow-lg hover:shadow-white/10 disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:shadow-none"
                     >

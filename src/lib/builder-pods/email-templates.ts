@@ -21,8 +21,8 @@ const getRoleLabel = (role: string) =>
 
 const getRoleDescription = (role: string) =>
   role === "pod_lead"
-    ? "As a Pod Lead, you lead the charge. You’ll manage project submissions, facilitate weekly check-ins, and steer your pod toward the top of the leaderboard. Your on-chain badge is being minted."
-    : "As a Pod Member, you are the engine. You’ll join project teams, contribute to weekly activities, and ship code to earn leaderboard points. Your on-chain badge is being minted.";
+    ? "As a Pod Lead, you're stepping up from within the Builder Pods community to lead the charge. You’ll manage project submissions, facilitate weekly check-ins, and steer your pod toward the top of the leaderboard. Your on-chain badge is being minted and will appear on your profile once minting is complete."
+    : "As a Pod Member, you are the engine. You'll join project teams, contribute to weekly activities, and ship code to earn leaderboard points. Your on-chain badge is being minted and will appear on your profile once minting is complete.";
 
 interface Palette {
   accent: string;
@@ -81,6 +81,11 @@ export function buildRoleChangeEmail(data: RoleChangeEmailData): string {
   const desc = getRoleDescription(roleName);
   const dashUrl = `${PLATFORM_URL}/builder-pods`;
   const year = new Date().getFullYear();
+  const showRoadmapAndResources = roleName !== "pod_lead";
+  const welcomeCopy =
+    roleName === "pod_lead"
+      ? "You’ve already been contributing in Builder Pods, and now you’re stepping into a leadership role."
+      : "Welcome to <strong>Arbitrum Builder Pods</strong>. You're now part of a campus-native community shipping projects and learning on-chain.";
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -137,16 +142,18 @@ export function buildRoleChangeEmail(data: RoleChangeEmailData): string {
       </table>
 
       <p style="font-size: 15px; line-height: 1.6; color: #334155; margin-bottom: 24px;">
-        Welcome to <strong>Arbitrum Builder Pods</strong>. You're now part of a campus-native community shipping projects and learning on-chain.
+        ${welcomeCopy}
       </p>
 
       <div style="background: ${p.bg}; border-left: 4px solid ${p.accent}; padding: 20px; border-radius: 4px 12px 12px 4px; margin-bottom: 32px;">
         <p style="margin: 0; font-size: 14px; line-height: 1.6; color: ${p.text};">${desc}</p>
       </div>
 
+      ${showRoadmapAndResources
+      ? `
       <h3 style="font-size: 13px; font-weight: 700; text-transform: uppercase; color: #94A3B8; margin-bottom: 16px; letter-spacing: 0.05em;">Your Roadmap</h3>
       <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 32px;">
-        <tr><td style="padding: 8px 0; font-size: 14px; color: #475569;"><span class="step-circle" style="background: #F1F5F9; color: #64748B;">1</span> Join the Slack <strong>#builder-pods</strong> channel.</td></tr>
+        <tr><td style="padding: 8px 0; font-size: 14px; color: #475569;"><span class="step-circle" style="background: #F1F5F9; color: #64748B;">1</span> Join the Slack Community.</td></tr>
         <tr><td style="padding: 8px 0; font-size: 14px; color: #475569;"><span class="step-circle" style="background: #F1F5F9; color: #64748B;">2</span> Review the handbook in Notion.</td></tr>
         <tr><td style="padding: 8px 0; font-size: 14px; color: #475569;"><span class="step-circle" style="background: #F1F5F9; color: #64748B;">3</span> Align with your pod on a project to ship.</td></tr>
       </table>
@@ -156,6 +163,8 @@ export function buildRoleChangeEmail(data: RoleChangeEmailData): string {
         ${linkRow("Slack Community", "Connect with your team and share updates.", "Join Workspace", SLACK_URL, p)}
         ${linkRow("Builder Handbook", "Everything you need to know about the program.", "Open Notion", NOTION_URL, p)}
       </table>
+      `
+      : ""}
 
       <div style="margin-top: 40px; text-align: center;">
         <a href="${dashUrl}" style="background-color: ${p.accent}; color: #ffffff; padding: 14px 32px; border-radius: 10px; text-decoration: none; font-weight: 600; font-size: 15px; display: inline-block;">Open Builder Dashboard</a>

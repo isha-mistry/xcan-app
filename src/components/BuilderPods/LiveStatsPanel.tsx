@@ -34,7 +34,7 @@ const statItems = [
     },
     {
         key: "totalActiveMembers",
-        label: "Active Pod Members",
+        label: "Active lab participants",
         icon: UserCheck,
         gradient: "from-cyan-500 to-cyan-600",
         bg: "bg-cyan-500/10",

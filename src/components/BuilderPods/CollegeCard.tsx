@@ -108,7 +108,7 @@ export default function CollegeCard({ college, index }: CollegeCardProps) {
                                 <span className="text-white/80 font-bold">
                                     {college.memberCount}
                                 </span>{" "}
-                                members
+                                participants
                             </span>
                         </div>
                         <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-500/10 text-blue-400 text-[10px] font-bold uppercase tracking-wider font-robotoMono border border-blue-500/10 group-hover:bg-blue-500/20 group-hover:border-blue-500/20 transition-all">

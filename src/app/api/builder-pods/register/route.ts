@@ -122,7 +122,7 @@ export async function POST(req: NextRequest) {
             email: email || null,
             role: 'lab_participant',
             programmingLevel: programmingLevel || null,
-            githubUsername: githubUsername || null,
+            githubUsername,
             semester: semester || null,
             status: isAutoApproved ? 'active' : 'pending',
             approvedAt: isAutoApproved ? new Date() : null,

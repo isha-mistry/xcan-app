@@ -2,6 +2,7 @@
 import React from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
+import Image from "next/image";
 import { Rocket, Eye } from "lucide-react";
 import builderPodsBg from "@/assets/images/builder-pods-bg.jpg";
 
@@ -9,25 +10,18 @@ export default function HeroSection() {
     return (
         <section className="relative overflow-hidden rounded-3xl mb-10">
             {/* Image background */}
-            <div
-                className="absolute inset-0 bg-cover bg-center rounded-3xl"
-                style={{ backgroundImage: `url(${builderPodsBg.src})` }}
+            <Image
+                src={builderPodsBg}
+                alt="Builder Pods hero background"
+                fill
+                priority
+                sizes="(min-width: 1280px) 1200px, (min-width: 768px) 100vw, 100vw"
+                quality={100}
+                className="absolute inset-0 rounded-3xl object-cover"
             />
             {/* Dark overlay for readability */}
             <div className="absolute inset-0 bg-black/25 rounded-3xl" />
             <div className="absolute inset-0 backdrop-blur-lg rounded-3xl" />
-
-            {/* Animated glow orbs */}
-            {/* <motion.div
-                className="absolute -top-20 -right-20 w-72 h-72 bg-blue-500/10 rounded-full blur-3xl"
-                animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.6, 0.3] }}
-                transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-            />
-            <motion.div
-                className="absolute -bottom-20 -left-20 w-60 h-60 bg-purple-500/10 rounded-full blur-3xl"
-                animate={{ scale: [1.2, 1, 1.2], opacity: [0.4, 0.2, 0.4] }}
-                transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-            /> */}
 
             <div className="relative z-10 px-8 py-16 md:px-16 md:py-24">
                 <motion.div

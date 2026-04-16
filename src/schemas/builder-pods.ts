@@ -19,10 +19,19 @@ export const RegisterSchema = z.object({
         z.string().min(6).max(64)
     ).optional(),
     name: z.string().min(2).max(100).trim(),
-    email: z.string().email('Please enter a valid email address').max(254).optional(),
+    email: z
+        .string()
+        .trim()
+        .min(1, 'Email address is required')
+        .email('Please enter a valid email address')
+        .max(254),
     collegeSlug: z.string().min(2).max(100),
     programmingLevel: z.enum(['beginner', 'intermediate', 'advanced']).optional(),
-    githubUsername: z.string().max(39).optional(),
+    githubUsername: z
+        .string()
+        .trim()
+        .min(1, 'GitHub username is required')
+        .max(39),
     // Typical values like "6th Semester" are longer than 10 chars.
     semester: z.string().trim().max(20).optional(),
 });

@@ -59,14 +59,14 @@ export default function PodOverviewCard({ college, isLoading }: PodOverviewCardP
 
     const stats = [
         {
-            label: "Members",
+            label: "Participants",
             value: college.memberCount,
             icon: Users,
             color: "text-blue-400",
             bg: "bg-blue-500/10",
         },
         {
-            label: "Active Members",
+            label: "Active Participants",
             value: `${activePct}%`,
             subtitle: `${college.activeMemberCount}/${college.memberCount}`,
             icon: UserCheck,
@@ -113,9 +113,9 @@ export default function PodOverviewCard({ college, isLoading }: PodOverviewCardP
                             />
                             {college.status}
                         </span>
-                        <span className="text-[9px] font-bold text-white/50 uppercase tracking-wider font-robotoMono">
+                        {/* <span className="text-[9px] font-bold text-white/50 uppercase tracking-wider font-robotoMono">
                             {college.tier}
-                        </span>
+                        </span> */}
                     </div>
                     <h1 className="text-2xl md:text-3xl font-black text-white font-unbounded tracking-tight">
                         {college.name}
