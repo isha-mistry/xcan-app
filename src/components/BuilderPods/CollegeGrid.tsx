@@ -8,7 +8,42 @@ interface CollegeGridProps {
     isLoading?: boolean;
 }
 
-export default function CollegeGrid({ colleges, isLoading }: CollegeGridProps) {
+function CollegeGrid({ colleges, isLoading }: CollegeGridProps) {
+    const PAGE_SIZE = 12;
+    const [visibleCount, setVisibleCount] = React.useState(PAGE_SIZE);
+
+    React.useEffect(() => {
+        if (isLoading || colleges.length <= PAGE_SIZE) {
+            setVisibleCount(PAGE_SIZE);
+            return;
+        }
+
+        setVisibleCount(PAGE_SIZE);
+
+        let cancelled = false;
+        let timeoutId: ReturnType<typeof setTimeout> | null = null;
+
+        const scheduleNextBatch = () => {
+            timeoutId = setTimeout(() => {
+                if (cancelled) return;
+                setVisibleCount((current) => {
+                    const next = Math.min(current + PAGE_SIZE, colleges.length);
+                    if (next < colleges.length) {
+                        scheduleNextBatch();
+                    }
+                    return next;
+                });
+            }, 80);
+        };
+
+        scheduleNextBatch();
+
+        return () => {
+            cancelled = true;
+            if (timeoutId) clearTimeout(timeoutId);
+        };
+    }, [colleges.length, isLoading]);
+
     if (isLoading) {
         return (
             <section id="colleges" className="mb-10">
@@ -21,7 +56,7 @@ export default function CollegeGrid({ colleges, isLoading }: CollegeGridProps) {
                     {Array.from({ length: 8 }).map((_, i) => (
                         <div
                             key={i}
-                            className="glass-container rounded-2xl p-6 animate-pulse"
+                            className="rounded-2xl border border-white/10 bg-white/[0.03] p-6 animate-pulse"
                         >
                             <div className="h-4 w-16 bg-white/5 rounded-full mb-4" />
                             <div className="h-6 w-3/4 bg-white/5 rounded-lg mb-2" />
@@ -44,7 +79,7 @@ export default function CollegeGrid({ colleges, isLoading }: CollegeGridProps) {
                         College Pods
                     </h2>
                 </div>
-                <div className="glass-container rounded-2xl p-12 text-center">
+                <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-12 text-center">
                     <p className="text-white/60 text-sm font-robotoMono">
                         No college pods have been activated yet. Check back soon!
                     </p>
@@ -54,7 +89,7 @@ export default function CollegeGrid({ colleges, isLoading }: CollegeGridProps) {
     }
 
     return (
-        <section id="colleges" className="mb-10">
+        <section id="colleges" className="mb-10 [content-visibility:auto] [contain-intrinsic-size:1px_1600px]">
             <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-3">
                     <h2 className="text-[11px] font-bold uppercase tracking-[0.2em] text-white/70 font-robotoMono">
@@ -67,10 +102,12 @@ export default function CollegeGrid({ colleges, isLoading }: CollegeGridProps) {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                {colleges.map((college, index) => (
-                    <CollegeCard key={college._id} college={college} index={index} />
+                {colleges.slice(0, visibleCount).map((college) => (
+                    <CollegeCard key={college._id} college={college} />
                 ))}
             </div>
         </section>
     );
 }
+
+export default React.memo(CollegeGrid);

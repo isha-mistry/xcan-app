@@ -1,7 +1,5 @@
 import React from "react";
-import RewardButton from "../ClaimReward/RewardButton";
 import { usePathname } from "next/navigation";
-import { motion } from "framer-motion";
 
 interface TitlesMap {
   [key: string]: string;
@@ -50,11 +48,7 @@ function Heading() {
 
   return (
     <>
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
+      <div>
         <div className="flex flex-row justify-between items-center mb-6 font-robotoMono xs:px-4">
           <div className="flex gap-4 items-center">
             <div className="text-white font-black text-2xl xs:text-3xl md:text-4xl font-unbounded tracking-tighter">
@@ -66,7 +60,7 @@ function Heading() {
             {/* <ConnectWalletWithENS /> */}
           {/* </div> */}
         </div>
-      </motion.div>
+      </div>
     </>
   );
 }

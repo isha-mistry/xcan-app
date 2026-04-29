@@ -1,6 +1,5 @@
 "use client";
 import React from "react";
-import { motion } from "framer-motion";
 import {
     GraduationCap,
     Users,
@@ -58,7 +57,7 @@ const statItems = [
     },
 ];
 
-export default function LiveStatsPanel({
+function LiveStatsPanel({
     stats,
     isLoading,
 }: LiveStatsPanelProps) {
@@ -72,17 +71,14 @@ export default function LiveStatsPanel({
             </div>
 
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
-                {statItems.map((item, index) => {
+                {statItems.map((item) => {
                     const Icon = item.icon;
                     const value = stats[item.key as keyof StatsData] ?? 0;
 
                     return (
-                        <motion.div
+                        <div
                             key={item.key}
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.4, delay: index * 0.08 }}
-                            className="glass-container rounded-2xl p-5 group hover:border-white/20 transition-all duration-300"
+                            className="rounded-2xl border border-white/10 bg-white/[0.03] p-5 group hover:border-white/20 transition-all duration-300"
                         >
                             <div className={`${item.bg} p-2.5 rounded-xl w-fit mb-3`}>
                                 <Icon className={`w-4 h-4 ${item.text}`} />
@@ -99,10 +95,12 @@ export default function LiveStatsPanel({
                                     {item.label}
                                 </p>
                             </div>
-                        </motion.div>
+                        </div>
                     );
                 })}
             </div>
         </section>
     );
 }
+
+export default React.memo(LiveStatsPanel);

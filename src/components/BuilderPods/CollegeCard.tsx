@@ -1,16 +1,14 @@
 "use client";
 import React from "react";
-import { motion } from "framer-motion";
 import Link from "next/link";
 import { MapPin, Users, UserCheck, FolderGit2, Eye } from "lucide-react";
 import { CollegeData } from "@/types/builder-pods";
 
 interface CollegeCardProps {
     college: CollegeData;
-    index: number;
 }
 
-export default function CollegeCard({ college, index }: CollegeCardProps) {
+function CollegeCard({ college }: CollegeCardProps) {
     const isActive = college.status === "active";
     const activePct =
         college.memberCount > 0
@@ -18,13 +16,9 @@ export default function CollegeCard({ college, index }: CollegeCardProps) {
             : 0;
 
     return (
-        <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: index * 0.06 }}
-        >
-            <Link href={`/builder-pods/${college.slug}`}>
-                <div className="glass-container rounded-2xl p-6 group hover:border-white/20 transition-all duration-300 cursor-pointer h-full flex flex-col">
+        <article className=" [contain-intrinsic-size:1px_340px]">
+            <Link href={`/builder-pods/${college.slug}`} prefetch={false}>
+                <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-6 group hover:border-white/20 transition-all duration-300 cursor-pointer h-full flex flex-col">
                     {/* Status Badge */}
                     <div className="flex items-center justify-between mb-4">
                         <span
@@ -118,6 +112,8 @@ export default function CollegeCard({ college, index }: CollegeCardProps) {
                     </div>
                 </div>
             </Link>
-        </motion.div>
+        </article>
     );
 }
+
+export default React.memo(CollegeCard);
