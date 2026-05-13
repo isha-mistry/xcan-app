@@ -3,21 +3,21 @@ import React from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Rocket, Eye } from "lucide-react";
-import builderPodsBg from "@/assets/images/builder-pods-bg.jpg";
+import builderPodsBg from "@/assets/images/builder-pods-bg.webp";
 
 function HeroSection() {
     return (
-        <section className="relative overflow-hidden rounded-3xl mb-10">
+        <section className="relative overflow-hidden rounded-3xl mb-10 bg-[#07090D]">
             <Image
                 src={builderPodsBg}
                 alt="Builder Pods hero background"
                 fill
                 priority
-                sizes="(min-width: 1280px) 1200px, (min-width: 768px) 100vw, 100vw"
-                quality={75}
-                className="absolute inset-0 rounded-3xl object-cover"
+                sizes="(min-width: 1800px) 1800px, (min-width: 1280px) 1200px, 100vw"
+                quality={85}
+                className="absolute inset-0 rounded-3xl object-cover transition-opacity duration-500"
             />
-            <div className="absolute inset-0 rounded-3xl backdrop-blur-lg bg-gradient-to-r from-black/60 via-black/45 to-black/40" />
+            <div className="absolute inset-0 rounded-3xl backdrop-blur-md bg-gradient-to-r from-black/70 via-black/50 to-black/40" />
 
             <div className="relative z-10 px-8 py-16 md:px-16 md:py-24">
                 <div className="max-w-3xl">

@@ -5,10 +5,11 @@ import useSWR from "swr";
 import HeroSection from "@/components/BuilderPods/HeroSection";
 import type { StatsData } from "@/types/builder-pods";
 import Heading from "@/components/ComponentUtils/Heading";
+import CollegeGridSkeleton from "@/components/BuilderPods/CollegeGridSkeleton";
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
-const defaultStats: StatsData = {
+const DEFAULT_STATS: StatsData = {
     totalColleges: 0,
     totalMembers: 0,
     totalActiveMembers: 0,
@@ -19,6 +20,7 @@ const defaultStats: StatsData = {
 const LiveStatsPanel = dynamic(
     () => import("@/components/BuilderPods/LiveStatsPanel"),
     {
+        ssr: true,
         loading: () => (
             <section className="mb-10">
                 <div className="flex items-center gap-3 mb-6">
@@ -31,7 +33,7 @@ const LiveStatsPanel = dynamic(
                     {Array.from({ length: 5 }).map((_, index) => (
                         <div
                             key={index}
-                            className="glass-container rounded-2xl p-5 animate-pulse"
+                            className="rounded-2xl border border-white/10 bg-white/[0.03] p-5 animate-pulse"
                         >
                             <div className="w-10 h-10 rounded-xl bg-white/5 mb-3" />
                             <div className="h-8 w-16 bg-white/5 rounded-lg mb-2" />
@@ -44,7 +46,13 @@ const LiveStatsPanel = dynamic(
     }
 );
 
-const CollegeGrid = dynamic(() => import("@/components/BuilderPods/CollegeGrid"));
+const CollegeGrid = dynamic(
+    () => import("@/components/BuilderPods/CollegeGrid"),
+    {
+        ssr: true,
+        loading: () => <CollegeGridSkeleton />,
+    }
+);
 
 export default function BuilderPodsPage() {
     const { data, isLoading } = useSWR("/api/builder-pods/colleges", fetcher, {
@@ -53,10 +61,11 @@ export default function BuilderPodsPage() {
         revalidateOnFocus: false,
         revalidateOnReconnect: false,
         keepPreviousData: true,
+        suspense: false,
     });
 
     const colleges = data?.colleges ?? [];
-    const stats = data?.stats ?? defaultStats;
+    const stats = data?.stats ?? DEFAULT_STATS;
 
     return (
         <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-10 py-6">
