@@ -116,7 +116,7 @@ function RoleDropdown({
             const rect = buttonRef.current.getBoundingClientRect();
             const viewportWidth = window.innerWidth;
             const dropdownWidth = 200;
-            
+
             let left = rect.left;
             // Prevent dropdown from going off-screen
             if (left + dropdownWidth > viewportWidth - 20) {
@@ -158,9 +158,9 @@ function RoleDropdown({
         return () => window.removeEventListener("keydown", handleKeyDown);
     }, [open]);
 
-    const currentRoleData = ASSIGNABLE_ROLES.find(r => r.value === currentRole) || { 
-        value: currentRole, 
-        label: currentRole.replace(/_/g, " ") 
+    const currentRoleData = ASSIGNABLE_ROLES.find(r => r.value === currentRole) || {
+        value: currentRole,
+        label: currentRole.replace(/_/g, " ")
     };
 
     return (
@@ -170,11 +170,10 @@ function RoleDropdown({
                 onClick={() => !disabled && setOpen(!open)}
                 disabled={disabled}
                 type="button"
-                className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider font-robotoMono transition-all border ${
-                    roleStyles[currentRole] 
-                        ? `${roleStyles[currentRole].bg} ${roleStyles[currentRole].text} border-current/20` 
-                        : "bg-white/5 text-white/80 border-white/10"
-                } hover:ring-2 hover:ring-current/10 disabled:opacity-40 disabled:cursor-not-allowed`}
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider font-robotoMono transition-all border ${roleStyles[currentRole]
+                    ? `${roleStyles[currentRole].bg} ${roleStyles[currentRole].text} border-current/20`
+                    : "bg-white/5 text-white/80 border-white/10"
+                    } hover:ring-2 hover:ring-current/10 disabled:opacity-40 disabled:cursor-not-allowed`}
             >
                 <Shield className="w-3 h-3 opacity-60" />
                 {currentRoleData.label}
@@ -186,14 +185,14 @@ function RoleDropdown({
                     {open && (
                         <div className="fixed inset-0 z-[10000] pointer-events-none">
                             {/* Backdrop to close the dropdown */}
-                            <div 
-                                className="absolute inset-0 bg-black/5 pointer-events-auto" 
+                            <div
+                                className="absolute inset-0 bg-black/5 pointer-events-auto"
                                 onClick={(e) => {
                                     e.stopPropagation();
                                     setOpen(false);
-                                }} 
+                                }}
                             />
-                            
+
                             <motion.div
                                 initial={{ opacity: 0, y: -8, scale: 0.95 }}
                                 animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -217,18 +216,16 @@ function RoleDropdown({
                                                 }
                                                 setOpen(false);
                                             }}
-                                            className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[10px] font-bold font-robotoMono uppercase tracking-wider transition-all ${
-                                                r.value === currentRole
-                                                    ? "bg-white/10 text-white"
-                                                    : "text-white/80 hover:bg-white/5 hover:text-white/70"
-                                            }`}
+                                            className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[10px] font-bold font-robotoMono uppercase tracking-wider transition-all ${r.value === currentRole
+                                                ? "bg-white/10 text-white"
+                                                : "text-white/80 hover:bg-white/5 hover:text-white/70"
+                                                }`}
                                         >
-                                            <div className={`w-2 h-2 rounded-full ${
-                                                r.value === 'pod_lead' ? 'bg-amber-500' :
+                                            <div className={`w-2 h-2 rounded-full ${r.value === 'pod_lead' ? 'bg-amber-500' :
                                                 r.value === 'pod_member' ? 'bg-blue-500' :
-                                                r.value === 'faculty_coordinator' ? 'bg-purple-500' :
-                                                r.value === 'mentor' ? 'bg-cyan-500' : "bg-white/20"
-                                            }`} />
+                                                    r.value === 'faculty_coordinator' ? 'bg-purple-500' :
+                                                        r.value === 'mentor' ? 'bg-cyan-500' : "bg-white/20"
+                                                }`} />
                                             {r.label}
                                             {r.value === currentRole && (
                                                 <Check className="w-3.5 h-3.5 ml-auto text-green-400" />
@@ -490,16 +487,16 @@ export default function AdminMembersPage() {
                         key={tab}
                         onClick={() => setActiveTab(tab)}
                         className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-[10px] font-bold uppercase tracking-widest font-robotoMono transition-all whitespace-nowrap ${activeTab === tab
-                                ? "bg-white/10 text-white"
-                                : "text-white/75 hover:text-white/80 hover:bg-white/[0.03]"
+                            ? "bg-white/10 text-white"
+                            : "text-white/75 hover:text-white/80 hover:bg-white/[0.03]"
                             }`}
                     >
                         {tab === "all" ? "All" : tab}
                         {counts[tab] !== undefined && (
                             <span
                                 className={`px-1.5 py-0.5 rounded-full text-[8px] font-bold ${activeTab === tab
-                                        ? "bg-white/10 text-white/70"
-                                        : "bg-white/5 text-white/75"
+                                    ? "bg-white/10 text-white/70"
+                                    : "bg-white/5 text-white/75"
                                     }`}
                             >
                                 {counts[tab] ?? 0}
@@ -563,8 +560,8 @@ export default function AdminMembersPage() {
                                                 handleSort(col.key)
                                             }
                                             className={`text-left text-[9px] font-bold uppercase tracking-widest text-white/75 font-robotoMono px-4 py-3 whitespace-nowrap ${col.sortable
-                                                    ? "cursor-pointer hover:text-white/80 select-none"
-                                                    : ""
+                                                ? "cursor-pointer hover:text-white/80 select-none"
+                                                : ""
                                                 } ${sortField === col.key
                                                     ? "text-white/80"
                                                     : ""
@@ -644,12 +641,21 @@ export default function AdminMembersPage() {
 
                                             {/* Role */}
                                             <td className="px-4 py-3">
-                                                <RoleDropdown
-                                                    currentRole={member.role}
-                                                    memberId={member._id}
-                                                    onAssign={handleRoleAssign}
-                                                    disabled={isProcessing || member.status !== "active"}
-                                                />
+                                                {member.podMemberInviteStatus === "pending" ? (
+                                                    <span
+                                                        className="px-2 py-0.5 rounded-full bg-amber-500/10 text-[9px] font-bold text-amber-400 uppercase tracking-wider font-robotoMono whitespace-nowrap"
+                                                        title="Waiting for Yes/No from invite email"
+                                                    >
+                                                        Awaiting RSVP
+                                                    </span>
+                                                ) : (
+                                                    <RoleDropdown
+                                                        currentRole={member.role}
+                                                        memberId={member._id}
+                                                        onAssign={handleRoleAssign}
+                                                        disabled={isProcessing || member.status !== "active"}
+                                                    />
+                                                )}
                                             </td>
 
                                             {/* Requested Role */}
@@ -861,11 +867,10 @@ export default function AdminMembersPage() {
                                             <button
                                                 key={p}
                                                 onClick={() => setCurrentPage(p)}
-                                                className={`min-w-[28px] h-7 rounded-lg text-[10px] font-bold font-robotoMono transition-all ${
-                                                    currentPage === p
-                                                        ? "bg-white/10 text-white"
-                                                        : "text-white/75 hover:text-white/75 hover:bg-white/5"
-                                                }`}
+                                                className={`min-w-[28px] h-7 rounded-lg text-[10px] font-bold font-robotoMono transition-all ${currentPage === p
+                                                    ? "bg-white/10 text-white"
+                                                    : "text-white/75 hover:text-white/75 hover:bg-white/5"
+                                                    }`}
                                             >
                                                 {p}
                                             </button>

@@ -1,81 +1,125 @@
 /**
- * Builder Pods — Send email & in-app notification when a member's role
- * changes to pod_lead or pod_member.
- *
- * This helper:
- *   1. Uses the member's email from PodMember (stored at registration).
- *   2. Falls back to the `users` collection (via walletAddress) if not set.
- *   3. Fetches the college / pod name for context.
- *   4. Sends a branded HTML email via nodemailer (non-blocking; failures are logged).
+ * Builder Pods — role-change emails and Pod Member invite (RSVP) emails.
  */
 
-import { connectDB } from '@/config/connectDB';
-import { PodMember } from '@/models/PodMember';
-import { College } from '@/models/College';
-import { sendMail } from '@/lib/mailer';
+import { connectDB } from "@/config/connectDB";
+import { PodMember } from "@/models/PodMember";
+import { College } from "@/models/College";
+import { sendMail } from "@/lib/mailer";
 import {
-    buildRoleChangeEmail,
-    buildRoleChangeSubject,
-} from '@/lib/builder-pods/email-templates';
+  buildRoleChangeEmail,
+  buildRoleChangeSubject,
+  buildPodMemberInviteEmail,
+  buildPodMemberInviteSubject,
+} from "@/lib/builder-pods/email-templates";
+import {
+  buildInviteActionUrls,
+  getPodMemberInviteExpiryDays,
+} from "@/lib/builder-pods/pod-member-invite/token";
 
 interface NotifyRoleChangeParams {
-    walletAddress: string;
-    memberName: string;
-    role: 'pod_lead' | 'pod_member';
-    collegeId: string;
+  walletAddress: string;
+  memberName: string;
+  role: "pod_lead" | "pod_member";
+  collegeId: string;
 }
 
-/**
- * Send an email notification for a builder-pod role change.
- * This is fire-and-forget — errors are logged but never thrown.
- */
-export async function sendRoleChangeEmail(params: NotifyRoleChangeParams): Promise<void> {
-    const { walletAddress, memberName, role, collegeId } = params;
+export interface SendPodMemberInviteEmailParams {
+  walletAddress: string;
+  memberName: string;
+  collegeId: string;
+  inviteToken: string;
+}
 
-    try {
-        // ── 1. Try to get email from PodMember record first ─────────────
-        const podMember = await PodMember.findOne({
-            walletAddress: walletAddress.toLowerCase(),
-            deletedAt: null,
-        }).select('email').lean() as { email?: string | null } | null;
+async function resolveMemberEmail(walletAddress: string): Promise<string | null> {
+  const podMember = (await PodMember.findOne({
+    walletAddress: walletAddress.toLowerCase(),
+    deletedAt: null,
+  })
+    .select("email")
+    .lean()) as { email?: string | null } | null;
 
-        let recipientEmail: string | null = podMember?.email ?? null;
+  let email = podMember?.email ?? null;
 
-        // ── 2. Fallback: fetch from legacy `users` collection ───────────
-        if (!recipientEmail) {
-            const client = await connectDB();
-            const db = client.db();
-            const usersCollection = db.collection('users');
+  if (!email) {
+    const client = await connectDB();
+    const userDoc = await client.db().collection("users").findOne({
+      address: { $regex: `^${walletAddress}$`, $options: "i" },
+    });
+    email = userDoc?.emailId ?? null;
+  }
 
-            const userDoc = await usersCollection.findOne({
-                address: { $regex: `^${walletAddress}$`, $options: 'i' },
-            });
+  return email;
+}
 
-            recipientEmail = userDoc?.emailId ?? null;
-        }
+/** Sent after student accepts invite (existing welcome email). */
+export async function sendRoleChangeEmail(
+  params: NotifyRoleChangeParams,
+): Promise<void> {
+  const { walletAddress, memberName, role, collegeId } = params;
 
-        if (!recipientEmail) {
-            console.log(`[role-email] No email found for wallet ${walletAddress} — skipping email.`);
-            return;
-        }
-
-        // ── 3. Fetch college & pod details ──────────────────────────────
-        const college = await College.findById(collegeId).lean() as any;
-        const collegeName = college?.name ?? 'Your College';
-        const podName = college?.podName ?? 'Builder Pod';
-
-        // ── 4. Build & send the email ───────────────────────────────────
-        const subject = buildRoleChangeSubject(role);
-        const html = buildRoleChangeEmail({
-            memberName,
-            roleName: role,
-            collegeName,
-            podName,
-        });
-
-        await sendMail({ to: recipientEmail, subject, html });
-    } catch (error) {
-        // Never let email failures propagate to the caller
-        console.error('[role-email] Error sending role-change email:', error);
+  try {
+    const recipientEmail = await resolveMemberEmail(walletAddress);
+    if (!recipientEmail) {
+      console.log(`[role-email] No email for ${walletAddress}`);
+      return;
     }
+
+    const college = (await College.findById(collegeId).lean()) as {
+      name?: string;
+      podName?: string;
+    } | null;
+
+    await sendMail({
+      to: recipientEmail,
+      subject: buildRoleChangeSubject(role),
+      html: buildRoleChangeEmail({
+        memberName,
+        roleName: role,
+        collegeName: college?.name ?? "Your College",
+        podName: college?.podName ?? "Builder Pod",
+      }),
+    });
+  } catch (error) {
+    console.error("[role-email] Error:", error);
+  }
+}
+
+/** Sent when admin selects member — includes Yes / No RSVP links. */
+export async function sendPodMemberInviteEmail(
+  params: SendPodMemberInviteEmailParams,
+): Promise<void> {
+  const { walletAddress, memberName, collegeId, inviteToken } = params;
+
+  try {
+    const recipientEmail = await resolveMemberEmail(walletAddress);
+    if (!recipientEmail) {
+      console.log(`[invite-email] No email for ${walletAddress}`);
+      return;
+    }
+
+    const college = (await College.findById(collegeId).lean()) as {
+      name?: string;
+      podName?: string;
+    } | null;
+    const collegeName = college?.name ?? "Your College";
+    const podName = college?.podName ?? "Builder Pod";
+    const expiryDays = getPodMemberInviteExpiryDays();
+    const { yesUrl, noUrl } = buildInviteActionUrls(inviteToken);
+
+    await sendMail({
+      to: recipientEmail,
+      subject: buildPodMemberInviteSubject(podName),
+      html: buildPodMemberInviteEmail({
+        memberName,
+        collegeName,
+        podName,
+        yesUrl,
+        noUrl,
+        expiryDays,
+      }),
+    });
+  } catch (error) {
+    console.error("[invite-email] Error:", error);
+  }
 }
