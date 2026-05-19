@@ -54,7 +54,12 @@ const PodProjectSchema = new Schema<IPodProject>(
     {
         collegeId: { type: Schema.Types.ObjectId, ref: 'College', required: true },
         name: { type: String, required: true, trim: true },
-        problemStatement: { type: String, required: true, trim: true },
+        problemStatement: {
+            type: String,
+            trim: true,
+            default: "",
+            required: false,
+        },
         githubRepo: { type: String, default: null },
         contractAddress: { type: String, default: null, lowercase: true },
         demoLink: { type: String, default: null },
@@ -84,5 +89,14 @@ PodProjectSchema.index({ collegeId: 1 });
 PodProjectSchema.index({ status: 1 });
 PodProjectSchema.index({ teamCode: 1 }, { unique: true });
 
-export const PodProject =
-    mongoose.models.PodProject || mongoose.model<IPodProject>('PodProject', PodProjectSchema);
+export const PodProject = (() => {
+    // In Next.js dev, the mongoose model cache can survive hot reloads and keep
+    // stale validators (e.g. problemStatement still marked required).
+    if (process.env.NODE_ENV !== "production" && mongoose.models.PodProject) {
+        delete mongoose.models.PodProject;
+    }
+    return (
+        mongoose.models.PodProject ||
+        mongoose.model<IPodProject>("PodProject", PodProjectSchema)
+    );
+})();

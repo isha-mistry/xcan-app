@@ -22,6 +22,8 @@ interface NotifyRoleChangeParams {
   memberName: string;
   role: "pod_lead" | "pod_member";
   collegeId: string;
+  /** Use the PodMember row that accepted RSVP (avoids wrong college / missing email). */
+  memberEmail?: string | null;
 }
 
 export interface SendPodMemberInviteEmailParams {
@@ -29,40 +31,73 @@ export interface SendPodMemberInviteEmailParams {
   memberName: string;
   collegeId: string;
   inviteToken: string;
+  memberEmail?: string | null;
 }
 
-async function resolveMemberEmail(walletAddress: string): Promise<string | null> {
-  const podMember = (await PodMember.findOne({
+export type RoleEmailResult =
+  | { sent: true; to: string }
+  | { sent: false; reason: string };
+
+async function resolveMemberEmail(
+  walletAddress: string,
+  collegeId?: string,
+  preferredEmail?: string | null,
+): Promise<string | null> {
+  const trimmed = preferredEmail?.trim();
+  if (trimmed) return trimmed;
+
+  const baseQuery: Record<string, unknown> = {
     walletAddress: walletAddress.toLowerCase(),
     deletedAt: null,
-  })
-    .select("email")
-    .lean()) as { email?: string | null } | null;
+  };
 
-  let email = podMember?.email ?? null;
+  if (collegeId) {
+    const forCollege = (await PodMember.findOne({
+      ...baseQuery,
+      collegeId,
+    })
+      .select("email")
+      .lean()) as { email?: string | null } | null;
+    if (forCollege?.email?.trim()) return forCollege.email.trim();
+  }
 
-  if (!email) {
+  const members = (await PodMember.find(baseQuery).select("email").lean()) as {
+    email?: string | null;
+  }[];
+  const fromAnyMember = members.find((m) => m.email?.trim())?.email?.trim();
+  if (fromAnyMember) return fromAnyMember;
+
+  try {
     const client = await connectDB();
     const userDoc = await client.db().collection("users").findOne({
       address: { $regex: `^${walletAddress}$`, $options: "i" },
     });
-    email = userDoc?.emailId ?? null;
+    const fromUser = userDoc?.emailId?.trim();
+    if (fromUser) return fromUser;
+  } catch (err) {
+    console.error("[role-email] users collection lookup failed:", err);
   }
 
-  return email;
+  return null;
 }
 
-/** Sent after student accepts invite (existing welcome email). */
+/** Sent after student accepts invite (Pod Member welcome email). */
 export async function sendRoleChangeEmail(
   params: NotifyRoleChangeParams,
-): Promise<void> {
-  const { walletAddress, memberName, role, collegeId } = params;
+): Promise<RoleEmailResult> {
+  const { walletAddress, memberName, role, collegeId, memberEmail } = params;
 
   try {
-    const recipientEmail = await resolveMemberEmail(walletAddress);
+    const recipientEmail = await resolveMemberEmail(
+      walletAddress,
+      collegeId,
+      memberEmail,
+    );
     if (!recipientEmail) {
-      console.log(`[role-email] No email for ${walletAddress}`);
-      return;
+      console.warn(
+        `[role-email] No email for ${walletAddress} (collegeId=${collegeId})`,
+      );
+      return { sent: false, reason: "no_recipient_email" };
     }
 
     const college = (await College.findById(collegeId).lean()) as {
@@ -70,7 +105,7 @@ export async function sendRoleChangeEmail(
       podName?: string;
     } | null;
 
-    await sendMail({
+    const ok = await sendMail({
       to: recipientEmail,
       subject: buildRoleChangeSubject(role),
       html: buildRoleChangeEmail({
@@ -80,22 +115,38 @@ export async function sendRoleChangeEmail(
         podName: college?.podName ?? "Builder Pod",
       }),
     });
+
+    if (!ok) {
+      return { sent: false, reason: "smtp_send_failed" };
+    }
+    return { sent: true, to: recipientEmail };
   } catch (error) {
     console.error("[role-email] Error:", error);
+    return {
+      sent: false,
+      reason: error instanceof Error ? error.message : "unknown_error",
+    };
   }
 }
 
 /** Sent when admin selects member — includes Yes / No RSVP links. */
 export async function sendPodMemberInviteEmail(
   params: SendPodMemberInviteEmailParams,
-): Promise<void> {
-  const { walletAddress, memberName, collegeId, inviteToken } = params;
+): Promise<RoleEmailResult> {
+  const { walletAddress, memberName, collegeId, inviteToken, memberEmail } =
+    params;
 
   try {
-    const recipientEmail = await resolveMemberEmail(walletAddress);
+    const recipientEmail = await resolveMemberEmail(
+      walletAddress,
+      collegeId,
+      memberEmail,
+    );
     if (!recipientEmail) {
-      console.log(`[invite-email] No email for ${walletAddress}`);
-      return;
+      console.warn(
+        `[invite-email] No email for ${walletAddress} (collegeId=${collegeId})`,
+      );
+      return { sent: false, reason: "no_recipient_email" };
     }
 
     const college = (await College.findById(collegeId).lean()) as {
@@ -107,7 +158,7 @@ export async function sendPodMemberInviteEmail(
     const expiryDays = getPodMemberInviteExpiryDays();
     const { yesUrl, noUrl } = buildInviteActionUrls(inviteToken);
 
-    await sendMail({
+    const ok = await sendMail({
       to: recipientEmail,
       subject: buildPodMemberInviteSubject(podName),
       html: buildPodMemberInviteEmail({
@@ -119,7 +170,16 @@ export async function sendPodMemberInviteEmail(
         expiryDays,
       }),
     });
+
+    if (!ok) {
+      return { sent: false, reason: "smtp_send_failed" };
+    }
+    return { sent: true, to: recipientEmail };
   } catch (error) {
     console.error("[invite-email] Error:", error);
+    return {
+      sent: false,
+      reason: error instanceof Error ? error.message : "unknown_error",
+    };
   }
 }

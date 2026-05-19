@@ -72,6 +72,20 @@ export async function completePodMemberPromotion(member: IPodMember): Promise<vo
 
     await grantPodMemberPlatformRole(member, member.podMemberInvitedBy);
 
+    // Send welcome email before on-chain attestation (must await — not fire-and-forget).
+    const emailResult = await sendRoleChangeEmail({
+        walletAddress: member.walletAddress,
+        memberName: member.name,
+        role: 'pod_member',
+        collegeId: member.collegeId.toString(),
+        memberEmail: member.email,
+    });
+    if (!emailResult.sent) {
+        console.warn(
+            `[pod-member-invite] Welcome email not sent for ${member.walletAddress}: ${emailResult.reason}`,
+        );
+    }
+
     await awardBadgeOnEvent('pod_member_approved', member.walletAddress, {
         collegeId: member.collegeId.toString(),
     });
@@ -84,20 +98,18 @@ export async function completePodMemberPromotion(member: IPodMember): Promise<vo
         link: '/builder-pods',
     });
 
-    sendRoleChangeEmail({
-        walletAddress: member.walletAddress,
-        memberName: member.name,
-        role: 'pod_member',
-        collegeId: member.collegeId.toString(),
-    }).catch(() => {});
-
     await AuditLog.create({
         actorWallet: member.walletAddress,
         action: 'member.pod_member_invite_accepted',
         entityType: 'PodMember',
         entityId: member._id,
         oldValue: { role: oldRole, podMemberInviteStatus: 'pending' },
-        newValue: { role: 'pod_member', podMemberInviteStatus: 'accepted' },
+        newValue: {
+            role: 'pod_member',
+            podMemberInviteStatus: 'accepted',
+            welcomeEmailSent: emailResult.sent,
+            ...(emailResult.sent ? {} : { welcomeEmailSkipReason: emailResult.reason }),
+        },
     });
 }
 
@@ -169,12 +181,18 @@ export async function sendPodMemberInvite(
         link: '/builder-pods',
     });
 
-    sendPodMemberInviteEmail({
+    const inviteEmailResult = await sendPodMemberInviteEmail({
         walletAddress: member.walletAddress,
         memberName: member.name,
         collegeId: member.collegeId.toString(),
         inviteToken: rawToken,
-    }).catch(() => {});
+        memberEmail: member.email,
+    });
+    if (!inviteEmailResult.sent) {
+        console.warn(
+            `[pod-member-invite] RSVP invite email not sent for ${member.walletAddress}: ${inviteEmailResult.reason}`,
+        );
+    }
 
     await AuditLog.create({
         actorWallet: adminWallet.toLowerCase(),

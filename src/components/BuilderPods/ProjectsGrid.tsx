@@ -268,7 +268,7 @@ function ConfirmActionModal({
                         <X className="w-4 h-4 text-white/60" />
                     </button>
                 </div>
-                
+
                 <p className="text-sm text-white/70 font-robotoMono leading-relaxed mb-6">
                     {message}
                 </p>
@@ -284,11 +284,10 @@ function ConfirmActionModal({
                     <button
                         onClick={onConfirm}
                         disabled={submitting}
-                        className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider font-robotoMono transition-colors ${
-                            actionLabel === 'Delete' 
-                                ? 'bg-red-500/20 text-red-400 hover:bg-red-500/30 border border-red-500/30' 
+                        className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider font-robotoMono transition-colors ${actionLabel === 'Delete'
+                                ? 'bg-red-500/20 text-red-400 hover:bg-red-500/30 border border-red-500/30'
                                 : 'bg-amber-500/20 text-amber-400 hover:bg-amber-500/30 border border-amber-500/30'
-                        }`}
+                            }`}
                     >
                         {submitting ? (
                             <Loader2 className="w-4 h-4 animate-spin" />
@@ -319,6 +318,7 @@ function ProjectEditModal({
     const [form, setForm] = useState({
         name: project.name || "",
         problemStatement: project.problemStatement || "",
+        githubRepo: project.githubRepo || "",
         demoLink: project.demoLink || "",
         techStack: project.techStack || ([] as string[]),
     });
@@ -349,6 +349,7 @@ function ProjectEditModal({
             const payload = {
                 name: form.name.trim(),
                 problemStatement: form.problemStatement.trim(),
+                githubRepo: form.githubRepo.trim() ? form.githubRepo.trim() : null,
                 demoLink: form.demoLink.trim() ? form.demoLink.trim() : null,
                 techStack: form.techStack || [],
             };
@@ -434,10 +435,9 @@ function ProjectEditModal({
                         <div>
                             <label className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-white/70 font-robotoMono mb-2">
                                 <FileText className="w-3.5 h-3.5" />
-                                Problem Statement *
+                                Problem Statement
                             </label>
                             <textarea
-                                required
                                 value={form.problemStatement}
                                 onChange={(e) =>
                                     setForm((prev) => ({ ...prev, problemStatement: e.target.value }))
@@ -457,6 +457,22 @@ function ProjectEditModal({
                                 value={form.demoLink}
                                 onChange={(e) => setForm((prev) => ({ ...prev, demoLink: e.target.value }))}
                                 placeholder="https://..."
+                                className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-sm text-white font-robotoMono placeholder:text-white/50 focus:outline-none focus:border-cyan-500/40 focus:bg-white/[0.05] transition-all"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-white/70 font-robotoMono mb-2">
+                                <Github className="w-3.5 h-3.5" />
+                                GitHub Repo
+                            </label>
+                            <input
+                                type="url"
+                                value={form.githubRepo}
+                                onChange={(e) =>
+                                    setForm((prev) => ({ ...prev, githubRepo: e.target.value }))
+                                }
+                                placeholder="https://github.com/..."
                                 className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-sm text-white font-robotoMono placeholder:text-white/50 focus:outline-none focus:border-cyan-500/40 focus:bg-white/[0.05] transition-all"
                             />
                         </div>
@@ -562,8 +578,8 @@ export default function ProjectsGrid({
     const canSubmitOrJoin = memberRole === "pod_member" || memberRole === "pod_lead";
     const showActions = wallet && isMember && canSubmitOrJoin;
     const isActive = memberStatus === "active";
-    const isAlreadyInATeam = projects.some(p => 
-        p.teamLeader?.toLowerCase() === wallet || 
+    const isAlreadyInATeam = projects.some(p =>
+        p.teamLeader?.toLowerCase() === wallet ||
         p.teamMembers?.some(m => m.walletAddress?.toLowerCase() === wallet)
     );
 
@@ -581,19 +597,19 @@ export default function ProjectsGrid({
             const url = actionModal.type === 'leave'
                 ? `/api/builder-pods/projects/${actionModal.projectId}/leave`
                 : `/api/builder-pods/projects/${actionModal.projectId}`;
-            
+
             const options: RequestInit = actionModal.type === 'leave'
                 ? {
-                      method: "POST",
-                      credentials: "include",
-                  }
+                    method: "POST",
+                    credentials: "include",
+                }
                 : { method: "DELETE", credentials: "include" };
 
             const res = await fetch(url, options);
             const data = await res.json();
-            
+
             if (!res.ok) throw new Error(data.error || "Action failed");
-            
+
             setActionModal(null);
             onRefresh?.();
         } catch (error) {
@@ -666,17 +682,16 @@ export default function ProjectsGrid({
                             onClick={() => setJoinModalOpen(true)}
                             disabled={!isActive || isAlreadyInATeam}
                             title={
-                                !isActive 
-                                    ? "Your membership must be approved before you can join a team" 
-                                    : isAlreadyInATeam 
-                                        ? "You are already part of a team" 
+                                !isActive
+                                    ? "Your membership must be approved before you can join a team"
+                                    : isAlreadyInATeam
+                                        ? "You are already part of a team"
                                         : undefined
                             }
-                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-bold font-robotoMono uppercase tracking-wider transition-all ${
-                                isActive && !isAlreadyInATeam
+                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-bold font-robotoMono uppercase tracking-wider transition-all ${isActive && !isAlreadyInATeam
                                     ? "bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 hover:bg-cyan-500/15"
                                     : "bg-white/5 border border-white/10 text-white/50 cursor-not-allowed"
-                            }`}
+                                }`}
                         >
                             <KeyRound className="w-3 h-3" />
                             Join Team
@@ -744,13 +759,12 @@ export default function ProjectsGrid({
                                         return (
                                             <React.Fragment key={step}>
                                                 <div
-                                                    className={`h-1.5 flex-1 rounded-full transition-all ${
-                                                        isCompleted
+                                                    className={`h-1.5 flex-1 rounded-full transition-all ${isCompleted
                                                             ? isCurrent
                                                                 ? "bg-gradient-to-r from-cyan-500/80 to-cyan-400/60"
                                                                 : "bg-cyan-500/40"
                                                             : "bg-white/[0.06]"
-                                                    }`}
+                                                        }`}
                                                     title={statusConfig[step]?.label || step}
                                                 />
                                             </React.Fragment>
@@ -800,17 +814,16 @@ export default function ProjectsGrid({
                                             {project.teamMembers!.map((m) => (
                                                 <span
                                                     key={m.walletAddress}
-                                                    className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold font-robotoMono ${
-                                                        m.role ===
-                                                        "team_leader"
+                                                    className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold font-robotoMono ${m.role ===
+                                                            "team_leader"
                                                             ? "bg-cyan-500/10 text-cyan-400"
                                                             : "bg-white/5 text-white/60"
-                                                    }`}
+                                                        }`}
                                                 >
                                                     {m.role ===
                                                         "team_leader" && (
-                                                        <Crown className="w-2.5 h-2.5" />
-                                                    )}
+                                                            <Crown className="w-2.5 h-2.5" />
+                                                        )}
                                                     {m.name}
                                                 </span>
                                             ))}
@@ -843,7 +856,7 @@ export default function ProjectsGrid({
                                                     title="Copy team code"
                                                 >
                                                     {copiedId ===
-                                                    project._id ? (
+                                                        project._id ? (
                                                         <CheckCircle className="w-3 h-3 text-green-400" />
                                                     ) : (
                                                         <Copy className="w-3 h-3 text-blue-400/60" />
@@ -859,11 +872,10 @@ export default function ProjectsGrid({
                                     <div className="mb-3 flex items-start justify-between">
                                         {isInTeam && (
                                             <span
-                                                className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider font-robotoMono ${
-                                                    isTeamLeader
+                                                className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider font-robotoMono ${isTeamLeader
                                                         ? "bg-cyan-500/10 text-cyan-400 border border-cyan-500/20"
                                                         : "bg-green-500/10 text-green-400 border border-green-500/20"
-                                                }`}
+                                                    }`}
                                             >
                                                 {isTeamLeader ? (
                                                     <>
@@ -954,8 +966,8 @@ export default function ProjectsGrid({
                 {actionModal && (
                     <ConfirmActionModal
                         title={actionModal.type === 'leave' ? 'Leave Team' : 'Delete Project'}
-                        message={actionModal.type === 'leave' 
-                            ? 'Are you sure you want to leave this project team? You will need the team code to rejoin.' 
+                        message={actionModal.type === 'leave'
+                            ? 'Are you sure you want to leave this project team? You will need the team code to rejoin.'
                             : 'Are you sure you want to delete this project? This action cannot be undone and will free all team members.'}
                         actionLabel={actionModal.type === 'leave' ? 'Leave' : 'Delete'}
                         actionColor={actionModal.type === 'leave' ? 'text-amber-400' : 'text-red-400'}

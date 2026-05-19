@@ -91,6 +91,9 @@ export default function ProjectSubmitForm({
 
         try {
             const payload: Record<string, string | string[]> = { ...form };
+            if (!(payload.problemStatement as string).trim()) {
+                delete payload.problemStatement;
+            }
             if (!(payload.githubRepo as string).trim()) {
                 delete payload.githubRepo;
             }
@@ -185,16 +188,15 @@ export default function ProjectSubmitForm({
                         !isActive
                             ? "Your membership must be approved before you can request Pod Lead"
                             : isDisabled
-                              ? "You are already part of a team"
-                              : pendingPodLead
-                                ? "Your Pod Lead request is pending admin review"
-                                : "Become a Pod Lead to submit a project"
+                                ? "You are already part of a team"
+                                : pendingPodLead
+                                    ? "Your Pod Lead request is pending admin review"
+                                    : "Become a Pod Lead to submit a project"
                     }
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-bold font-robotoMono uppercase tracking-wider transition-all ${
-                        canRequestLead
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-bold font-robotoMono uppercase tracking-wider transition-all ${canRequestLead
                             ? "bg-amber-500/10 border border-amber-500/20 text-amber-400 hover:bg-amber-500/15"
                             : "bg-white/5 border border-white/10 text-white/50 cursor-not-allowed"
-                    }`}
+                        }`}
                 >
                     {requestingLead ? (
                         <>
@@ -228,17 +230,16 @@ export default function ProjectSubmitForm({
                 onClick={() => isActive && !isDisabled && setIsOpen(true)}
                 disabled={!isActive || isDisabled}
                 title={
-                    !isActive 
-                        ? "Your membership must be approved before you can submit a project" 
-                        : isDisabled 
-                            ? "You are already part of a team" 
+                    !isActive
+                        ? "Your membership must be approved before you can submit a project"
+                        : isDisabled
+                            ? "You are already part of a team"
                             : undefined
                 }
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-bold font-robotoMono uppercase tracking-wider transition-all ${
-                    isActive && !isDisabled
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-bold font-robotoMono uppercase tracking-wider transition-all ${isActive && !isDisabled
                         ? "bg-blue-500/10 border border-blue-500/20 text-blue-400 hover:bg-blue-500/15"
                         : "bg-white/5 border border-white/10 text-white/50 cursor-not-allowed"
-                }`}
+                    }`}
             >
                 <Plus className="w-3 h-3" />
                 Submit Project
@@ -376,10 +377,9 @@ export default function ProjectSubmitForm({
                                             <div className="md:col-span-2">
                                                 <label className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-white/70 font-robotoMono mb-2">
                                                     <FileText className="w-3.5 h-3.5" />
-                                                    Problem Statement *
+                                                    Problem Statement
                                                 </label>
                                                 <textarea
-                                                    required
                                                     value={form.problemStatement}
                                                     onChange={(e) =>
                                                         setForm((prev) => ({

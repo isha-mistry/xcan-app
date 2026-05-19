@@ -88,7 +88,7 @@ export async function awardBadgeOnEvent(
                 assignedAt: new Date(),
             },
         },
-        { upsert: true, new: true }
+        { upsert: true, returnDocument: 'after' }
     );
 
     if (result && !result.easUid) {
@@ -143,7 +143,7 @@ export async function assignBadgeManually(
                 assignedAt: new Date(),
             },
         },
-        { upsert: true, new: true }
+        { upsert: true, returnDocument: 'after' }
     );
 
     if (result && !result.easUid) {
