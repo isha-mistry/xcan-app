@@ -27,8 +27,11 @@ import {
 } from "lucide-react";
 import { adminFetcher, ADMIN_SWR_OPTIONS } from "@/lib/fetchers";
 
-const STATUS_TABS = ["all", "pending", "active", "inactive", "removed"] as const;
-type StatusTab = (typeof STATUS_TABS)[number];
+const VIEW_TABS = [
+    { key: "members", label: "Members" },
+    { key: "role_requests", label: "Role Requests" },
+] as const;
+type ViewTab = (typeof VIEW_TABS)[number]["key"];
 
 const ASSIGNABLE_ROLES = [
     { value: "pod_lead", label: "Pod Lead" },
@@ -246,7 +249,7 @@ function RoleDropdown({
 const PAGE_SIZE = 20;
 
 export default function AdminMembersPage() {
-    const [activeTab, setActiveTab] = useState<StatusTab>("all");
+    const [activeTab, setActiveTab] = useState<ViewTab>("members");
     const [searchQuery, setSearchQuery] = useState("");
     const [debouncedSearch, setDebouncedSearch] = useState("");
     const [processing, setProcessing] = useState<string | null>(null);
@@ -283,22 +286,14 @@ export default function AdminMembersPage() {
         );
     }, [allMembers]);
 
-    const counts = useMemo(() => {
-        const c: Record<string, number> = { all: allMembers.length };
-        for (const m of allMembers) {
-            c[m.status] = (c[m.status] || 0) + 1;
-        }
-        return c;
-    }, [allMembers]);
-
     const roleRequestCount = useMemo(() => {
         return allMembers.filter((m: any) => m.requestedRole).length;
     }, [allMembers]);
 
     const filtered = useMemo(() => {
         let list = allMembers;
-        if (activeTab !== "all") {
-            list = list.filter((m: any) => m.status === activeTab);
+        if (activeTab === "role_requests") {
+            list = list.filter((m: any) => m.requestedRole);
         }
         if (selectedCollege !== "all") {
             list = list.filter((m: any) => m.collegeId?._id === selectedCollege);
@@ -439,14 +434,8 @@ export default function AdminMembersPage() {
                         Members
                     </h1>
                     <span className="px-2.5 py-1 rounded-full bg-white/5 text-[10px] font-bold text-white/80 font-robotoMono">
-                        {counts.all ?? 0} total
+                        {allMembers.length} total
                     </span>
-                    {roleRequestCount > 0 && (
-                        <span className="px-2.5 py-1 rounded-full bg-cyan-500/10 text-[10px] font-bold text-cyan-400 font-robotoMono flex items-center gap-1.5">
-                            <ArrowUpCircle className="w-3 h-3" />
-                            {roleRequestCount} role request{roleRequestCount !== 1 ? "s" : ""}
-                        </span>
-                    )}
                 </div>
                 <div className="flex items-center gap-3 w-full sm:w-auto">
                     {/* College Filter */}
@@ -480,30 +469,38 @@ export default function AdminMembersPage() {
                 </div>
             </div>
 
-            {/* Status Tabs */}
+            {/* View Tabs */}
             <div className="flex items-center gap-1 mb-6 overflow-x-auto pb-1">
-                {STATUS_TABS.map((tab) => (
-                    <button
-                        key={tab}
-                        onClick={() => setActiveTab(tab)}
-                        className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-[10px] font-bold uppercase tracking-widest font-robotoMono transition-all whitespace-nowrap ${activeTab === tab
-                            ? "bg-white/10 text-white"
-                            : "text-white/75 hover:text-white/80 hover:bg-white/[0.03]"
-                            }`}
-                    >
-                        {tab === "all" ? "All" : tab}
-                        {counts[tab] !== undefined && (
+                {VIEW_TABS.map((tab) => {
+                    const count = tab.key === "role_requests" ? roleRequestCount : allMembers.length;
+                    return (
+                        <button
+                            key={tab.key}
+                            onClick={() => setActiveTab(tab.key)}
+                            className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-[10px] font-bold uppercase tracking-widest font-robotoMono transition-all whitespace-nowrap ${activeTab === tab.key
+                                ? "bg-white/10 text-white"
+                                : "text-white/75 hover:text-white/80 hover:bg-white/[0.03]"
+                                }`}
+                        >
+                            {tab.key === "role_requests" && (
+                                <ArrowUpCircle className={`w-3 h-3 ${activeTab === tab.key ? "text-cyan-400" : "text-white/50"}`} />
+                            )}
+                            {tab.label}
                             <span
-                                className={`px-1.5 py-0.5 rounded-full text-[8px] font-bold ${activeTab === tab
-                                    ? "bg-white/10 text-white/70"
-                                    : "bg-white/5 text-white/75"
+                                className={`px-1.5 py-0.5 rounded-full text-[8px] font-bold ${tab.key === "role_requests" && roleRequestCount > 0
+                                    ? activeTab === tab.key
+                                        ? "bg-cyan-500/20 text-cyan-300"
+                                        : "bg-cyan-500/10 text-cyan-400"
+                                    : activeTab === tab.key
+                                        ? "bg-white/10 text-white/70"
+                                        : "bg-white/5 text-white/75"
                                     }`}
                             >
-                                {counts[tab] ?? 0}
+                                {count}
                             </span>
-                        )}
-                    </button>
-                ))}
+                        </button>
+                    );
+                })}
             </div>
 
             {/* Table */}
@@ -543,7 +540,9 @@ export default function AdminMembersPage() {
                     <p className="text-sm text-white/80 font-robotoMono">
                         {debouncedSearch
                             ? "No members match your search."
-                            : "No members found."}
+                            : activeTab === "role_requests"
+                                ? "No pending role requests."
+                                : "No members found."}
                     </p>
                 </div>
             ) : (
