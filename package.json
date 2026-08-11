@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "send:showcase-invite": "node scripts/showcase-invite/send.mjs"
   },
   "engines": {
     "node": ">=20.0.0",

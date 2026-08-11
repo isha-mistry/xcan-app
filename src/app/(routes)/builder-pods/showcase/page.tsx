@@ -12,7 +12,14 @@ import {
     Clock,
     CheckCircle2,
     FileText,
+    ArrowRight,
+    MonitorPlay,
 } from "lucide-react";
+import {
+    formatShowcaseDate,
+    getAllShowcaseDetails,
+    getShowcaseDetailsByCity,
+} from "@/lib/builder-pods/showcase-details";
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
@@ -21,8 +28,9 @@ export default function ShowcasePage() {
         "/api/builder-pods/showcases",
         fetcher
     );
-    const showcases = data?.showcases ?? [];
+    const apiShowcases = data?.showcases ?? [];
     const submissions = data?.userSubmissions ?? [];
+    const catalogShowcases = getAllShowcaseDetails();
 
     return (
         <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-10 py-6">
@@ -41,18 +49,20 @@ export default function ShowcasePage() {
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                         {submissions.map((sub: any) => {
-                            const showcase = showcases.find((s: any) => s._id === sub.showcaseEventId);
-                            return (
+                            const showcase = apiShowcases.find((s: any) => s._id === sub.showcaseEventId);
+                            const details = getShowcaseDetailsByCity(
+                                showcase?.city || showcase?.regionSnapshot?.showcaseCity || ""
+                            );
+                            const card = (
                                 <motion.div
-                                    key={sub._id}
                                     initial={{ opacity: 0, x: -10 }}
                                     animate={{ opacity: 1, x: 0 }}
-                                    className="glass-container border-blue-500/10 rounded-2xl p-4 flex flex-col gap-3"
+                                    className="glass-container border-blue-500/10 rounded-2xl p-4 flex flex-col gap-3 h-full hover:border-white/15 transition-all"
                                 >
                                     <div className="flex justify-between items-start">
                                         <div className="flex flex-col gap-1">
                                             <span className="text-[10px] font-bold text-blue-400 font-robotoMono uppercase tracking-wider">
-                                                {showcase?.name || "Showcase Request"}
+                                                {details?.name || showcase?.name || "Showcase Request"}
                                             </span>
                                             <h3 className="text-sm font-bold text-white font-robotoMono truncate max-w-[200px]">
                                                 {sub.projectSnapshot.name}
@@ -71,10 +81,18 @@ export default function ShowcasePage() {
                                     <div className="flex items-center gap-3 text-[10px] text-white/40 font-robotoMono">
                                         <div className="flex items-center gap-1">
                                             <MapPin className="w-3 h-3" />
-                                            {showcase?.city || showcase?.regionSnapshot?.showcaseCity || "Location TBD"}
+                                            {details?.city || showcase?.city || showcase?.regionSnapshot?.showcaseCity || "Location TBD"}
                                         </div>
                                     </div>
                                 </motion.div>
+                            );
+
+                            return details ? (
+                                <Link key={sub._id} href={`/builder-pods/showcase/${details.slug}`}>
+                                    {card}
+                                </Link>
+                            ) : (
+                                <div key={sub._id}>{card}</div>
                             );
                         })}
                     </div>
@@ -88,80 +106,88 @@ export default function ShowcasePage() {
                 </h1>
             </div>
 
-            {isLoading ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {Array.from({ length: 3 }).map((_, i) => (
-                        <div key={i} className="glass-container rounded-2xl p-6 animate-pulse">
-                            <div className="h-5 w-40 bg-white/5 rounded-lg mb-3" />
-                            <div className="h-4 w-24 bg-white/5 rounded-lg" />
-                        </div>
-                    ))}
-                </div>
-            ) : showcases.length === 0 ? (
+            {catalogShowcases.length === 0 ? (
                 <div className="glass-container rounded-2xl p-12 text-center">
                     <Trophy className="w-8 h-8 text-white/40 mx-auto mb-3" />
                     <p className="text-sm text-white/80 font-robotoMono">No showcases yet</p>
                 </div>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {showcases.map((showcase: any, index: number) => (
+                    {catalogShowcases.map((showcase, index) => (
                         <motion.div
-                            key={showcase._id}
+                            key={showcase.slug}
                             initial={{ opacity: 0, y: 12 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.3, delay: index * 0.05 }}
-                            className="glass-container rounded-2xl p-6 hover:border-white/15 transition-all group"
                         >
-                            <div className="flex items-start justify-between mb-4">
-                                <div>
-                                    <h3 className="text-sm font-bold text-white font-robotoMono mb-1.5">
-                                        {showcase.name}
-                                    </h3>
-                                    <div className="flex items-center gap-1.5 text-[10px] text-white/50 font-robotoMono">
-                                        <MapPin className="w-3 h-3" />
-                                        {showcase.city || showcase.regionSnapshot?.showcaseCity || "TBD"}
+                            <Link
+                                href={`/builder-pods/showcase/${showcase.slug}`}
+                                className="glass-container rounded-2xl p-6 hover:border-white/15 transition-all group block h-full"
+                            >
+                                <div className="flex items-start justify-between mb-4">
+                                    <div>
+                                        <p className="text-[9px] font-bold uppercase tracking-wider text-yellow-400/80 font-robotoMono mb-1.5">
+                                            {showcase.subtitle}
+                                        </p>
+                                        <h3 className="text-sm font-bold text-white font-robotoMono mb-1.5 group-hover:text-blue-300 transition-colors">
+                                            {showcase.name}
+                                        </h3>
+                                        <div className="flex items-center gap-1.5 text-[10px] text-white/50 font-robotoMono">
+                                            <MapPin className="w-3 h-3" />
+                                            {showcase.city}
+                                        </div>
                                     </div>
-                                </div>
-                                <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold font-robotoMono ${showcase.status === 'completed'
-                                    ? 'bg-green-500/10 text-green-400'
-                                    : showcase.status === 'open'
-                                        ? 'bg-blue-500/10 text-blue-400'
-                                        : showcase.status === 'judging'
-                                            ? 'bg-yellow-500/10 text-yellow-400'
-                                            : 'bg-white/5 text-white/50'
+                                    <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold font-robotoMono ${
+                                        showcase.status === 'completed'
+                                            ? 'bg-green-500/10 text-green-400'
+                                            : showcase.status === 'open' || showcase.status === 'live'
+                                                ? 'bg-blue-500/10 text-blue-400'
+                                                : 'bg-white/5 text-white/50'
                                     }`}>
-                                    {showcase.status}
-                                </span>
-                            </div>
+                                        {showcase.status}
+                                    </span>
+                                </div>
 
-                            <div className="flex items-center gap-4 text-[10px] text-white/45 font-robotoMono mb-4">
-                                {showcase.eventDate && (
+                                <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-[10px] text-white/45 font-robotoMono mb-4">
                                     <div className="flex items-center gap-1">
                                         <Calendar className="w-3 h-3" />
-                                        {new Date(showcase.eventDate).toLocaleDateString('en-IN', {
-                                            month: 'short', day: 'numeric', year: 'numeric'
-                                        })}
+                                        {formatShowcaseDate(showcase.date)}
                                     </div>
-                                )}
-                                {showcase.prizePoolUsd > 0 && (
                                     <div className="flex items-center gap-1">
-                                        <Trophy className="w-3 h-3 text-yellow-400/60" />
-                                        ${showcase.prizePoolUsd.toLocaleString()} prize
+                                        <Clock className="w-3 h-3" />
+                                        {showcase.time}
                                     </div>
-                                )}
-                            </div>
+                                    <div className="flex items-center gap-1">
+                                        <MonitorPlay className="w-3 h-3" />
+                                        {showcase.format}
+                                    </div>
+                                    {showcase.prizePool.totalUsd > 0 && (
+                                        <div className="flex items-center gap-1">
+                                            <Trophy className="w-3 h-3 text-yellow-400/60" />
+                                            ${showcase.prizePool.totalUsd.toLocaleString()} prize
+                                        </div>
+                                    )}
+                                </div>
 
-                            {(showcase.status === 'open') && (
-                                <Link
-                                    href="/builder-pods/showcase-submit"
-                                    className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 text-[10px] font-bold font-robotoMono transition-all"
-                                >
-                                    <ExternalLink className="w-3 h-3" />
-                                    Submit Entry
-                                </Link>
-                            )}
+                                <div className="inline-flex items-center gap-1.5 text-blue-400 text-[10px] font-bold font-robotoMono group-hover:gap-2.5 transition-all">
+                                    View details
+                                    <ArrowRight className="w-3 h-3" />
+                                </div>
+                            </Link>
                         </motion.div>
                     ))}
+                </div>
+            )}
+
+            {!isLoading && apiShowcases.some((s: any) => s.status === 'open') && (
+                <div className="mt-8">
+                    <Link
+                        href="/builder-pods/showcase-submit"
+                        className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 text-[10px] font-bold font-robotoMono transition-all"
+                    >
+                        <ExternalLink className="w-3 h-3" />
+                        Submit Entry
+                    </Link>
                 </div>
             )}
         </div>
