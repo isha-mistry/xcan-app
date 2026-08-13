@@ -19,6 +19,7 @@ import {
     ChevronLeft,
     ChevronRight,
     Clock,
+    Award,
 } from "lucide-react";
 
 import { adminFetcher, ADMIN_SWR_OPTIONS } from "@/lib/fetchers";
@@ -56,13 +57,14 @@ function getStatusIcon(sub: any) {
 
 function ActionButton({ onClick, label, icon, variant, processing }: { 
     onClick: () => void; label: string; icon: React.ReactNode; 
-    variant: "green" | "red" | "purple" | "yellow" | "neutral"; processing: boolean 
+    variant: "green" | "red" | "purple" | "yellow" | "neutral" | "blue"; processing: boolean 
 }) {
     const styles: Record<string, string> = {
         green:   "bg-green-500/10 text-green-400 border-green-500/20 hover:bg-green-500/20",
         red:     "bg-red-500/10 text-red-400 border-red-500/20 hover:bg-red-500/20",
         purple:  "bg-purple-500/10 text-purple-400 border-purple-500/20 hover:bg-purple-500/20",
         yellow:  "bg-yellow-500/10 text-yellow-400 border-yellow-500/20 hover:bg-yellow-500/20",
+        blue:    "bg-blue-500/10 text-blue-400 border-blue-500/20 hover:bg-blue-500/20",
         neutral: "bg-white/5 text-white/50 border-white/10 hover:bg-white/10 hover:text-white/70",
     };
     return (
@@ -151,7 +153,12 @@ function SubmissionCard({ sub, index, onUpdate, processing }: any) {
                         )}
                         {isActive && sub.status === "winner" && (
                             <span className="px-2 py-0.5 rounded-full text-[8px] font-bold font-robotoMono uppercase bg-yellow-500/10 text-yellow-400">
-                                🏆 Winner
+                                Winner
+                            </span>
+                        )}
+                        {sub.certificateClaimable && (
+                            <span className="px-2 py-0.5 rounded-full text-[8px] font-bold font-robotoMono uppercase bg-blue-500/10 text-blue-400">
+                                Certificate
                             </span>
                         )}
                     </div>
@@ -214,6 +221,13 @@ function SubmissionCard({ sub, index, onUpdate, processing }: any) {
                                         label={sub.status === "winner" ? "Remove Winner" : "Winner"}
                                         icon={<Medal className="w-3 h-3" />}
                                         variant={sub.status === "winner" ? "yellow" : "neutral"}
+                                        processing={processing === sub._id}
+                                    />
+                                    <ActionButton
+                                        onClick={() => onUpdate(sub._id, { certificateClaimable: !sub.certificateClaimable })}
+                                        label={sub.certificateClaimable ? "Disable Certificate" : "Enable Certificate"}
+                                        icon={sub.certificateClaimable ? <X className="w-3 h-3" /> : <Award className="w-3 h-3" />}
+                                        variant={sub.certificateClaimable ? "blue" : "neutral"}
                                         processing={processing === sub._id}
                                     />
                                 </>

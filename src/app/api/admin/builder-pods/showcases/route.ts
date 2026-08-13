@@ -54,7 +54,7 @@ export async function PATCH(req: NextRequest) {
 
         await dbConnect();
         const body = await req.json();
-        const { submissionId, status, placement, isActive } = body;
+        const { submissionId, status, placement, isActive, certificateClaimable } = body;
         const adminWallet = ctx!.walletAddress;
 
 
@@ -105,6 +105,20 @@ export async function PATCH(req: NextRequest) {
             oldValue.isActive = submission.isActive;
             submission.isActive = isActive;
             newValue.isActive = isActive;
+        }
+
+        if (certificateClaimable !== undefined) {
+            oldValue.certificateClaimable = submission.certificateClaimable;
+            submission.certificateClaimable = Boolean(certificateClaimable);
+            newValue.certificateClaimable = submission.certificateClaimable;
+            if (submission.certificateClaimable) {
+                oldValue.certificateEnabledBy = submission.certificateEnabledBy;
+                oldValue.certificateEnabledAt = submission.certificateEnabledAt;
+                submission.certificateEnabledBy = adminWallet;
+                submission.certificateEnabledAt = new Date();
+                newValue.certificateEnabledBy = submission.certificateEnabledBy;
+                newValue.certificateEnabledAt = submission.certificateEnabledAt;
+            }
         }
 
         await submission.save();

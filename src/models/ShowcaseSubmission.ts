@@ -24,6 +24,9 @@ export interface IShowcaseSubmission extends Document {
     judgeNotes: string | null;
     prizeAmountUsd: number | null;
     isActive: boolean;
+    certificateClaimable: boolean;
+    certificateEnabledBy: string | null;
+    certificateEnabledAt: Date | null;
     createdAt: Date;
     updatedAt: Date;
 }
@@ -40,7 +43,7 @@ const ShowcaseSubmissionSchema = new Schema<IShowcaseSubmission>(
         },
         projectSnapshot: {
             name: { type: String, required: true },
-            problemStatement: { type: String, required: true },
+            problemStatement: { type: String, default: '', required: false },
         },
         demoLink: { type: String, default: null },
         githubRepo: { type: String, required: true },
@@ -54,6 +57,9 @@ const ShowcaseSubmissionSchema = new Schema<IShowcaseSubmission>(
         judgeNotes: { type: String, default: null },
         prizeAmountUsd: { type: Number, default: null },
         isActive: { type: Boolean, default: true },
+        certificateClaimable: { type: Boolean, default: false },
+        certificateEnabledBy: { type: String, default: null, lowercase: true },
+        certificateEnabledAt: { type: Date, default: null },
     },
     { timestamps: true }
 );
@@ -64,6 +70,14 @@ ShowcaseSubmissionSchema.index(
     { unique: true }
 );
 
-export const ShowcaseSubmission =
-    mongoose.models.ShowcaseSubmission ||
-    mongoose.model<IShowcaseSubmission>('ShowcaseSubmission', ShowcaseSubmissionSchema);
+export const ShowcaseSubmission = (() => {
+    // Next.js dev can keep a cached model with stale validators
+    // (e.g. problemStatement still marked required).
+    if (process.env.NODE_ENV !== 'production' && mongoose.models.ShowcaseSubmission) {
+        delete mongoose.models.ShowcaseSubmission;
+    }
+    return (
+        mongoose.models.ShowcaseSubmission ||
+        mongoose.model<IShowcaseSubmission>('ShowcaseSubmission', ShowcaseSubmissionSchema)
+    );
+})();

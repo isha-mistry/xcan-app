@@ -101,17 +101,29 @@ export const ProjectSchema = z.object({
   techStack: z.array(z.string()).max(10).default([]),
 });
 
+const emptyToUndefined = (value: unknown) =>
+  typeof value === "string" && value.trim() === "" ? undefined : value;
+
 export const ShowcaseSubmissionSchema = z.object({
   showcaseEventId: z.string().regex(/^[a-f\d]{24}$/i),
   collegeSlug: z.string().min(2),
   projectId: z.string().regex(/^[a-f\d]{24}$/i),
   githubRepo: z.string().url(),
-  demoLink: z.string().url().optional(),
-  contractAddress: z
-    .string()
-    .regex(/^0x[a-fA-F0-9]{40}$/)
+  demoLink: z
+    .preprocess(emptyToUndefined, z.string().url().optional())
     .optional(),
-  pitchDeckUrl: z.string().url().optional(),
+  contractAddress: z
+    .preprocess(
+      emptyToUndefined,
+      z
+        .string()
+        .regex(/^0x[a-fA-F0-9]{40}$/)
+        .optional(),
+    )
+    .optional(),
+  pitchDeckUrl: z
+    .preprocess(emptyToUndefined, z.string().url().optional())
+    .optional(),
 });
 
 export const ProjectStatusUpdateSchema = z

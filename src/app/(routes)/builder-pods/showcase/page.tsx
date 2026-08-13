@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useState } from "react";
 import useSWR from "swr";
 import Link from "next/link";
 import { motion } from "framer-motion";
@@ -14,6 +14,8 @@ import {
     FileText,
     ArrowRight,
     MonitorPlay,
+    Download,
+    Loader2,
 } from "lucide-react";
 import {
     formatShowcaseDate,
@@ -22,6 +24,59 @@ import {
 } from "@/lib/builder-pods/showcase-details";
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
+
+function DownloadCertificateButton({ submissionId }: { submissionId: string }) {
+    const [downloading, setDownloading] = useState(false);
+
+    const handleDownload = async (e: React.MouseEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (downloading) return;
+        setDownloading(true);
+        try {
+            const res = await fetch(
+                `/api/builder-pods/showcases/${submissionId}/certificate`,
+                { credentials: "include" },
+            );
+            if (!res.ok) {
+                const data = await res.json().catch(() => null);
+                alert(data?.error || "Unable to download certificate");
+                return;
+            }
+            const blob = await res.blob();
+            const url = URL.createObjectURL(blob);
+            const disposition = res.headers.get("Content-Disposition");
+            const match = disposition?.match(/filename="?([^"]+)"?/);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = match?.[1] || "showcase-certificate.png";
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(url);
+        } catch {
+            alert("Network error. Please try again.");
+        } finally {
+            setDownloading(false);
+        }
+    };
+
+    return (
+        <button
+            type="button"
+            onClick={handleDownload}
+            disabled={downloading}
+            className="inline-flex items-center gap-1.5 self-start px-3 py-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 text-[10px] font-bold font-robotoMono uppercase tracking-wider transition-all disabled:opacity-40"
+        >
+            {downloading ? (
+                <Loader2 className="w-3 h-3 animate-spin" />
+            ) : (
+                <Download className="w-3 h-3" />
+            )}
+            {downloading ? "Preparing..." : "Download Certificate"}
+        </button>
+    );
+}
 
 export default function ShowcasePage() {
     const { data, isLoading } = useSWR(
@@ -59,41 +114,70 @@ export default function ShowcasePage() {
                                     animate={{ opacity: 1, x: 0 }}
                                     className="glass-container border-blue-500/10 rounded-2xl p-4 flex flex-col gap-3 h-full hover:border-white/15 transition-all"
                                 >
-                                    <div className="flex justify-between items-start">
-                                        <div className="flex flex-col gap-1">
-                                            <span className="text-[10px] font-bold text-blue-400 font-robotoMono uppercase tracking-wider">
-                                                {details?.name || showcase?.name || "Showcase Request"}
-                                            </span>
-                                            <h3 className="text-sm font-bold text-white font-robotoMono truncate max-w-[200px]">
-                                                {sub.projectSnapshot.name}
-                                            </h3>
-                                        </div>
-                                        <div className={`px-2 py-1 rounded-lg flex items-center gap-1.5 text-[9px] font-bold font-robotoMono uppercase bg-white/5 ${
-                                            sub.status === 'approved' ? 'text-green-400' :
-                                            sub.status === 'rejected' ? 'text-red-400' :
-                                            'text-yellow-400'
-                                        }`}>
-                                            {sub.status === 'pending' && <Clock className="w-3 h-3" />}
-                                            {sub.status === 'approved' && <CheckCircle2 className="w-3 h-3" />}
-                                            {sub.status === 'pending' ? 'Pending Approval' : sub.status}
-                                        </div>
-                                    </div>
-                                    <div className="flex items-center gap-3 text-[10px] text-white/40 font-robotoMono">
-                                        <div className="flex items-center gap-1">
-                                            <MapPin className="w-3 h-3" />
-                                            {details?.city || showcase?.city || showcase?.regionSnapshot?.showcaseCity || "Location TBD"}
-                                        </div>
-                                    </div>
+                                    {details ? (
+                                        <Link href={`/builder-pods/showcase/${details.slug}`} className="flex flex-col gap-3">
+                                            <div className="flex justify-between items-start">
+                                                <div className="flex flex-col gap-1">
+                                                    <span className="text-[10px] font-bold text-blue-400 font-robotoMono uppercase tracking-wider">
+                                                        {details?.name || showcase?.name || "Showcase Request"}
+                                                    </span>
+                                                    <h3 className="text-sm font-bold text-white font-robotoMono truncate max-w-[200px]">
+                                                        {sub.projectSnapshot.name}
+                                                    </h3>
+                                                </div>
+                                                <div className={`px-2 py-1 rounded-lg flex items-center gap-1.5 text-[9px] font-bold font-robotoMono uppercase bg-white/5 ${
+                                                    sub.status === 'approved' ? 'text-green-400' :
+                                                    sub.status === 'rejected' ? 'text-red-400' :
+                                                    'text-yellow-400'
+                                                }`}>
+                                                    {sub.status === 'pending' && <Clock className="w-3 h-3" />}
+                                                    {sub.status === 'approved' && <CheckCircle2 className="w-3 h-3" />}
+                                                    {sub.status === 'pending' ? 'Pending Approval' : sub.status}
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center gap-3 text-[10px] text-white/40 font-robotoMono">
+                                                <div className="flex items-center gap-1">
+                                                    <MapPin className="w-3 h-3" />
+                                                    {details?.city || showcase?.city || showcase?.regionSnapshot?.showcaseCity || "Location TBD"}
+                                                </div>
+                                            </div>
+                                        </Link>
+                                    ) : (
+                                        <>
+                                            <div className="flex justify-between items-start">
+                                                <div className="flex flex-col gap-1">
+                                                    <span className="text-[10px] font-bold text-blue-400 font-robotoMono uppercase tracking-wider">
+                                                        {showcase?.name || "Showcase Request"}
+                                                    </span>
+                                                    <h3 className="text-sm font-bold text-white font-robotoMono truncate max-w-[200px]">
+                                                        {sub.projectSnapshot.name}
+                                                    </h3>
+                                                </div>
+                                                <div className={`px-2 py-1 rounded-lg flex items-center gap-1.5 text-[9px] font-bold font-robotoMono uppercase bg-white/5 ${
+                                                    sub.status === 'approved' ? 'text-green-400' :
+                                                    sub.status === 'rejected' ? 'text-red-400' :
+                                                    'text-yellow-400'
+                                                }`}>
+                                                    {sub.status === 'pending' && <Clock className="w-3 h-3" />}
+                                                    {sub.status === 'approved' && <CheckCircle2 className="w-3 h-3" />}
+                                                    {sub.status === 'pending' ? 'Pending Approval' : sub.status}
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center gap-3 text-[10px] text-white/40 font-robotoMono">
+                                                <div className="flex items-center gap-1">
+                                                    <MapPin className="w-3 h-3" />
+                                                    {showcase?.city || showcase?.regionSnapshot?.showcaseCity || "Location TBD"}
+                                                </div>
+                                            </div>
+                                        </>
+                                    )}
+                                    {sub.certificateClaimable && (
+                                        <DownloadCertificateButton submissionId={sub._id} />
+                                    )}
                                 </motion.div>
                             );
 
-                            return details ? (
-                                <Link key={sub._id} href={`/builder-pods/showcase/${details.slug}`}>
-                                    {card}
-                                </Link>
-                            ) : (
-                                <div key={sub._id}>{card}</div>
-                            );
+                            return <div key={sub._id}>{card}</div>;
                         })}
                     </div>
                 </div>

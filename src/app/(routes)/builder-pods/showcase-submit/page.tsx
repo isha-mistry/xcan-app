@@ -98,11 +98,16 @@ export default function ShowcaseSubmitPage() {
         setResult(null);
 
         try {
+            const payload: Record<string, string> = { ...form };
+            if (!payload.demoLink.trim()) delete payload.demoLink;
+            if (!payload.contractAddress.trim()) delete payload.contractAddress;
+            if (!payload.pitchDeckUrl.trim()) delete payload.pitchDeckUrl;
+
             const res = await fetch("/api/builder-pods/showcases", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 credentials: "include",
-                body: JSON.stringify(form),
+                body: JSON.stringify(payload),
             });
             const data = await res.json();
             if (data.success) {
