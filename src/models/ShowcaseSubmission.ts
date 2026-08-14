@@ -40,7 +40,7 @@ const ShowcaseSubmissionSchema = new Schema<IShowcaseSubmission>(
         },
         projectSnapshot: {
             name: { type: String, required: true },
-            problemStatement: { type: String, required: true },
+            problemStatement: { type: String, default: '', required: false },
         },
         demoLink: { type: String, default: null },
         githubRepo: { type: String, required: true },
@@ -64,6 +64,12 @@ ShowcaseSubmissionSchema.index(
     { unique: true }
 );
 
-export const ShowcaseSubmission =
-    mongoose.models.ShowcaseSubmission ||
-    mongoose.model<IShowcaseSubmission>('ShowcaseSubmission', ShowcaseSubmissionSchema);
+export const ShowcaseSubmission = (() => {
+    if (process.env.NODE_ENV !== 'production' && mongoose.models.ShowcaseSubmission) {
+        delete mongoose.models.ShowcaseSubmission;
+    }
+    return (
+        mongoose.models.ShowcaseSubmission ||
+        mongoose.model<IShowcaseSubmission>('ShowcaseSubmission', ShowcaseSubmissionSchema)
+    );
+})();

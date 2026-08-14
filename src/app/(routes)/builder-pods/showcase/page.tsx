@@ -21,7 +21,8 @@ import {
     getShowcaseDetailsByCity,
 } from "@/lib/builder-pods/showcase-details";
 
-const fetcher = (url: string) => fetch(url).then((r) => r.json());
+const fetcher = (url: string) =>
+  fetch(url, { credentials: "include" }).then((r) => r.json());
 
 export default function ShowcasePage() {
     const { data, isLoading } = useSWR(
@@ -83,6 +84,11 @@ export default function ShowcasePage() {
                                             <MapPin className="w-3 h-3" />
                                             {details?.city || showcase?.city || showcase?.regionSnapshot?.showcaseCity || "Location TBD"}
                                         </div>
+                                        {sub.collegeSnapshot?.podName && (
+                                            <span className="truncate max-w-[160px] text-white/35">
+                                                {sub.collegeSnapshot.podName}
+                                            </span>
+                                        )}
                                     </div>
                                 </motion.div>
                             );

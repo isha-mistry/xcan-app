@@ -26,10 +26,25 @@ export async function GET(req: NextRequest) {
 
         let userSubmissions: any[] = [];
         if (ctx?.walletAddress) {
+            const wallet = ctx.walletAddress.toLowerCase();
+            const memberProjects = await PodProject.find({
+                deletedAt: null,
+                $or: [
+                    { teamLeader: wallet },
+                    { 'teamMembers.walletAddress': wallet },
+                ],
+            }).select('_id').lean();
+            const projectIds = memberProjects.map((p) => p._id);
+
             userSubmissions = await ShowcaseSubmission.find({
-                submittedBy: ctx.walletAddress.toLowerCase(),
-                isActive: { $ne: false }
-            }).select('showcaseEventId status projectSnapshot').lean();
+                isActive: { $ne: false },
+                $or: [
+                    { submittedBy: wallet },
+                    ...(projectIds.length > 0 ? [{ projectId: { $in: projectIds } }] : []),
+                ],
+            })
+                .select('showcaseEventId status projectSnapshot collegeSnapshot')
+                .lean();
         }
 
         return NextResponse.json({ 
@@ -128,7 +143,7 @@ export async function POST(req: NextRequest) {
             },
             projectSnapshot: {
                 name: project.name,
-                problemStatement: project.problemStatement,
+                problemStatement: project.problemStatement?.trim() || '',
             },
             demoLink: demoLink || null,
             githubRepo,
