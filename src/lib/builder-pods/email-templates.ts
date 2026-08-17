@@ -302,3 +302,102 @@ export function buildPodMemberInviteEmail(data: PodMemberInviteEmailData): strin
 </body>
 </html>`;
 }
+
+export interface PodMemberMeetingEmailData {
+  memberName: string;
+  collegeName: string;
+  podName: string;
+  meetingLink?: string;
+  meetingTime?: string;
+}
+
+export function buildPodMemberMeetingSubject(meetingTime?: string): string {
+  return meetingTime
+    ? `Builder Pods meeting — ${meetingTime}`
+    : `Thanks for joining Builder Pods — meeting this Friday or Saturday`;
+}
+
+export function buildPodMemberMeetingEmail(
+  data: PodMemberMeetingEmailData,
+): string {
+  const { memberName, collegeName, podName, meetingLink, meetingTime } = data;
+  const p = PALETTES.pod_member;
+  const year = new Date().getFullYear();
+  const slackUrl = SLACK_URL?.trim();
+  const showSlackLink = Boolean(slackUrl);
+  const showMeetingLink = Boolean(meetingLink?.trim());
+  const whenCopy = meetingTime?.trim()
+    ? meetingTime.trim()
+    : "Friday or Saturday";
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+</head>
+<body style="margin:0;padding:0;background:#F8FAFC;font-family:Inter,system-ui,sans-serif;color:#334155;">
+  <div style="max-width:600px;margin:32px auto;background:#fff;border-radius:16px;border:1px solid #E2E8F0;overflow:hidden;">
+    <div style="padding:36px 40px 28px;border-bottom:1px solid #F1F5F9;">
+      <p style="margin:0 0 8px;font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#94A3B8;">Arbitrum Builder Pods</p>
+      <h1 style="margin:0 0 10px;font-size:26px;font-weight:700;color:#0F172A;">Thank you for participating, ${memberName}!</h1>
+      <p style="margin:0;font-size:16px;line-height:1.6;color:#64748B;">
+        We’re arranging a quick meeting with you soon, around <strong style="color:#0F172A;">${whenCopy}</strong>.
+        The meeting details will be shared in our <strong style="color:#0F172A;">Slack workspace</strong>.
+      </p>
+    </div>
+
+    <div style="padding:32px 40px;">
+      <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:20px;">
+        <tr>
+          <td width="50%" style="padding-right:6px;">
+            <div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px;padding:14px;">
+              <p style="margin:0 0 4px;font-size:10px;font-weight:700;text-transform:uppercase;color:#94A3B8;">College</p>
+              <p style="margin:0;font-size:14px;font-weight:600;color:#0F172A;">${collegeName}</p>
+            </div>
+          </td>
+          <td width="50%" style="padding-left:6px;">
+            <div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px;padding:14px;">
+              <p style="margin:0 0 4px;font-size:10px;font-weight:700;text-transform:uppercase;color:#94A3B8;">Builder Pod</p>
+              <p style="margin:0;font-size:14px;font-weight:600;color:#0F172A;">${podName}</p>
+            </div>
+          </td>
+        </tr>
+      </table>
+
+      <div style="background:${p.bg};border-left:4px solid ${p.accent};padding:18px 20px;border-radius:4px 12px 12px 4px;margin-bottom:24px;">
+        <p style="margin:0 0 10px;font-size:14px;font-weight:700;color:#0F172A;">Please join Slack</p>
+        <p style="margin:0;font-size:14px;line-height:1.65;color:#334155;">
+          Join the Slack workspace so you don’t miss the meeting link and time.
+        </p>
+        ${
+          showSlackLink
+            ? `<p style="margin:14px 0 0;font-size:13px;line-height:1.5;">
+                <a href="${slackUrl}" style="display:inline-block;background:${p.accent};color:#fff;padding:12px 18px;border-radius:10px;text-decoration:none;font-size:14px;font-weight:700;">Join Slack Workspace &rarr;</a>
+              </p>`
+            : `<p style="margin:14px 0 0;font-size:13px;line-height:1.5;color:#64748B;">
+                Slack link is not configured. Please check your admin updates.
+              </p>`
+        }
+      </div>
+
+      ${
+        showMeetingLink
+          ? `<p style="margin:0 0 24px;text-align:center;">
+              <a href="${meetingLink}" style="display:inline-block;background:${p.accent};color:#fff;padding:12px 22px;border-radius:10px;text-decoration:none;font-size:14px;font-weight:700;">Join the meeting &rarr;</a>
+            </p>`
+          : ""
+      }
+
+      <p style="margin:0;font-size:13px;line-height:1.6;color:#64748B;">
+        If you have any questions before the meeting, post them in Slack.
+      </p>
+    </div>
+
+    <div style="padding:20px 40px;background:#F8FAFC;border-top:1px solid #F1F5F9;text-align:center;">
+      <p style="margin:0;font-size:12px;color:#94A3B8;">Xcan &bull; Built on Arbitrum &bull; ${year}</p>
+    </div>
+  </div>
+</body>
+</html>`;
+}

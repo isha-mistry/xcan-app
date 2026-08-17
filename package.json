@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "next lint",
     "prepare": "husky install",
-    "send:showcase-invite": "node scripts/showcase-invite/send.mjs"
+    "send:showcase-invite": "node scripts/showcase-invite/send.mjs",
+    "send-pod-member-meeting-email": "npx tsx scripts/send-pod-member-meeting-email.ts"
   },
   "engines": {
     "node": ">=20.0.0",

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { dbConnect } from "@/lib/dbConnect";
 import { ShowcaseSubmission } from "@/models/ShowcaseSubmission";
-import { PodProject } from "@/models/PodProject";
+import { PodProject, type IProjectTeamMember } from "@/models/PodProject";
 import { PodMember } from "@/models/PodMember";
 import {
   getAuthContext,
@@ -15,9 +15,14 @@ import {
 
 export const dynamic = "force-dynamic";
 
+/**
+ * GET /api/builder-pods/showcases/[slug]/certificate
+ * `slug` is the ShowcaseSubmission id (same dynamic segment name as
+ * /showcases/[slug]/submissions so Next.js can build the route tree).
+ */
 export async function GET(
   req: NextRequest,
-  { params }: { params: { submissionId: string } },
+  { params }: { params: { slug: string } },
 ) {
   try {
     const ctx = await getAuthContext(req);
@@ -25,7 +30,7 @@ export async function GET(
 
     await dbConnect();
     const wallet = ctx.walletAddress.toLowerCase();
-    const { submissionId } = params;
+    const submissionId = params.slug;
 
     const submission = await ShowcaseSubmission.findById(submissionId);
     if (!submission || submission.isActive === false) {
@@ -55,7 +60,7 @@ export async function GET(
     const onTeam =
       project.teamLeader?.toLowerCase() === wallet ||
       project.teamMembers?.some(
-        (m) => m.walletAddress.toLowerCase() === wallet,
+        (m: IProjectTeamMember) => m.walletAddress.toLowerCase() === wallet,
       );
     if (!onTeam) {
       throw new ForbiddenError(
@@ -64,7 +69,7 @@ export async function GET(
     }
 
     const teamEntry = project.teamMembers?.find(
-      (m) => m.walletAddress.toLowerCase() === wallet,
+      (m: IProjectTeamMember) => m.walletAddress.toLowerCase() === wallet,
     );
     let memberName = teamEntry?.name?.trim() || "";
     if (!memberName) {

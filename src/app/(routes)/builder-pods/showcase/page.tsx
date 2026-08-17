@@ -24,7 +24,20 @@ import {
     getShowcaseDetailsByCity,
 } from "@/lib/builder-pods/showcase-details";
 
-const fetcher = (url: string) => fetch(url).then((r) => r.json());
+const fetcher = (url: string) =>
+    fetch(url, { credentials: "include" }).then((r) => r.json());
+
+const PATRAM_ORIGIN = "https://patram.lampros.tech";
+
+/** Keep the stored certificate path/query, always open it on Patram. */
+function toPatramCertificateUrl(storedUrl: string): string {
+    try {
+        const parsed = new URL(storedUrl, PATRAM_ORIGIN);
+        return `${PATRAM_ORIGIN}${parsed.pathname}${parsed.search}${parsed.hash}`;
+    } catch {
+        return PATRAM_ORIGIN;
+    }
+}
 
 function DownloadCertificateButton({ submissionId }: { submissionId: string }) {
     const [downloading, setDownloading] = useState(false);
@@ -126,11 +139,10 @@ export default function ShowcasePage() {
                                                         {sub.projectSnapshot.name}
                                                     </h3>
                                                 </div>
-                                                <div className={`px-2 py-1 rounded-lg flex items-center gap-1.5 text-[9px] font-bold font-robotoMono uppercase bg-white/5 ${
-                                                    sub.status === 'approved' ? 'text-green-400' :
-                                                    sub.status === 'rejected' ? 'text-red-400' :
-                                                    'text-yellow-400'
-                                                }`}>
+                                                <div className={`px-2 py-1 rounded-lg flex items-center gap-1.5 text-[9px] font-bold font-robotoMono uppercase bg-white/5 ${sub.status === 'approved' ? 'text-green-400' :
+                                                        sub.status === 'rejected' ? 'text-red-400' :
+                                                            'text-yellow-400'
+                                                    }`}>
                                                     {sub.status === 'pending' && <Clock className="w-3 h-3" />}
                                                     {sub.status === 'approved' && <CheckCircle2 className="w-3 h-3" />}
                                                     {sub.status === 'pending' ? 'Pending Approval' : sub.status}
@@ -154,11 +166,10 @@ export default function ShowcasePage() {
                                                         {sub.projectSnapshot.name}
                                                     </h3>
                                                 </div>
-                                                <div className={`px-2 py-1 rounded-lg flex items-center gap-1.5 text-[9px] font-bold font-robotoMono uppercase bg-white/5 ${
-                                                    sub.status === 'approved' ? 'text-green-400' :
-                                                    sub.status === 'rejected' ? 'text-red-400' :
-                                                    'text-yellow-400'
-                                                }`}>
+                                                <div className={`px-2 py-1 rounded-lg flex items-center gap-1.5 text-[9px] font-bold font-robotoMono uppercase bg-white/5 ${sub.status === 'approved' ? 'text-green-400' :
+                                                        sub.status === 'rejected' ? 'text-red-400' :
+                                                            'text-yellow-400'
+                                                    }`}>
                                                     {sub.status === 'pending' && <Clock className="w-3 h-3" />}
                                                     {sub.status === 'approved' && <CheckCircle2 className="w-3 h-3" />}
                                                     {sub.status === 'pending' ? 'Pending Approval' : sub.status}
@@ -176,7 +187,7 @@ export default function ShowcasePage() {
                                         <div className="flex flex-wrap items-center gap-2">
                                             {sub.patramCertificateUrl && (
                                                 <a
-                                                    href={sub.patramCertificateUrl}
+                                                    href={toPatramCertificateUrl(sub.patramCertificateUrl)}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
                                                     onClick={(e) => e.stopPropagation()}
@@ -185,9 +196,6 @@ export default function ShowcasePage() {
                                                     <ShieldCheck className="w-3 h-3" />
                                                     On-chain Certificate
                                                 </a>
-                                            )}
-                                            {sub.certificateClaimable && (
-                                                <DownloadCertificateButton submissionId={sub._id} />
                                             )}
                                         </div>
                                     )}
@@ -238,13 +246,12 @@ export default function ShowcasePage() {
                                             {showcase.city}
                                         </div>
                                     </div>
-                                    <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold font-robotoMono ${
-                                        showcase.status === 'completed'
-                                            ? 'bg-green-500/10 text-green-400'
-                                            : showcase.status === 'open' || showcase.status === 'live'
-                                                ? 'bg-blue-500/10 text-blue-400'
-                                                : 'bg-white/5 text-white/50'
-                                    }`}>
+                                    <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold font-robotoMono ${showcase.status === 'completed'
+                                        ? 'bg-green-500/10 text-green-400'
+                                        : showcase.status === 'open' || showcase.status === 'live'
+                                            ? 'bg-blue-500/10 text-blue-400'
+                                            : 'bg-white/5 text-white/50'
+                                        }`}>
                                         {showcase.status}
                                     </span>
                                 </div>
