@@ -16,6 +16,7 @@ import {
     MonitorPlay,
     Download,
     Loader2,
+    ShieldCheck,
 } from "lucide-react";
 import {
     formatShowcaseDate,
@@ -171,8 +172,24 @@ export default function ShowcasePage() {
                                             </div>
                                         </>
                                     )}
-                                    {sub.certificateClaimable && (
-                                        <DownloadCertificateButton submissionId={sub._id} />
+                                    {(sub.patramCertificateUrl || sub.certificateClaimable) && (
+                                        <div className="flex flex-wrap items-center gap-2">
+                                            {sub.patramCertificateUrl && (
+                                                <a
+                                                    href={sub.patramCertificateUrl}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    onClick={(e) => e.stopPropagation()}
+                                                    className="inline-flex items-center gap-1.5 self-start px-3 py-1.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 text-[10px] font-bold font-robotoMono uppercase tracking-wider transition-all"
+                                                >
+                                                    <ShieldCheck className="w-3 h-3" />
+                                                    On-chain Certificate
+                                                </a>
+                                            )}
+                                            {sub.certificateClaimable && (
+                                                <DownloadCertificateButton submissionId={sub._id} />
+                                            )}
+                                        </div>
                                     )}
                                 </motion.div>
                             );

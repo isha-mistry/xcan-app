@@ -27,6 +27,11 @@ export interface IShowcaseSubmission extends Document {
     certificateClaimable: boolean;
     certificateEnabledBy: string | null;
     certificateEnabledAt: Date | null;
+    // Written by Patram when the on-chain winner certificate is issued.
+    patramCertificateOnChain: boolean;
+    patramCertificateLink: string | null;
+    patramCertificateTxHash: string | null;
+    patramMemberCertificates: { wallet: string; url: string | null; txHash: string | null }[];
     createdAt: Date;
     updatedAt: Date;
 }
@@ -60,6 +65,21 @@ const ShowcaseSubmissionSchema = new Schema<IShowcaseSubmission>(
         certificateClaimable: { type: Boolean, default: false },
         certificateEnabledBy: { type: String, default: null, lowercase: true },
         certificateEnabledAt: { type: Date, default: null },
+        // Populated by Patram after the on-chain winner certificate is issued.
+        patramCertificateOnChain: { type: Boolean, default: false },
+        patramCertificateLink: { type: String, default: null },
+        patramCertificateTxHash: { type: String, default: null },
+        patramMemberCertificates: {
+            type: [
+                {
+                    _id: false,
+                    wallet: { type: String, lowercase: true },
+                    url: { type: String, default: null },
+                    txHash: { type: String, default: null },
+                },
+            ],
+            default: [],
+        },
     },
     { timestamps: true }
 );
