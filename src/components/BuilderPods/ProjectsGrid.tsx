@@ -644,15 +644,19 @@ export default function ProjectsGrid({
 
     return (
         <div className="mb-8">
-            <div className="flex items-center justify-between mb-6">
+            <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
-                    <FolderGit2 className="w-4 h-4 text-white/60" />
-                    <h2 className="text-[11px] font-bold uppercase tracking-[0.2em] text-white/70 font-robotoMono">
-                        Projects
-                    </h2>
-                    <span className="px-2 py-0.5 rounded-full bg-white/5 text-[10px] font-bold text-white/60 font-robotoMono">
-                        {projects.length}
-                    </span>
+                    <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-purple-500/10">
+                        <FolderGit2 className="h-4 w-4 text-purple-400" />
+                    </div>
+                    <div>
+                        <h2 className="text-sm font-bold tracking-tight text-white font-unbounded">
+                            Projects
+                        </h2>
+                        <p className="text-[10px] text-white/40 font-robotoMono">
+                            {projects.length} project{projects.length === 1 ? "" : "s"} in this pod
+                        </p>
+                    </div>
                 </div>
                 {showActions && (
                     <div className="flex items-center gap-3">

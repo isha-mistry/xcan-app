@@ -63,14 +63,14 @@ function LiveStatsPanel({
 }: LiveStatsPanelProps) {
     return (
         <section className="mb-10">
-            <div className="flex items-center gap-3 mb-6">
-                <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+            <div className="mb-6 flex items-center gap-3">
+                <div className="h-2 w-2 animate-pulse rounded-full bg-green-400" />
                 <h2 className="text-[11px] font-bold uppercase tracking-[0.2em] text-white/70 font-robotoMono">
                     Live Stats
                 </h2>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+            <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-5">
                 {statItems.map((item) => {
                     const Icon = item.icon;
                     const value = stats[item.key as keyof StatsData] ?? 0;
@@ -78,16 +78,16 @@ function LiveStatsPanel({
                     return (
                         <div
                             key={item.key}
-                            className="rounded-2xl border border-white/10 bg-white/[0.03] p-5 group hover:border-white/20 transition-all duration-300"
+                            className="glass-container group rounded-2xl border border-white/[0.06] p-5 transition-all duration-300 hover:border-white/20"
                         >
-                            <div className={`${item.bg} p-2.5 rounded-xl w-fit mb-3`}>
-                                <Icon className={`w-4 h-4 ${item.text}`} />
+                            <div className={`${item.bg} mb-3 w-fit rounded-xl p-2.5`}>
+                                <Icon className={`h-4 w-4 ${item.text}`} />
                             </div>
                             <div className="space-y-1">
                                 {isLoading ? (
-                                    <div className="h-8 w-16 bg-white/5 rounded-lg animate-pulse" />
+                                    <div className="h-8 w-16 animate-pulse rounded-lg bg-white/5" />
                                 ) : (
-                                    <span className="text-2xl md:text-3xl font-black text-white font-unbounded tracking-tight">
+                                    <span className="text-2xl font-black tracking-tight text-white font-unbounded md:text-3xl">
                                         {value.toLocaleString()}
                                     </span>
                                 )}

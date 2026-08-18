@@ -123,7 +123,7 @@ export default function CollegePodPage() {
             {/* Back button */}
             <Link
                 href="/builder-pods"
-                className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-white/80 hover:text-white/80 font-robotoMono mb-6 transition-colors"
+                className="mb-6 inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-white/80 transition-colors hover:text-white font-robotoMono"
             >
                 <ArrowLeft className="w-3.5 h-3.5" />
                 All Pods

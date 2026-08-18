@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 
 import { adminFetcher, ADMIN_SWR_OPTIONS } from "@/lib/fetchers";
+import { AdminPageHero } from "@/components/BuilderPods/ui";
 
 interface AdminCollegeOption {
     _id: string;
@@ -108,26 +109,20 @@ export default function AdminLabEventsPage() {
 
     return (
         <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-10 py-6">
-            <Link href="/admin/builder-pods" className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-white/60 hover:text-white/80 font-robotoMono mb-6 transition-colors">
-                <ArrowLeft className="w-3.5 h-3.5" />
-                Admin Dashboard
-            </Link>
-
-            <div className="flex items-center justify-between mb-8">
-                <div className="flex items-center gap-3">
-                    <QrCode className="w-5 h-5 text-cyan-400/70" />
-                    <h1 className="text-2xl font-black text-white font-unbounded tracking-tight">
-                        Lab Events
-                    </h1>
-                </div>
-                <button
-                    onClick={() => setShowForm(!showForm)}
-                    className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 text-[10px] font-bold font-robotoMono transition-all border border-cyan-500/10"
-                >
-                    <Plus className="w-3.5 h-3.5" />
-                    New Event
-                </button>
-            </div>
+            <AdminPageHero
+                accent="blue"
+                title="Lab Events"
+                description="Create Builder Lab events and generate QR registration links for campuses."
+                actions={
+                    <button
+                        onClick={() => setShowForm(!showForm)}
+                        className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 text-[10px] font-bold font-robotoMono transition-all border border-cyan-500/10"
+                    >
+                        <Plus className="w-3.5 h-3.5" />
+                        New Event
+                    </button>
+                }
+            />
 
             {/* Create Form */}
             {showForm && (

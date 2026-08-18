@@ -26,6 +26,7 @@ import {
     ArrowUpCircle,
 } from "lucide-react";
 import { adminFetcher, ADMIN_SWR_OPTIONS } from "@/lib/fetchers";
+import { AdminPageHero, StatPill } from "@/components/BuilderPods/ui";
 
 const VIEW_TABS = [
     { key: "members", label: "Members" },
@@ -418,26 +419,22 @@ export default function AdminMembersPage() {
 
     return (
         <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-10 py-6">
-            <Link
-                href="/admin/builder-pods"
-                className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-white/80 hover:text-white/80 font-robotoMono mb-6 transition-colors"
-            >
-                <ArrowLeft className="w-3.5 h-3.5" />
-                Admin Dashboard
-            </Link>
+            <AdminPageHero
+                accent="amber"
+                title="Members"
+                description="Approve participants, assign roles, and manage pod membership across colleges."
+                stats={
+                    <StatPill
+                        icon={<Users className="h-3.5 w-3.5 text-amber-400" />}
+                        label="Total"
+                        value={allMembers.length}
+                    />
+                }
+            />
 
-            {/* Header */}
+            {/* Header filters */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-                <div className="flex items-center gap-3">
-                    <Users className="w-5 h-5 text-amber-400/70" />
-                    <h1 className="text-2xl font-black text-white font-unbounded tracking-tight">
-                        Members
-                    </h1>
-                    <span className="px-2.5 py-1 rounded-full bg-white/5 text-[10px] font-bold text-white/80 font-robotoMono">
-                        {allMembers.length} total
-                    </span>
-                </div>
-                <div className="flex items-center gap-3 w-full sm:w-auto">
+                <div className="flex items-center gap-3 w-full sm:w-auto sm:ml-auto">
                     {/* College Filter */}
                     <div className="relative w-full sm:w-52">
                         <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/75 pointer-events-none" />

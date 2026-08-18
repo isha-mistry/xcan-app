@@ -9,6 +9,7 @@ import {
     Loader2,
     CheckCircle2,
 } from "lucide-react";
+import { AdminPageHero } from "@/components/BuilderPods/ui";
 
 export default function AdminExportPage() {
     const [loading, setLoading] = useState(false);
@@ -41,17 +42,11 @@ export default function AdminExportPage() {
 
     return (
         <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-10 py-6">
-            <Link href="/admin/builder-pods" className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-white/60 hover:text-white/80 font-robotoMono mb-6 transition-colors">
-                <ArrowLeft className="w-3.5 h-3.5" />
-                Admin Dashboard
-            </Link>
-
-            <div className="flex items-center gap-3 mb-8">
-                <Download className="w-5 h-5 text-indigo-400/70" />
-                <h1 className="text-2xl font-black text-white font-unbounded tracking-tight">
-                    DAO Report Export
-                </h1>
-            </div>
+            <AdminPageHero
+                accent="purple"
+                title="DAO Report Export"
+                description="Download a complete JSON export of Builder Pods program data for DAO reporting."
+            />
 
             <motion.div
                 initial={{ opacity: 0, y: 12 }}

@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 
 import { adminFetcher, ADMIN_SWR_OPTIONS } from "@/lib/fetchers";
+import { AdminPageHero } from "@/components/BuilderPods/ui";
 
 const STATUS_COLUMNS = [
     { key: "ideation", label: "Ideation", color: "text-gray-400", bg: "bg-gray-500/10" },
@@ -85,17 +86,11 @@ export default function AdminProjectsPage() {
 
     return (
         <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-10 py-6">
-            <Link href="/admin/builder-pods" className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-white/80 hover:text-white/80 font-robotoMono mb-6 transition-colors">
-                <ArrowLeft className="w-3.5 h-3.5" />
-                Admin Dashboard
-            </Link>
-
-            <div className="flex items-center gap-3 mb-6">
-                <FolderKanban className="w-5 h-5 text-blue-400/70" />
-                <h1 className="text-2xl font-black text-white font-unbounded tracking-tight">
-                    Project Board
-                </h1>
-            </div>
+            <AdminPageHero
+                accent="blue"
+                title="Project Board"
+                description="Track project pipeline status across colleges — from ideation to demo ready."
+            />
 
             {/* College Selector */}
             <div className="mb-6 flex flex-wrap gap-2">

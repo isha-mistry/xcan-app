@@ -19,10 +19,12 @@ import {
     FolderGit2,
     Edit3,
     RotateCw,
+    Sparkles,
 } from "lucide-react";
 import { usePrivy } from "@privy-io/react-auth";
 import WeeklyUpdateForm from "@/components/BuilderPods/WeeklyUpdateForm";
 import MarkdownContent from "@/components/BuilderPods/MarkdownContent";
+import { PageHero, StatPill } from "@/components/BuilderPods/ui";
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
@@ -149,31 +151,37 @@ export default function CollegeUpdatesPage() {
 
     return (
         <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-10 py-6">
-            <Link href={`/builder-pods/${slug}`} className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-white/80 hover:text-white/80 font-robotoMono mb-6 transition-colors">
+            <Link href={`/builder-pods/${slug}`} className="mb-6 inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-white/80 transition-colors hover:text-white font-robotoMono">
                 <ArrowLeft className="w-3.5 h-3.5" />
                 Back to Pod
             </Link>
 
-            <div className="flex items-center justify-between mb-8">
-                <div className="flex items-center gap-3">
-                    <FileText className="w-5 h-5 text-blue-400/70" />
-                    <h1 className="text-2xl font-black text-white font-unbounded tracking-tight">
-                        Weekly Updates
-                    </h1>
-                    {pagination.total > 0 && (
-                        <span className="px-2.5 py-1 rounded-full bg-blue-500/10 text-[10px] font-bold text-blue-400 font-robotoMono">
-                            {pagination.total} updates
-                        </span>
-                    )}
-                </div>
-                <button 
-                    onClick={handleRefresh}
-                    className="p-2 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all text-white/80 hover:text-white/80"
-                    title="Refresh updates"
-                >
-                    <RotateCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
-                </button>
-            </div>
+            <PageHero
+                accent="blue"
+                badge="Pod activity"
+                BadgeIcon={Sparkles}
+                title="Weekly Updates"
+                description="Progress reports submitted by pod leads for this college workspace."
+                stats={
+                    pagination.total > 0 ? (
+                        <StatPill
+                            icon={<FileText className="h-3.5 w-3.5 text-blue-400" />}
+                            label="Updates"
+                            value={pagination.total}
+                        />
+                    ) : undefined
+                }
+                actions={
+                    <button
+                        onClick={handleRefresh}
+                        className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2 text-[10px] font-bold text-white/70 transition-all hover:bg-white/[0.08] hover:text-white font-robotoMono"
+                        title="Refresh updates"
+                    >
+                        <RotateCw className={`h-3.5 w-3.5 ${isLoading ? "animate-spin" : ""}`} />
+                        Refresh
+                    </button>
+                }
+            />
 
             {isLoading ? (
                 <div className="space-y-3">

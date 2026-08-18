@@ -13,30 +13,121 @@ import {
     verifyCollegeAccess,
     ForbiddenError,
 } from '@/lib/rbac';
+import {
+    enrichShowcaseEvent,
+    publicSubmissionMatch,
+    serializePublicSubmission,
+} from '@/lib/builder-pods/showcase';
 
-// GET — list all showcase events
+// GET — public showcase events (+ optional public submissions)
+// Query:
+//   ?showcaseId=<id>         → single event + its public submissions
+//   ?includeSubmissions=all  → all public submissions (cap 200)
+//   ?includeSubmissions=1    → latest public submissions (cap 12)
+// Auth optional: when connected, also returns the caller's own submissions.
 export async function GET(req: NextRequest) {
     try {
         await dbConnect();
         const ctx = await getAuthContext(req).catch(() => null);
+        const { searchParams } = new URL(req.url);
+        const showcaseId = searchParams.get('showcaseId');
+        const includeSubmissions = searchParams.get('includeSubmissions');
 
+        // ── Single showcase detail + public submissions ──────────────────────
+        if (showcaseId) {
+            const showcase = await ShowcaseEvent.findById(showcaseId).lean();
+            if (!showcase) {
+                return NextResponse.json(
+                    { success: false, error: 'Showcase not found' },
+                    { status: 404 }
+                );
+            }
+
+            const submissions = await ShowcaseSubmission.find(
+                publicSubmissionMatch({ showcaseEventId: showcaseId })
+            )
+                .sort({ createdAt: -1 })
+                .lean();
+
+            let userSubmissions: any[] = [];
+            if (ctx?.walletAddress) {
+                userSubmissions = await ShowcaseSubmission.find({
+                    submittedBy: ctx.walletAddress.toLowerCase(),
+                    showcaseEventId: showcaseId,
+                    isActive: { $ne: false },
+                })
+                    .select('showcaseEventId status projectSnapshot collegeSnapshot createdAt')
+                    .lean();
+            }
+
+            return NextResponse.json(
+                {
+                    success: true,
+                    showcase: enrichShowcaseEvent(showcase, submissions.length),
+                    submissions: submissions.map(serializePublicSubmission),
+                    userSubmissions,
+                },
+                { status: 200 }
+            );
+        }
+
+        // ── All showcase events ──────────────────────────────────────────────
         const showcases = await ShowcaseEvent.find()
             .sort({ eventDate: -1 })
             .lean();
+
+        const countAgg = await ShowcaseSubmission.aggregate([
+            { $match: publicSubmissionMatch() },
+            { $group: { _id: '$showcaseEventId', count: { $sum: 1 } } },
+        ]);
+        const countMap = new Map(
+            countAgg.map((row: { _id: unknown; count: number }) => [
+                String(row._id),
+                row.count,
+            ])
+        );
+
+        const enrichedShowcases = showcases.map((event) =>
+            enrichShowcaseEvent(event, countMap.get(String(event._id)) ?? 0)
+        );
+
+        // Optional public submission feed for the global gallery
+        let submissions: ReturnType<typeof serializePublicSubmission>[] | undefined;
+        if (includeSubmissions === 'all' || includeSubmissions === '1') {
+            const limit = includeSubmissions === 'all' ? 200 : 12;
+            const raw = await ShowcaseSubmission.find(publicSubmissionMatch())
+                .sort({ createdAt: -1 })
+                .limit(limit)
+                .populate('showcaseEventId', 'name city regionSnapshot')
+                .lean();
+
+            submissions = raw.map((sub: any) =>
+                serializePublicSubmission({
+                    ...sub,
+                    showcaseName: sub.showcaseEventId?.name ?? null,
+                })
+            );
+        }
 
         let userSubmissions: any[] = [];
         if (ctx?.walletAddress) {
             userSubmissions = await ShowcaseSubmission.find({
                 submittedBy: ctx.walletAddress.toLowerCase(),
-                isActive: { $ne: false }
-            }).select('showcaseEventId status projectSnapshot').lean();
+                isActive: { $ne: false },
+            })
+                .select('showcaseEventId status projectSnapshot collegeSnapshot createdAt')
+                .lean();
         }
 
-        return NextResponse.json({ 
-            success: true, 
-            showcases,
-            userSubmissions 
-        }, { status: 200 });
+        return NextResponse.json(
+            {
+                success: true,
+                showcases: enrichedShowcases,
+                ...(submissions ? { submissions } : {}),
+                userSubmissions,
+            },
+            { status: 200 }
+        );
     } catch (error) {
         console.error('Error fetching showcases:', error);
         return NextResponse.json(
@@ -46,7 +137,7 @@ export async function GET(req: NextRequest) {
     }
 }
 
-// POST — submit a showcase entry
+// POST — submit a showcase entry (pod_lead + project lead, or admin)
 export async function POST(req: NextRequest) {
     try {
         const ctx = await getAuthContext(req);
@@ -77,6 +168,13 @@ export async function POST(req: NextRequest) {
             return NextResponse.json(
                 { success: false, error: 'Showcase not found or already completed' },
                 { status: 404 }
+            );
+        }
+
+        if (showcase.status !== 'open') {
+            return NextResponse.json(
+                { success: false, error: 'This showcase is not currently open for submissions' },
+                { status: 400 }
             );
         }
 

@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 
 import { adminFetcher, ADMIN_SWR_STATIC_OPTIONS } from "@/lib/fetchers";
+import { AdminPageHero } from "@/components/BuilderPods/ui";
 
 export default function AdminMilestonesPage() {
     const { data, isLoading, error } = useSWR(
@@ -58,17 +59,11 @@ export default function AdminMilestonesPage() {
 
     return (
         <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-10 py-6">
-            <Link href="/admin/builder-pods" className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-white/60 hover:text-white/80 font-robotoMono mb-6 transition-colors">
-                <ArrowLeft className="w-3.5 h-3.5" />
-                Admin Dashboard
-            </Link>
-
-            <div className="flex items-center gap-3 mb-8">
-                <Target className="w-5 h-5 text-emerald-400/70" />
-                <h1 className="text-2xl font-black text-white font-unbounded tracking-tight">
-                    Milestone KPI Tracker
-                </h1>
-            </div>
+            <AdminPageHero
+                accent="green"
+                title="Milestone KPI Tracker"
+                description="Track grant milestones against live Builder Pods program metrics."
+            />
 
             {!isLoading && live && (
                 <div className="grid grid-cols-2 md:grid-cols-6 gap-3 mb-6">

@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 
 import { adminFetcher, ADMIN_SWR_OPTIONS } from "@/lib/fetchers";
+import { AdminPageHero, StatPill } from "@/components/BuilderPods/ui";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -476,32 +477,37 @@ export default function AdminShowcasesPage() {
 
     return (
         <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-10 py-6">
-            {/* Header */}
-            <header className="mb-8">
-                <Link href="/admin/builder-pods" className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-white/60 hover:text-white/80 font-robotoMono mb-6 transition-colors">
-                    <ArrowLeft className="w-3.5 h-3.5" />
-                    Admin Dashboard
-                </Link>
+            <AdminPageHero
+                accent="purple"
+                title="Showcase Management"
+                description="Review regional showcase entries, mark finalists and winners, and manage events."
+                stats={
+                    <>
+                        <StatPill
+                            icon={<Trophy className="h-3.5 w-3.5 text-purple-400" />}
+                            label="Submissions"
+                            value={allSubmissions.length}
+                        />
+                        <StatPill
+                            icon={<Trophy className="h-3.5 w-3.5 text-yellow-400" />}
+                            label="Events"
+                            value={events.length}
+                        />
+                    </>
+                }
+            />
 
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div className="flex items-center gap-3">
-                        <Trophy className="w-5 h-5 text-purple-400/70" />
-                        <h1 className="text-2xl font-black text-white font-unbounded tracking-tight">Showcase Management</h1>
-                    </div>
-
-                    <div className="flex p-1 bg-white/5 rounded-xl border border-white/10 self-start">
-                        {["submissions", "events"].map(tab => (
-                            <button
-                                key={tab}
-                                onClick={() => setActiveTab(tab as any)}
-                                className={`px-4 py-1.5 rounded-lg text-[10px] font-bold font-robotoMono transition-all capitalize ${activeTab === tab ? 'bg-purple-500 text-white shadow-lg' : 'text-white/40 hover:text-white/70'}`}
-                            >
-                                {tab}
-                            </button>
-                        ))}
-                    </div>
-                </div>
-            </header>
+            <div className="mb-6 flex p-1 bg-white/5 rounded-xl border border-white/10 self-start w-fit">
+                {["submissions", "events"].map(tab => (
+                    <button
+                        key={tab}
+                        onClick={() => setActiveTab(tab as any)}
+                        className={`px-4 py-1.5 rounded-lg text-[10px] font-bold font-robotoMono transition-all capitalize ${activeTab === tab ? 'bg-purple-500 text-white shadow-lg' : 'text-white/40 hover:text-white/70'}`}
+                    >
+                        {tab}
+                    </button>
+                ))}
+            </div>
 
             {/* Content Area */}
             <main>

@@ -18,7 +18,7 @@ function CollegeCard({ college }: CollegeCardProps) {
     return (
         <article className=" [contain-intrinsic-size:1px_340px]">
             <Link href={`/builder-pods/${college.slug}`} prefetch={false}>
-                <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-6 group hover:border-white/20 transition-all duration-300 cursor-pointer h-full flex flex-col">
+                <div className="glass-container group flex h-full cursor-pointer flex-col rounded-2xl border border-white/[0.06] p-6 transition-all duration-300 hover:border-white/20">
                     {/* Status Badge */}
                     <div className="flex items-center justify-between mb-4">
                         <span

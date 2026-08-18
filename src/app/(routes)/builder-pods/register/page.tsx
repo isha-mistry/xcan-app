@@ -2,37 +2,54 @@
 import React, { Suspense } from "react";
 import { usePrivy } from "@privy-io/react-auth";
 import { useSearchParams } from "next/navigation";
-import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
-import Heading from "@/components/ComponentUtils/Heading";
+import { ClipboardCheck, Sparkles } from "lucide-react";
 import RegistrationForm from "@/components/BuilderPods/RegistrationForm";
+import {
+  PageShell,
+  BackLink,
+  PageHero,
+} from "@/components/BuilderPods/ui";
 
 function RegisterContent() {
-    const { user } = usePrivy();
-    const walletAddress = user?.wallet?.address ?? null;
-    console.log("walletAddress", walletAddress);
-    const searchParams = useSearchParams();
-    const initialQrToken = searchParams.get("token") ?? "";
+  const { user } = usePrivy();
+  const walletAddress = user?.wallet?.address ?? null;
+  const searchParams = useSearchParams();
+  const initialQrToken = searchParams.get("token") ?? "";
 
-    return (
-        <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-10 py-6">
-            <Link
-                href="/builder-pods"
-                className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-white/80 hover:text-white/80 font-robotoMono mb-6 transition-colors"
-            >
-                <ArrowLeft className="w-3.5 h-3.5" />
-                Builder Pods
-            </Link>
-            <Heading />
-            <RegistrationForm walletAddress={walletAddress} initialQrToken={initialQrToken} />
-        </div>
-    );
+  return (
+    <PageShell>
+      <BackLink href="/builder-pods">Builder Pods</BackLink>
+      <PageHero
+        accent="blue"
+        badge="Join the network"
+        BadgeIcon={Sparkles}
+        title="Register"
+        description="Join a Builder Lab, connect your wallet, and become part of a college pod building on Arbitrum."
+        actions={
+          <span className="inline-flex items-center gap-1.5 text-[10px] text-white/40 font-robotoMono">
+            <ClipboardCheck className="h-3.5 w-3.5" />
+            QR tokens from lab events auto-fill below
+          </span>
+        }
+      />
+      <RegistrationForm
+        walletAddress={walletAddress}
+        initialQrToken={initialQrToken}
+      />
+    </PageShell>
+  );
 }
 
 export default function RegisterPage() {
-    return (
-        <Suspense fallback={null}>
-            <RegisterContent />
-        </Suspense>
-    );
+  return (
+    <Suspense
+      fallback={
+        <PageShell>
+          <div className="glass-container h-64 animate-pulse rounded-2xl" />
+        </PageShell>
+      }
+    >
+      <RegisterContent />
+    </Suspense>
+  );
 }
