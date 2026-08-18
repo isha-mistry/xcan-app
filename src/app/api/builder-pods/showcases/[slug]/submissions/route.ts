@@ -71,10 +71,27 @@ export async function GET(
       .sort({ createdAt: -1 })
       .lean();
 
+    // Prefer live PodProject fields over the stored snapshot so edits from
+    // the college project page are reflected everywhere.
+    const normalizedSubmissions = submissions.map((s: any) => {
+      const proj = s.projectId as any;
+      if (!proj) return s;
+
+      return {
+        ...s,
+        projectSnapshot: {
+          ...(s.projectSnapshot || {}),
+          name: proj.name ?? s.projectSnapshot?.name,
+          problemStatement:
+            proj.problemStatement ?? s.projectSnapshot?.problemStatement,
+        },
+      };
+    });
+
     return NextResponse.json({
       success: true,
       event: events[0],
-      submissions,
+      submissions: normalizedSubmissions,
     });
   } catch (error) {
     console.error("Error fetching showcase city submissions:", error);

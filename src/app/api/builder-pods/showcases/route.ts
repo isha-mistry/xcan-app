@@ -45,14 +45,44 @@ export async function GET(req: NextRequest) {
             })
                 .select(
                     'showcaseEventId status projectSnapshot collegeSnapshot.podName certificateClaimable ' +
-                    'patramCertificateOnChain patramMemberCertificates'
+                    'patramCertificateOnChain patramMemberCertificates projectId'
                 )
                 .lean();
+
+            const submissionProjectIds = [
+              ...new Set(
+                rawSubmissions
+                  .map((s: any) => s.projectId?.toString?.())
+                  .filter(Boolean),
+              ),
+            ];
+            const projects = submissionProjectIds.length
+              ? await PodProject.find({
+                    _id: { $in: submissionProjectIds },
+                    deletedAt: null,
+                  })
+                    .select("name problemStatement submittedToShowcase")
+                    .lean()
+              : [];
+            const projectById = new Map(
+              projects.map((p: any) => [p._id.toString(), p]),
+            );
 
             // Resolve the caller's OWN on-chain certificate (one unique cert per team
             // member, keyed by wallet). No project-level fallback — a teammate who
             // hasn't been issued yet simply has no link.
             userSubmissions = rawSubmissions.map((sub: any) => {
+                const proj = projectById.get(sub.projectId?.toString?.());
+                const updatedProjectSnapshot = proj
+                  ? {
+                      ...(sub.projectSnapshot || {}),
+                      name: proj.name ?? sub.projectSnapshot?.name,
+                      problemStatement:
+                        proj.problemStatement ??
+                        sub.projectSnapshot?.problemStatement,
+                    }
+                  : sub.projectSnapshot;
+
                 const mine = Array.isArray(sub.patramMemberCertificates)
                     ? sub.patramMemberCertificates.find(
                         (m: any) => (m?.wallet || '').toLowerCase() === wallet && m?.url
@@ -62,6 +92,7 @@ export async function GET(req: NextRequest) {
                 const { patramMemberCertificates, ...rest } = sub;
                 return {
                     ...rest,
+                    projectSnapshot: updatedProjectSnapshot,
                     patramCertificateUrl,
                     patramCertificateTxHash: mine?.txHash || null,
                 };

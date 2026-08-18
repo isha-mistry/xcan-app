@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { dbConnect } from "@/lib/dbConnect";
 import { PodProject } from "@/models/PodProject";
 import { PodMember } from "@/models/PodMember";
+import { ShowcaseSubmission } from "@/models/ShowcaseSubmission";
 import { AuditLog } from "@/models/AuditLog";
 import { WeeklyUpdate } from "@/models/WeeklyUpdate";
 import { getAuthContext, UnauthorizedError, ForbiddenError } from "@/lib/rbac";
@@ -179,6 +180,21 @@ export async function PATCH(
     }
 
     await project.save();
+
+    // Keep showcase submissions in sync when a submitted project gets edited
+    // (name / problemStatement can change from the college project page).
+    if (project.submittedToShowcase) {
+      await ShowcaseSubmission.updateMany(
+        { projectId: project._id },
+        {
+          $set: {
+            "projectSnapshot.name": project.name,
+            "projectSnapshot.problemStatement":
+              project.problemStatement?.trim() || "",
+          },
+        },
+      );
+    }
 
     await AuditLog.create({
       actorWallet: wallet,
