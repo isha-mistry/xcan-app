@@ -45,24 +45,25 @@ export async function GET(req: NextRequest) {
             })
                 .select(
                     'showcaseEventId status projectSnapshot collegeSnapshot.podName certificateClaimable ' +
-                    'patramCertificateOnChain patramCertificateLink patramMemberCertificates'
+                    'patramCertificateOnChain patramMemberCertificates'
                 )
                 .lean();
 
-            // Resolve the caller's own on-chain certificate link (one cert per team
-            // member; fall back to the team-level link if no per-member match).
+            // Resolve the caller's OWN on-chain certificate (one unique cert per team
+            // member, keyed by wallet). No project-level fallback — a teammate who
+            // hasn't been issued yet simply has no link.
             userSubmissions = rawSubmissions.map((sub: any) => {
                 const mine = Array.isArray(sub.patramMemberCertificates)
                     ? sub.patramMemberCertificates.find(
                         (m: any) => (m?.wallet || '').toLowerCase() === wallet && m?.url
                     )
                     : null;
-                const patramCertificateUrl = mine?.url || sub.patramCertificateLink || null;
+                const patramCertificateUrl = mine?.url || null;
                 const { patramMemberCertificates, ...rest } = sub;
                 return {
                     ...rest,
                     patramCertificateUrl,
-                    patramCertificateTxHash: mine?.txHash || sub.patramCertificateTxHash || null,
+                    patramCertificateTxHash: mine?.txHash || null,
                 };
             });
         }

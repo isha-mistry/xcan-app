@@ -27,10 +27,10 @@ export interface IShowcaseSubmission extends Document {
     certificateClaimable: boolean;
     certificateEnabledBy: string | null;
     certificateEnabledAt: Date | null;
-    // Written by Patram when the on-chain winner certificate is issued.
+    // Written by Patram when the on-chain certificate is issued.
+    // Each team member gets their own unique certificate, so links live per-member
+    // (keyed by wallet) — there is no single project-level certificate link.
     patramCertificateOnChain: boolean;
-    patramCertificateLink: string | null;
-    patramCertificateTxHash: string | null;
     patramMemberCertificates: { wallet: string; url: string | null; txHash: string | null }[];
     createdAt: Date;
     updatedAt: Date;
@@ -65,10 +65,9 @@ const ShowcaseSubmissionSchema = new Schema<IShowcaseSubmission>(
         certificateClaimable: { type: Boolean, default: false },
         certificateEnabledBy: { type: String, default: null, lowercase: true },
         certificateEnabledAt: { type: Date, default: null },
-        // Populated by Patram after the on-chain winner certificate is issued.
+        // Populated by Patram after the on-chain certificate is issued.
+        // Per-member only (see interface note above) — no project-level link field.
         patramCertificateOnChain: { type: Boolean, default: false },
-        patramCertificateLink: { type: String, default: null },
-        patramCertificateTxHash: { type: String, default: null },
         patramMemberCertificates: {
             type: [
                 {
