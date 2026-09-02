@@ -1,4 +1,5 @@
 import nodemailer from "nodemailer";
+import type { SendMailOptions as NodemailerSendMailOptions } from "nodemailer";
 
 const transportOptions: any = {
   host: process.env.SMTP_HOST || "smtp.gmail.com",
@@ -19,6 +20,7 @@ export interface SendMailOptions {
   to: string;
   subject: string;
   html: string;
+  attachments?: NodemailerSendMailOptions["attachments"];
 }
 
 /**
@@ -30,6 +32,7 @@ export async function sendMail({
   to,
   subject,
   html,
+  attachments,
 }: SendMailOptions): Promise<boolean> {
   try {
     if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
@@ -44,6 +47,7 @@ export async function sendMail({
       to,
       subject,
       html,
+      attachments,
     });
 
     console.log(`[mailer] Email sent to ${to}: "${subject}"`);

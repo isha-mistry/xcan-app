@@ -9,7 +9,9 @@
     "lint": "next lint",
     "prepare": "husky install",
     "send:showcase-invite": "node scripts/showcase-invite/send.mjs",
-    "send-pod-member-meeting-email": "npx tsx scripts/send-pod-member-meeting-email.ts"
+    "send-pod-member-meeting-email": "npx tsx scripts/send-pod-member-meeting-email.ts",
+    "send-showcase-open-invite": "npx tsx scripts/send-showcase-open-invite.ts",
+    "send-regional-showcase-meeting": "npx tsx scripts/send-regional-showcase-meeting.ts"
   },
   "engines": {
     "node": ">=20.0.0",

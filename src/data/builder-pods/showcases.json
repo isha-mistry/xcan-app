@@ -1,6 +1,122 @@
 {
   "showcases": [
     {
+      "slug": "mumbai",
+      "name": "Arbitrum Builder Pods Showcase",
+      "subtitle": "2nd State-Level Showcase",
+      "tagline": "Six college builder pods. Pitching Arbitrum-ecosystem projects.",
+      "city": "Mumbai",
+      "region": "Mumbai Zone",
+      "status": "upcoming",
+      "date": "2026-09-02",
+      "day": "Wednesday",
+      "time": "4:00 PM – 6:00 PM IST",
+      "timeStart": "16:00",
+      "timeEnd": "18:00",
+      "timezone": "Asia/Kolkata",
+      "format": "Virtual",
+      "podsPresenting": 6,
+      "venue": null,
+      "poster": "/images/showcase2_poster.png",
+      "infoBanner": "",
+      "joinLink": "",
+      "joinLinkLabel": "Join Showcase",
+      "presentedBy": "Lampros DAO",
+      "partners": ["Arbitrum", "Ethereum"],
+      "prizePool": {
+        "totalUsd": 700,
+        "breakdown": [
+          { "place": "1st Prize", "amountUsd": 400 },
+          { "place": "2nd Prize", "amountUsd": 300 }
+        ]
+      },
+      "colleges": [
+        {
+          "shortName": "MSU",
+          "name": "Maharaja Sayajirao University",
+          "city": "Vadodara",
+          "collegeSlug": null
+        },
+        {
+          "shortName": "ATMIYA",
+          "name": "Atmiya University",
+          "city": "Rajkot",
+          "collegeSlug": null
+        },
+        {
+          "shortName": "LDRP",
+          "name": "LDRP Institute of Technology and Research",
+          "city": "Gandhinagar",
+          "collegeSlug": null
+        },
+        {
+          "shortName": "MIT",
+          "name": "MIT World Peace University",
+          "city": "Pune",
+          "collegeSlug": null
+        },
+        {
+          "shortName": "COEP",
+          "name": "College of Engineering Pune",
+          "city": "Pune",
+          "collegeSlug": null
+        },
+        {
+          "shortName": "FCRIT",
+          "name": "Fr. Conceicao Rodrigues Institute of Technology",
+          "city": "Mumbai",
+          "collegeSlug": null
+        }
+      ],
+      "agenda": [
+        {
+          "time": "4:00 PM",
+          "title": "Welcome & Opening Remarks",
+          "description": "Introduction to Arbitrum Builder Pods, event format, and judging criteria."
+        },
+        {
+          "time": "4:15 PM",
+          "title": "Pod Project Pitches",
+          "description": "Each of the six college builder pods pitches their Arbitrum-ecosystem project."
+        },
+        {
+          "time": "5:30 PM",
+          "title": "Judges Q&A",
+          "description": "Live questions from judges across technical execution, innovation, and ecosystem fit."
+        },
+        {
+          "time": "5:50 PM",
+          "title": "Closing & Next Steps",
+          "description": "Wrap-up, prize timeline, and how results will be announced."
+        }
+      ],
+      "outcomes": [
+        "Compete for a $700 total prize pool across 1st and 2nd place awards",
+        "Get evaluated on technical execution, innovation, ecosystem relevance, and presentation quality",
+        "Earn visibility across the Arbitrum and Ethereum ecosystem",
+        "Qualify for regional showcase finalist and winner recognition"
+      ],
+      "judgingCriteria": [
+        {
+          "title": "Technical Execution",
+          "description": "Quality of implementation, architecture, and onchain readiness."
+        },
+        {
+          "title": "Innovation",
+          "description": "Originality of the idea and problem-solving approach."
+        },
+        {
+          "title": "Ecosystem Relevance",
+          "description": "Fit with Arbitrum use cases and broader Ethereum ecosystem value."
+        },
+        {
+          "title": "Presentation Quality",
+          "description": "Clarity of pitch, demo quality, and storytelling."
+        }
+      ],
+      "description": "The second state-level Arbitrum Builder Pods Showcase brings six college pods together for a virtual pitch event hosted in the Mumbai zone."
+    },
+    {
       "slug": "ahmedabad",
       "name": "Arbitrum Builder Pods Showcase",
       "subtitle": "1st State-Level Showcase",
